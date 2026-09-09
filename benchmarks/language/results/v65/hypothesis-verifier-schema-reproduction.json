@@ -1,0 +1,130 @@
+{
+  "runtimeCommit": "b26c5b8b0386aff8be171593b51299f9c703d64b",
+  "traceRow": 355,
+  "purpose": "Read-only frozen schema replay and explicitly synthetic null-anchor control; not a replacement model result.",
+  "original": {
+    "verdicts": [
+      {
+        "block_id": "B1",
+        "source_alignments": [
+          {
+            "evidence_id": "E1",
+            "source_context": "Ada Marlow states that she does not know the actual requirements. She introduces a hypothetical assumption that the Zephyr QX-100 mesh screen is inspected every three months; only under that assumption would a missed inspection violate the ",
+            "actor": {
+              "source_anchor": "E1_f7da8646e745_4",
+              "answer_anchor": "B1_28af1a3d4dbb_1",
+              "relation": "preserved",
+              "detail": "Ada Marlow remains the person who does not know the actual requirements."
+            },
+            "object_and_mechanism": {
+              "source_anchor": "E1_f7da8646e745_1",
+              "answer_anchor": "B1_28af1a3d4dbb_2",
+              "relation": "omitted",
+              "detail": "The source says Ada introduces the assumption; the answer presents the hypothetical inspection schedule without preserving Ada as the introducer."
+            },
+            "qualification": {
+              "source_anchor": "E1_f7da8646e745_5",
+              "answer_anchor": "B1_28af1a3d4dbb_3",
+              "relation": "preserved",
+              "detail": "The answer preserves the conditional hypothetical scope and explicitly says it is not a report of an actual missed inspection."
+            }
+          }
+        ],
+        "comparison": {
+          "source_meaning": "Ada Marlow does not know the actual requirements and introduces a hypothetical three-month inspection rule; only conditionally would a missed inspection violate it, and no actual missed inspection is reported.",
+          "candidate_meaning": "The actual requirements are unknown to Ada Marlow; hypothetically, the mesh screen would be inspected every three months, a missed inspection would violate the assumed rule only then, and no actual missed inspection is reported.",
+          "action_arguments": "The screen, inspection interval, conditional violation, and missed-inspection relation are preserved, but Ada's role in introducing the assumption is omitted.",
+          "qualification_scope": "Hypothetical and conditional scope, Ada's lack of knowledge, and the denial of an actual missed inspection are preserved."
+        },
+        "mismatches": [
+          {
+            "dimension": "proposition_supported",
+            "kind": "unsupported_content",
+            "detail": "The answer omits the source-frame proposition that Ada Marlow herself introduces the hypothetical assumption."
+          },
+          {
+            "dimension": "action_arguments_preserved",
+            "kind": "changed_action_or_role",
+            "detail": "The source attributes introduction of the assumption to Ada Marlow; the answer gives no corresponding actor for that proposal."
+          }
+        ],
+        "proposition_supported": false,
+        "action_arguments_preserved": false,
+        "qualification_scope_preserved": true,
+        "excerpt_selection": {
+          "selected_by_retained_excerpt": true,
+          "unselected_content": null
+        }
+      }
+    ]
+  },
+  "originalSchemaValid": false,
+  "originalIssues": [
+    {
+      "code": "custom",
+      "path": [
+        0,
+        "object_and_mechanism"
+      ],
+      "message": "Invalid input"
+    }
+  ],
+  "syntheticControl": {
+    "verdicts": [
+      {
+        "block_id": "B1",
+        "source_alignments": [
+          {
+            "evidence_id": "E1",
+            "source_context": "Ada Marlow states that she does not know the actual requirements. She introduces a hypothetical assumption that the Zephyr QX-100 mesh screen is inspected every three months; only under that assumption would a missed inspection violate the ",
+            "actor": {
+              "source_anchor": "E1_f7da8646e745_4",
+              "answer_anchor": "B1_28af1a3d4dbb_1",
+              "relation": "preserved",
+              "detail": "Ada Marlow remains the person who does not know the actual requirements."
+            },
+            "object_and_mechanism": {
+              "source_anchor": "E1_f7da8646e745_1",
+              "answer_anchor": null,
+              "relation": "omitted",
+              "detail": "The source says Ada introduces the assumption; the answer presents the hypothetical inspection schedule without preserving Ada as the introducer."
+            },
+            "qualification": {
+              "source_anchor": "E1_f7da8646e745_5",
+              "answer_anchor": "B1_28af1a3d4dbb_3",
+              "relation": "preserved",
+              "detail": "The answer preserves the conditional hypothetical scope and explicitly says it is not a report of an actual missed inspection."
+            }
+          }
+        ],
+        "comparison": {
+          "source_meaning": "Ada Marlow does not know the actual requirements and introduces a hypothetical three-month inspection rule; only conditionally would a missed inspection violate it, and no actual missed inspection is reported.",
+          "candidate_meaning": "The actual requirements are unknown to Ada Marlow; hypothetically, the mesh screen would be inspected every three months, a missed inspection would violate the assumed rule only then, and no actual missed inspection is reported.",
+          "action_arguments": "The screen, inspection interval, conditional violation, and missed-inspection relation are preserved, but Ada's role in introducing the assumption is omitted.",
+          "qualification_scope": "Hypothetical and conditional scope, Ada's lack of knowledge, and the denial of an actual missed inspection are preserved."
+        },
+        "mismatches": [
+          {
+            "dimension": "proposition_supported",
+            "kind": "unsupported_content",
+            "detail": "The answer omits the source-frame proposition that Ada Marlow herself introduces the hypothetical assumption."
+          },
+          {
+            "dimension": "action_arguments_preserved",
+            "kind": "changed_action_or_role",
+            "detail": "The source attributes introduction of the assumption to Ada Marlow; the answer gives no corresponding actor for that proposal."
+          }
+        ],
+        "proposition_supported": false,
+        "action_arguments_preserved": false,
+        "qualification_scope_preserved": true,
+        "excerpt_selection": {
+          "selected_by_retained_excerpt": true,
+          "unselected_content": null
+        }
+      }
+    ]
+  },
+  "syntheticSchemaValid": true,
+  "syntheticSemanticallyPublishable": false
+}

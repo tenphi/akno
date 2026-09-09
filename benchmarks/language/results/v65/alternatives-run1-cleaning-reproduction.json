@@ -1,0 +1,193 @@
+{
+  "name": "alternatives-run1",
+  "traceRows": {
+    "extraction": 315,
+    "repair": 317
+  },
+  "repairTargets": [
+    {
+      "candidate_index": 1,
+      "original_candidate": {
+        "kind": "claim",
+        "attribution": {
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "chain": []
+        },
+        "discourse": {
+          "commitment": "asserted",
+          "disposition": "active"
+        },
+        "epistemic": {
+          "basis": "self_attested"
+        },
+        "polarity": "affirmed",
+        "support": [
+          {
+            "quote": "I, Ada Marlow, have not selected either cause. Neither hypothesis has supporting evidence.",
+            "item_id": "turn-2222"
+          }
+        ],
+        "discourse_frame": [
+          {
+            "quote": "I, Ada Marlow, have not selected either cause. Neither hypothesis has supporting evidence.",
+            "item_id": "turn-2222"
+          }
+        ],
+        "relations": [],
+        "time": null,
+        "text": "Ada Marlow has selected neither proposed cause of the Zephyr QX-100 failure, and neither hypothesis has supporting evidence.",
+        "subject": "Zephyr QX-100 cause selection and evidence",
+        "page": "memory/zephyr-qx-100"
+      },
+      "validation_issues": [
+        {
+          "reason_code": "validation_failed",
+          "reason": "a claimed source subject identifier is missing from readable prose or its deciding frame; preserve the source-supported identity in the sentence and include its exact antecedent span, rather than leaving it only in subject metadata. Do not assign an unrelated identifier to the proposition"
+        }
+      ]
+    }
+  ],
+  "repairs": [
+    {
+      "candidate_index": 1,
+      "candidate": {
+        "kind": "claim",
+        "attribution": {
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "chain": []
+        },
+        "discourse": {
+          "commitment": "asserted",
+          "disposition": "active"
+        },
+        "epistemic": {
+          "basis": "self_attested"
+        },
+        "polarity": "affirmed",
+        "support": [
+          {
+            "quote": "Я, Ada Marlow, рассматриваю две конкурирующие гипотезы о сбое Zephyr QX-100: погнутая направляющая или ослабленное крепление ремня. Это только предварительные версии.",
+            "item_id": "turn-1111"
+          },
+          {
+            "quote": "I, Ada Marlow, have not selected either cause. Neither hypothesis has supporting evidence.",
+            "item_id": "turn-2222"
+          }
+        ],
+        "discourse_frame": [
+          {
+            "quote": "Я, Ada Marlow, рассматриваю две конкурирующие гипотезы о сбое Zephyr QX-100: погнутая направляющая или ослабленное крепление ремня. Это только предварительные версии.",
+            "item_id": "turn-1111"
+          },
+          {
+            "quote": "I, Ada Marlow, have not selected either cause. Neither hypothesis has supporting evidence.",
+            "item_id": "turn-2222"
+          }
+        ],
+        "relations": [],
+        "time": null,
+        "text": "Ada Marlow is considering two competing preliminary hypotheses about the Zephyr QX-100 failure—a bent guide or loosened belt fastening—but has selected neither cause, and neither hypothesis has supporting evidence.",
+        "subject": "Zephyr QX-100 cause selection and evidence",
+        "page": "memory/zephyr-qx-100"
+      }
+    }
+  ],
+  "original": {
+    "candidates": [
+      {
+        "candidate_id": "cand_03f567cd41fc544810a26963",
+        "kind": "claim",
+        "text": "Ada Marlow is considering two competing preliminary hypotheses about the Zephyr QX-100 failure: a bent guide or a loosened belt fastening.",
+        "subject": "Zephyr QX-100 failure hypotheses",
+        "attribution": {
+          "source_role": "user",
+          "source_speaker": "Ada Marlow"
+        },
+        "discourse": {
+          "commitment": "tentative",
+          "disposition": "active"
+        },
+        "epistemic": {
+          "basis": "self_attested"
+        },
+        "polarity": "affirmed",
+        "support": [
+          {
+            "quote": "Я, Ada Marlow, рассматриваю две конкурирующие гипотезы о сбое Zephyr QX-100: погнутая направляющая или ослабленное крепление ремня. Это только предварительные версии.",
+            "item_id": "turn-1111"
+          }
+        ],
+        "discourse_frame": [
+          {
+            "quote": "Я, Ada Marlow, рассматриваю две конкурирующие гипотезы о сбое Zephyr QX-100: погнутая направляющая или ослабленное крепление ремня. Это только предварительные версии.",
+            "item_id": "turn-1111"
+          }
+        ],
+        "relations": [],
+        "destination": {
+          "slug": "memory/zephyr-qx-100"
+        },
+        "page": "memory/zephyr-qx-100",
+        "origin": "user",
+        "evidence": "Я, Ada Marlow, рассматриваю две конкурирующие гипотезы о сбое Zephyr QX-100: погнутая направляющая или ослабленное крепление ремня. Это только предварительные версии."
+      }
+    ],
+    "held": [
+      {
+        "candidate_id": "cand_8d164acf18055388c0dae574",
+        "reason_code": "validation_failed",
+        "reason": "a claimed source subject identifier is missing from readable prose or its deciding frame; preserve the source-supported identity in the sentence and include its exact antecedent span, rather than leaving it only in subject metadata. Do not assign an unrelated identifier to the proposition"
+      }
+    ]
+  },
+  "repaired": {
+    "candidates": [
+      {
+        "candidate_id": "cand_03f567cd41fc544810a26963",
+        "kind": "claim",
+        "text": "Ada Marlow is considering two competing preliminary hypotheses about the Zephyr QX-100 failure: a bent guide or a loosened belt fastening.",
+        "subject": "Zephyr QX-100 failure hypotheses",
+        "attribution": {
+          "source_role": "user",
+          "source_speaker": "Ada Marlow"
+        },
+        "discourse": {
+          "commitment": "tentative",
+          "disposition": "active"
+        },
+        "epistemic": {
+          "basis": "self_attested"
+        },
+        "polarity": "affirmed",
+        "support": [
+          {
+            "quote": "Я, Ada Marlow, рассматриваю две конкурирующие гипотезы о сбое Zephyr QX-100: погнутая направляющая или ослабленное крепление ремня. Это только предварительные версии.",
+            "item_id": "turn-1111"
+          }
+        ],
+        "discourse_frame": [
+          {
+            "quote": "Я, Ada Marlow, рассматриваю две конкурирующие гипотезы о сбое Zephyr QX-100: погнутая направляющая или ослабленное крепление ремня. Это только предварительные версии.",
+            "item_id": "turn-1111"
+          }
+        ],
+        "relations": [],
+        "destination": {
+          "slug": "memory/zephyr-qx-100"
+        },
+        "page": "memory/zephyr-qx-100",
+        "origin": "user",
+        "evidence": "Я, Ada Marlow, рассматриваю две конкурирующие гипотезы о сбое Zephyr QX-100: погнутая направляющая или ослабленное крепление ремня. Это только предварительные версии."
+      }
+    ],
+    "held": [
+      {
+        "candidate_id": "cand_488af935e441457cd051e50c",
+        "reason_code": "noncanonical_without_context",
+        "reason": "speculative wording was not represented as a typed noncanonical memory"
+      }
+    ]
+  }
+}

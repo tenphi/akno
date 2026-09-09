@@ -1,0 +1,227 @@
+{
+  "name": "report-run2",
+  "traceRows": {
+    "extraction": 323,
+    "repair": 325
+  },
+  "repairTargets": [
+    {
+      "candidate_index": 0,
+      "original_candidate": {
+        "kind": "claim",
+        "attribution": {
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "chain": [
+            {
+              "speaker": "Bo Winters",
+              "role": "external"
+            }
+          ]
+        },
+        "discourse": {
+          "commitment": "asserted",
+          "disposition": "active"
+        },
+        "epistemic": {
+          "basis": "source_report"
+        },
+        "polarity": "affirmed",
+        "support": [
+          {
+            "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account.",
+            "item_id": "turn-1111"
+          },
+          {
+            "quote": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+            "item_id": "turn-2222"
+          },
+          {
+            "quote": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+            "item_id": "turn-3333"
+          }
+        ],
+        "discourse_frame": [
+          {
+            "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account.",
+            "item_id": "turn-1111"
+          },
+          {
+            "quote": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+            "item_id": "turn-2222"
+          },
+          {
+            "quote": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+            "item_id": "turn-3333"
+          }
+        ],
+        "relations": [],
+        "time": null,
+        "text": "Bo Winters says the agreement permits sending Zephyr QX-100 to a workshop to measure the gap at the latch, not to change the latch; Ada Marlow only conveys this account, without having read the agreement or independently checked it.",
+        "subject": "Zephyr QX-100 workshop measurement permission",
+        "page": "memory/zephyr-qx-100"
+      },
+      "validation_issues": [
+        {
+          "reason_code": "discourse_uncertain",
+          "reason": "the source report explicitly lacks confirmation or verification; preserve that uncertainty in readable prose, independently of attribution"
+        }
+      ]
+    }
+  ],
+  "repairs": [
+    {
+      "candidate_index": 0,
+      "candidate": {
+        "kind": "claim",
+        "attribution": {
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "chain": [
+            {
+              "speaker": "Bo Winters",
+              "role": "external"
+            }
+          ]
+        },
+        "discourse": {
+          "commitment": "asserted",
+          "disposition": "active"
+        },
+        "epistemic": {
+          "basis": "source_report"
+        },
+        "polarity": "affirmed",
+        "support": [
+          {
+            "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account.",
+            "item_id": "turn-1111"
+          },
+          {
+            "quote": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+            "item_id": "turn-2222"
+          },
+          {
+            "quote": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+            "item_id": "turn-3333"
+          }
+        ],
+        "discourse_frame": [
+          {
+            "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account.",
+            "item_id": "turn-1111"
+          },
+          {
+            "quote": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+            "item_id": "turn-2222"
+          },
+          {
+            "quote": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+            "item_id": "turn-3333"
+          }
+        ],
+        "relations": [],
+        "time": null,
+        "text": "Bo Winters says the agreement permits sending Zephyr QX-100 to a workshop to measure the gap at the latch, not to change the latch; Ada Marlow only conveys this account and has not read the agreement, independently checked the account, or herself checked this reported meaning.",
+        "subject": "Zephyr QX-100 agreement-reported workshop measurement permission",
+        "page": "memory/zephyr-qx-100"
+      }
+    }
+  ],
+  "original": {
+    "candidates": [
+      {
+        "candidate_id": "cand_11e99ed79b7905c69f8ed803",
+        "kind": "claim",
+        "text": "Ada Marlow has not arranged delivery of her Zephyr QX-100.",
+        "subject": "Zephyr QX-100 delivery arrangement",
+        "attribution": {
+          "source_role": "user",
+          "source_speaker": "Ada Marlow"
+        },
+        "discourse": {
+          "commitment": "asserted",
+          "disposition": "active"
+        },
+        "epistemic": {
+          "basis": "self_attested"
+        },
+        "polarity": "negated",
+        "support": [
+          {
+            "quote": "I have not arranged delivery of my Zephyr QX-100.",
+            "item_id": "turn-1111"
+          }
+        ],
+        "discourse_frame": [
+          {
+            "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account. I have not arranged delivery of my Zephyr QX-100.",
+            "item_id": "turn-1111"
+          }
+        ],
+        "relations": [],
+        "destination": {
+          "slug": "memory/zephyr-qx-100"
+        },
+        "page": "memory/zephyr-qx-100",
+        "origin": "user",
+        "evidence": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account. I have not arranged delivery of my Zephyr QX-100."
+      }
+    ],
+    "held": [
+      {
+        "candidate_id": "cand_956e76f599315eff1570bb48",
+        "reason_code": "discourse_uncertain",
+        "reason": "the source report explicitly lacks confirmation or verification; preserve that uncertainty in readable prose, independently of attribution"
+      }
+    ]
+  },
+  "repaired": {
+    "candidates": [
+      {
+        "candidate_id": "cand_11e99ed79b7905c69f8ed803",
+        "kind": "claim",
+        "text": "Ada Marlow has not arranged delivery of her Zephyr QX-100.",
+        "subject": "Zephyr QX-100 delivery arrangement",
+        "attribution": {
+          "source_role": "user",
+          "source_speaker": "Ada Marlow"
+        },
+        "discourse": {
+          "commitment": "asserted",
+          "disposition": "active"
+        },
+        "epistemic": {
+          "basis": "self_attested"
+        },
+        "polarity": "negated",
+        "support": [
+          {
+            "quote": "I have not arranged delivery of my Zephyr QX-100.",
+            "item_id": "turn-1111"
+          }
+        ],
+        "discourse_frame": [
+          {
+            "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account. I have not arranged delivery of my Zephyr QX-100.",
+            "item_id": "turn-1111"
+          }
+        ],
+        "relations": [],
+        "destination": {
+          "slug": "memory/zephyr-qx-100"
+        },
+        "page": "memory/zephyr-qx-100",
+        "origin": "user",
+        "evidence": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account. I have not arranged delivery of my Zephyr QX-100."
+      }
+    ],
+    "held": [
+      {
+        "candidate_id": "cand_62ab9819fdac8a4b7bdc9a95",
+        "reason_code": "discourse_uncertain",
+        "reason": "the source report explicitly lacks confirmation or verification; preserve that uncertainty in readable prose, independently of attribution"
+      }
+    ]
+  }
+}

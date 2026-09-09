@@ -1,0 +1,63 @@
+{
+  "runtimeCommit": "b26c5b8b0386aff8be171593b51299f9c703d64b",
+  "compiledSnapshot": "tmp/core-v65",
+  "purpose": "Read-only replay of published trial drafts through the frozen coverage-role floor; no provider calls.",
+  "results": [
+    {
+      "traceRow": 150,
+      "text": "Ada Marlow утверждает, что гарантия Zephyr QX-100 не покрывает треснувшую опорную пластину; эта запись об исключении не отвечает на вопрос о том, покрывается ли ремонтом приводного вала, и не утверждает, что весь договор хранит молчание.",
+      "support": "Title: Zephyr QX-100\nL7: - Ada Marlow asserts that the Zephyr QX-100 warranty does not cover a cracked support plate; this exclusion record does not answer whether drive-shaft repair is covered, and it does not assert that the entire contract is silent.\nMemory qualification: {\"kind\":\"claim\",\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"commitment\":\"asserted\",\"disposition\":\"active\",\"polarity\":\"negated\",\"display_labels\":{\"kind\":\"утверждение\",\"commitment\":\"заявлено\",\"disposition\":\"активная запись\"}}",
+      "deterministicFloorAdmitted": true,
+      "retainedProse": "Ada Marlow asserts that the Zephyr QX-100 warranty does not cover a cracked support plate; this exclusion record does not answer whether drive-shaft repair is covered, and it does not assert that the entire contract is silent."
+    },
+    {
+      "traceRow": 158,
+      "text": "Ada Marlow утверждает, что гарантия Zephyr QX-100 не покрывает треснувшую опорную пластину; эта запись об исключении не отвечает на вопрос о том, покрывается ли ремонтом приводного вала, и не утверждает, что весь договор не содержит соответствующего положения.",
+      "support": "Title: Zephyr QX-100\nL7: - Ada Marlow asserts that the Zephyr QX-100 warranty does not cover a cracked support plate; this exclusion record does not answer whether drive-shaft repair is covered, and it does not assert that the entire contract is silent.\nMemory qualification: {\"kind\":\"claim\",\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"commitment\":\"asserted\",\"disposition\":\"active\",\"polarity\":\"negated\",\"display_labels\":{\"kind\":\"утверждение\",\"commitment\":\"заявлено\",\"disposition\":\"активная запись\"}}",
+      "deterministicFloorAdmitted": true,
+      "retainedProse": "Ada Marlow asserts that the Zephyr QX-100 warranty does not cover a cracked support plate; this exclusion record does not answer whether drive-shaft repair is covered, and it does not assert that the entire contract is silent."
+    },
+    {
+      "traceRow": 166,
+      "text": "Ada Marlow утверждает, что гарантия Zephyr QX-100 не покрывает треснувшую опорную пластину; эта запись об исключении не отвечает на вопрос о том, покрывается ли ремонтом приводного вала, и не утверждает, что весь договор умалчивает об этом.",
+      "support": "Title: Zephyr QX-100\nL7: - Ada Marlow asserts that the Zephyr QX-100 warranty does not cover a cracked support plate; this exclusion record does not answer whether drive-shaft repair is covered, and it does not assert that the entire contract is silent.\nMemory qualification: {\"kind\":\"claim\",\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"commitment\":\"asserted\",\"disposition\":\"active\",\"polarity\":\"negated\",\"display_labels\":{\"kind\":\"утверждение\",\"commitment\":\"заявлено\",\"disposition\":\"активная запись\"}}",
+      "deterministicFloorAdmitted": true,
+      "retainedProse": "Ada Marlow asserts that the Zephyr QX-100 warranty does not cover a cracked support plate; this exclusion record does not answer whether drive-shaft repair is covered, and it does not assert that the entire contract is silent."
+    },
+    {
+      "traceRow": 174,
+      "text": "Ada Marlow утверждает, что гарантия Zephyr QX-100 не покрывает треснувшую опорную пластину; эта запись об исключении не отвечает на вопрос о том, покрывается ли ремонтом приводного вала, и не утверждает, что весь договор хранит молчание по этому вопросу.",
+      "support": "Title: Zephyr QX-100\nL7: - Ada Marlow asserts that the Zephyr QX-100 warranty does not cover a cracked support plate; this exclusion record does not answer whether drive-shaft repair is covered, and it does not assert that the entire contract is silent.\nMemory qualification: {\"kind\":\"claim\",\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"commitment\":\"asserted\",\"disposition\":\"active\",\"polarity\":\"negated\",\"display_labels\":{\"kind\":\"утверждение\",\"commitment\":\"заявлено\",\"disposition\":\"активная запись\"}}",
+      "deterministicFloorAdmitted": true,
+      "retainedProse": "Ada Marlow asserts that the Zephyr QX-100 warranty does not cover a cracked support plate; this exclusion record does not answer whether drive-shaft repair is covered, and it does not assert that the entire contract is silent."
+    },
+    {
+      "traceRow": 440,
+      "text": "Ada Marlow утверждает, что гарантия Zephyr QX-100 не покрывает треснувшую опорную пластину; эта запись об исключении не отвечает на вопрос о том, покрывается ли ремонтом приводного вала, и не утверждает, что весь договор хранит молчание по этому вопросу.",
+      "support": "Title: Zephyr QX-100\nL7: - Ada Marlow asserts that the Zephyr QX-100 warranty excludes coverage for a cracked support plate; this exclusion record does not answer whether drive-shaft repair is covered, and it does not assert that the entire contract is silent.\nMemory qualification: {\"kind\":\"claim\",\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"commitment\":\"asserted\",\"disposition\":\"active\",\"polarity\":\"negated\",\"display_labels\":{\"kind\":\"утверждение\",\"commitment\":\"заявлено\",\"disposition\":\"активная запись\"}}",
+      "deterministicFloorAdmitted": true,
+      "retainedProse": "Ada Marlow asserts that the Zephyr QX-100 warranty excludes coverage for a cracked support plate; this exclusion record does not answer whether drive-shaft repair is covered, and it does not assert that the entire contract is silent."
+    },
+    {
+      "traceRow": 448,
+      "text": "Ada Marlow утверждает, что гарантия Zephyr QX-100 исключает покрытие треснувшей опорной пластины; эта запись об исключении не отвечает на вопрос о том, покрывается ли ремонтом приводного вала, и не утверждает, что весь договор ничего не предусматривает по этому вопросу.",
+      "support": "Title: Zephyr QX-100\nL7: - Ada Marlow asserts that the Zephyr QX-100 warranty excludes coverage for a cracked support plate; this exclusion record does not answer whether drive-shaft repair is covered, and it does not assert that the entire contract is silent.\nMemory qualification: {\"kind\":\"claim\",\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"commitment\":\"asserted\",\"disposition\":\"active\",\"polarity\":\"negated\",\"display_labels\":{\"kind\":\"утверждение\",\"commitment\":\"заявлено\",\"disposition\":\"активная запись\"}}",
+      "deterministicFloorAdmitted": true,
+      "retainedProse": "Ada Marlow asserts that the Zephyr QX-100 warranty excludes coverage for a cracked support plate; this exclusion record does not answer whether drive-shaft repair is covered, and it does not assert that the entire contract is silent."
+    },
+    {
+      "traceRow": 456,
+      "text": "Ada Marlow утверждает, что гарантия Zephyr QX-100 не покрывает треснувшую опорную пластину; эта запись об исключении не отвечает на вопрос о том, покрывается ли ремонтом приводного вала, и не утверждает, что весь договор ничего не предусматривает по этому вопросу.",
+      "support": "Title: Zephyr QX-100\nL7: - Ada Marlow asserts that the Zephyr QX-100 warranty excludes coverage for a cracked support plate; this exclusion record does not answer whether drive-shaft repair is covered, and it does not assert that the entire contract is silent.\nMemory qualification: {\"kind\":\"claim\",\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"commitment\":\"asserted\",\"disposition\":\"active\",\"polarity\":\"negated\",\"display_labels\":{\"kind\":\"утверждение\",\"commitment\":\"заявлено\",\"disposition\":\"активная запись\"}}",
+      "deterministicFloorAdmitted": true,
+      "retainedProse": "Ada Marlow asserts that the Zephyr QX-100 warranty excludes coverage for a cracked support plate; this exclusion record does not answer whether drive-shaft repair is covered, and it does not assert that the entire contract is silent."
+    },
+    {
+      "traceRow": 464,
+      "text": "Ada Marlow утверждает, что гарантия Zephyr QX-100 не покрывает треснувшую опорную пластину; эта запись об исключении не отвечает на вопрос о том, покрывается ли ремонтом приводного вала, и не утверждает, что весь договор хранит молчание.",
+      "support": "Title: Zephyr QX-100\nL7: - Ada Marlow asserts that the Zephyr QX-100 warranty excludes coverage for a cracked support plate; this exclusion record does not answer whether drive-shaft repair is covered, and it does not assert that the entire contract is silent.\nMemory qualification: {\"kind\":\"claim\",\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"commitment\":\"asserted\",\"disposition\":\"active\",\"polarity\":\"negated\",\"display_labels\":{\"kind\":\"утверждение\",\"commitment\":\"заявлено\",\"disposition\":\"активная запись\"}}",
+      "deterministicFloorAdmitted": true,
+      "retainedProse": "Ada Marlow asserts that the Zephyr QX-100 warranty excludes coverage for a cracked support plate; this exclusion record does not answer whether drive-shaft repair is covered, and it does not assert that the entire contract is silent."
+    }
+  ]
+}
