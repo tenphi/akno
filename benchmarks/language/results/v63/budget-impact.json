@@ -1,0 +1,99 @@
+{
+  "comparison": "Descriptive observations of the same exposed query matrix across revisions. Usage receipts are per query and may aggregate multiple block-verification calls; receipt count is not provider call count. Runtime, retained content and verification coverage differ; both trials declare the same role ceilings shown below. This does not isolate a causal latency or quality effect.",
+  "probes": [
+    {
+      "probe": "selected",
+      "previous": {
+        "queries": 48,
+        "producedAnswers": 46,
+        "declaredOutputTokenLimits": {
+          "answer": 2400,
+          "retention": 2400
+        },
+        "generation": {
+          "queriesWithUsageReceipt": 48,
+          "knownOutputTokenReceipts": 48,
+          "outputTokens": 16207,
+          "medianLatencyMs": 5012,
+          "p95LatencyMs": 6713
+        },
+        "verification": {
+          "queriesWithUsageReceipt": 47,
+          "knownOutputTokenReceipts": 47,
+          "outputTokens": 33870,
+          "medianLatencyMs": 7579,
+          "p95LatencyMs": 18347
+        }
+      },
+      "current": {
+        "queries": 48,
+        "producedAnswers": 36,
+        "declaredOutputTokenLimits": {
+          "answer": 2400,
+          "retention": 2400
+        },
+        "generation": {
+          "queriesWithUsageReceipt": 40,
+          "knownOutputTokenReceipts": 40,
+          "outputTokens": 12391,
+          "medianLatencyMs": 4675,
+          "p95LatencyMs": 6221
+        },
+        "verification": {
+          "queriesWithUsageReceipt": 36,
+          "knownOutputTokenReceipts": 36,
+          "outputTokens": 22484,
+          "medianLatencyMs": 6569,
+          "p95LatencyMs": 8270
+        }
+      }
+    },
+    {
+      "probe": "built-reliability",
+      "previous": {
+        "queries": 32,
+        "producedAnswers": 30,
+        "declaredOutputTokenLimits": {
+          "answer": 2400,
+          "retention": 2400
+        },
+        "generation": {
+          "queriesWithUsageReceipt": 32,
+          "knownOutputTokenReceipts": 32,
+          "outputTokens": 9316,
+          "medianLatencyMs": 4525,
+          "p95LatencyMs": 6648
+        },
+        "verification": {
+          "queriesWithUsageReceipt": 31,
+          "knownOutputTokenReceipts": 31,
+          "outputTokens": 17773,
+          "medianLatencyMs": 6604,
+          "p95LatencyMs": 9695
+        }
+      },
+      "current": {
+        "queries": 32,
+        "producedAnswers": 28,
+        "declaredOutputTokenLimits": {
+          "answer": 2400,
+          "retention": 2400
+        },
+        "generation": {
+          "queriesWithUsageReceipt": 32,
+          "knownOutputTokenReceipts": 32,
+          "outputTokens": 8609,
+          "medianLatencyMs": 4053,
+          "p95LatencyMs": 8029
+        },
+        "verification": {
+          "queriesWithUsageReceipt": 28,
+          "knownOutputTokenReceipts": 28,
+          "outputTokens": 15984,
+          "medianLatencyMs": 5555,
+          "p95LatencyMs": 6894
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "artifact": "packages/core/dist/ops/answer.js",
+  "label": "Ada Marlow",
+  "results": [
+    {
+      "id": "q2",
+      "supported": false
+    },
+    {
+      "id": "q4",
+      "supported": false
+    },
+    {
+      "id": "q6",
+      "supported": false
+    },
+    {
+      "id": "q8",
+      "supported": false
+    },
+    {
+      "id": "bounded-positive",
+      "supported": true
+    }
+  ]
+}
