@@ -37,8 +37,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v40';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v29';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v41';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v30';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -158,6 +158,8 @@ Keep both clauses in the same readable candidate with their shared verification 
 narrator's contrast into what the inner speaker said, or turn a clarification of what was discussed into
 a broader restriction on the underlying document. Use source_speaker for the outer narrator and chain
 only for the actual inner reporters; do not repeat the outer narrator in that chain.
+A cross-language restatement can clarify the referent of an earlier term. Preserve the clarified shared
+referent; do not invent alternative components or services merely from different source wordings.
 
 ${QUALIFICATION_CONTRACT}
 ${PROPOSITION_SCOPE_CONTRACT}
@@ -250,6 +252,11 @@ ${QUALIFICATION_CONTRACT}
 Candidates may paraphrase English, Russian, or mixed-language sources into English. Verify cross-language entailment against exact original spans: preserve polarity, speaker and nested attribution, modality, disposition, relations, and time. A fluent translation is not evidence. Ordinary inflection, synonymy and equivalent component descriptions can preserve
 meaning. Compare propositions in their complete discourse context; do not reject wording merely because
 an unrelated reading is theoretically possible. Reject a selected unsupported meaning or action role.
+A possessive identifying the example a person proposed discussing can express discourse association,
+without claiming they authored or invented it. Distinguish that contextual reading from an explicit
+unsupported creation claim. The proposal still does not establish that discussion actually occurred.
+Source-explicit cross-language clarification controls a term's referent; different wordings do not by
+themselves establish different components, services or unresolved alternatives.
 Replacing a component for a device does not mean replacing the device. Listing competing explanations
 with "and" preserves alternatives when both remain unestablished and no explanation is selected.
 You independently verify proposed retained memories against one complete untrusted

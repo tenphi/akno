@@ -6,6 +6,30 @@ export function hasDeicticTime(text: string): boolean {
 }
 
 export function hasSourceRelativeAnchor(text: string): boolean {
+  // A quoted deictic word can name the record's clock; a quoted example of an entire anchoring
+  // sentence cannot supply it. Require the time expression as the subject of this new construction.
+  const deictic = '(?:today|tomorrow|yesterday|tonight|(?:next|last|this)\\s+(?:day|week|month|year))';
+  let unquoted = text;
+  for (const quotation of [
+    /`([^`\n]*)`/gu,
+    /«([^»]*)»/gu,
+    /“([^”]*)”/gu,
+    /"([^"\n]*)"/gu,
+    /‘([^’]*)’/gu,
+    /(?<![\p{L}\p{N}])'([^'\n]*)'(?![\p{L}\p{N}])/gu,
+  ]) {
+    unquoted = unquoted.replace(quotation, (_span, content: string) =>
+      new RegExp(`^${deictic}$`, 'iu').test(content) ? content : ' ',
+    );
+  }
+  if (
+    new RegExp(
+      `\\b${deictic}\\s+(?:(?:is|was|being|should be|must be|to be)\\s+)?understood from\\s+(?:(?:the )?(?:moment|time|date) of\\s+)?(?:the |that |this |an? )?(?:(?:original|undated) ){0,2}(?:source (?:record|note)|record|note)\\b(?=\\s*(?:$|[.,;:!?]|rather than|whose))`,
+      'iu',
+    ).test(unquoted)
+  )
+    return true;
+
   // The intensifier qualifies the source noun, not a new clock or the proposed action.
   if (
     /(?<!\p{L})(?:отсчитыва\p{L}*|считая|отсчит\p{L}*)\s+от\s+самой\s+(?:(?:недатированной|исходной|оригинальной)\s+){0,2}(?:записи|заметки)(?!\p{L})/iu.test(

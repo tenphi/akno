@@ -1,4 +1,5 @@
 import { personalNegativeActionsSupported } from '../memory/personal-negative-actions.ts';
+import { reportingRolesSupported } from '../memory/reporting-roles.ts';
 import { coverageRolesSupported } from '../memory/coverage-roles.ts';
 import { retentionSourceFrames } from '../memory/retention-source-frame.ts';
 import { causeNonselectionAgencySupported, proposalAgencySupported } from '../memory/action-agency.ts';
@@ -59,8 +60,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v52';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v35';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v53';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v36';
 
 function answerDraftSchema(
   evidenceId: z.ZodType<string>,
@@ -1431,7 +1432,7 @@ function genericReporterLanguageSupported(
   ])
     prose = prose.replace(quotation, exempt);
 
-  return !hasBoundReporter(prose, foreignRole);
+  return !hasBoundReporter(prose, foreignRole, true);
 }
 
 function attributedReportsSupported(answerText: string, sources: AnswerContextItem[]): boolean {
@@ -1459,11 +1460,21 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
   return reportLines.every((line) => {
     if (line.memory?.status !== 'qualified') return false;
     const speaker = line.memory.source_speaker?.trim();
+    if (
+      line.memory.basis === 'source_report' &&
+      speaker &&
+      !reportingRolesSupported(answerText, line.text, speaker)
+    )
+      return false;
     const sourceLabel = genericAssistantSpeaker(line.memory.source_role, speaker)
       ? '(?:assistant|ассистент(?:а|ом|у)?)'
       : speaker?.normalize('NFKC').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     if (line.memory.basis === 'source_report' && !sourceLabel && !attributionVerb) return false;
-    if (line.memory.basis === 'source_report' && sourceLabel && !hasBoundReporter(answerText, sourceLabel))
+    if (
+      line.memory.basis === 'source_report' &&
+      sourceLabel &&
+      !hasBoundReporter(answerText, sourceLabel, genericAssistantSpeaker(line.memory.source_role, speaker))
+    )
       return false;
     // Some retained records spell the assistant role into source_speaker. It is a translatable
     // role label, while an actual named speaker must still occur in its original spelling.
@@ -1474,8 +1485,22 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
 }
 
 /** The source must occupy a reporting role, not merely occur near somebody else's report. */
-function hasBoundReporter(text: string, label: string): boolean {
+function hasBoundReporter(text: string, label: string, genericRole = false): boolean {
   const source = `(?<![\\p{L}\\p{N}])${label}(?![\\p{L}\\p{N}])`;
+  // A visible passive report label governs the following record. Negated prose, quotations and
+  // an assistant performing some other action cannot supply that reporting role.
+  const unquoted = text
+    .normalize('NFKC')
+    .replace(/«[^»]*»|“[^”]*”|"[^"\n]*"|`[^`\n]*`|‘[^’]*’|(?<![\p{L}\p{N}])'[^'\n]*'(?![\p{L}\p{N}])/gu, ' ');
+  if (
+    genericRole &&
+    new RegExp(`^(?:${label})$`, 'iu').test('ассистентом') &&
+    new RegExp(
+      `(?:^|[\n.!?;:]|\\*\\*)\\s*(?:(?:предварительно|предположительно)\\s+)?(?:сообщено|изложено)\\s+ассистентом(?![\\p{L}])\\s*(?:\\*\\*)?\\s*(?=[:·])`,
+      'iu',
+    ).test(unquoted)
+  )
+    return true;
   const modifiers =
     '(?:(?:tentatively|preliminarily|unconfirmedly|unverifiedly|reportedly|only|merely|also|explicitly|without verification|предварительно|предположительно|непроверенно|неподтвержд[её]нно|только|лишь)(?:,?\\s+(?:and\\s+|и\\s+)?)){0,3}';
   const predicate =

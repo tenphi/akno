@@ -67,7 +67,7 @@ describe('complete single-record rendering', () => {
     ).toBeUndefined();
     expect(
       answerRecordRendering(
-        [{ ...evidence, lines: [{ ...evidence.lines[0]!, text: 'x'.repeat(401) }] }],
+        [{ ...evidence, lines: [{ ...evidence.lines[0]!, text: 'x'.repeat(601) }] }],
         frames,
         'en',
       ),
@@ -88,6 +88,15 @@ describe('complete single-record rendering', () => {
         'en',
       ),
     ).toBeUndefined();
+  });
+
+  it('counts visible status labels in the fixed expanded record boundary', () => {
+    if (evidence.type !== 'page') throw new Error('fixture must be a page');
+    for (const size of [400, 405, 600, 601]) {
+      const text = '**Reported by Ada Marlow:** '.padEnd(size, 'x');
+      const item = { ...evidence, lines: [{ ...evidence.lines[0]!, text: '- ' + text }] };
+      expect(answerRecordRendering([item], frames, 'en')?.text).toBe(size <= 600 ? text : undefined);
+    }
   });
 
   it('canonicalizes only the list marker and boundary whitespace before every downstream check', () => {

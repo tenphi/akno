@@ -140,7 +140,10 @@ when a required selected counterpart has no answer counterpart (answer_anchor nu
 negative relations require concrete differences in detail and the corresponding semantic mismatch.
 For an incidental category not selected or asserted in this block, use not_selected and answer_anchor
 null; source_anchor may be null only if no applicable source content exists. A sentence/anchor is not
-an indivisible proposition: independent neighboring details need not appear. Every cited record must
+an indivisible proposition: independent neighboring details need not appear. Complete-record rendering
+requires the entire RETAINED record, not every proposition in the private frame. If the retained record
+identifies a person's question without retaining their separate recording act, do not require that act
+or label its absence an omitted actor. The selected question owner must still be preserved. Every cited record must
 contribute at least one selected category; all three cannot be not_selected.
 
 Do not mark a named proposer not_selected when describing that proposal. An outer reporter is not its

@@ -26,6 +26,27 @@ describe('bounded covered-repair role preservation', () => {
   });
 
   it.each([
+    'Запись не определяет, покрывается ли ремонтом двигатель вентилятора.',
+    'Запись не устанавливает, покрывается ли ремонтом насос.',
+    'Неизвестно, покрывается ли ремонтом устройство.',
+  ])('holds a repair-as-instrument inversion in one unresolved coverage clause: %s', (text) => {
+    expect(coverageRolesSupported(text, 'Whether motor repair is covered remains unknown.')).toBe(false);
+    expect(coverageRolesSupported(text, 'Motor repair is covered. A repair covers the device.')).toBe(true);
+  });
+
+  it.each([
+    'Запись не определяет результат. Покрывается ли ремонтом ущерб?',
+    'Неизвестно; покрывается ли ремонтом ущерб?',
+    'Запись не определяет результат, а покрывается ли ремонтом ущерб?',
+    'В примере сказано: «Неизвестно, покрывается ли ремонтом устройство».',
+    "В примере сказано: 'Неизвестно, покрывается ли ремонтом устройство'.",
+    'В примере сказано: ‘Неизвестно, покрывается ли ремонтом устройство’.',
+    'Запись не определяет, покрывается ли гарантией ремонт двигателя.',
+  ])('does not borrow an uncertainty predicate across clauses: %s', (text) => {
+    expect(coverageRolesSupported(text, 'Whether motor repair is covered remains unknown.')).toBe(true);
+  });
+
+  it.each([
     'The warranty covers damage to the housing.',
     'The warranty covers the device. A repair is discussed separately.',
     'Motor repair is covered. A second repair covers the first repair.',

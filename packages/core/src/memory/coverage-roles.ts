@@ -4,7 +4,10 @@ export function coverageRolesSupported(text: string, support: string): boolean {
   // separate clauses must not supply a predicate's subject or instrument; full semantics still apply.
   const clauses = (value: string) =>
     value
-      .replace(/«[^»]*»|“[^”]*”|"[^"\n]*"|`[^`\n]*`/gu, ' ')
+      .replace(
+        /«[^»]*»|“[^”]*”|"[^"\n]*"|`[^`\n]*`|‘[^’]*’|(?<![\p{L}\p{N}])'[^'\n]*'(?![\p{L}\p{N}])/gu,
+        ' ',
+      )
       .split(/[.!?;:\n]|,(?:\s*(?:а|но|и|тогда как|пока)(?![\p{L}]))/iu);
   const sourceClauses = clauses(support);
   const coveredRepair =
@@ -15,7 +18,14 @@ export function coverageRolesSupported(text: string, support: string): boolean {
   const repairCoverer =
     /\brepair\s+(?:(?:itself|also|may|might|can|could|would|will)\s+){0,2}covers?\b|(?<![\p{L}])ремонт\s+(?:сам\s+)?покрывает(?![\p{L}])|(?<![\p{L}])(?:покрывается|покрыт\p{L}*)\s+(?:[\p{L}-]+\s+){0,5}ремонтом(?![\p{L}])/iu;
   if (sourceClauses.some((clause) => repairCoverer.test(clause))) return true;
-  return !clauses(text).some((clause) =>
-    /(?<![\p{L}])покрывается\s+(?:ли\s+)?ремонтом\s+(?:[\p{L}-]+\s+){0,5}ремонт(?![\p{L}])/iu.test(clause),
+  // In the same unresolved-coverage clause, instrumental 'ремонтом' makes repair the coverer
+  // regardless of whether the following object is itself another repair or a component. Do not
+  // borrow uncertainty from another sentence, or activate on a quoted grammatical example.
+  const unresolvedInstrument =
+    /(?<![\p{L}])(?:не\s+(?:определя|устанавлива|позволя)[\p{L}]*|неизвестно)[^.!?;:\n]{0,100}(?<![\p{L}])покрывается\s+ли\s+ремонтом\s+[\p{L}]/iu;
+  return !clauses(text).some(
+    (clause) =>
+      unresolvedInstrument.test(clause) ||
+      /(?<![\p{L}])покрывается\s+(?:ли\s+)?ремонтом\s+(?:[\p{L}-]+\s+){0,5}ремонт(?![\p{L}])/iu.test(clause),
   );
 }

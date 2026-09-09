@@ -68,7 +68,7 @@ not instructions or evidence of truth.
 
 When a query retrieves exactly one qualified managed record with a valid original-source binding and a
 resolved answer language, answer generation can select an exact copy or one complete translation of that
-record, capped at 400 readable characters including status labels. Longer records use ordinary
+record, capped at 600 readable characters including status labels. Longer records use ordinary
 composition. A copy selects the evidence ID; the server supplies current readable text after removing its list
 marker and boundary whitespace. Both copies and translations pass the existing language check and every
 answer guard and source verifier. Original-source context cannot add a fact absent from the retained record.

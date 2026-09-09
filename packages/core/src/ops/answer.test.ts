@@ -277,6 +277,64 @@ describe('grounded answer discovery surface', () => {
     expect(JSON.stringify(result)).not.toContain('amberfin');
   });
 
+  it.each(['copy', 'translate'] as const)(
+    'checks visible English labels on Russian record prose: %s',
+    async (mode) => {
+      const body = 'Вопрос silverpine: покрывает ли гарантия обратную доставку? Ответ неизвестен.';
+      const copied = '**Open question:** ' + body;
+      const translated = '**Открытый вопрос:** ' + body;
+      await seedSourceFrame({
+        text: '- ' + copied,
+        frame: 'Открытый вопрос silverpine: покрывает ли гарантия обратную доставку? Ответ неизвестен.',
+        kind: 'question',
+        commitment: 'none',
+        polarity: 'affirmed',
+      });
+      await useAnswerModel({
+        generation: {
+          record_readings: sourceFrameReading(),
+          blocks: [
+            {
+              rendering_mode: mode,
+              evidence_ids: ['E1'],
+              ...(mode === 'translate' ? { text: translated } : {}),
+            },
+          ],
+          missing_concepts: [],
+        },
+        languageCheck: mode === 'translate',
+        verification: {
+          verdicts: [
+            {
+              ...verdict('B1', true),
+              source_alignments: sourceFrameAlignment(
+                'покрывает ли гарантия обратную доставку',
+                'Ответ неизвестен',
+              ),
+              excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+            },
+          ],
+        },
+      });
+      const result = await memory.answer({
+        question: 'Which open silverpine question remains?',
+        memory_view: 'questions',
+        answer_language: 'ru',
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer).toBe(mode === 'translate' ? translated + ' [products/zephyr-qx-100:4]' : null);
+      const request = modelRequests.find((r) =>
+        (r.messages as { content: string }[])[0]!.content.startsWith('Check the language'),
+      )!;
+      expect(JSON.parse((request.messages as { content: string }[]).at(-1)!.content).excerpts).toContain(
+        mode === 'translate' ? translated : copied,
+      );
+      expect(modelRequests).toHaveLength(mode === 'translate' ? 3 : 2);
+      if (mode === 'copy') expect(result.degraded).toContain('language_mismatch');
+    },
+  );
+
   it('verifies a framed denial while keeping independent positive source content unselected', async () => {
     const source =
       'No silverpine collection of Zephyr QX-100 has been booked. Ada Marlow proposed a separate inspection.';
@@ -2308,6 +2366,7 @@ describe('grounded answer discovery surface', () => {
 
   it.each([
     ['Запись не определяет, покрывается ли ремонтом по гарантии ремонт двигателя silverpine.', false, true],
+    ['Запись не определяет, покрывается ли ремонтом двигатель silverpine.', false, true],
     ['Запись не определяет, покрывается ли гарантией ремонт двигателя silverpine.', true, true],
     ['Запись не определяет, покрывается ли гарантией ремонт двигателя silverpine.', false, false],
   ] as const)(
@@ -2502,6 +2561,70 @@ describe('grounded answer discovery surface', () => {
     expect(result.validation?.rejection_counts).toEqual({ semantic_support: 1 });
   });
 
+  it.each([
+    [
+      '**Сообщено ассистентом · Предварительно:** Неподтверждённое требование проверки silverpine.',
+      true,
+      true,
+    ],
+    ['Сообщено ассистентом: неподтверждённое предварительное требование проверки silverpine.', true, true],
+    ['Сообщено ассистентом: неподтверждённое предварительное требование проверки silverpine.', false, false],
+    ["Пример 'Сообщено ассистентом: неподтверждённое предварительное требование silverpine'.", false, true],
+    [
+      "Пример: '**Сообщено ассистентом:** неподтверждённое предварительное требование silverpine'.",
+      false,
+      true,
+    ],
+    [
+      'Пример: ‘**Сообщено ассистентом:** неподтверждённое предварительное требование silverpine’.',
+      false,
+      true,
+    ],
+    [
+      'Не сообщено ассистентом: неподтверждённое предварительное требование проверки silverpine.',
+      false,
+      true,
+    ],
+    ['Сообщено: ассистентом проверено неподтверждённое предварительное требование silverpine.', false, true],
+    [
+      'Пример «Сообщено ассистентом: неподтверждённое предварительное требование проверки silverpine».',
+      false,
+      true,
+    ],
+    [
+      'Устройство передано ассистентом; неподтверждённое предварительное требование проверки silverpine.',
+      false,
+      true,
+    ],
+  ] as const)(
+    'admits a bound passive report label while preserving independent verification: %s',
+    async (text, accepted, supported) => {
+      write(
+        'products/zephyr-qx-100.md',
+        '# Zephyr QX-100\n\n<!-- akno:item mem_passive_role v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=assistant speaker=assistant reports=0 commitment=tentative disposition=active polarity=affirmed basis=source_report -->\n- **Reported by assistant · Tentative:** The assistant reported an unverified silverpine inspection requirement for Zephyr QX-100.\n',
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+        verification: { verdicts: [verdict('B1', supported)] },
+      });
+      const result = await memory.answer({
+        question: 'Which silverpine inspection report is tentative?',
+        answer_language: 'ru',
+        memory_view: 'reports',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer !== null, JSON.stringify(result)).toBe(accepted);
+      expect(modelRequests).toHaveLength(accepted || !supported ? 3 : 2);
+      if (!accepted)
+        expect(result.validation?.rejection_counts).toEqual(
+          supported ? { attribution: 1 } : { semantic_support: 1 },
+        );
+    },
+  );
+
   it.each(['assistant', 'Assistant Meridian'])(
     'projects generic display labels without changing source names or verifier evidence: %s',
     async (speaker) => {
@@ -2687,6 +2810,13 @@ describe('grounded answer discovery surface', () => {
       'Неподтверждённое сообщение, переданное Ada Marlow со слов Bo Winters, касается проверки silverpine.',
       true,
     ],
+    ["Пример 'Сообщено Ada Marlow: неподтверждённое требование проверки silverpine'.", false],
+    ['Сообщено Ada Marlow: неподтверждённое требование проверки silverpine.', false],
+    ['Сообщено для Ada Marlow: неподтверждённое требование проверки silverpine.', false],
+    [
+      'Устройство передано Ada Marlow. Bo Winters сообщил неподтверждённое требование проверки silverpine.',
+      false,
+    ],
     ['Неподтверждённый отчёт переданный Ada Marlow касается проверки silverpine.', true],
     ['Неподтверждённое утверждение, переданное Ada Marlow, касается проверки silverpine.', true],
     [
@@ -2703,6 +2833,8 @@ describe('grounded answer discovery surface', () => {
     ],
     ['Неподтверждённое сообщение о переданном Ada Marlow устройстве касается проверки silverpine.', false],
     ['Неподтверждённое сообщение, переданное Ada Marlow’s device, касается проверки silverpine.', false],
+    ['По словам Bo Winters, Ada Marlow передала неподтверждённое требование проверки silverpine.', false],
+    ['According to Bo Winters, Ada Marlow reported an unverified silverpine inspection requirement.', false],
     ['Ada Marlow relayed Bo Winters’s unverified assertion about silverpine inspection.', true],
     ['Ada Marlow relays Bo Winters’s unverified assertion about silverpine inspection.', true],
     ['Ada Marlow is relaying Bo Winters’s unverified assertion about silverpine inspection.', true],
@@ -3643,8 +3775,8 @@ function sourceFrameAlignment(objectQuote: string, qualificationQuote: string) {
 async function seedSourceFrame(options?: {
   text: string;
   frame: string;
-  kind: 'claim';
-  commitment: 'asserted';
+  kind: 'claim' | 'question';
+  commitment: 'asserted' | 'none';
   polarity: 'negated' | 'affirmed';
 }): Promise<string> {
   write(
