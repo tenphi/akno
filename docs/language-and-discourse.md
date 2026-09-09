@@ -188,9 +188,16 @@ semantic verdict. No eligible evidence is an abstention, without a fabricated `a
 For a record with an exact bound original frame, answer generation first emits a private interpretation
 of that record. It is discarded before independent verification and never becomes answer evidence.
 The existing verifier separately compares action actors, objects/mechanisms and qualifications using
-exact source/answer substring anchors. Missing, malformed or negative comparisons withhold the block
-alongside the existing semantic and retained-excerpt selection checks. These fallible comparisons focus
-attention; they do not establish exhaustive semantic correctness.
+server-assigned references into exact original and answer text. References are bound to the owning
+record/block and its content; models select IDs rather than recopying quotes. Ordered sentence/clause
+segments preserve every byte and are grouped to at most 24 references per text. They locate text, not
+semantic propositions: complete original context resolves explicit clarification, and the complete
+answer block determines whether an actor or qualification is missing. No generated audit becomes evidence.
+Missing, foreign, stale, malformed or negative comparisons withhold the block alongside the existing
+semantic and retained-excerpt selection checks. These fallible comparisons do not establish exhaustive
+semantic correctness. Generated answers keep each selected proposition's coupled material clauses together,
+preserving already-target-language content closely and translating the same meaning otherwise; independent
+neighboring private details need not be included.
 
 The answer role's default output ceiling is 2,400 tokens to accommodate these audits. Ordinary generation
 still requests 1,024; framed generation reserves additional space, and verification can emit a longer

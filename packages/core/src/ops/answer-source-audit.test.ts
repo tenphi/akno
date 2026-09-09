@@ -1,151 +1,162 @@
 import { describe, expect, it } from 'vitest';
-import { answerAlignmentsSupported, answerReadingSchema } from './answer-source-audit.ts';
+import {
+  answerAlignmentsSupported,
+  answerAlignmentSchema,
+  answerAuditAnchors,
+  answerReadingSchema,
+  type AnswerAuditCoordinates,
+} from './answer-source-audit.ts';
 
 const frame = 'Ada Marlow proposed inspecting a loosely inserted connector; the proposal is unaccepted.';
 const answer = 'Ada Marlow предложила проверить неплотно вставленный разъём; предложение не принято.';
-const frames = new Map([['E1', frame]]);
+const coordinates: AnswerAuditCoordinates = {
+  sources: new Map([['E1', [{ anchor_id: 'source-actor', text: frame }]]]),
+  answer: [{ anchor_id: 'answer-actor', text: answer }],
+};
+const part = () => ({
+  source_anchor: 'source-actor',
+  answer_anchor: 'answer-actor',
+  relation: 'preserved',
+  detail: 'The source-supported selected meaning is preserved in the whole block.',
+});
 const audit = () => [
   {
     evidence_id: 'E1',
-    actor: {
-      source_quote: 'Ada Marlow proposed',
-      answer_quote: 'Ada Marlow предложила',
-      relation: 'preserved',
-      detail: 'The named proposer remains the proposer.',
-    },
-    object_and_mechanism: {
-      source_quote: 'loosely inserted connector',
-      answer_quote: 'неплотно вставленный разъём',
-      relation: 'preserved',
-      detail: 'Insertion and loose seating remain explicit.',
-    },
-    qualification: {
-      source_quote: 'the proposal is unaccepted',
-      answer_quote: 'предложение не принято',
-      relation: 'preserved',
-      detail: 'The proposal remains unaccepted.',
-    },
+    source_context: 'Ada proposed checking a loosely inserted connector; the proposal remains unaccepted.',
+    actor: part(),
+    object_and_mechanism: part(),
+    qualification: part(),
   },
 ];
 
+describe('immutable source and answer coordinates', () => {
+  it.each([
+    'Ada Marlow reports a defect. She has not confirmed it.\n',
+    'Условия неизвестны; вопрос остаётся открытым. 🦊\n…\nA clarification follows.',
+    'x; '.repeat(300),
+    '🦊'.repeat(400),
+    ' \n\t',
+  ])('preserves every byte while bounding sentence/clause references', (text) => {
+    const anchors = answerAuditAnchors(text, 'E1');
+    expect(anchors.map((a) => a.text).join('')).toBe(text);
+    expect(anchors.length).toBeGreaterThan(0);
+    expect(anchors.length).toBeLessThanOrEqual(24);
+    expect(new Set(anchors.map((a) => a.anchor_id)).size).toBe(anchors.length);
+    expect(anchors).toEqual(answerAuditAnchors(text, 'E1'));
+  });
+
+  it('keeps mixed-sentence clauses separately locatable without deciding their meaning', () => {
+    expect(answerAuditAnchors('A clause; another clause.', 'E1').map((a) => a.text)).toEqual([
+      'A clause;',
+      ' another clause.',
+    ]);
+  });
+
+  it('binds coordinates to the exact content and owning record or block', () => {
+    const initial = answerAuditAnchors(frame, 'E1').map((a) => a.anchor_id);
+    for (const ids of [
+      answerAuditAnchors(frame + ' ', 'E1'),
+      answerAuditAnchors(frame, 'E2'),
+      answerAuditAnchors(frame, 'B1'),
+      answerAuditAnchors(frame, 'B2'),
+    ])
+      expect(ids.every((a) => !initial.includes(a.anchor_id))).toBe(true);
+  });
+});
+
 describe('private original-source answer audits', () => {
-  it('accepts exact anchors for equivalent translated roles, mechanism and qualification', () => {
-    expect(answerAlignmentsSupported(audit(), frames, answer)).toBe(true);
+  it('accepts immutable coordinates with equivalent translated roles and qualification', () => {
+    expect(answerAlignmentsSupported(audit(), coordinates)).toBe(true);
   });
 
   it.each(['actor', 'object_and_mechanism', 'qualification'] as const)(
-    'holds a changed %s even if the other comparisons are preserved',
+    'holds each negative relation in %s independently of other positive categories',
     (category) => {
-      const entries = audit();
-      entries[0]![category].relation = 'changed';
-      expect(answerAlignmentsSupported(entries, frames, answer)).toBe(false);
+      for (const relation of ['generalized', 'changed', 'omitted']) {
+        const entries = audit();
+        const entry = {
+          ...entries[0]![category],
+          relation,
+          answer_anchor: relation === 'omitted' ? null : 'answer-actor',
+        };
+        const value = [{ ...entries[0], [category]: entry }];
+        expect(answerAlignmentSchema(coordinates).safeParse(value).success).toBe(true);
+        expect(answerAlignmentsSupported(value, coordinates)).toBe(false);
+      }
     },
   );
 
-  it('holds omitted action agency instead of borrowing an outer reporter', () => {
+  it.each(['source_anchor', 'answer_anchor'] as const)('rejects a foreign or unknown %s', (field) => {
     const entries = audit();
-    const withoutActor =
-      'По словам Ada Marlow, было предложено проверить неплотно вставленный разъём; предложение не принято.';
-    expect(
-      answerAlignmentsSupported(
-        [
-          {
-            ...entries[0],
-            actor: {
-              source_quote: 'Ada Marlow proposed',
-              answer_quote: null,
-              relation: 'omitted',
-              detail: 'The answer names a reporter but no proposer.',
-            },
-          },
-        ],
-        frames,
-        withoutActor,
-      ),
-    ).toBe(false);
+    entries[0]!.actor[field] = 'foreign';
+    expect(answerAlignmentsSupported(entries, coordinates)).toBe(false);
   });
 
-  it('holds a material entailed generalization of the mechanism', () => {
+  it('rejects a known source reference borrowed from another cited record', () => {
+    const combined: AnswerAuditCoordinates = {
+      ...coordinates,
+      sources: new Map([
+        ...coordinates.sources,
+        ['E2', [{ anchor_id: 'other-source', text: 'Bo Winters proposed a different action.' }]],
+      ]),
+    };
     const entries = audit();
-    entries[0]!.object_and_mechanism.relation = 'generalized';
-    entries[0]!.object_and_mechanism.answer_quote = 'неправильно установленный разъём';
-    expect(
-      answerAlignmentsSupported(
-        entries,
-        frames,
-        answer.replace('неплотно вставленный', 'неправильно установленный'),
-      ),
-    ).toBe(false);
+    entries[0]!.actor.source_anchor = 'other-source';
+    const second = {
+      ...entries[0],
+      evidence_id: 'E2',
+      actor: { ...part(), source_anchor: 'other-source' },
+      object_and_mechanism: { ...part(), source_anchor: 'other-source' },
+      qualification: { ...part(), source_anchor: 'other-source' },
+    };
+    expect(answerAlignmentSchema(combined).safeParse([...entries, second]).success).toBe(true);
+    expect(answerAlignmentsSupported([...entries, second], combined)).toBe(false);
   });
 
-  it('rejects a faithful quote absent from the actual answer', () => {
-    expect(
-      answerAlignmentsSupported(
-        audit(),
-        frames,
-        answer.replace('неплотно вставленный', 'неправильно установленный'),
-      ),
-    ).toBe(false);
-  });
-
-  it('rejects quotes from another record or generation reading', () => {
-    const entries = audit();
-    entries[0]!.actor.source_quote = 'Bo Winters proposed';
-    expect(answerAlignmentsSupported(entries, frames, answer)).toBe(false);
-  });
-
-  it.each(['missing', 'duplicate', 'foreign'] as const)('rejects %s alignment coordinates', (kind) => {
+  it.each(['missing', 'duplicate', 'foreign'] as const)('rejects %s evidence coverage', (kind) => {
     const entries = audit();
     if (kind === 'missing') entries.pop();
     if (kind === 'duplicate') entries.push(entries[0]!);
     if (kind === 'foreign') entries[0]!.evidence_id = 'E2';
-    expect(answerAlignmentsSupported(entries, frames, answer)).toBe(false);
+    expect(answerAlignmentsSupported(entries, coordinates)).toBe(false);
   });
 
-  it('allows an incidental category to remain unselected beside a selected comparison', () => {
-    const entry = {
-      source_quote: 'An incidental invented detail.',
-      answer_quote: null,
+  it('requires complete bounded source context before comparison', () => {
+    for (const source_context of [undefined, '', 'x'.repeat(241)])
+      expect(answerAlignmentsSupported([{ ...audit()[0], source_context }], coordinates)).toBe(false);
+  });
+
+  it.each(['preserved', 'generalized', 'changed', 'omitted', 'not_selected'] as const)(
+    'enforces reference/null consistency for %s',
+    (relation) => {
+      for (const source_anchor of [null, 'source-actor'])
+        for (const answer_anchor of [null, 'answer-actor']) {
+          const expected =
+            relation === 'not_selected'
+              ? answer_anchor === null
+              : source_anchor !== null &&
+                (relation === 'omitted' ? answer_anchor === null : answer_anchor !== null);
+          const entries = [{ ...audit()[0], actor: { ...part(), relation, source_anchor, answer_anchor } }];
+          expect(answerAlignmentSchema(coordinates).safeParse(entries).success).toBe(expected);
+        }
+    },
+  );
+
+  it('allows unselected incidental content without accepting an entirely unselected citation', () => {
+    const incidental = {
+      source_anchor: 'source-actor',
+      answer_anchor: null,
       relation: 'not_selected',
-      detail: 'The retained proposition does not select this detail.',
+      detail: 'An independent source detail is not selected.',
     };
-    const entries = [{ ...audit()[0], actor: entry }];
-    const incidental = new Map([['E1', frame + ' An incidental invented detail.']]);
-    expect(answerAlignmentsSupported(entries, incidental, answer)).toBe(true);
+    expect(answerAlignmentsSupported([{ ...audit()[0], actor: incidental }], coordinates)).toBe(true);
     expect(
       answerAlignmentsSupported(
-        [{ ...entries[0], actor: { ...entry, answer_quote: 'An incidental invented detail.' } }],
-        incidental,
-        answer + ' An incidental invented detail.',
-      ),
-    ).toBe(false);
-    expect(
-      answerAlignmentsSupported(
-        [{ evidence_id: 'E1', actor: entry, object_and_mechanism: entry, qualification: entry }],
-        incidental,
-        answer,
+        [{ ...audit()[0], actor: incidental, object_and_mechanism: incidental, qualification: incidental }],
+        coordinates,
       ),
     ).toBe(false);
   });
-
-  it('requires a selected source and answer anchor for a preserved comparison', () => {
-    const entries = audit();
-    expect(
-      answerAlignmentsSupported(
-        [{ ...entries[0], actor: { ...entries[0]!.actor, source_quote: null } }],
-        frames,
-        answer,
-      ),
-    ).toBe(false);
-    expect(
-      answerAlignmentsSupported(
-        [{ ...entries[0], actor: { ...entries[0]!.actor, answer_quote: null } }],
-        frames,
-        answer,
-      ),
-    ).toBe(false);
-  });
-
   const readings = [
     { evidence_id: 'E1', selected_meaning: 'A proposed inspection.', clarification_or_ambiguity: null },
   ];

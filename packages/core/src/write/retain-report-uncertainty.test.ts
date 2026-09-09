@@ -7,6 +7,8 @@ const report =
   'According to Ada Marlow, Bo Winters says the Zephyr QX-100 terms permit a regulator inspection.';
 const source = `${report} Ada Marlow has not read the service terms and has no independent confirmation of the report.`;
 const coordinated = 'Ada Marlow has not read the service terms or independently confirmed the report.';
+const continued =
+  'Ada Marlow has not examined the contract or confirmed this assumption, and this remains a possible contract condition rather than an established requirement.';
 const record = (qualification: string, original = source) => ({
   kind: 'claim',
   subject: 'Zephyr QX-100',
@@ -26,6 +28,35 @@ const record = (qualification: string, original = source) => ({
 describe('shared negation in readable report uncertainty', () => {
   it.each([
     [coordinated, true],
+    [
+      'The AI assistant has not examined the contract or confirmed this assumption, and this is a possible contract condition rather than an established requirement.',
+      true,
+    ],
+    [
+      'The assistant has not read the terms or verified the report, and this remains a possible contractual term.',
+      true,
+    ],
+    [
+      'Ada Marlow has not reviewed the agreement or confirmed this assumption, so it remains a possible interpretation.',
+      true,
+    ],
+    [
+      'The assistant has not examined the contract or confirmed this assumption, and Bo Winters confirmed it.',
+      false,
+    ],
+    [
+      'The assistant has not examined the contract or confirmed this assumption, and this is a confirmed contract condition.',
+      false,
+    ],
+    [
+      'The assistant has not examined the contract or confirmed this assumption, but this is an established requirement.',
+      false,
+    ],
+    [
+      'The assistant has not examined the contract or confirmed this assumption, and this is a possible condition, but she later confirmed it.',
+      false,
+    ],
+
     [
       'Ada Marlow has not read the service terms or independently confirmed the report, so it is not a condition she has verified.',
       true,
@@ -85,20 +116,25 @@ describe('shared negation in readable report uncertainty', () => {
     ).toHaveLength(1);
   });
 
-  it.each([
-    [false, true],
-    [false, false],
-    [true, true],
-    [true, false],
-  ])(
+  it.each(
+    [coordinated, continued].flatMap(
+      (qualification) =>
+        [
+          [false, true, qualification],
+          [false, false, qualification],
+          [true, true, qualification],
+          [true, false, qualification],
+        ] as const,
+    ),
+  )(
     'still requires semantics with at most one repair (repair=%s supported=%s)',
-    async (repair, supported) => {
+    async (repair, supported, qualification) => {
       const chat = vi.fn(async (messages: { content: string }[]) => {
         const call = chat.mock.calls.length;
         if (call === 1)
           return {
             ok: true,
-            value: JSON.stringify({ candidates: [record(repair ? '' : coordinated)] }),
+            value: JSON.stringify({ candidates: [record(repair ? '' : qualification)] }),
             latencyMs: 11,
           };
         const input = JSON.parse(messages.at(-1)!.content);
@@ -106,12 +142,12 @@ describe('shared negation in readable report uncertainty', () => {
           expect(input.validation_issues[0].reason).toContain('explicitly lacks confirmation');
           return {
             ok: true,
-            value: JSON.stringify({ repairs: [{ candidate_index: 0, candidate: record(coordinated) }] }),
+            value: JSON.stringify({ repairs: [{ candidate_index: 0, candidate: record(qualification) }] }),
             latencyMs: 11,
           };
         }
         expect(input.source.text).toBe(source);
-        expect(input.candidates[0].text).toContain(coordinated);
+        expect(input.candidates[0].text).toContain(qualification);
         return {
           ok: true,
           value: JSON.stringify({

@@ -987,8 +987,11 @@ function hasReportUncertainty(text: string): boolean {
   const confirmation = String.raw`(?:independently\s+)?(?:confirmed|verified)\s+(?:(?:the|this|that|any)\s+)?(?:report|message|claim|account|assumption)`;
   const finalPredicate = String.raw`(?:independently\s+)?(?:confirmed|verified)\s+(?:it|this|that)(?:\s+as\s+(?:a|the|this|that)\s+(?:condition|term|requirement))?`;
   const negativeExplanation = String.raw`,\s+(?:so|therefore)\s+it\s+(?:is|was)\s+not\s+(?:a|the)\s+(?:condition|term|requirement)\s+${actor}\s+(?:has|have|had)\s+(?:independently\s+)?(?:verified|confirmed)`;
+  // A following deictic uncertainty clause can close this same negative list without turning
+  // its second predicate positive. Consume only that qualification, never an arbitrary new clause.
+  const possibleContinuation = String.raw`,\s+(?:and|so)\s+(?:this|it)\s+(?:is|remains)\s+(?:(?:still|only)\s+)?a\s+possible\s+(?:(?:contract|contractual)\s+)?(?:condition|term|requirement|interpretation|assumption)(?:\s+rather\s+than\s+an?\s+established\s+(?:condition|term|requirement|interpretation|assumption))?`;
   return new RegExp(
-    String.raw`(?<![\p{L}])${actor}(?:,\s*${name},)?\s+(?:has|have|had)\s+not\s+(?:yet\s+)?${examination}(?:\s+or\s+${confirmation}|,\s+${confirmation},\s+or\s+${finalPredicate})(?:${negativeExplanation})?(?=\s*(?:$|[.!?;\n]))`,
+    String.raw`(?<![\p{L}])${actor}(?:,\s*${name},)?\s+(?:has|have|had)\s+not\s+(?:yet\s+)?${examination}(?:\s+or\s+${confirmation}|,\s+${confirmation},\s+or\s+${finalPredicate})(?:${negativeExplanation}|${possibleContinuation})?(?=\s*(?:$|[.!?;\n]))`,
     'u',
   ).test(text);
 }

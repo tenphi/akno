@@ -13,6 +13,12 @@ describe('proposal action agency across retention and answers', () => {
     ['According to Ada Marlow, the tentative proposal was to review the exceptions.', false],
     ['According to Ada Marlow, it was proposed to review the exceptions.', false],
     [
+      'According to Ada Marlow, the proposed action was to review the exceptions. Ada Marlow has not adopted a plan or arranged a meeting.',
+      false,
+    ],
+    ['According to Ada Marlow, the suggested action is to review the exceptions.', false],
+    ['Ada Marlow proposed a review; the proposed action was to review the exceptions.', true],
+    [
       'According to the proposed discussion attributed to Ada Marlow, the example concerns inspection.',
       false,
     ],
@@ -23,6 +29,9 @@ describe('proposal action agency across retention and answers', () => {
     ['The review was proposed by her.', true],
     ["Ada Marlow's proposal was to review the exceptions.", true],
     ['Her tentative proposal was to review the exceptions.', true],
+    ['Her proposed action was to review the exceptions.', true],
+    ['Her tentative suggested action is to review the exceptions.', true],
+    ["Ada Marlow's proposed action was to review the exceptions.", true],
     ['Ada Marlow предложила проверить исключения.', true],
     ['Её предложение заключалось в проверке исключений.', true],
   ] as const)('keeps reporting separate from proposing: %s', (text, accepted) => {
@@ -32,7 +41,25 @@ describe('proposal action agency across retention and answers', () => {
   it('does not turn a report source into an otherwise unspecified proposer', () => {
     const source = 'According to Ada Marlow, the proposal was to review the exceptions.';
     expect(proposalAgencySupported(source, source)).toBe(true);
+    const unspecified = 'According to Ada Marlow, the proposed action was to review the exceptions.';
+    expect(proposalAgencySupported(unspecified, unspecified)).toBe(true);
   });
+
+  it.each(['His', 'My', 'Our', 'Their'])(
+    'keeps the explicit %s possessive role for semantic identity checking',
+    (owner) => {
+      const source = `${owner} proposal was to review the exceptions.`;
+      expect(proposalAgencySupported(`${owner} suggested action was to review the exceptions.`, source)).toBe(
+        true,
+      );
+      expect(
+        proposalAgencySupported(
+          'According to Ada Marlow, the proposed action was to review the exceptions.',
+          source,
+        ),
+      ).toBe(false);
+    },
+  );
 
   it('defers independently anonymous source proposals to full semantic pairing', () => {
     expect(

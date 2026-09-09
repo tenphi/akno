@@ -14,14 +14,14 @@ export function proposalAgencySupported(text: string, support: string): boolean 
     'u',
   );
   const ownedProposal = new RegExp(
-    String.raw`(?<![\p{L}])(?:(?:${named})['’]s\s+(?:tentative\s+)?proposal|(?:[Hh]er|[Hh]is|[Mm]y|[Oo]ur|[Tt]heir)\s+(?:tentative\s+)?proposal|(?:[Ее][её]|[Ее]го|[Мм]о[её]|[Нн]аше|[Ии]х)\s+(?:предварительное\s+)?предложение|предложение\s+${named})(?![\p{L}])`,
+    String.raw`(?<![\p{L}])(?:(?:${named})['’]s\s+(?:tentative\s+)?(?:proposal|(?:proposed|suggested)\s+action)|(?:[Hh]er|[Hh]is|[Mm]y|[Oo]ur|[Tt]heir)\s+(?:tentative\s+)?(?:proposal|(?:proposed|suggested)\s+action)|(?:[Ее][её]|[Ее]го|[Мм]о[её]|[Нн]аше|[Ии]х)\s+(?:предварительное\s+)?предложение|предложение\s+${named})(?![\p{L}])`,
     'u',
   );
   const hasProposer = (value: string) =>
     active.test(value) || passiveAgent.test(value) || ownedProposal.test(value);
   if (!hasProposer(support)) return true;
   const unassignedDescription =
-    /\bproposal (?:is|was) to\b|\b(?:it|review|inspection|discussion) (?:is|was|has been|had been) (?:tentatively )?(?:proposed|suggested)\b|\b(?:proposed|suggested) (?:discussion|review|inspection|action) (?:(?:is|was) )?(?:(?:only|merely) )?attributed to\b|(?<![\p{L}])(?:было предложено|предлагалось|предложение (?:состояло|заключалось))(?=$|[^\p{L}])/iu;
+    /\b(?:proposal|(?:proposed|suggested) action) (?:is|was) to\b|\b(?:it|review|inspection|discussion) (?:is|was|has been|had been) (?:tentatively )?(?:proposed|suggested)\b|\b(?:proposed|suggested) (?:discussion|review|inspection|action) (?:(?:is|was) )?(?:(?:only|merely) )?attributed to\b|(?<![\p{L}])(?:было предложено|предлагалось|предложение (?:состояло|заключалось))(?=$|[^\p{L}])/iu;
   if (!unassignedDescription.test(text)) return true;
   // A separate anonymous proposal in the source may be the one being described. Matching this
   // shape only defers semantic pairing; it cannot certify the answer's action or omitted actor.

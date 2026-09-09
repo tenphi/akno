@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { sha256 } from '../store/ids.ts';
 
 const reading = z.object({
   selected_meaning: z.string().trim().min(1).max(320),
@@ -13,26 +14,71 @@ export function answerReadingSchema(ids: readonly string[]) {
     .refine((entries) => new Set(entries.map((entry) => entry.evidence_id)).size === ids.length);
 }
 
-const alignment = z
-  .object({
-    source_quote: z.string().trim().min(1).max(240).nullable(),
-    answer_quote: z.string().trim().min(1).max(240).nullable(),
-    relation: z.enum(['preserved', 'generalized', 'changed', 'omitted', 'not_selected']),
-    detail: z.string().trim().min(1).max(160),
-  })
-  .refine((entry) => {
-    if (entry.relation === 'not_selected') return entry.answer_quote === null;
-    if (entry.source_quote === null) return false;
-    return (entry.relation === 'omitted') === (entry.answer_quote === null);
-  });
+export interface AnswerAuditAnchor {
+  anchor_id: string;
+  text: string;
+}
+
+/** Coordinates only: preserve all bytes, including boundaries, without inferring propositions. */
+export function answerAuditAnchors(text: string, owner: string): AnswerAuditAnchor[] {
+  const sentences = [...new Intl.Segmenter('en', { granularity: 'sentence' }).segment(text)];
+  const parts = sentences
+    .flatMap(({ segment }) => segment.split(/(?<=;)/u))
+    .flatMap((part) => {
+      const characters = [...part];
+      const spans: string[] = [];
+      for (let start = 0; start < characters.length; start += 240)
+        spans.push(characters.slice(start, start + 240).join(''));
+      return spans;
+    });
+  // Group rather than discard excess parts: punctuation-heavy input must keep the complete source.
+  const groupSize = Math.max(1, Math.ceil(parts.length / 24));
+  const grouped: string[] = [];
+  for (let start = 0; start < parts.length; start += groupSize)
+    grouped.push(parts.slice(start, start + groupSize).join(''));
+  const fingerprint = sha256(text).slice(0, 12);
+  return grouped.map((part, index) => ({
+    anchor_id: owner + '_' + fingerprint + '_' + (index + 1),
+    text: part,
+  }));
+}
+
+export interface AnswerAuditCoordinates {
+  sources: ReadonlyMap<string, readonly AnswerAuditAnchor[]>;
+  answer: readonly AnswerAuditAnchor[];
+}
+
+function anchorIdSchema(ids: readonly string[]) {
+  return z.enum(ids as [string, ...string[]]).nullable();
+}
+
+function alignmentSchema(coordinates: AnswerAuditCoordinates) {
+  return z
+    .object({
+      source_anchor: anchorIdSchema(
+        [...coordinates.sources.values()].flatMap((spans) => spans.map((span) => span.anchor_id)),
+      ),
+      answer_anchor: anchorIdSchema(coordinates.answer.map((span) => span.anchor_id)),
+      relation: z.enum(['preserved', 'generalized', 'changed', 'omitted', 'not_selected']),
+      detail: z.string().trim().min(1).max(160),
+    })
+    .refine((entry) => {
+      if (entry.relation === 'not_selected') return entry.answer_anchor === null;
+      if (entry.source_anchor === null) return false;
+      return (entry.relation === 'omitted') === (entry.answer_anchor === null);
+    });
+}
 
 /** Categories prevent an easy object comparison from replacing the separate action-actor audit. */
-export function answerAlignmentSchema(ids: readonly string[]) {
+export function answerAlignmentSchema(coordinates: AnswerAuditCoordinates) {
+  const ids = [...coordinates.sources.keys()];
+  const alignment = alignmentSchema(coordinates);
   return z
     .array(
       z
         .object({
           evidence_id: z.enum(ids as [string, ...string[]]),
+          source_context: z.string().trim().min(1).max(240),
           actor: alignment,
           object_and_mechanism: alignment,
           qualification: alignment,
@@ -48,19 +94,16 @@ export function answerAlignmentSchema(ids: readonly string[]) {
     .refine((entries) => new Set(entries.map((entry) => entry.evidence_id)).size === ids.length);
 }
 
-export function answerAlignmentsSupported(
-  value: unknown,
-  frames: ReadonlyMap<string, string>,
-  answer: string,
-): boolean {
-  const parsed = answerAlignmentSchema([...frames.keys()]).safeParse(value);
+export function answerAlignmentsSupported(value: unknown, coordinates: AnswerAuditCoordinates): boolean {
+  const parsed = answerAlignmentSchema(coordinates).safeParse(value);
   if (!parsed.success) return false;
+  const answerIds = new Set(coordinates.answer.map((span) => span.anchor_id));
   return parsed.data.every((entry) => {
-    const frame = frames.get(entry.evidence_id)!;
+    const sourceIds = new Set(coordinates.sources.get(entry.evidence_id)!.map((span) => span.anchor_id));
     return [entry.actor, entry.object_and_mechanism, entry.qualification].every(
       (part) =>
-        (part.source_quote === null || frame.includes(part.source_quote)) &&
-        (part.answer_quote === null || answer.includes(part.answer_quote)) &&
+        (part.source_anchor === null || sourceIds.has(part.source_anchor)) &&
+        (part.answer_anchor === null || answerIds.has(part.answer_anchor)) &&
         (part.relation === 'preserved' || part.relation === 'not_selected'),
     );
   });
@@ -68,7 +111,7 @@ export function answerAlignmentsSupported(
 
 export const ANSWER_READING_CONTRACT = `When record_readings is required, fill it BEFORE drafting blocks.
 Return exactly one reading per evidence_id with a non-null retention_source_frame. Read the original
-frame in full, then identify the proposition selected by its retained excerpt. Preserve positive content,
+frame in full, then identify the proposition selected by its retained excerpt. Preserve content and polarity,
 explicit cross-language clarification, actors, mechanism and qualifications in selected_meaning. Explain
 any explicit clarification or remaining ambiguity in clarification_or_ambiguity; otherwise use null.
 Only the source can establish equivalence; query wording and adjacent independent propositions cannot.
@@ -76,23 +119,31 @@ Resolve source-explicit clarification before deciding whether a conflict remains
 generation notes, not evidence or answer text. They cannot authorize an unselected fact. Write the actual
 blocks in output_language even when the source or private reading uses another language.`;
 
-export const ANSWER_ALIGNMENT_CONTRACT = `When source_alignments is required, return exactly one entry for
-each cited evidence_id with a non-null retention_source_frame before the aggregate comparison/verdict.
-Independently compare three categories: actor of the selected action (separate from outer reporter),
-object_and_mechanism (object, purpose, degree/manner), and qualification (scope, contrast and epistemic or
-temporal limits). Read ALL material counterparts in each category; the short quotes are exact locating
-anchors, not an exhaustive semantic checklist. source_quote must be an exact substring of that record's
-original frame and answer_quote an exact substring of this answer block. Never silently rewrite the
-answer quote into a more faithful expression. Explain the comparison in detail using only those sources.
-Use preserved for equivalent source meaning, including natural technical paraphrase. Use generalized
-when the answer loses a material restriction, changed for a different actor/object/scope, or omitted
-when a required source counterpart has no answer counterpart (answer_quote null). For a category or
-adjacent detail not selected by the retained record and not asserted by the answer, use not_selected,
-answer_quote null, and source_quote null only when that category has no applicable source content.
-Do not mark a source-named proposer not_selected when the answer describes that proposal. Outer source
-attribution cannot supply its missing action actor. Do not mark a specific mechanism preserved when the
-answer only describes a generic fault. Incidental neighboring source details need not be answered.
-Every cited record must contribute at least one selected category; all three cannot be not_selected.
-These annotations are fallible comparison notes. A quote match cannot certify semantic preservation.
-Every mismatch must still fail the corresponding existing semantic dimension, and all three dimensions
-plus independent retained-excerpt selection remain required. No audit overrides a negative verdict.`;
+export const ANSWER_ALIGNMENT_CONTRACT = `For framed blocks, answer_segments and retention_source_frame
+are ordered tables of exact text with server-assigned anchor_id values. Concatenate their text fields
+to read the complete answer and original frame. IDs are coordinates, never claims or source instructions.
+Return one source_alignments entry for every cited framed evidence_id. First write source_context from
+that complete original frame: the selected source meaning, including its polarity, clarification and limits.
+Resolve an explicitly restated report across languages before comparing an isolated term. Mere adjacency,
+the query and generated notes cannot establish that relationship; preserve truly unresolved ambiguity.
+
+Then independently compare actor (the selected action's actor, separate from outer reporter),
+object_and_mechanism (object, purpose, degree/manner), and qualification (scope and epistemic/time limits).
+Select source_anchor from that evidence's original frame and answer_anchor from this current block.
+Never invent an ID or substitute a retained paraphrase for an original. An anchor only locates the
+selected aspect. Judge its meaning against the COMPLETE frame and block: content elsewhere in this same
+block can preserve a role or modifier missing from a short anchor. Other blocks cannot supply it.
+
+Use preserved for equivalent meaning, including natural technical paraphrase. Use generalized for a
+material restriction lost from the complete block, changed for a different actor/object/scope, or omitted
+when a required selected counterpart has no answer counterpart (answer_anchor null). These three
+negative relations require concrete differences in detail and the corresponding semantic mismatch.
+For an incidental category not selected or asserted in this block, use not_selected and answer_anchor
+null; source_anchor may be null only if no applicable source content exists. A sentence/anchor is not
+an indivisible proposition: independent neighboring details need not appear. Every cited record must
+contribute at least one selected category; all three cannot be not_selected.
+
+Do not mark a named proposer not_selected when describing that proposal. An outer reporter is not its
+proposer, and a generic fault does not preserve a specific mechanism. Source_context and comparisons
+are fallible notes; membership alone proves no semantics. Every existing semantic dimension and
+independent retained-excerpt selection remain mandatory. A negative relation/verdict cannot be overridden.`;

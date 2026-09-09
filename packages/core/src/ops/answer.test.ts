@@ -61,6 +61,74 @@ afterEach(async () => {
 });
 
 describe('grounded answer discovery surface', () => {
+  it('verifies a framed denial while keeping independent positive source content unselected', async () => {
+    const source =
+      'No silverpine collection of Zephyr QX-100 has been booked. Ada Marlow proposed a separate inspection.';
+    const text = 'No silverpine collection of Zephyr QX-100 has been booked.';
+    await seedSourceFrame({
+      text: `- ${text}`,
+      frame: source,
+      kind: 'claim',
+      commitment: 'asserted',
+      polarity: 'negated',
+    });
+    await useAnswerModel({
+      generation: {
+        record_readings: [{ evidence_id: 'E1', selected_meaning: text, clarification_or_ambiguity: null }],
+        blocks: [{ text, evidence_ids: ['E1'] }],
+        missing_concepts: [],
+      },
+      verification: (request: Record<string, unknown>) => {
+        const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+        const block = payload.blocks[0];
+        expect(block.required_records[0]).toMatchObject({ kind: 'claim', polarity: 'negated' });
+        expect(
+          block.cited_evidence[0].retention_source_frame.map((a: { text: string }) => a.text).join(''),
+        ).toBe(source);
+        expect(block.answer_segments.map((a: { text: string }) => a.text).join('')).toBe(text);
+        const compared = {
+          source_anchor: block.cited_evidence[0].retention_source_frame[0].anchor_id,
+          answer_anchor: block.answer_segments[0].anchor_id,
+          relation: 'preserved',
+          detail: 'The collection booking denial is preserved.',
+        };
+        return {
+          verdicts: [
+            {
+              ...verdict('B1', true),
+              source_alignments: [
+                {
+                  evidence_id: 'E1',
+                  source_context:
+                    'Collection has not been booked; the independent inspection proposal is not selected.',
+                  actor: {
+                    source_anchor: null,
+                    answer_anchor: null,
+                    relation: 'not_selected',
+                    detail: 'The denial leaves the booking actor unspecified.',
+                  },
+                  object_and_mechanism: compared,
+                  qualification: compared,
+                },
+              ],
+              excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+            },
+          ],
+        };
+      },
+    });
+    const result = await memory.answer({
+      question: 'Has silverpine collection been booked?',
+      memory_view: 'factual',
+      expand: false,
+      graph: false,
+    });
+    expect(result.answer).toContain(text);
+    expect(result.answer).not.toContain('inspection');
+    expect(modelRequests).toHaveLength(2);
+    expect(JSON.stringify(result)).not.toContain('anchor_id');
+  });
+
   it.each([
     ['generation', 'truncated'],
     ['generation', 'trailing'],
@@ -220,7 +288,14 @@ describe('grounded answer discovery surface', () => {
       JSON.parse((request.messages as { content: string }[]).at(-1)!.content),
     );
     expect(payloads[0].evidence[0].retention_source_frame).toBe(frame);
-    expect(payloads[1].blocks[0].cited_evidence[0].retention_source_frame).toBe(frame);
+    expect(
+      payloads[1].blocks[0].cited_evidence[0].retention_source_frame
+        .map((span: { text: string }) => span.text)
+        .join(''),
+    ).toBe(frame);
+    expect(
+      payloads[1].blocks[0].answer_segments.map((span: { text: string }) => span.text).join(''),
+    ).toContain('The open silverpine question');
     expect(JSON.stringify(payloads[1])).not.toContain('Private invented reading');
     expect(result.budget_used.evidence_tokens).toBeGreaterThan(Math.ceil(frame.length / 4));
     expect(JSON.stringify(result)).not.toContain('amberfin');
@@ -3326,6 +3401,7 @@ function sourceFrameAlignment(objectQuote: string, qualificationQuote: string) {
   return [
     {
       evidence_id: 'E1',
+      source_context: 'The selected original question concerns return delivery, with an unknown answer.',
       actor: {
         source_quote: null,
         answer_quote: null,
@@ -3348,13 +3424,20 @@ function sourceFrameAlignment(objectQuote: string, qualificationQuote: string) {
   ];
 }
 
-async function seedSourceFrame(): Promise<string> {
+async function seedSourceFrame(options?: {
+  text: string;
+  frame: string;
+  kind: 'claim';
+  commitment: 'asserted';
+  polarity: 'negated';
+}): Promise<string> {
   write(
     'products/zephyr-qx-100.md',
-    '# Zephyr QX-100\n\n<!-- akno:item mem_frame v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=question subject=unresolved source-role=user reports=0 commitment=none disposition=active polarity=affirmed basis=self_attested -->\n- **Open question:** The open silverpine question is whether the warranty covers return delivery; its answer remains unknown.\n',
+    `# Zephyr QX-100\n\n<!-- akno:item mem_frame v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=${options?.kind ?? 'question'} subject=unresolved source-role=user reports=0 commitment=${options?.commitment ?? 'none'} disposition=active polarity=${options?.polarity ?? 'affirmed'} basis=self_attested -->\n${options?.text ?? '- **Open question:** The open silverpine question is whether the warranty covers return delivery; its answer remains unknown.'}\n`,
   );
   await memory.index({ verify: true });
   const frame =
+    options?.frame ??
     'Открытый вопрос silverpine: покрывает ли гарантия обратную доставку? Ответ неизвестен. An unrelated amberfin phrase is not part of the selected record.';
   const db = new Database(path.join(stateDir, 'akno.db'));
   try {
@@ -3387,6 +3470,46 @@ function verdict(
   };
 }
 
+/** Fixtures describe a locating fragment; the stub selects the server's immutable wire coordinate. */
+function testAnchorCoordinates(content: unknown, payload: Record<string, unknown>): unknown {
+  if (!content || typeof content !== 'object') return content;
+  const copy = structuredClone(content) as { verdicts?: Array<Record<string, unknown>> };
+  if (!Array.isArray(copy.verdicts)) return copy;
+  type Anchor = { anchor_id: string; text: string };
+  type Block = {
+    block_id: string;
+    answer_segments?: Anchor[];
+    cited_evidence: Array<{ evidence_id: string; retention_source_frame: Anchor[] | null }>;
+  };
+  const blocks = (payload.blocks ?? []) as Block[];
+  for (const entry of copy.verdicts ?? []) {
+    const block = blocks.find((b) => b.block_id === entry.block_id);
+    if (!block?.answer_segments || !Array.isArray(entry.source_alignments)) continue;
+    for (const alignment of entry.source_alignments) {
+      const source =
+        block.cited_evidence.find((e) => e.evidence_id === alignment.evidence_id)?.retention_source_frame ??
+        [];
+      for (const category of ['actor', 'object_and_mechanism', 'qualification']) {
+        const part = alignment[category];
+        if (!part || !('source_quote' in part)) continue;
+        part.source_anchor =
+          part.source_quote === null
+            ? null
+            : (source.find((a) => a.text.includes(part.source_quote))?.anchor_id ??
+              'unknown-source-reference');
+        part.answer_anchor =
+          part.answer_quote === null
+            ? null
+            : (block.answer_segments.find((a) => a.text.includes(part.answer_quote))?.anchor_id ??
+              'unknown-answer-reference');
+        delete part.source_quote;
+        delete part.answer_quote;
+      }
+    }
+  }
+  return copy;
+}
+
 async function useAnswerModel(script: {
   generation: unknown;
   verification: unknown;
@@ -3411,7 +3534,9 @@ async function useAnswerModel(script: {
         : verifying
           ? script.verification
           : script.generation;
-      const content = typeof configured === 'function' ? configured(body) : configured;
+      const scripted = typeof configured === 'function' ? configured(body) : configured;
+      const payload = JSON.parse((body.messages as { content: string }[]).at(-1)!.content);
+      const content = verifying ? testAnchorCoordinates(scripted, payload) : scripted;
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(
         JSON.stringify({
