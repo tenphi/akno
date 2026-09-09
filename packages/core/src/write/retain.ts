@@ -37,7 +37,7 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v43';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v44';
 export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v30';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
@@ -162,6 +162,10 @@ A cross-language restatement can clarify the referent of an earlier term. Preser
 referent; do not invent alternative components or services merely from different source wordings.
 Preserve explicit epistemic experiencers in the generated sentence: unknown to us is a group-relative
 limit, not unqualified unknownness. Keep the source's group reference without inventing its membership.
+Keep the exact epistemic action and its direction as well as its actor. A speaker who has not received
+confirmation is the recipient of potential evidence; that does not say the speaker has not performed
+confirmation herself. Preserve receiving, seeking, giving or independently checking evidence as the
+source states it. Do not simplify these distinct actions into the generic verb "confirm".
 
 ${QUALIFICATION_CONTRACT}
 ${PROPOSITION_SCOPE_CONTRACT}
@@ -191,6 +195,13 @@ Rules:
   the denied action merely to repeat product metadata. Do not invent a relational subject such as a
   person's arrangement or absence of action when the named person is the source-supported agent.
   A source-wide denial need not be narrowed.
+  A passive denial may instead name the affected person through an explicit possessive: "No collection
+  of my device has been booked" concerns the named possessor without naming whoever might book it.
+  In that case use the exact source-established person's name as the canonical subject, keep the passive
+  action and unresolved object in text, and suggest a page named for that person only if a supplied
+  folder permits creating it. A source-speaker label alone establishes neither possession nor agency.
+  Do not invent an action agent, product identity, relational subject or destination folder. The page
+  suggestion remains subject to the independent ownership decision; ambiguity may still require a hold.
   Leave absent arguments out of the sentence. Do not turn a formulation decision about unspecified
   arguments into an added claim about what the source or speaker did not specify; retain the authored
   denial itself, without explaining the extraction rule.

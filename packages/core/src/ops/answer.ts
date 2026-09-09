@@ -60,7 +60,7 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v55';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v56';
 export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v37';
 
 function answerDraftSchema(

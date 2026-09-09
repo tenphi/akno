@@ -115,6 +115,11 @@ frame in full, then identify the proposition selected by its retained excerpt. P
 explicit cross-language clarification, actors, mechanism and qualifications in selected_meaning. Explain
 any explicit clarification or remaining ambiguity in clarification_or_ambiguity; otherwise use null.
 Only the source can establish equivalence; query wording and adjacent independent propositions cannot.
+Keep selected_meaning local to this evidence_id's retained excerpt: a shared original frame does not
+merge separately retained propositions into one citable record. If a drafted clause uses a second
+record's selected meaning, include that record's evidence_id in the block. For example, a fictional
+promise and an actual proposal to discuss it can be separate records; describing just the promise
+may cite that record alone, while adding the proposing act requires the proposal record too.
 Resolve source-explicit clarification before deciding whether a conflict remains. Readings are private
 generation notes, not evidence or answer text. They cannot authorize an unselected fact. Write the actual
 blocks in output_language even when the source or private reading uses another language.`;

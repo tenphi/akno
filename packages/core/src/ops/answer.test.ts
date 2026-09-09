@@ -3486,6 +3486,22 @@ describe('grounded answer discovery surface', () => {
     ],
     ['Ada Marlow proposed reviewing the silverpine estimate next week relative to the original note.', false],
     [
+      'Ada Marlow предложила проверить смету silverpine на следующей неделе; «следующая неделя» отсчитывается от времени записи, а не от сегодняшнего дня или времени обработки, и точную календарную дату восстановить нельзя.',
+      true,
+    ],
+    [
+      'Ada Marlow предложила проверить смету silverpine на следующей неделе; «следующая неделя» отсчитывается от времени обработки, а календарную дату восстановить нельзя.',
+      false,
+    ],
+    [
+      'Ada Marlow предложила проверить смету silverpine на следующей неделе. Пример: «Следующая неделя отсчитывается от времени записи». Календарную дату восстановить нельзя.',
+      false,
+    ],
+    [
+      'Ada Marlow предложила проверить смету silverpine на следующей неделе; «следующая неделя» отсчитывается от времени записи.',
+      false,
+    ],
+    [
       'Ada Marlow предложила проверить смету silverpine на следующей неделе относительно исходной записи; календарную дату установить нельзя.',
       true,
     ],
@@ -3569,6 +3585,11 @@ describe('grounded answer discovery surface', () => {
       'Ada Marlow proposes reviewing the silverpine estimate next week, relative to the undated original note; the calendar date is unknown.',
       false,
       'Ada Marlow предложила изменить смету silverpine на следующей неделе относительно исходной записи; календарную дату установить нельзя.',
+    ],
+    [
+      'Ada Marlow proposes reviewing the silverpine estimate next week, relative to the undated original note; the calendar date is unknown.',
+      false,
+      'Ada Marlow предложила изменить смету silverpine на следующей неделе; «следующая неделя» отсчитывается от времени записи, а не от сегодняшнего дня или времени обработки, и точную календарную дату восстановить нельзя.',
     ],
   ] as const)(
     'keeps source-clock activation narrow and preserves semantic rejection: %s',

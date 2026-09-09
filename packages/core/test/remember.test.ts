@@ -21,6 +21,7 @@ interface StubCandidate {
   text: string;
   subject: string;
   kind: string;
+  polarity?: 'affirmed' | 'negated';
   page?: string;
   origin?: 'user' | 'assistant';
   evidence?: string | null;
@@ -825,6 +826,57 @@ describe('routing when the best-ranked page is not the best-judged one', () => {
 });
 
 describe('canonical destination qualification', () => {
+  it.each([
+    ['proposed', 'people/ada-marlow', true],
+    ['uncertain', 'people/ada-marlow', false],
+    ['proposed', undefined, false],
+  ] as const)(
+    'keeps a personal passive denial subject to ownership: %s with suggestion %s',
+    async (selection, page, written) => {
+      fs.mkdirSync(path.join(root, 'people'), { recursive: true });
+      fs.mkdirSync(path.join(root, 'equipment'), { recursive: true });
+      const productPath = path.join(root, 'equipment/zephyr-qx-100.md');
+      const productBefore = '# Zephyr QX-100\n\nEquipment service records.\n';
+      fs.writeFileSync(productPath, productBefore);
+      const text = "No collection of Ada Marlow's device has been booked.";
+      server.respondWith([
+        { text, subject: 'Ada Marlow', kind: 'claim', polarity: 'negated', ...(page ? { page } : {}) },
+      ]);
+      let calls = 0;
+      server.decideOwnershipWith((input) => {
+        calls += 1;
+        expect(input.memory).toMatchObject({ text, subject: 'Ada Marlow' });
+        expect(input.memory.text).not.toContain('Zephyr');
+        expect(input.proposed_page).toEqual(page ? { slug: page, title: 'Ada Marlow' } : null);
+        expect(input.allowed_selections.includes('proposed')).toBe(!!page);
+        return { selection };
+      });
+      const mem = await openMem({
+        models: {
+          embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
+          reranker: { id: null, enabled: false },
+          derive: { provider: 'stub', id: 'stub-derive' },
+          expansion: { provider: 'stub', id: 'stub-derive' },
+        },
+      });
+      try {
+        await mem.index({});
+        const result = await mem.remember({ text });
+        expect(calls, JSON.stringify(result)).toBe(1);
+        if (written) {
+          expect(result.wrote?.[0]).toMatchObject({ slug: page, action: 'created' });
+          expect(fs.readFileSync(path.join(root, `${page}.md`), 'utf8')).toContain(text);
+        } else {
+          expect(result.wrote).toBeUndefined();
+          expect(fs.existsSync(path.join(root, 'people/ada-marlow.md'))).toBe(false);
+        }
+        expect(fs.readFileSync(productPath, 'utf8')).toBe(productBefore);
+      } finally {
+        await mem.close();
+      }
+    },
+  );
+
   it('can select the owning page outside the extractor-suggested folder', async () => {
     fs.mkdirSync(path.join(root, 'people'), { recursive: true });
     fs.mkdirSync(path.join(root, 'equipment'), { recursive: true });

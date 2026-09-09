@@ -30,6 +30,34 @@ export function hasSourceRelativeAnchor(text: string): boolean {
   )
     return true;
 
+  const russianDeictic =
+    '(?:сегодня|завтра|вчера|(?:следующий|прошлый|этот)\\s+(?:день|месяц|год)|(?:следующая|прошлая|эта)\\s+неделя)';
+  const clockLabel = `(?:${deictic}|${russianDeictic})`;
+  // Only a quoted clock label can participate in this assertion. Mask other quotations with
+  // a separator that cannot splice an omitted negation/example into a live clock assertion.
+  const sourceTimeProse = text.replace(
+    /`[^`\n]*`|«[^»]*»|“[^”]*”|"[^"\n]*"|‘[^’]*’|(?<![\p{L}\p{N}])'[^'\n]*'(?![\p{L}\p{N}])/gu,
+    (span) => {
+      const content = span.slice(1, -1);
+      return new RegExp(`^${clockLabel}$`, 'iu').test(content) ? content : '⟦quotation⟧';
+    },
+  );
+  // The time belongs to the source record, not to a nearby device or processing event.
+  // A question, condition or correction cannot close this assertion. The one allowed comma
+  // contrast denies today's and processing clocks, optionally followed by a closed unknown date.
+  // Start a clause as well: an embedded label after "not", "allegedly" or an example is not asserted.
+  const sourceTimeEnd = '(?:$|[.;!])';
+  const unknownDate =
+    '(?:точн(?:ый|ую)\\s+)?(?:календарный\\s+(?:год|месяц|день)|календарную\\s+дату)\\s+восстановить\\s+нельзя';
+  const sourceTimeContrast = `,\\s+а\\s+не\\s+от\\s+сегодняшнего\\s+дня\\s+или\\s+(?:от\\s+)?(?:времени|момента)\\s+обработки(?:,\\s+и\\s+${unknownDate})?(?=\\s*${sourceTimeEnd})`;
+  if (
+    new RegExp(
+      `(?:^|[.;!])\\s*${clockLabel}\\s+(?:отсчитывается|считается)\\s+от\\s+времени\\s+(?:(?:той|этой|исходн(?:ой|ого)|оригинальн(?:ой|ого)|недатированн(?:ой|ого))\\s+){0,2}(?:записи|заметки|источника|разговора)(?=\\s*(?:${sourceTimeEnd}|${sourceTimeContrast}))`,
+      'iu',
+    ).test(sourceTimeProse)
+  )
+    return true;
+
   // The intensifier qualifies the source noun, not a new clock or the proposed action.
   if (
     /(?<!\p{L})(?:отсчитыва\p{L}*|считая|отсчит\p{L}*)\s+от\s+самой\s+(?:(?:недатированной|исходной|оригинальной)\s+){0,2}(?:записи|заметки)(?!\p{L})/iu.test(

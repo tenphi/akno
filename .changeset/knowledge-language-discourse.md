@@ -115,3 +115,9 @@ with a compact read-only index for admitted relation targets. Existing immutable
 full-source semantic obligations remain mandatory. A bounded Russian date phrase now preserves an
 unknown source clock; generation keeps explicit group-relative knowledge limits and source-established
 bilingual clarifications when selecting a report.
+
+Recognize a deictic label reckoned from the time of its source record, with bounded source nouns and
+quotation masking. Keep unknown-clock and complete semantic checks mandatory. Extraction preserves
+epistemic action roles and can suggest a source-established person's page for a passive personal denial
+without assigning an unspecified device or action agent. Ownership remains mandatory. Answer generation
+keeps each record's selected meaning local and cites every record whose proposition it uses.
