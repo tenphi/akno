@@ -17,6 +17,10 @@ export function semanticRecordScope(record: {
     scope.push(
       'The commitment qualifies the embedded scenario content. Neutral attribution of that content to its source is not itself hypothetical or a separate performed action.',
     );
+  if (record.commitment === 'tentative')
+    scope.push(
+      'Tentative qualifies the selected uncertain content. When the supplied source and candidate explicitly couple an asserted discussion or consideration act with competing preliminary or unsupported hypotheses, tentative qualifies those hypotheses, not whether that act occurred. The label does not establish the act or excuse changing its actor, predicate, alternatives, evidentiary limits or personal nonselection. Otherwise tentative qualifies the proposition normally.',
+    );
   if (record.disposition === 'active')
     scope.push(
       'Active denotes current record validity. It neither asserts ongoing activity nor requires the answer to verbalize this internal label.',

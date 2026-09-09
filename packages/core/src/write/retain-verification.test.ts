@@ -294,3 +294,104 @@ describe('structured outer recorder and generated inner reporter', () => {
     expect(result.held).toHaveLength(1);
   });
 });
+
+describe('record-local tentative scope in retention verification', () => {
+  const items = [
+    {
+      item_id: 'turn-1111',
+      role: 'user' as const,
+      speaker: 'Ada Marlow',
+      text: 'I, Ada Marlow, am discussing two competing preliminary hypotheses about the silverpine fault: a slipping drive belt or a jammed cooling fan.',
+    },
+    {
+      item_id: 'turn-2222',
+      role: 'user' as const,
+      speaker: 'Ada Marlow',
+      text: 'Neither hypothesis has supporting evidence, and I have not selected a cause.',
+    },
+  ];
+  const completeSource = items.map((item) => item.text).join('\n');
+  const record = {
+    kind: 'claim',
+    subject: 'silverpine',
+    text: 'Ada Marlow is discussing two competing preliminary hypotheses about the silverpine fault: a slipping drive belt or a jammed cooling fan; neither hypothesis has supporting evidence, and Ada Marlow has not selected a cause.',
+    attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+    discourse: { commitment: 'tentative', disposition: 'active' },
+    epistemic: { basis: 'self_attested' },
+    polarity: 'affirmed',
+    support: items.map((item) => ({ quote: item.text, item_id: item.item_id })),
+    discourse_frame: items.map((item) => ({ quote: item.text, item_id: item.item_id })),
+  };
+
+  it('keeps the asserted embedded-hypothesis tuple outside factual admission', () => {
+    const checked = cleanCandidateBatch(
+      [{ ...record, discourse: { commitment: 'asserted', disposition: 'active' } }],
+      { sourceItems: items, generated: true },
+    );
+    expect(checked.candidates).toEqual([]);
+    expect(checked.held[0]?.reason_code).toBe('noncanonical_without_context');
+  });
+
+  it.each(['pass', 'proposition_supported', 'action_arguments_preserved', 'qualification_scope_preserved'])(
+    'carries scoped label definitions without bypassing any source-verdict dimension: %s',
+    async (mode) => {
+      const chat = vi.fn(async (messages: { content: string }[]) => {
+        if (chat.mock.calls.length === 1)
+          return { ok: true, value: JSON.stringify({ candidates: [record] }), latencyMs: 11 };
+        const payload = JSON.parse(messages.at(-1)!.content);
+        expect(payload.source.items).toEqual(items);
+        expect(payload).not.toHaveProperty('repair_targets');
+        const verifyingRecord = payload.candidates[0];
+        expect(verifyingRecord.text).toBe(record.text);
+        expect(verifyingRecord.discourse).toEqual(record.discourse);
+        expect(verifyingRecord.record_scope.join(' ')).toContain(
+          'supplied source and candidate explicitly couple',
+        );
+        expect(verifyingRecord.record_scope.join(' ')).toContain(
+          'Otherwise tentative qualifies the proposition normally',
+        );
+        expect(verifyingRecord.frame_spans.map((span: { quote: string }) => span.quote)).toEqual(
+          items.map((item) => item.text),
+        );
+        return {
+          ok: true,
+          latencyMs: 22,
+          value: JSON.stringify({
+            verdicts: [
+              {
+                candidate_id: verifyingRecord.candidate_id,
+                span_audit: verifyingRecord.frame_spans.map((span: { frame_id: string }) => ({
+                  frame_id: span.frame_id,
+                  interpretation:
+                    'This span supplies part of the coupled preliminary hypotheses, their evidence limit and personal nonselection.',
+                  relationship: 'restatement',
+                })),
+                ...semanticAudit(
+                  mode !== 'proposition_supported',
+                  mode !== 'action_arguments_preserved',
+                  mode !== 'qualification_scope_preserved',
+                ),
+                proposition_supported: mode !== 'proposition_supported',
+                action_arguments_preserved: mode !== 'action_arguments_preserved',
+                qualification_scope_preserved: mode !== 'qualification_scope_preserved',
+                reason_code: null,
+              },
+            ],
+          }),
+        };
+      });
+      const model = {
+        available: true,
+        chat,
+        modelId: 'invented-scope-verifier',
+        reportInvalidResponse: vi.fn(),
+      } as unknown as ModelClient;
+      const result = await runRetain(completeSource, model, { sourceItems: items });
+      expect(chat).toHaveBeenCalledTimes(2);
+      expect(result.modelUsage.repair).toBeUndefined();
+      expect(result.candidates).toHaveLength(mode === 'pass' ? 1 : 0);
+      expect(JSON.stringify(result.candidates)).not.toContain('record_scope');
+      if (mode !== 'pass') expect(result.held[0]?.hold_stage).toBe('verification');
+    },
+  );
+});

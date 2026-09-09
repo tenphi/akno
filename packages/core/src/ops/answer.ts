@@ -61,8 +61,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v62';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v42';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v63';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v43';
 
 function answerDraftSchema(
   evidenceId: z.ZodType<string>,
@@ -204,6 +204,13 @@ A report_source_display_phrase may supply localized neutral wording for the alre
 source, including a translated attribution heading. It is presentation guidance, never independent
 evidence or text to prepend mechanically. Preserve the actual outer/inner roles from the selected record;
 the hint cannot supply missing source support, a recording act or an adjacent unselected proposition.
+A named_source_reference repeats a named source already present in that record's current readable text.
+When attribution_required is true, retain that identity in the block and copy exact_spelling verbatim;
+do not transliterate it or omit it. Preserve the source's role and every selected material predicate.
+Use the record's explicit action when selected, or neutral provenance such as "in NAME's fictional case"
+or "according to NAME" when that is all the record establishes. This hint cannot establish an action,
+replace an inner speaker, authorize a sibling fact or supply absent content. When attribution is optional,
+do not add it merely because the hint exists. Generic roles and ordinary component words remain translatable.
 Preserve actors of material embedded actions separately from these outer reporting words. A proposal by
 Ada must still say Ada proposed it; "According to Ada, the proposed action was ..." omits that actor.
 The same applies to the person considering alternatives, selecting no cause, adopting no plan, or
@@ -600,7 +607,9 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
       ...base.budget_used,
       evidence_tokens: estimateTokens(
         evidence
-          .map((item) => evidenceText(item, true) + (sourceFrames.get(item.evidence_id) ?? ''))
+          .map(
+            (item) => evidenceText(item, true, answerLanguage) + (sourceFrames.get(item.evidence_id) ?? ''),
+          )
           .join('\n'),
       ),
     },
@@ -1144,7 +1153,7 @@ function evidenceText(
         (line) =>
           `L${line.n}: ${line.text}` +
           (line.memory
-            ? `\nMemory qualification: ${JSON.stringify(memoryModelFields(line.memory, forGeneration, outputLanguage))}`
+            ? `\nMemory qualification: ${JSON.stringify(memoryModelFields(line.memory, line.text, forGeneration, outputLanguage))}`
             : '') +
           (line.prose && !line.prose.answer_eligible
             ? `\nUntrusted discourse qualification: ${JSON.stringify({ status: line.prose.status, view: line.prose.view, reason: line.prose.reason, frame: line.prose.frame })}`
@@ -1167,6 +1176,7 @@ function genericAssistantSpeaker(role: string, speaker?: string): boolean {
 
 function memoryModelFields(
   memory: NonNullable<Line['memory']>,
+  readableText: string,
   forGeneration: boolean,
   outputLanguage?: OutputLanguage | null,
 ): Record<string, unknown> {
@@ -1185,6 +1195,16 @@ function memoryModelFields(
         ].includes(key) && !(forGeneration && key === 'basis' && value === 'self_attested'),
     ),
   );
+  if (forGeneration && memory.status === 'qualified') {
+    const speaker = memory.source_speaker?.trim();
+    // Metadata, private frames and neighboring records cannot introduce a new display name.
+    // This repeats only current prose; source semantics and the attribution guard still decide support.
+    if (speaker && !genericSourceSpeaker(speaker) && sourceSpeakerInReadableText(speaker, readableText))
+      fields.named_source_reference = {
+        exact_spelling: speaker,
+        attribution_required: memory.basis === 'source_report' || memory.answer_eligible === false,
+      };
+  }
   // A schema role repeated as a speaker looks like a proper name to generation. Verification and
   // public evidence retain the original metadata; only the display wording is localized here.
   if (
@@ -1289,6 +1309,21 @@ const MEMORY_DISPLAY_LABELS = {
   },
 } as const;
 
+function genericSourceSpeaker(speaker: string): boolean {
+  return /^(?:(?:the )?(?:assistant|user)|ассистент|пользователь)$/iu.test(speaker);
+}
+
+function sourceSpeakerInReadableText(speaker: string, text: string): boolean {
+  const escaped = speaker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // A literal substring inside another name is not a source occurrence. Markdown punctuation
+  // and a possessive suffix can border the exact name; letters, combining marks, digits and name-joining hyphens cannot.
+  const namePart = String.raw`[\p{L}\p{M}\p{N}_\p{Pd}]`;
+  return new RegExp(
+    String.raw`(?<!${namePart})(?<!${namePart}['’])${escaped}(?!${namePart})(?!['’](?!s(?!${namePart}))${namePart})`,
+    'u',
+  ).test(text);
+}
+
 function answerLanguageReferences(ctx: AknoContext, evidence: AnswerContextItem[]): LanguageReference[] {
   const references: LanguageReference[] = [];
   const subjects = new Set<string>();
@@ -1301,8 +1336,7 @@ function answerLanguageReferences(ctx: AknoContext, evidence: AnswerContextItem[
       if (memory?.status !== 'qualified') continue;
       subjects.add(memory.subject);
       const speaker = memory.source_speaker?.trim();
-      if (speaker && !/^(?:(?:the )?(?:assistant|user)|ассистент|пользователь)$/iu.test(speaker))
-        references.push({ kind: 'name', text: speaker });
+      if (speaker && !genericSourceSpeaker(speaker)) references.push({ kind: 'name', text: speaker });
     }
   }
   const label = ctx.store.db.prepare('SELECT label FROM graph_entities WHERE id = ?');

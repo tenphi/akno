@@ -39,7 +39,7 @@ import {
  * the two public operations from gradually learning different meanings for the same source.
  */
 export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v50';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v33';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v34';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:

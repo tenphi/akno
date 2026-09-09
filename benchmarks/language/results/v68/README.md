@@ -1,0 +1,9 @@
+# V68 validation evidence
+
+The [declared plan](../../v68-trial-plan.md) continues PR #70 with a generation-only exact named-source hint, a per-record tentative-scope definition and two closed Russian source-clock forms. Output schemas, caps, models, passes, retries and acceptance gates are unchanged. The full V21 held-out inputs remain unexecuted.
+
+Two independent Sol code review/fix rounds are complete. Initial findings and corrected rechecks are preserved. They found and fixed source-name substring, combining-mark and apostrophe-join gaps; immediate semicolon retractions; and an unknown-calendar continuation that could inherit a condition. Exact source names adjacent to Markdown or terminal possessives remain supported. The original design note is preserved with an implementation clarification.
+
+Final checks pass **3,055 tests in 144 files**, build/typecheck, lint, knip, formatting, repository safety, documentation doctor/build, smoke and installed-package smoke. New compiled mock controls pass before freeze and will run again after build/restart/socket deployment. The exposed V67 clock draft now passes both independent local requirements; removing its calendar predicate leaves unknownness false. Mocked outcomes establish enforcement and dataflow, not model competence.
+
+The [local artifact manifest](prefreeze-local-artifacts.json) preserves hashes of initial and corrected command logs, design/review notes and control scripts. Runtime freeze, deployment, actual-provider schema controls and declared exposed probes remain pending at this checkpoint. The independently approved V21 input fingerprint remains **208d2ea60ef5f5bcf2158ef56a35e57e1ee6b5c36069ac2fbb606abe1ab1cf44**. Runtime remains GPT-5.6 Luna and independent review remains GPT-5.6 Sol. The isolated 2,400-token role ceiling does not validate the service's unchanged 1,024-token overlay.

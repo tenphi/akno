@@ -154,3 +154,5 @@ limits through answer generation and source audit, including the experiencer of 
 Preserve bounded personal report-check lists, explicit source-entry time explanations and affirmative
 counterfactual alternatives across translation. Compare tested properties before accepting technical
 paraphrases, keeping private translation notes subordinate to original evidence and all semantic checks.
+
+Keep a named source's exact spelling and existing attribution requirement beside its current record during answer generation. Give tentative records a conditional scope definition that preserves an asserted discussion while its embedded hypotheses remain uncertain. Recognize bounded Russian proposal-clock explanations and independently stated calendar unknowability without weakening source verification.

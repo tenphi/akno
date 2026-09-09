@@ -65,6 +65,248 @@ afterEach(async () => {
 
 describe('grounded answer discovery surface', () => {
   it.each(['en', 'ru'] as const)(
+    'keeps source spelling guidance local to generation and tentative scope local to verification (%s)',
+    async (language) => {
+      const original =
+        '# Zephyr QX-100\n\n<!-- akno:item mem_named_scope v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=tentative disposition=active polarity=affirmed basis=self_attested -->\n- **Tentative:** Ada Marlow considers two competing preliminary hypotheses about silverpine: a loose valve or a worn cable; neither has evidence, and she selected neither cause.\n';
+      write('products/zephyr-qx-100.md', original);
+      await memory.index({ verify: true });
+      const text =
+        language === 'ru'
+          ? 'Ada Marlow рассматривает две предварительные гипотезы silverpine: ослабленный клапан или изношенный кабель; ни одна не имеет доказательств, и она не выбрала ни одну причину.'
+          : 'Ada Marlow considers two competing preliminary hypotheses about silverpine: a loose valve or a worn cable; neither has evidence, and she selected neither cause.';
+      await useAnswerModel({
+        generation: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          const qualification = JSON.parse(
+            payload.evidence[0].excerpt.match(/Memory qualification: (.+)/u)[1],
+          );
+          expect(qualification.named_source_reference).toEqual({
+            exact_spelling: 'Ada Marlow',
+            attribution_required: true,
+          });
+          expect(qualification).not.toHaveProperty('record_scope');
+          expect(payload.evidence[0].retention_source_frame).toBeNull();
+          return { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] };
+        },
+        verification: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          expect(JSON.stringify(payload)).not.toContain('named_source_reference');
+          const scope = payload.blocks[0].required_records[0].record_scope.join(' ');
+          expect(scope).toContain('supplied source and candidate explicitly couple');
+          expect(scope).toContain('Otherwise tentative qualifies the proposition normally');
+          return { verdicts: [verdict('B1', true)] };
+        },
+      });
+      const result = await memory.answer({
+        question: 'Which silverpine hypotheses are unconfirmed?',
+        answer_language: language,
+        memory_view: 'discussion',
+        include_context: true,
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.reason_code, JSON.stringify(result)).toBe('answered');
+      expect(JSON.stringify(result)).not.toContain('named_source_reference');
+      expect(JSON.stringify(result)).not.toContain('record_scope');
+      expect(fs.readFileSync(path.join(root, 'products/zephyr-qx-100.md'), 'utf8')).toBe(original);
+      expect(modelRequests).toHaveLength(3);
+    },
+  );
+
+  it.each([
+    [
+      'Ада Марлоу рассматривает две предварительные гипотезы silverpine: ослабленный клапан или изношенный кабель; ни одна не доказана.',
+      true,
+      'draft_rejected',
+    ],
+    [
+      'Предварительные гипотезы silverpine: ослабленный клапан или изношенный кабель; ни одна не доказана.',
+      true,
+      'draft_rejected',
+    ],
+    [
+      'Ada Marlow обсудила две предварительные гипотезы silverpine: ослабленный клапан или изношенный кабель; ни одна не доказана.',
+      false,
+      'verification_rejected',
+    ],
+  ] as const)(
+    'does not let a named-source hint repair or authorize a bad draft: %s',
+    async (text, supported, reason) => {
+      write(
+        'products/zephyr-qx-100.md',
+        '# Zephyr QX-100\n\n<!-- akno:item mem_named_negative v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=tentative disposition=active polarity=affirmed basis=self_attested -->\n- **Tentative:** Ada Marlow considers two competing preliminary hypotheses about silverpine: a loose valve or a worn cable; neither has evidence.\n',
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+        verification: { verdicts: [verdict('B1', true, supported, true)] },
+      });
+      const result = await memory.answer({
+        question: 'Which silverpine hypotheses are tentative?',
+        answer_language: 'ru',
+        memory_view: 'discussion',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer).toBeNull();
+      expect(result.reason_code).toBe(reason);
+      expect(modelRequests).toHaveLength(supported ? 2 : 3);
+    },
+  );
+
+  it.each([
+    ...['assistant', 'the assistant', 'ассистент', 'user', 'the user', 'пользователь'].map((speaker) => [
+      speaker,
+      speaker,
+    ]),
+    ['Ada Marlow', 'Bo Winters'],
+    ['Ada', 'Adaline'],
+    ['Bo', 'Bo\u0301'],
+    ['Bo', 'Bo’Winters'],
+    ['Winters', 'Bo’Winters'],
+    ['Bo', "Bo'Winters"],
+    ['Winters', "Bo'Winters"],
+    ['Bo', 'Bo–Winters'],
+  ])(
+    'does not convert a generic source or a name absent from the current line into a spelling hint: %s / %s',
+    async (speaker, current) => {
+      const reported = speaker.includes('assistant') || speaker === 'ассистент';
+      const body = reported
+        ? `**Reported by ${speaker}:** ${speaker} reported the silverpine valve inspection.`
+        : `${current} supplied the silverpine valve marker.`;
+      write(
+        'products/zephyr-qx-100.md',
+        `# Ada Marlow\n\n<!-- akno:item mem_bound_name v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=${reported ? 'assistant' : 'user'} speaker=${encodeURIComponent(speaker)} reports=0 commitment=asserted disposition=active polarity=affirmed basis=${reported ? 'source_report' : 'self_attested'} -->\n- ${body}\n\nAda Marlow is mentioned only in this neighboring unqualified line.\n`,
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          expect(JSON.stringify(payload.evidence)).not.toContain('named_source_reference');
+          return { blocks: [], missing_concepts: [] };
+        },
+        verification: { verdicts: [] },
+      });
+      const result = await memory.answer({
+        question: 'What silverpine valve detail is recorded?',
+        answer_language: 'ru',
+        memory_view: reported ? 'reports' : 'factual',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(modelRequests, JSON.stringify(result)).toHaveLength(1);
+    },
+  );
+
+  it.each(['**Ada Marlow**', "Ada Marlow's", 'Ada Marlow’s'])(
+    'keeps attribution optional for a named factual record with a valid name boundary: %s',
+    async (name) => {
+      write(
+        'products/zephyr-qx-100.md',
+        `# Zephyr QX-100\n\n<!-- akno:item mem_optional_name v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->\n- ${name} supplied the silverpine valve marker.\n`,
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          const qualification = JSON.parse(
+            payload.evidence[0].excerpt.match(/Memory qualification: (.+)/u)[1],
+          );
+          expect(qualification.named_source_reference).toEqual({
+            exact_spelling: 'Ada Marlow',
+            attribution_required: false,
+          });
+          return { blocks: [], missing_concepts: [] };
+        },
+        verification: { verdicts: [] },
+      });
+      await memory.answer({
+        question: 'Who supplied the silverpine valve marker?',
+        answer_language: 'en',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(modelRequests).toHaveLength(1);
+    },
+  );
+
+  it('does not promote a named source found only in a private original frame into a rendering hint', async () => {
+    await seedSourceFrame({
+      text: '- **Open question:** The silverpine inspection question remains unanswered.',
+      frame: 'Ada Marlow has an unanswered silverpine inspection question.',
+      kind: 'question',
+      commitment: 'none',
+      polarity: 'affirmed',
+      sourceSpeaker: 'Ada Marlow',
+    });
+    await useAnswerModel({
+      generation: (request: Record<string, unknown>) => {
+        const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+        expect(payload.evidence[0].retention_source_frame).toContain('Ada Marlow');
+        expect(payload.evidence[0].excerpt).not.toContain('named_source_reference');
+        return { record_readings: sourceFrameReading(), blocks: [], missing_concepts: [] };
+      },
+      verification: { verdicts: [] },
+    });
+    await memory.answer({
+      question: 'What silverpine inspection question is open?',
+      answer_language: 'ru',
+      memory_view: 'questions',
+      filter: { source: 'page' },
+      expand: false,
+      graph: false,
+    });
+    expect(modelRequests).toHaveLength(1);
+  });
+
+  it.each([true, false])(
+    'keeps source semantics mandatory after both Russian clock floors pass (%s)',
+    async (supported) => {
+      const marker = temporalMarker('mem_explained_clock', {
+        kind: 'plan',
+        disposition: 'proposed',
+        commitment: 'asserted',
+        speaker: 'Ada Marlow',
+        time: { precision: 'unknown', relation: 'scheduled', status: 'tentative' },
+      });
+      const original =
+        '# Silverpine estimate\n\n' +
+        managedMemoryBlock(
+          marker,
+          renderManagedMemoryPayload(
+            'Ada Marlow proposes reviewing the silverpine estimate next month, relative to the undated original note; she has not accepted a plan or organized a meeting, and the calendar month is unknown.',
+            marker,
+          ),
+        );
+      write('plans/estimate.md', original);
+      await memory.index({ verify: true });
+      const text = `Ada Marlow предложила в следующем месяце рассмотреть ${supported ? 'смету' : 'договор'} silverpine — то есть в месяце после недатированной первоначальной записи, а не после обработки; она не приняла план и не организовала встречу, и календарный месяц определить невозможно.`;
+      await useAnswerModel({
+        generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+        verification: { verdicts: [verdict('B1', true, supported, true)] },
+      });
+      const result = await memory.answer({
+        question: 'What silverpine estimate review was proposed?',
+        answer_language: 'ru',
+        memory_view: 'planning',
+        filter: { folder: 'plans' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.reason_code, JSON.stringify(result)).toBe(
+        supported ? 'answered' : 'verification_rejected',
+      );
+      expect(modelRequests).toHaveLength(3);
+      expect(fs.readFileSync(path.join(root, 'plans/estimate.md'), 'utf8')).toBe(original);
+    },
+  );
+
+  it.each(['en', 'ru'] as const)(
     'keeps a generalized measured property unpublished even when its broader claim is entailed (%s query)',
     async (queryLanguage) => {
       const frame =
@@ -3137,6 +3379,9 @@ describe('grounded answer discovery surface', () => {
         expect(qualification.source_speaker).toBe(speaker);
         expect(qualification).not.toHaveProperty('source_label');
       }
+      expect(qualification.named_source_reference).toEqual(
+        speaker === 'assistant' ? undefined : { exact_spelling: speaker, attribution_required: true },
+      );
       expect(excerpt).toContain(`${speaker} reported an unverified`);
       const language = userInput(modelRequests[1]!);
       expect(language.supplied_references).toContainEqual({ kind: 'title', text: 'Zephyr QX-100' });
@@ -3149,6 +3394,8 @@ describe('grounded answer discovery surface', () => {
       expect(JSON.stringify(result.context)).not.toContain('display_labels');
       expect(JSON.stringify(userInput(modelRequests[2]!))).not.toContain('report_source_display_phrase');
       expect(JSON.stringify(result)).not.toContain('report_source_display_phrase');
+      expect(JSON.stringify(userInput(modelRequests[2]!))).not.toContain('named_source_reference');
+      expect(JSON.stringify(result)).not.toContain('named_source_reference');
     },
   );
 
@@ -4326,10 +4573,11 @@ async function seedSourceFrame(options?: {
   kind: 'claim' | 'question';
   commitment: 'asserted' | 'none' | 'hypothetical';
   polarity: 'negated' | 'affirmed';
+  sourceSpeaker?: string;
 }): Promise<string> {
   write(
     'products/zephyr-qx-100.md',
-    `# Zephyr QX-100\n\n<!-- akno:item mem_frame v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=${options?.kind ?? 'question'} subject=unresolved source-role=user reports=0 commitment=${options?.commitment ?? 'none'} disposition=active polarity=${options?.polarity ?? 'affirmed'} basis=self_attested -->\n${options?.text ?? '- **Open question:** The open silverpine question is whether the warranty covers return delivery; its answer remains unknown.'}\n`,
+    `# Zephyr QX-100\n\n<!-- akno:item mem_frame v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=${options?.kind ?? 'question'} subject=unresolved source-role=user${options?.sourceSpeaker ? ` speaker=${encodeURIComponent(options.sourceSpeaker)}` : ''} reports=0 commitment=${options?.commitment ?? 'none'} disposition=active polarity=${options?.polarity ?? 'affirmed'} basis=self_attested -->\n${options?.text ?? '- **Open question:** The open silverpine question is whether the warranty covers return delivery; its answer remains unknown.'}\n`,
   );
   await memory.index({ verify: true });
   const frame =

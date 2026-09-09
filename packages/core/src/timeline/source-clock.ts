@@ -7,6 +7,7 @@ export function hasDeicticTime(text: string): boolean {
 
 export function hasSourceRelativeAnchor(text: string): boolean {
   if (hasExplainedSourceEntryClock(text)) return true;
+  if (hasRussianExplainedSourceEntryClock(text)) return true;
   // A quoted deictic word can name the record's clock; a quoted example of an entire anchoring
   // sentence cannot supply it. Require the time expression as the subject of this new construction.
   const deictic = '(?:today|tomorrow|yesterday|tonight|(?:next|last|this)\\s+(?:day|week|month|year))';
@@ -75,6 +76,9 @@ export function hasSourceRelativeAnchor(text: string): boolean {
 
 export function hasUnknownReferenceClock(text: string): boolean {
   if (hasUndatedOriginalClock(text)) return true;
+  // A directly coordinated calendar clause is independent of preceding personal action denials.
+  // An example, condition, quoted predicate or following retraction cannot close this assertion.
+  if (hasDirectUnknownRussianCalendar(text)) return true;
   // "Установить" can mean establish a date or install a component. Require a directly bound
   // date head in this branch; a nearby calendar word or a quoted example cannot supply it.
   const deictic = '(?:today|tomorrow|yesterday|tonight|(?:next|last|this)\\s+(?:day|week|month|year))';
@@ -104,6 +108,61 @@ export function hasUnknownReferenceClock(text: string): boolean {
     return true;
   return /\bundated (?:(?:original|source) )?(?:source|record(?:ing)?|note|conversation)\b|\b(?:source|record(?:ing)?|note|conversation) (?:is|was) undated\b|\b(?:source|record(?:ing)?|note|conversation) (?:has|had) no (?:reference )?(?:date|timestamp)\b|у\s+(?:(?:исходн|оригинальн|недатированн)\p{L}*\s+)?(?:источник|запис|замет|разговор)\p{L}*\s+нет\s+дат\p{L}*|дат\p{L}*\s+(?:(?:исходн|оригинальн)\p{L}*\s+)?(?:источник|запис|замет|разговор)\p{L}*\s+отсутствует|недатирован\p{L}*\s+(?:(?:исходн|оригинальн)\p{L}*\s+)?(?:источник|запис|замет|разговор)|\b(?:dates?|clocks?|timestamps?|calendar (?:day|week|month|year))[^.!?;\n]{0,60}\b(?:unknown|unspecified|unavailable|not (?:provided|recorded|known)|(?:cannot|could not|can['’]t|couldn['’]t) be (?:recovered|resolved|determined))\b|\b(?:unknown|unspecified|unavailable) (?:(?:original|source|reference|calendar) ){0,3}(?:dates?|clocks?|timestamps?)\b|(?:дат\p{L}*|календарн\p{L}*\s+(?:день|месяц|год))[^.!?;\n]{0,60}(?:неизвест|не указан|утрачен|восстановить нельзя|невозможно восстановить|определить нельзя)|(?:источник|запис|замет|разговор)\p{L}*\s+(?:не датирован\p{L}*|без даты)|\b(?:source|record(?:ing)?|note|conversation)\s+with no date\b|\bcalendar (?:month|week|year)\s+(?:is |was |remains )?(?:unknown|unspecified)\b/iu.test(
     text,
+  );
+}
+
+function maskSourceClockQuotations(text: string): string {
+  return text.replace(
+    /`[^`]*`|«[^»]*»|“[^”]*”|"[^"\n]*"|‘[^’]*’|(?<![\p{L}\p{N}])'[^'\n]*'(?![\p{L}\p{N}])/gu,
+    '⟦quotation⟧',
+  );
+}
+
+const RUSSIAN_CLOCK_NAME = String.raw`(?!(?:The|This|That|A|An|If|Unless|When|Suppose|Example|Allegedly|Not|Если|Когда|Якобы|Не|Неверно|Пример|Допустим|Предположительно)(?![\p{L}]))\p{Lu}[\p{L}'’-]*(?:[ \t]+\p{Lu}[\p{L}'’-]*){1,3}`;
+const RUSSIAN_CLOCK_ACTOR = String.raw`(?:${RUSSIAN_CLOCK_NAME}|[Яя]|[Оо]н|[Оо]на|[Мм]ы|[Оо]ни)`;
+// A semicolon can continue with an independent limit, but an immediate adversative can retract it.
+const RUSSIAN_CLOCK_END = String.raw`(?=[ \t]*(?:$|[.!]|;(?!\s*(?:[Нн]о|[Оо]днако|[Аа]|(?:[Ии][ \t]+)?[Ээ]то[ \t]+неверно|[Нн]а[ \t]+самом[ \t]+деле)(?![\p{L}]))))`;
+
+function hasDirectUnknownRussianCalendar(text: string): boolean {
+  const unquoted = maskSourceClockQuotations(text);
+  const calendar = String.raw`[Кк]алендарный[ \t]+(?:день|месяц|год)[ \t]+определить[ \t]+невозможно`;
+  const head = String.raw`(?:^|[.;!])[ \t]*`;
+  if (new RegExp(String.raw`${head}(?:[Ии][ \t]+)?${calendar}${RUSSIAN_CLOCK_END}`, 'u').test(unquoted))
+    return true;
+  // The exposed conjunction follows two actual personal denials. An arbitrary comma-and start
+  // could instead inherit a condition or reported question from earlier in the same clause.
+  return (
+    [
+      ['приняла', 'организовала'],
+      ['принял', 'организовал'],
+      ['приняли', 'организовали'],
+    ] as const
+  ).some(([accept, organize]) =>
+    new RegExp(
+      String.raw`${head}${RUSSIAN_CLOCK_ACTOR}[ \t]+не[ \t]+${accept}[ \t]+план[ \t]+и[ \t]+не[ \t]+${organize}[ \t]+встречу,[ \t]+и[ \t]+${calendar}${RUSSIAN_CLOCK_END}`,
+      'u',
+    ).test(unquoted),
+  );
+}
+
+/** An apposition must explain the interval of the same affirmative proposal, not a nearby clock. */
+function hasRussianExplainedSourceEntryClock(text: string): boolean {
+  const unquoted = maskSourceClockQuotations(text);
+  const label = String.raw`(?:\*\*Предложение(?:[ \t]+·[ \t]+Предварительный срок)?:\*\*[ \t]+)?`;
+  const objectWord = String.raw`(?!(?:и|но|что|если|когда|ли|не|то|есть|якобы|неверно|сказал[аи]?|спросил[аи]?|отрицает|отрицал[аи]?|подтвердил[аи]?)(?![\p{L}]))[\p{L}\p{N}][\p{L}\p{N}'’-]*`;
+  // Explicit alternatives keep the period and direction coupled without optional backreferences.
+  return (['месяце', 'году'] as const).some((period) =>
+    (
+      [
+        ['следующем', 'после'],
+        ['прошлом', 'до'],
+      ] as const
+    ).some(([deictic, direction]) =>
+      new RegExp(
+        String.raw`(?:^|[.;!])[ \t]*${label}${RUSSIAN_CLOCK_ACTOR}[ \t]+(?:предлагает|предложил[аи]?)[ \t]+в[ \t]+${deictic}[ \t]+${period}[ \t]+(?:рассмотреть|пересмотреть|проверить)[ \t]+${objectWord}(?:[ \t]+${objectWord}){0,11}[ \t]*(?:—|,)[ \t]+то[ \t]+есть[ \t]+в[ \t]+${period}[ \t]+${direction}[ \t]+недатированной[ \t]+первоначальной[ \t]+записи(?:,[ \t]+а[ \t]+не[ \t]+${direction}[ \t]+обработки)?${RUSSIAN_CLOCK_END}`,
+        'u',
+      ).test(unquoted),
+    ),
   );
 }
 

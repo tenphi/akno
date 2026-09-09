@@ -407,3 +407,101 @@ describe('English explained source-entry clock', () => {
     expect(hasSourceRelativeAnchor(text)).toBe(false);
   });
 });
+
+describe('proposal-bound Russian source-entry explanations', () => {
+  const anchor =
+    'Ada Marlow предложила в следующем месяце рассмотреть условия ремонта Zephyr QX-100 — то есть в месяце после недатированной первоначальной записи, а не после обработки';
+  const unknown = 'календарный месяц определить невозможно';
+  const exact = `**Предложение · Предварительный срок:** ${anchor}; она не приняла план и не организовала встречу, и ${unknown}.`;
+
+  it('admits both independent clock floors in the complete exposed draft', () => {
+    expect(hasSourceRelativeAnchor(exact)).toBe(true);
+    expect(hasUnknownReferenceClock(exact)).toBe(true);
+    expect(hasSourceRelativeAnchor(anchor + '.')).toBe(true);
+    expect(hasUnknownReferenceClock(anchor + '.')).toBe(false);
+    expect(hasUnknownReferenceClock(unknown + '.')).toBe(true);
+    expect(hasSourceRelativeAnchor(unknown + '.')).toBe(false);
+  });
+
+  it.each([
+    anchor,
+    anchor.replace(' — то есть', ', то есть'),
+    anchor.replaceAll('месяце', 'году'),
+    anchor.replaceAll('следующем', 'прошлом').replaceAll('после', 'до'),
+    anchor.replace('Ada Marlow', 'Она'),
+  ])('preserves a matching proposal period and source direction: %s', (text) => {
+    expect(hasSourceRelativeAnchor(text + '.')).toBe(true);
+  });
+
+  it.each([
+    `Если ${anchor}`,
+    `Якобы ${anchor}`,
+    `Неверно, что ${anchor}`,
+    `Пример: ${anchor}`,
+    `The ${anchor}`,
+    `Allegedly ${anchor}`,
+    anchor.replace('предложила', 'не предложила'),
+    anchor.replace('предложила', 'спросила, означает ли'),
+    anchor.replace('предложила', 'якобы предложила'),
+    anchor.replace('то есть в месяце', 'то есть в году'),
+    anchor.replace('в месяце после', 'в месяце до'),
+    anchor.replace('следующем', 'прошлом'),
+    anchor.replace('недатированной первоначальной записи', 'первоначальной записи'),
+    anchor.replace('недатированной первоначальной записи', 'недатированной первоначальной записи устройства'),
+    anchor.replace('недатированной первоначальной записи', 'обработки'),
+    anchor.replace('недатированной первоначальной записи', 'недатированной\nпервоначальной записи'),
+    anchor.replace('Zephyr QX-100 —', 'Zephyr QX-100 и Bo Winters подтвердил —'),
+    anchor + ', но на самом деле после обработки',
+    anchor + ', однако это неверно',
+    anchor + ', если предложение примут',
+    anchor + '; однако это неверно',
+    anchor + '; Однако это неверно',
+    anchor + '; и это неверно',
+    anchor + '; И это неверно',
+    anchor + ';\nно на самом деле после обработки',
+    anchor + '?',
+  ])('does not borrow or retract an explained proposal clock: %s', (text) => {
+    expect(hasSourceRelativeAnchor(text + (text.endsWith('?') ? '' : '.'))).toBe(false);
+  });
+
+  it.each([
+    ['«', '»'],
+    ['“', '”'],
+    ['‘', '’'],
+    ['"', '"'],
+    ["'", "'"],
+    ['`', '`'],
+  ])('does not extract an assertion from quoted clock prose: %s%s', (open, close) => {
+    expect(hasSourceRelativeAnchor(`${open}${anchor}.${close}`)).toBe(false);
+    expect(hasUnknownReferenceClock(`${open}${unknown}.${close}`)).toBe(false);
+    expect(hasSourceRelativeAnchor(anchor.replace('предложила', `предложила ${open}не${close}`) + '.')).toBe(
+      false,
+    );
+  });
+
+  it.each([
+    `Неверно, что ${unknown}.`,
+    `Если ${unknown}.`,
+    `Пример: ${unknown}.`,
+    `Якобы ${unknown}.`,
+    `${unknown}?`,
+    `${unknown}; однако затем его определили.`,
+    `${unknown}; Однако затем его определили.`,
+    `${unknown}; и это неверно.`,
+    `${unknown}; И это неверно.`,
+    `${unknown};\nно затем его определили.`,
+    `Если запись потеряна, и ${unknown}.`,
+    `Если она не приняла план и не организовала встречу, и ${unknown}.`,
+    `Неверно, что она не приняла план и не организовала встречу, и ${unknown}.`,
+    `Пример: она не приняла план и не организовала встречу, и ${unknown}.`,
+    `Она спросила, не приняла ли план и не организовала ли встречу, и ${unknown}.`,
+    `«Если» она не приняла план и не организовала встречу, и ${unknown}.`,
+    `${unknown}, но затем его установили.`,
+    `${unknown}, если запись не найдут.`,
+    'календарный месяц определить возможно.',
+    'календарный месяц определить состояние устройства невозможно.',
+    'невозможно определить состояние устройства; календарный месяц указан.',
+  ])('requires a direct independently asserted unknown calendar predicate: %s', (text) => {
+    expect(hasUnknownReferenceClock(text)).toBe(false);
+  });
+});
