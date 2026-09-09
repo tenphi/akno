@@ -37,8 +37,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v45';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v30';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v46';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v31';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -57,9 +57,12 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   context to disambiguate the English term when the source establishes a narrower sense. Lack of an
   arrangement is not refusal, lack of consent, or a decision not to act. Preserve those distinctions.
   This does not require unrelated adjacent details, or confuse uncertainty negation with an excluded action.
-  Disambiguate relational nouns with their governing context. A contract condition is a contractual term
-  or requirement; it is not the device's physical condition or state. Preserve the narrower supported sense
-  in English prose so later translation cannot change the object of verification.
+  Disambiguate relational nouns from the supplied source. When it establishes a contractual condition,
+  keep that sense explicit in clauses about examining or confirming it, or in an unambiguous antecedent:
+  "reported contractual condition" avoids bare "reported condition" changing the verification object.
+  Preserve the original epistemic actor, predicate and object; confirming a report and establishing
+  that it is a contractual term are different claims. A nearby contract mention does not make a physical
+  condition contractual. Preserve physical state when that is the source-established object.
   Preserve the source's level of specificity: a named component measurement does not identify a measured
   property, method or result. Leave those unspecified unless the supplied source establishes them. Do not
   fill technical details, causes or attributes from domain knowledge when formulating retained prose.

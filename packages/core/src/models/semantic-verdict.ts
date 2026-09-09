@@ -34,7 +34,10 @@ const comparisonText = z.string().trim().min(1).max(320);
 
 /** Composition and verification must compare the same scoped unit when compressing source prose. */
 export const PROPOSITION_SCOPE_CONTRACT = `Preserve these boundaries within each selected proposition:
-- A personal epistemic limit keeps its actor and object. "I have not examined the terms or confirmed X"
+- Each selected material epistemic limit keeps its grammatical subject or experiencer, exact predicate,
+  object/referent and clause attachment. Reading terms, receiving confirmation of a report and personally
+  verifying a contractual condition are distinct predicates; preserve separate limits separately.
+  "I have not examined the terms or confirmed X"
   supports "the speaker has not examined the terms or confirmed X", not "the terms have not been
   examined" or "X has not been confirmed" without that actor. Naming the speaker as outer reporter does
   not bind a later passive absence to them. Preserve examination and confirmation as separate limits;
@@ -50,6 +53,10 @@ export const PROPOSITION_SCOPE_CONTRACT = `Preserve these boundaries within each
   When both are selected, compose separate clauses with both subjects explicit. Do not merge them into
   "Ada has no answer establishing either", swap their subjects, or claim the agreement terms establish
   neither. Neither personal uncertainty nor note-level inconclusiveness implies the other by itself.
+  An explicit statement about what a record establishes keeps the record as its epistemic subject.
+  Human source attribution may scope over that statement without repeating the name in every clause;
+  this does not turn the record's nonresolution into a person's lack of knowledge. Still preserve each
+  personal verification limit with its own actor and keep required report attribution in scope.
 - A hypothetical premise and its explicitly stated conditional consequence form one scoped unit. Keep
   both when selecting that rule. A fictional promise keeps its promising party, recipient, benefit and
   material limits inside fictional scope. A proposal to discuss it alone does not answer what it promises.
@@ -96,7 +103,8 @@ export const SEMANTIC_COMPARISON_CONTRACT = `Before deciding the three booleans,
   added specification rather than silently replacing it with the source's more general wording;
 - action_arguments: compare action, actor, object, purpose and any material modifier attachment. For a
   measurement or inspection, compare the named component separately from the property, method and result;
-- qualification_scope: compare speaker layers, polarity, commitment, disposition, uncertainty and time.
+- qualification_scope: compare speaker layers, polarity, commitment, disposition, uncertainty and time,
+  including the actor, predicate and object/referent of each selected material epistemic limit.
 For coverage language, compare what is covered and what provides coverage. "Repair is covered by the
 warranty" / "ремонт покрывается гарантией" does not mean "the motor is covered by repair" / "двигатель
 покрывается ремонтом" or "the warranty is covered by repair". Preserve those roles inside unresolved
@@ -129,8 +137,13 @@ Likewise, compare who proposed an action separately from who reports the proposa
 the proposal was to ..." and "По словам SOURCE, было предложено ..." provide outer attribution but no
 proposer. If the source names the proposer, that omission fails action_arguments_preserved even when the
 proposal's content and time remain faithful. Never infer that actor from source_speaker metadata alone.
-Use the governing domain to resolve a word's sense: a contractual condition is a term or requirement,
-not the physical condition/state of a device. Fluency and preserved uncertainty do not excuse a changed sense.
+Compare the source-established sense of the object in each epistemic clause. Lacking confirmation of a
+reported contractual condition and lacking confirmation of a report about a physical state are different
+limits, even if both retain the same actor and uncertainty. A changed epistemic object fails
+proposition_supported and qualification_scope_preserved, and also action_arguments_preserved when it
+changes an action's object. Keep the candidate's actual added specification in the comparison; do not
+silently paraphrase it back to the source's meaning. Mere contract/state vocabulary elsewhere does not
+establish this difference: preserve a source-supported physical state or status display in its own clause.
 Use explicit clarification in the complete supplied context to resolve an earlier ambiguous term,
 including when the source switches languages. Compare the actual referent selected by every candidate
 clause with that clarified meaning. A dictionary sense available in isolation is unsupported when it

@@ -133,7 +133,14 @@ Resolve an explicitly restated report across languages before comparing an isola
 the query and generated notes cannot establish that relationship; preserve truly unresolved ambiguity.
 
 Then independently compare actor (the selected action's actor, separate from outer reporter),
-object_and_mechanism (object, purpose, degree/manner), and qualification (scope and epistemic/time limits).
+object_and_mechanism (object, purpose, degree/manner), and qualification (scope and epistemic/time limits,
+including who lacks knowledge/confirmation, of what, and which selected proposition that limit qualifies).
+For an epistemic predicate, actor compares its grammatical subject or experiencer, including a source-stated
+note/record subject; it is not automatically the outer reporter. Direct self-attested provenance alone
+requires no repeated speaker wording. Still preserve required report attribution and personal agency.
+Compare every material selected limit against its actual answer counterpart; matching uncertainty words
+cannot preserve a changed verification object. Source_context describes only the original source;
+comparison detail must retain any specification added by the answer instead of silently correcting it.
 Select source_anchor from that evidence's original frame and answer_anchor from this current block.
 Never invent an ID or substitute a retained paraphrase for an original. An anchor only locates the
 selected aspect. Judge its meaning against the COMPLETE frame and block: content elsewhere in this same
@@ -151,6 +158,12 @@ Use preserved for equivalent meaning, including natural technical paraphrase. Us
 material restriction lost from the complete block, changed for a different actor/object/scope, or omitted
 when a required selected counterpart has no answer counterpart (answer_anchor null). These three
 negative relations require concrete differences in detail and the corresponding semantic mismatch.
+For omitted, answer_anchor MUST be null; an anchor locating nearby text is not a missing counterpart.
+For a present but changed or generalized counterpart, use that relation and its actual answer anchor.
+An actor loss requires action_arguments_preserved false and its own mismatch; a lost or changed epistemic
+limit requires qualification_scope_preserved false and its own mismatch. Assess proposition_supported
+separately and give a mismatch for it too if false. Never pair a negative alignment with all-positive
+dimensions or place every defect solely under qualification regardless of which dimension it affects.
 For an incidental category not selected or asserted in this block, use not_selected and answer_anchor
 null; source_anchor may be null only if no applicable source content exists. A sentence/anchor is not
 an indivisible proposition: independent neighboring details need not appear. Complete-record rendering

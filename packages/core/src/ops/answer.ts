@@ -60,8 +60,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v57';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v38';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v58';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v39';
 
 function answerDraftSchema(
   evidenceId: z.ZodType<string>,
@@ -221,8 +221,13 @@ A question naming a proposal cannot authorize adding that action to a promise-on
 
 Translate ordinary vocabulary and generic roles into output_language, without parenthetical source-language
 glosses. Names, product identifiers and protected values remain exact. Resolve words by their source
-context: a contract condition is a contractual term, not a device's physical state. A measurement names
-only the component/property actually stated; do not supply a plausible property, method or result. Loose
+context. When the selected source meaning is a contractual condition, keep that sense explicit in each
+material epistemic clause or an unambiguous antecedent: "reported contractual condition" / "сообщение
+об условии договора", preserving who has not confirmed what. Keep confirming a report distinct from
+verifying a condition or reading terms. Do not change the report's object to a physical state. A nearby contract
+mention alone does not establish contractual sense: preserve a source-supported physical condition or
+status display in its own clause. A measurement names only the component/property actually stated;
+do not supply a plausible property, method or result. Loose
 insertion/engagement is a specific mechanism, not generic incorrect installation. Keep grammatical roles:
 transport for component inspection does not establish transporting that component. Preserve what is covered
 and what provides coverage; in Russian prefer "гарантия покрывает ремонт" when those are the source roles.

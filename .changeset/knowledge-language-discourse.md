@@ -134,3 +134,9 @@ actual knowledge limits with the hypothetical rule they qualify, without inventi
 mutating admitted siblings during repair. Recognize a bounded restrictive naming phrase inside a negative
 booking subject; separate affirmative bookings still require their temporal envelope and every admitted
 candidate still requires full-source verification and independent ownership.
+
+Keep the source-established contractual sense explicit in personal verification limits. Compare the
+actor, predicate and object of each selected epistemic limit during the existing source audit, while
+preserving the distinction between personal uncertainty and what a record establishes. Neutral source
+attribution can scope over a record-level statement without inventing personal agency. Negative source
+alignments still require matching semantic failures; no verifier rejection or consistency gate is relaxed.
