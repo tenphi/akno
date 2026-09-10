@@ -1,0 +1,148 @@
+{
+  "runtimeCommit": "44e6e714f1758948f306ec90cdae9b0d453e3604",
+  "purpose": "Descriptive ordinary-prose/replay metadata; source-first grades determine promotion and usefulness. Eligibility flags can include independently supported factual negatives next to qualified records.",
+  "probes": [
+    {
+      "probe": "selected",
+      "cases": [
+        {
+          "id": "v20-held-report",
+          "ordinaryCorrect": true,
+          "ordinaryInspection": {
+            "status": "ok",
+            "results": 1
+          },
+          "replayOutcome": "replayed",
+          "noncanonicalEligibilityFlag": true,
+          "bytesStable": true
+        },
+        {
+          "id": "v20-held-hypothesis",
+          "ordinaryCorrect": true,
+          "ordinaryInspection": {
+            "status": "ok",
+            "results": 1
+          },
+          "replayOutcome": "replayed",
+          "noncanonicalEligibilityFlag": false,
+          "bytesStable": true
+        },
+        {
+          "id": "v20-held-counterfactual",
+          "ordinaryCorrect": true,
+          "ordinaryInspection": {
+            "status": "ok",
+            "results": 1
+          },
+          "replayOutcome": "replayed",
+          "noncanonicalEligibilityFlag": false,
+          "bytesStable": true
+        },
+        {
+          "id": "v20-held-exclusion",
+          "ordinaryCorrect": true,
+          "ordinaryInspection": {
+            "status": "ok",
+            "results": 1
+          },
+          "replayOutcome": "replayed",
+          "noncanonicalEligibilityFlag": false,
+          "bytesStable": true
+        },
+        {
+          "id": "v20-held-assistant",
+          "ordinaryCorrect": true,
+          "ordinaryInspection": {
+            "status": "ok",
+            "results": 1
+          },
+          "replayOutcome": "replayed",
+          "noncanonicalEligibilityFlag": false,
+          "bytesStable": true
+        },
+        {
+          "id": "v20-held-fiction",
+          "ordinaryCorrect": true,
+          "ordinaryInspection": {
+            "status": "ok",
+            "results": 1
+          },
+          "replayOutcome": "replayed",
+          "noncanonicalEligibilityFlag": false,
+          "bytesStable": true
+        },
+        {
+          "id": "v20-held-undated",
+          "ordinaryCorrect": true,
+          "ordinaryInspection": {
+            "status": "ok",
+            "results": 1
+          },
+          "replayOutcome": "replayed",
+          "noncanonicalEligibilityFlag": false,
+          "bytesStable": true
+        },
+        {
+          "id": "v20-held-alternatives",
+          "ordinaryCorrect": true,
+          "ordinaryInspection": {
+            "status": "ok",
+            "results": 1
+          },
+          "replayOutcome": "replayed",
+          "noncanonicalEligibilityFlag": false,
+          "bytesStable": true
+        }
+      ]
+    },
+    {
+      "probe": "built",
+      "cases": [
+        {
+          "id": "v19-held-report",
+          "ordinaryCorrect": true,
+          "ordinaryInspection": {
+            "status": "ok",
+            "results": 1
+          },
+          "replayOutcome": "replayed",
+          "noncanonicalEligibilityFlag": true,
+          "bytesStable": true
+        },
+        {
+          "id": "v19-held-question",
+          "ordinaryCorrect": true,
+          "ordinaryInspection": {
+            "status": "ok",
+            "results": 1
+          },
+          "replayOutcome": "replayed",
+          "noncanonicalEligibilityFlag": false,
+          "bytesStable": true
+        },
+        {
+          "id": "v19-held-rejected",
+          "ordinaryCorrect": true,
+          "ordinaryInspection": {
+            "status": "ok",
+            "results": 1
+          },
+          "replayOutcome": "replayed",
+          "noncanonicalEligibilityFlag": true,
+          "bytesStable": true
+        },
+        {
+          "id": "v19-held-alternatives",
+          "ordinaryCorrect": true,
+          "ordinaryInspection": {
+            "status": "ok",
+            "results": 1
+          },
+          "replayOutcome": "replayed",
+          "noncanonicalEligibilityFlag": false,
+          "bytesStable": true
+        }
+      ]
+    }
+  ]
+}

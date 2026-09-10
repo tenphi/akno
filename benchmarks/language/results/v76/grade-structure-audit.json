@@ -1,0 +1,33 @@
+{
+  "purpose": "Review structure and coordinate audit only, not substantive regrading.",
+  "receipt": [
+    {
+      "probe": "selected",
+      "stage": "initial",
+      "cases": 8,
+      "coordinates": 64,
+      "shapeValid": true
+    },
+    {
+      "probe": "selected",
+      "stage": "final",
+      "cases": 8,
+      "coordinates": 64,
+      "shapeValid": true
+    },
+    {
+      "probe": "built",
+      "stage": "initial",
+      "cases": 4,
+      "coordinates": 32,
+      "shapeValid": true
+    },
+    {
+      "probe": "built",
+      "stage": "final",
+      "cases": 4,
+      "coordinates": 32,
+      "shapeValid": true
+    }
+  ]
+}
