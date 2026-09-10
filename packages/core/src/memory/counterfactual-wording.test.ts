@@ -1,6 +1,77 @@
 import { describe, expect, it } from 'vitest';
 import { hasNominalCounterfactual } from './counterfactual-wording.ts';
 
+describe('named purchase relative with adjacent actual-world closure', () => {
+  const unit =
+    'Ada Marlow описала нереализованный вариант, при котором при покупке дополнительного расширения ремонта ремонт ступицы колеса в пятом году покрывался бы. Она не приобрела это расширение, поэтому такое покрытие не являлось её действующим покрытием.';
+  it.each([
+    unit,
+    unit
+      .replaceAll('Ada Marlow', 'Bo Winters')
+      .replace('описала', 'описал')
+      .replace('Она', 'Он')
+      .replace('приобрела', 'приобрёл')
+      .replace('её', 'его'),
+    unit.replace('это расширение', 'его'),
+    unit.replace('это расширение', 'это продление'),
+    unit + ' Обсуждение продолжилось.',
+  ])('recognizes only a complete purchase-relative unit: %s', (text) => {
+    expect(hasNominalCounterfactual(text)).toBe(true);
+  });
+  it.each([
+    unit.replace('нереализованный', 'реализованный'),
+    unit.replace('покрывался бы', 'покрывался'),
+    unit.replace('покрывался бы', 'покрывается'),
+    unit.replace('при покупке', 'по сообщению о покупке'),
+    unit.replace('не приобрела', 'приобрела'),
+    unit.replace('не приобрела', 'не обсудила'),
+    unit.replace('Она', 'Он'),
+    unit.replace('приобрела', 'приобрёл'),
+    unit.replace('её', 'его'),
+    unit.replace('Она', 'Bo Winters'),
+    unit.replace('такое покрытие не являлось её действующим покрытием', 'покрытия вообще нет'),
+    unit.split('. Она')[0] + '.',
+    unit.split(', поэтому')[0] + '.',
+    unit.replace(', поэтому', ', однако'),
+    ...[';', ':', ',', '?', '.\n'].map((bridge) => unit.replace('. Она', bridge + ' Она')),
+    ...[
+      'Неверно, что ',
+      'Якобы ',
+      'Пример: ',
+      'Если ',
+      'Не\n',
+      'Probably ',
+      'Presumably ',
+      'Likely ',
+      'Conceivably ',
+      'Purportedly ',
+      'Supposedly ',
+      'Perhaps ',
+      'Maybe ',
+      'Suppose ',
+      'When ',
+      'While ',
+      'Although ',
+      'Reportedly ',
+      'Allegedly ',
+      'Возможно ',
+      'Предположительно ',
+      'Вероятно ',
+      'Хотя ',
+      'Пока ',
+    ].map((prefix) => prefix + unit),
+    ...['«»', '“”', '‘’', '""', "''", '``'].map(([open, close]) => open + unit + close),
+    ...[' Но это неверно.', '\nА это неверно.', ' На самом деле покупка произошла.'].map(
+      (tail) => unit + tail,
+    ),
+    unit.replace('ремонт ступицы', 'Bo Winters сообщил ремонт ступицы'),
+    unit.replace('ремонт ступицы', 'он сообщил ремонт ступицы'),
+    unit.replace('ремонт ступицы', 'ремонт ' + 'отдельной '.repeat(16) + 'ступицы'),
+  ])('requires its own affirmative, unretracted complete unit: %s', (text) => {
+    expect(hasNominalCounterfactual(text)).toBe(false);
+  });
+});
+
 const alternative =
   'Нереализованной альтернативой было дополнительное продление для Zephyr QX-100, которое в случае покупки покрывало бы ремонт двигателя.';
 const variant =

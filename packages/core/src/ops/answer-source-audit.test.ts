@@ -89,6 +89,32 @@ describe('immutable source and answer coordinates', () => {
 });
 
 describe('private original-source answer audits', () => {
+  it.each(['actor', 'qualification'] as const)(
+    'preserves the local UTF-16 diagnostic limit for %s while narrowing provider output',
+    (category) => {
+      for (const [detail, expected] of [
+        ['x'.repeat(81), true],
+        ['x'.repeat(160), true],
+        ['x'.repeat(161), false],
+        ['🦊'.repeat(80), true],
+        ['🦊'.repeat(81), false],
+        ['', false],
+        ['   ', false],
+      ] as const) {
+        const entries = audit();
+        entries[0]![category].detail = detail;
+        expect(answerAlignmentSchema(coordinates).safeParse(entries).success).toBe(expected);
+      }
+      const entries = audit();
+      entries[0]![category] = {
+        ...part(),
+        detail: 'The selected actor or scope changes.',
+        relation: 'changed',
+      };
+      expect(answerAlignmentSchema(coordinates).safeParse(entries).success).toBe(true);
+      expect(answerAlignmentsSupported(entries, coordinates)).toBe(false);
+    },
+  );
   it.each(['preserved', 'generalized', 'changed', 'omitted', 'not_selected'] as const)(
     'separates property absence from operation irrelevance for %s',
     (relation) => {
@@ -518,6 +544,14 @@ describe('provider-visible alignment branches', () => {
       for (const entryBranch of entryBranches) {
         expect(entryBranch.additionalProperties).toBe(false);
         expect(new Set(entryBranch.required)).toEqual(new Set(Object.keys(entryBranch.properties)));
+        expect(entryBranch.properties.source_context.maxLength).toBe(240);
+        for (const category of ['actor', 'qualification']) {
+          for (const branch of entryBranch.properties[category].anyOf) {
+            expect(branch.properties.detail.maxLength).toBe(80);
+            expect(branch.required).toContain('detail');
+            expect(branch.additionalProperties).toBe(false);
+          }
+        }
       }
       expect(incidental.tested_property.properties.relation.enum).toEqual(['not_selected']);
       expect(incidental.object_and_operation.anyOf.flatMap((b: any) => b.properties.relation.enum)).toEqual([

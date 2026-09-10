@@ -1,4 +1,5 @@
 import { hasReportUncertainty } from '../memory/report-uncertainty.ts';
+import { fictionalCaseSubjectIdentifier, subjectIdentifiers } from './fictional-case-identity.ts';
 import {
   normalizeReportRepairTransaction,
   reportRepairLanguageProse,
@@ -60,8 +61,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v55';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v39';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v56';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v40';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
@@ -1299,13 +1300,6 @@ function hasLeadingExistentialDenial(text: string, speaker: string | undefined):
 const RELATIVE_TIME =
   /\b(today|tomorrow|yesterday|tonight|next\s+(?:day|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|last\s+(?:night|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|this\s+(?:morning|afternoon|evening|week|month|year))\b|сегодня|завтра|вчера|на следующ|на прошл|в следующ|в прошл/iu;
 
-/** Subject identifiers containing letters and digits cannot be reconstructed from a later question. */
-function subjectIdentifiers(text: string): string[] {
-  return (text.normalize('NFKC').match(/[\p{L}\p{N}][\p{L}\p{N}._:/+-]*/gu) ?? [])
-    .filter((token) => /\p{L}/u.test(token) && /\d/u.test(token))
-    .map((token) => token.toLowerCase().replace(/[.:]+$/u, ''));
-}
-
 /** Exact occurrences help the existing repair find context; none establishes subject attachment. */
 function sourceIdentifierContext(identifiers: readonly string[], options: CandidateCleaningOptions) {
   const items = options.sourceItems
@@ -1475,7 +1469,7 @@ function cleanCandidateBatchWithPositions(
       });
       continue;
     }
-    if (options.generated && typeof record.subject === 'string') {
+    if (options.generated) {
       // Selected frames can omit the very antecedent needed to make a record retrievable.
       // Require a claimed source identifier in both prose and frame; this rejects omissions,
       // never proves that a neighboring identifier actually belongs to this proposition.
@@ -1486,16 +1480,23 @@ function cleanCandidateBatchWithPositions(
       );
       const frameIdentifiers = new Set(subjectIdentifiers(sourceEvidence(spans.frame)));
       const readableIdentifiers = new Set(subjectIdentifiers(text));
-      const missing = [...new Set(subjectIdentifiers(record.subject))].filter(
+      const subjectIds = new Set(
+        subjectIdentifiers(typeof record.subject === 'string' ? record.subject : ''),
+      );
+      const missing = [...subjectIds].filter(
         (id) => sourceIdentifiers.has(id) && (!readableIdentifiers.has(id) || !frameIdentifiers.has(id)),
       );
+      const attached = fictionalCaseSubjectIdentifier(spans.support, spans.frame, options);
+      if (attached && (!readableIdentifiers.has(attached) || !subjectIds.has(attached))) {
+        if (!missing.includes(attached)) missing.push(attached);
+      }
       if (missing.length > 0) {
         missingIdentifiers.set(index, missing);
         held.push({
           candidate_id: provisionalId,
           reason_code: 'validation_failed',
           reason:
-            'a claimed source subject identifier is missing from readable prose or its deciding frame; preserve the source-supported identity in the sentence and include its exact antecedent span, rather than leaving it only in subject metadata. Do not assign an unrelated identifier to the proposition',
+            'a source subject identifier is missing from readable prose, subject metadata or its deciding frame; preserve the source-supported identity in both sentence and subject and include its exact antecedent span. Do not assign an unrelated identifier to the proposition',
         });
         continue;
       }

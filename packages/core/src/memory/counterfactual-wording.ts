@@ -1,4 +1,5 @@
 import { hasUnretractedClauseEnd } from './clause-ending.ts';
+import { AFFIRMATIVE_NAMED_ACTOR } from './named-actor.ts';
 
 /** A nominal unrealized alternative can express the conditional without the words "если бы".
  * This presence floor never establishes the antecedent, consequence or actual-world qualification. */
@@ -7,7 +8,11 @@ export function hasNominalCounterfactual(text: string): boolean {
     /«[^»]*»|“[^”]*”|"[^"\n]*"|`[^`]*`|‘[^’]*’|(?<![\p{L}\p{N}])'[^'\n]*'(?![\p{L}\p{N}])/gu,
     '⟦quotation⟧',
   );
-  if (hasCompleteRussianCounterfactualUnit(unquoted) || hasNamedAcquisitionCounterfactual(unquoted))
+  if (
+    hasCompleteRussianCounterfactualUnit(unquoted) ||
+    hasNamedAcquisitionCounterfactual(unquoted) ||
+    hasNamedPurchaseRelative(unquoted)
+  )
     return true;
   const clauses = unquoted.split(
     /[.!?;:\n]|,[ \t]*(?:а|но|и|однако|хотя|пока|but|and|although|however)(?![\p{L}])/iu,
@@ -40,6 +45,31 @@ export function hasNominalCounterfactual(text: string): boolean {
   return clauses.some((clause) =>
     shapes.some((shape) => new RegExp(`(?<![\\p{L}])${shape}(?![\\p{L}])`, 'iu').test(clause)),
   );
+}
+
+/** The adjacent actual-world closure is required for this purchase-relative form. Allowing `при`
+ * in the shorter noun grammar would let a partial scenario bypass that closure entirely. */
+function hasNamedPurchaseRelative(unquoted: string): boolean {
+  const name = AFFIRMATIVE_NAMED_ACTOR;
+  const word = String.raw`(?!(?:она|он|они|я|мы|вы|ты|бы|был[аои]?|есть|будет|при|если|но|а|и|не|что|чтобы|якобы|сказал[аои]?|сообщил[аои]?|подтвердил[аои]?|покрыл[аои]?|приобр[её]л[аи]?)(?![\p{L}]))[\p{Ll}\p{N}][\p{Ll}\p{N}'’-]*`;
+  const product = String.raw`\p{Lu}[\p{L}'’-]*[ \t]+(?=[\p{L}\p{N}-]*\d)\p{Lu}[\p{L}\p{N}-]*`;
+  const acquisition = String.raw`${word}(?:[ \t]+${word}){0,9}(?:[ \t]+для[ \t]+${product})?`;
+  const repair = String.raw`ремонт(?:[ \t]+${word}){1,10}[ \t]+покрывался`;
+  const referent = String.raw`(?:его|это[ \t]+(?:продление|расширение))`;
+  // The described actor, adjacent pronoun and possessive must agree. Another named actor or
+  // sentence cannot silently supply the actual-world nonpurchase for this conditional.
+  return [
+    { described: 'описала', pronoun: '[Оо]на', purchased: 'приобрела', possessive: 'е[её]' },
+    { described: 'описал', pronoun: '[Оо]н', purchased: 'приобр[её]л', possessive: 'его' },
+  ].some(({ described, pronoun, purchased, possessive }) => {
+    const pattern = new RegExp(
+      String.raw`(?:^|[.!])[ \t]*${name}[ \t]+${described}[ \t]+нереализованный[ \t]+вариант,[ \t]+при[ \t]+котором[ \t]+при[ \t]+покупке[ \t]+${acquisition}[ \t]+${repair}[ \t]+бы\.[ \t]+${pronoun}[ \t]+не[ \t]+${purchased}[ \t]+${referent},[ \t]+поэтому[ \t]+такое[ \t]+покрытие[ \t]+не[ \t]+являлось[ \t]+${possessive}[ \t]+действующим[ \t]+покрытием`,
+      'gu',
+    );
+    return [...unquoted.matchAll(pattern)].some((match) =>
+      hasUnretractedClauseEnd(unquoted, match.index + match[0].length),
+    );
+  });
 }
 
 /** A nominal acquisition is counterfactual only inside the complete unrealized/actual-world unit.

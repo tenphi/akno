@@ -25,12 +25,44 @@ import { LANGUAGE_CORPUS_V18 } from './language-corpus-v18.ts';
 import { LANGUAGE_CORPUS_V19 } from './language-corpus-v19.ts';
 import { LANGUAGE_CORPUS_V20 } from './language-corpus-v20.ts';
 import { LANGUAGE_CORPUS_V21 } from './language-corpus-v21.ts';
+import { LANGUAGE_CORPUS_V22 } from './language-corpus-v22.ts';
 import { LANGUAGE_CORPUS } from './language-corpus.ts';
 import { runLanguageBench } from './language.ts';
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe('frozen language/discourse evaluation', () => {
+  it('freezes independently approved replacement inputs with unchanged development cases', () => {
+    expect(sha256(JSON.stringify(LANGUAGE_CORPUS_V22))).toBe(
+      'b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a',
+    );
+    expect(sha256(JSON.stringify(LANGUAGE_CORPUS_V22.filter((c) => c.split === 'development')))).toBe(
+      sha256(JSON.stringify(LANGUAGE_CORPUS_V21.filter((c) => c.split === 'development'))),
+    );
+    for (const split of ['development', 'held-out']) {
+      expect(LANGUAGE_CORPUS_V22.filter((c) => c.split === split && c.admission === 'writable')).toHaveLength(
+        10,
+      );
+      expect(
+        LANGUAGE_CORPUS_V22.filter((c) => c.split === split && c.admission === 'read-only'),
+      ).toHaveLength(1);
+    }
+    const prior = new Set(LANGUAGE_CORPUS_V21.flatMap((c) => c.items.map((i) => i.text)));
+    expect(
+      LANGUAGE_CORPUS_V22.filter((c) => c.split === 'held-out')
+        .flatMap((c) => c.items)
+        .some((i) => prior.has(i.text)),
+    ).toBe(false);
+    // Independent input review owns scenario meaning; authors need not reuse prior labels.
+    expect(
+      new Set(
+        LANGUAGE_CORPUS_V22.filter((c) => c.split === 'held-out' && c.admission === 'writable').map(
+          (c) => c.scenario,
+        ),
+      ).size,
+    ).toBe(10);
+  });
+
   it('freezes twenty-first-corpus sources and keeps fresh held-out scenario coverage', () => {
     expect(sha256(JSON.stringify(LANGUAGE_CORPUS_V21))).toBe(
       '208d2ea60ef5f5bcf2158ef56a35e57e1ee6b5c36069ac2fbb606abe1ab1cf44',

@@ -57,7 +57,9 @@ function alignmentSchema(coordinates: AnswerAuditCoordinates) {
     [...coordinates.sources.values()].flatMap((spans) => spans.map((span) => span.anchor_id)),
   );
   const answer = anchorIdSchema(coordinates.answer.map((span) => span.anchor_id));
-  const detail = z.string().trim().min(1).max(160);
+  // Providers count Unicode code points; Zod counts UTF-16 units. Eighty code points fit
+  // the unchanged local 160-unit budget even when every character needs a surrogate pair.
+  const detail = z.string().trim().min(1).max(160).meta({ maxLength: 80 });
   // Refinements cannot constrain provider decoding. Make an omitted aspect's absent answer
   // coordinate part of its wire shape, without allowing that negative verdict to publish.
   // Write the concrete comparison before choosing its relation; an early "preserved" must
@@ -280,7 +282,8 @@ when either side specifies a property. A source property omitted or generalized 
 requires an active comparison. A property comparison requires its containing object_and_operation to
 be selected too. Ordinary plans, questions, promises or denials without a tested property need no
 invented one. Neither absence nor irrelevance may replace a lost property of a selected test.
-For actor and qualification, the existing combined detail remains required.
+For actor and qualification, the combined detail remains required: write one short complete
+comparison of at most 80 Unicode code points, naming the actor/experiencer or scope being compared.
 For framed blocks, answer_segments and retention_source_frame
 are ordered tables of exact text with server-assigned anchor_id values. Concatenate their text fields
 to read the complete answer and original frame. IDs are coordinates, never claims or source instructions.

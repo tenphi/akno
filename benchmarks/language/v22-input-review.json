@@ -1,0 +1,124 @@
+{
+  "schemaVersion": "language-input-review-v1",
+  "corpusFingerprint": "b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-5.6-sol",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutOutputs": true
+  },
+  "cases": [
+    {
+      "id": "v20-held-report",
+      "approved": true,
+      "reason": "The invented source and both queries clearly test nested attribution, scoped nonverification, a service permission, a corrective clarification, and an independent uncompleted action; the expectation retains each material distinction without adding facts."
+    },
+    {
+      "id": "v20-held-hypothesis",
+      "approved": true,
+      "reason": "The hypothetical rule, conditional consequence, and explicit lack of real-world knowledge are understandable in both query languages, and the expectation correctly prevents the premise from becoming an actual requirement or event."
+    },
+    {
+      "id": "v20-held-counterfactual",
+      "approved": true,
+      "reason": "The source cleanly separates actual nonpurchase from an unrealized coverage consequence, while the queries and expectation preserve the false antecedent, repair scope, and non-calendar duration."
+    },
+    {
+      "id": "v20-held-question",
+      "approved": true,
+      "reason": "The unresolved service question is direct and answerable as an open question, and the expectation properly retains uncertainty about both inclusion and exclusion without inventing external action or broader contract silence."
+    },
+    {
+      "id": "v20-held-exclusion",
+      "approved": true,
+      "reason": "The factual exclusion and the deliberately unsettled separate repair issue are plainly scoped, and the expectation preserves negative polarity and avoids unsupported conclusions about the whole agreement."
+    },
+    {
+      "id": "v20-held-assistant",
+      "approved": true,
+      "reason": "The assistant-authored speculation is clearly tentative and personally unverified, and the expectation retains attribution, interval, and contractual scope without turning the suggestion into a device state or established duty."
+    },
+    {
+      "id": "v20-held-fiction",
+      "approved": true,
+      "reason": "The source marks both the discussion proposal and story content as fictional, while the expectation fully retains the fictional parties, benefit, duration, and absence of any real agreement or performed discussion."
+    },
+    {
+      "id": "v20-held-rejected",
+      "approved": true,
+      "reason": "The rejected plan has a concrete destination and inspection purpose plus separate intent and arrangement denials; the expectation is complete and does not confuse a described offer with accepted or completed work."
+    },
+    {
+      "id": "v20-held-undated",
+      "approved": true,
+      "reason": "The source-relative timing is explicit despite the unknown calendar date, and the expectation usefully preserves the proposal, temporal anchor, nonacceptance, and lack of an arranged meeting."
+    },
+    {
+      "id": "v20-held-alternatives",
+      "approved": true,
+      "reason": "Two distinct tentative causes, lack of evidence, and personal nonselection are all explicit; the expectation retains the alternatives and prevents either from being promoted to an established cause."
+    },
+    {
+      "id": "v20-held-admission",
+      "approved": true,
+      "reason": "The invented warranty fact is clear, while the read-only admission and hold expectation correctly require preservation and a distinct write-denial result rather than unsupported retention or absence claims."
+    },
+    {
+      "id": "v22-held-nested-report",
+      "approved": true,
+      "reason": "The Russian source clearly distinguishes outer and inner reporters, alleged permission, exact check-versus-replacement scope, personal nonverification, and a separate unpacked-device fact; the bilingual queries and expectation are complete."
+    },
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "approved": true,
+      "reason": "The assumed maintenance interval and conditional breach are coherent and explicitly disclaimed as real requirements or omissions, with queries and expectation that preserve the conditional structure."
+    },
+    {
+      "id": "v22-held-counterfactual",
+      "approved": true,
+      "reason": "Actual non-enrollment and the unrealized free-replacement consequence are cleanly separated, and the expectation preserves the antecedent, benefit, duration, and lack of current coverage."
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "approved": true,
+      "reason": "The source establishes one specific exclusion while explicitly leaving another component's replacement coverage unsettled; the expectation accurately retains both scopes and bars unsupported inclusion, exclusion, or silence."
+    },
+    {
+      "id": "v22-held-assistant-speculation",
+      "approved": true,
+      "reason": "The mixed-language assistant statement remains readily understandable, with tentative attribution, operating-cycle frequency, personal knowledge limits, and non-establishment all preserved by the expectation."
+    },
+    {
+      "id": "v22-held-fictional-example",
+      "approved": true,
+      "reason": "The invented example is clearly bounded as fiction and fully specifies the parties, loaned item, duration, and fictional repair anchor; the expectation prevents every story event from becoming a real-world claim."
+    },
+    {
+      "id": "v22-held-relative-unknown-date",
+      "approved": true,
+      "reason": "The proposal and two-week source-relative anchor are clear even without a source date, and the expectation preserves the unknown calendar date, non-processing anchor, and absence of an agreed meeting."
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "approved": true,
+      "reason": "The source presents two separable preliminary causes and explicitly withholds evidence, selection, and even confirmation of the symptom; the expectation accurately preserves all of those qualifications."
+    },
+    {
+      "id": "v22-held-open-question",
+      "approved": true,
+      "reason": "The bilingual source and queries clearly identify an unresolved annual service-plan question, and the expectation preserves Ada's personal lack of an answer without asserting contract silence or broader ignorance."
+    },
+    {
+      "id": "v22-held-rejected-plan",
+      "approved": true,
+      "reason": "The rejected proposal's destination and measurement purpose are precise, with independent denials of intent, appointment, and transport; the expectation retains these facts without implying execution or causation."
+    },
+    {
+      "id": "v22-held-read-only-admission",
+      "approved": true,
+      "reason": "The invented maintenance interval is understandable and the explicit read-only target makes the expected typed admission hold appropriate, including byte preservation and distinction from missing, empty, or unavailable knowledge."
+    }
+  ]
+}

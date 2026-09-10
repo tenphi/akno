@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "language-input-review-v1",
+  "corpusFingerprint": "b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a",
+  "reviewer": "gpt-5.6-sol-independent",
+  "cases": [
+    { "id": "v20-held-report", "approved": true, "reason": "Unchanged approved development case with distinct outer and inner reporters, personal knowledge limits, mechanism clarification, and an independent action denial." },
+    { "id": "v20-held-hypothesis", "approved": true, "reason": "Unchanged approved development case cleanly separates a hypothetical recurring premise and consequence from real requirements and actual events." },
+    { "id": "v20-held-counterfactual", "approved": true, "reason": "Unchanged approved development case binds a false purchase antecedent to a qualified repair consequence and explicit actual nonpurchase." },
+    { "id": "v20-held-question", "approved": true, "reason": "Unchanged approved development case presents one unresolved service question with personal no-answer and neither-outcome-established scope." },
+    { "id": "v20-held-exclusion", "approved": true, "reason": "Unchanged approved development case separates an asserted exclusion from a record-level inability to resolve another repair." },
+    { "id": "v20-held-assistant", "approved": true, "reason": "Unchanged approved development case preserves assistant attribution, tentative contractual interpretation, and personal reading and verification limits." },
+    { "id": "v20-held-fiction", "approved": true, "reason": "Unchanged approved development case distinguishes the actual proposal to discuss from a fully scoped fictional promise and duration." },
+    { "id": "v20-held-rejected", "approved": true, "reason": "Unchanged approved development case preserves proposal content, rejection, lack of intent, and an independent no-collection fact." },
+    { "id": "v20-held-undated", "approved": true, "reason": "Unchanged approved development case binds a tentative proposal to an undated source-relative clock, unknown calendar period, and explicit no-plan and no-meeting facts." },
+    { "id": "v20-held-alternatives", "approved": true, "reason": "Unchanged approved development case contains two distinct tentative causes with group-wide no-evidence and personal nonselection qualifications." },
+    { "id": "v20-held-admission", "approved": true, "reason": "Unchanged approved development control has understandable factual content and an explicit read-only admission outcome." },
+    { "id": "v22-held-nested-report", "approved": true, "reason": "The fresh report case is unambiguous about source roles, alleged permission, tested property, nonreplacement clarification, personal epistemic limits, and the separate packing fact." },
+    { "id": "v22-held-conditional-hypothesis", "approved": true, "reason": "The fresh hypothesis provides a complete assumed schedule and conditional consequence while explicitly denying knowledge of the real rule and any actual omission." },
+    { "id": "v22-held-counterfactual", "approved": true, "reason": "The fresh counterfactual clearly states actual nonenrollment, the false antecedent, qualified component benefit and interval, and its unrealized status." },
+    { "id": "v22-held-coverage-exclusion", "approved": true, "reason": "The fresh exclusion distinguishes a supported material-and-cause exclusion from unresolved replacement coverage and from agreement-wide silence." },
+    { "id": "v22-held-assistant-speculation", "approved": true, "reason": "The fresh assistant case has explicit tentative attribution, operation, cadence, contractual sense, personal epistemic limits, and nonestablished status." },
+    { "id": "v22-held-fictional-example", "approved": true, "reason": "The fresh fictional case separates the actual introduction from a bounded story-only loan with clear parties, object, duration, and no-real-world scope." },
+    { "id": "v22-held-relative-unknown-date", "approved": true, "reason": "The fresh planning case explicitly supplies proposer, action, source-relative interval, unknown calendar date, excluded processing anchor, and no agreed meeting." },
+    { "id": "v22-held-competing-hypotheses", "approved": true, "reason": "The fresh alternatives case preserves two distinct tentative component causes, no selection, no support for either, and no source confirmation of the symptom itself." },
+    { "id": "v22-held-open-question", "approved": true, "reason": "The fresh question is focused and answerable as an unresolved record, with explicit experiencer, operation and cadence plus neither-inclusion-nor-exclusion scope." },
+    { "id": "v22-held-rejected-plan", "approved": true, "reason": "The fresh rejected proposal has a precise destination and tested property, actor-specific rejection and intent, and independent appointment and transport denials." },
+    { "id": "v22-held-read-only-admission", "approved": true, "reason": "The fresh admission control has clear invented maintenance content and an explicit read-only destination requiring a typed hold without retention." }
+  ]
+}

@@ -25,6 +25,7 @@ import { LANGUAGE_CORPUS_V18 } from './language-corpus-v18.ts';
 import { LANGUAGE_CORPUS_V19 } from './language-corpus-v19.ts';
 import { LANGUAGE_CORPUS_V20 } from './language-corpus-v20.ts';
 import { LANGUAGE_CORPUS_V21 } from './language-corpus-v21.ts';
+import { LANGUAGE_CORPUS_V22 } from './language-corpus-v22.ts';
 import { LANGUAGE_CORPUS_V6 } from './language-corpus-v6.ts';
 import { LANGUAGE_CORPUS_V5 } from './language-corpus-v5.ts';
 import { LANGUAGE_CORPUS_V4 } from './language-corpus-v4.ts';
@@ -55,7 +56,8 @@ export interface LanguageBenchOptions {
     | 'v18'
     | 'v19'
     | 'v20'
-    | 'v21';
+    | 'v21'
+    | 'v22';
   runs?: number;
   caseIds?: string[];
   onProgress?: (id: string, done: number, total: number) => void;
@@ -107,7 +109,9 @@ export async function runLanguageBench(config: AknoConfig, options: LanguageBenc
                                           ? LANGUAGE_CORPUS_V19
                                           : corpus === 'v20'
                                             ? LANGUAGE_CORPUS_V20
-                                            : LANGUAGE_CORPUS_V21;
+                                            : corpus === 'v21'
+                                              ? LANGUAGE_CORPUS_V21
+                                              : LANGUAGE_CORPUS_V22;
   const split = entries.filter((entry) => entry.split === options.split);
   if (options.caseIds?.some((id) => !split.some((entry) => entry.id === id)))
     throw new Error('unknown case id in selected split');
@@ -275,7 +279,8 @@ async function runCase(
     | 'v18'
     | 'v19'
     | 'v20'
-    | 'v21',
+    | 'v21'
+    | 'v22',
   run: number,
 ) {
   const v2 = corpus !== 'v1' ? (entry as LanguageCaseV2) : null;

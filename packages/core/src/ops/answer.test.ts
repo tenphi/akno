@@ -493,6 +493,8 @@ describe('grounded answer discovery surface', () => {
             'nominal-direct-negative',
             'nominal-infinitive-negative',
             'nominal-independent-negative',
+            'nominal-purchase-relative',
+            'nominal-purchase-relative-negative',
           ] as const)
       ).map((mode) => [kind, mode] as const),
     ),
@@ -511,7 +513,16 @@ describe('grounded answer discovery surface', () => {
         text = mode.includes('infinitive')
           ? 'По словам Ada Marlow, нереализованный вариант состоял в том, чтобы приобрести продление silverpine для Zephyr QX-100: в таком случае ремонт был бы покрыт в седьмом году. Ada Marlow не приобрела это продление, поэтому оно не являлось её действующим покрытием.'
           : 'По словам Ada Marlow, нереализованный вариант заключался в том, что приобретение продления silverpine для Zephyr QX-100 покрыло бы ремонт в седьмом году. Ada Marlow его не приобрела, поэтому это не было её действующим покрытием.';
-        if (['nominal-direct-negative', 'nominal-infinitive-negative'].includes(mode))
+        if (mode.startsWith('nominal-purchase-relative'))
+          text =
+            'Ada Marlow описала нереализованный вариант, при котором при покупке продления silverpine для Zephyr QX-100 ремонт в седьмом году покрывался бы. Она не приобрела это расширение, поэтому такое покрытие не являлось её действующим покрытием.';
+        if (
+          [
+            'nominal-direct-negative',
+            'nominal-infinitive-negative',
+            'nominal-purchase-relative-negative',
+          ].includes(mode)
+        )
           text = text.replace('седьмом', 'восьмом');
         if (mode === 'nominal-independent-negative') text += ' Продление покрывает ремонт клапана.';
       }
@@ -573,6 +584,7 @@ describe('grounded answer discovery surface', () => {
         'preserved',
         'nominal-direct',
         'nominal-infinitive',
+        'nominal-purchase-relative',
         'translated-name',
         'local-clock-negative',
         'language-negative',
@@ -668,7 +680,7 @@ describe('grounded answer discovery surface', () => {
         graph: false,
       });
       expect(result.reason_code, JSON.stringify(result)).toBe(
-        ['preserved', 'nominal-direct', 'nominal-infinitive'].includes(mode)
+        ['preserved', 'nominal-direct', 'nominal-infinitive', 'nominal-purchase-relative'].includes(mode)
           ? 'answered'
           : mode === 'language-negative'
             ? 'generation_failed'
