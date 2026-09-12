@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "language-input-review-v1",
+  "corpusFingerprint": "95905fa8b8fb21d2ab5ed48d3261a850fbbad79369bd4c43e155bf3674fd7165",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-5.6-sol",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutOutputs": true
+  },
+  "cases": [
+    {
+      "id": "v15-held-report",
+      "approved": true,
+      "reason": "The Russian source clearly attributes Bo Winters’s unverified report through recorder Ada Marlow, permits sending the device for seal testing rather than replacement, and explicitly denies an arranged shipment, contract inspection, and confirmation. The expectation and bilingual questions are faithful."
+    },
+    {
+      "id": "v15-held-hypothesis",
+      "approved": true,
+      "reason": "The mixed source explicitly assumes an annual battery-contact check and conditional breach for discussion while declaring the actual rule and any actual missed check unestablished. The expectation preserves Ada Marlow attribution and avoids creating a dated schedule."
+    },
+    {
+      "id": "v15-held-counterfactual",
+      "approved": true,
+      "reason": "The English source states Ada Marlow’s final refusal and nonenrollment plus fourth-year display repair conditional on acceptance. Requiring both for retention and the conditional plus nonacceptance in focused answers is fully supported."
+    },
+    {
+      "id": "v15-held-question",
+      "approved": true,
+      "reason": "The mixed source records Ada Marlow’s unresolved return-shipping inclusion question and explicitly establishes neither free shipping nor exclusion. The expectation and bilingual questions preserve the open status without answering it."
+    },
+    {
+      "id": "v15-held-exclusion",
+      "approved": true,
+      "reason": "The Russian source directly asserts exclusion of sanding housing scratches and expressly says nothing about electrical-fault repair. The expectation fairly permits an attributed denial while preventing scope expansion or claims of independent verification."
+    },
+    {
+      "id": "v15-held-assistant",
+      "approved": true,
+      "reason": "The mixed assistant statement gives two firmware checks per year as its preliminary, unchecked interpretation. The expectation correctly preserves assistant attribution, exact quantity, uncertainty, and nonfictional source-report status."
+    },
+    {
+      "id": "v15-held-fiction",
+      "approved": true,
+      "reason": "The English source marks Ada Marlow’s example, Vulpine Mutual’s promise, Bo Winters, the free carrying case, and the first-four-month duration as fictional. The expectation preserves all material participants, product, duration, and nonactual status."
+    },
+    {
+      "id": "v15-held-rejected",
+      "approved": true,
+      "reason": "The mixed source explicitly records Ada Marlow’s rejected workshop-shipment offer, no shipment plan, and no arranged pickup. Full retention requirements and the focused-answer allowance are supported without creating an active plan."
+    },
+    {
+      "id": "v15-held-undated",
+      "approved": true,
+      "reason": "The Russian source proposes a warranty-price comparison tomorrow, denies an appointment, anchors tomorrow to the undated original note rather than today, and says the calendar date is unrecoverable. The expectation faithfully requires every material time qualification."
+    },
+    {
+      "id": "v15-held-alternatives",
+      "approved": true,
+      "reason": "The English source names a frayed cable and obstructed socket as tentative, equally unsupported competing explanations with no selected cause. The expectation correctly permits tentative or hypothetical encoding and bars factual promotion."
+    },
+    {
+      "id": "v15-held-admission",
+      "approved": true,
+      "reason": "The mixed source contains a factual warranty duration, but every destination is read-only and the memory folder is empty. A retention hold and answer abstention are justified."
+    },
+    {
+      "id": "v16-held-report",
+      "approved": true,
+      "reason": "The mixed source explicitly attributes Bo Winters’s unverified report through recorder Ada Marlow, permits sending the device for fan-noise measurement rather than fan replacement, and states that no shipment is arranged and the terms were not inspected. The expectation and bilingual questions are faithful."
+    },
+    {
+      "id": "v16-held-hypothesis",
+      "approved": true,
+      "reason": "The Russian source expressly assumes inspection once per half-year, which faithfully supports twice-yearly inspection, and places the missed-inspection consequence inside that hypothesis while denying any known actual requirement or missed event."
+    },
+    {
+      "id": "v16-held-counterfactual",
+      "approved": true,
+      "reason": "The mixed source states Ada Marlow’s settled rejection/nonpurchase and fifth-year connector repair conditional on the unchosen warranty. Requiring both for retention and nonacceptance in focused answers is fully supported."
+    },
+    {
+      "id": "v16-held-question",
+      "approved": true,
+      "reason": "The English source records Ada Marlow’s unanswered temporary-replacement-device question and expressly establishes neither inclusion nor exclusion. The expectation and bilingual queries preserve its open status."
+    },
+    {
+      "id": "v16-held-exclusion",
+      "approved": true,
+      "reason": "The mixed source directly asserts exclusion of rubber-support replacement and says nothing about power-connector repair. The expectation preserves the component and action boundaries without adding verification."
+    },
+    {
+      "id": "v16-held-assistant",
+      "approved": true,
+      "reason": "The Russian assistant statement gives quarterly contact inspection as a tentative, unchecked reading. The expectation correctly preserves assistant attribution, frequency, uncertainty, and nonfictional report status."
+    },
+    {
+      "id": "v16-held-fiction",
+      "approved": true,
+      "reason": "The mixed source explicitly marks Ada Marlow’s example, Vulpine Mutual’s promise, Bo Winters, free strap replacement, and the first-two-month duration as fictional. The expectation preserves every material participant and limit."
+    },
+    {
+      "id": "v16-held-rejected",
+      "approved": true,
+      "reason": "The English source records an explicitly rejected workshop shipment for charging-port inspection, no shipment plan, and no scheduled pickup. The full-retention and focused-answer requirements are supported."
+    },
+    {
+      "id": "v16-held-undated",
+      "approved": true,
+      "reason": "The mixed source records an unaccepted cancellation-terms proposal for next week, denies a meeting, anchors next week to the undated original note rather than processing time, and says the calendar week is unknowable. The expectation is fully entailed."
+    },
+    {
+      "id": "v16-held-alternatives",
+      "approved": true,
+      "reason": "The Russian source names a loose fastener and worn bearing as tentative, equally unsupported competing hypotheses with no selected cause. The expectation faithfully bars factual promotion."
+    },
+    {
+      "id": "v16-held-admission",
+      "approved": true,
+      "reason": "The invented warranty assertion is useful in principle, but the only destination is read-only and the memory folder is empty. Holding retention and abstaining are justified."
+    }
+  ],
+  "summary": "All 22 cases are approved. Their invented sources, bilingual queries, expectations, and admission settings are mutually consistent and answerable while preserving exact objects, actions, attribution, nonfactual status, scope, and source-relative unknown time."
+}

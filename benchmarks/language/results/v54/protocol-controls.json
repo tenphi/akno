@@ -1,0 +1,85 @@
+{
+  "runtimeCommit": "9fd704d90faa3d2cf137bc9c6a161c32dabd4def",
+  "purpose": "protocol-only",
+  "answerOutputTokenLimit": 2400,
+  "results": [
+    {
+      "kind": "generation",
+      "status": "completed",
+      "expected": {
+        "record_readings": [
+          {
+            "evidence_id": "E1",
+            "selected_meaning": "Private invented reading of the open return-delivery question.",
+            "clarification_or_ambiguity": null
+          }
+        ],
+        "blocks": [
+          {
+            "text": "The open silverpine question is whether the warranty covers return delivery; its answer remains unknown.",
+            "evidence_ids": [
+              "E1"
+            ]
+          }
+        ],
+        "missing_concepts": []
+      },
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "reason": null
+    },
+    {
+      "kind": "verification",
+      "status": "completed",
+      "expected": {
+        "verdicts": [
+          {
+            "block_id": "B1",
+            "source_alignments": [
+              {
+                "evidence_id": "E1",
+                "actor": {
+                  "source_quote": null,
+                  "answer_quote": null,
+                  "relation": "not_selected",
+                  "detail": "No named action actor."
+                },
+                "object_and_mechanism": {
+                  "source_quote": "покрывает ли гарантия обратную доставку",
+                  "answer_quote": "warranty covers return delivery",
+                  "relation": "preserved",
+                  "detail": "The same coverage question."
+                },
+                "qualification": {
+                  "source_quote": "Ответ неизвестен",
+                  "answer_quote": "its answer remains unknown",
+                  "relation": "preserved",
+                  "detail": "Unknown answer remains unknown."
+                }
+              }
+            ],
+            "comparison": {
+              "source_meaning": "An unanswered return-delivery question.",
+              "candidate_meaning": "An unanswered return-delivery question.",
+              "action_arguments": "The warranty coverage question concerns return delivery.",
+              "qualification_scope": "The question remains open."
+            },
+            "mismatches": [],
+            "proposition_supported": true,
+            "action_arguments_preserved": true,
+            "qualification_scope_preserved": true,
+            "excerpt_selection": {
+              "selected_by_retained_excerpt": true,
+              "unselected_content": null
+            }
+          }
+        ]
+      },
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "reason": null
+    }
+  ]
+}

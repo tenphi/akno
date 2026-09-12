@@ -1,0 +1,16 @@
+{
+  "runtimeCommit": "0f3357fd7ccd314f9487570cb651b4a7d6ac05e2",
+  "trace": "language-selected-v61-trace.jsonl",
+  "row": 39,
+  "method": "Frozen compiled cleanCandidateBatch on exact repaired original-position-1 candidate with generated:true and complete original sourceItems; no provider call or trace mutation.",
+  "result": {
+    "candidates": [],
+    "held": [
+      {
+        "candidate_id": "cand_b3ddc122e82d14a9c7f6e49a",
+        "reason_code": "discourse_uncertain",
+        "reason": "asserted commitment is incompatible with modal, fictional or rejection scope in this frame; classify the embedded proposition, not the fact that someone discussed it"
+      }
+    ]
+  }
+}

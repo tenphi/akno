@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { ProvidedRetainCandidate } from '@tenphi/akno-protocol';
+import { memoryEligibleForView } from '../memory/intent.ts';
 import {
   markerFromProvidedCandidate,
   managedMemoryPayloadIssue,
@@ -28,6 +30,31 @@ const candidate = {
 };
 
 describe('managed memory v2 marker', () => {
+  it('round-trips rejected plans through protocol and stored markers while excluding planning', () => {
+    const rejected = {
+      ...candidate,
+      time: undefined,
+      discourse: { commitment: 'asserted' as const, disposition: 'rejected' as const },
+    };
+    expect(ProvidedRetainCandidate.safeParse(rejected).success).toBe(true);
+    const marker = markerFromProvidedCandidate('mem_1111', rejected, {
+      receipt: 'aaaaaaaaaaaa',
+      candidate: 'bbbbbbbbbbbb',
+      proofGroup: 'cccccccccccc',
+      selection: 'provided',
+    });
+    expect(parseManagedMemoryMarker(renderManagedMemoryMarker(marker))?.disposition).toBe('rejected');
+    const semantics = {
+      kind: rejected.kind,
+      ...rejected.discourse,
+      basis: 'self_attested' as const,
+      answerEligible: false,
+    };
+    expect(memoryEligibleForView(semantics, 'history')).toBe(true);
+    expect(memoryEligibleForView(semantics, 'planning')).toBe(false);
+    expect(memoryEligibleForView(semantics, 'factual')).toBe(false);
+  });
+
   it('round-trips the one canonical ordered grammar', () => {
     const marker = markerFromProvidedCandidate('mem_1111', candidate, {
       receipt: 'aaaaaaaaaaaa',

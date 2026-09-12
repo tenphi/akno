@@ -1,0 +1,68 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import assert from 'node:assert/strict';
+import {loadConfig} from '../packages/core/src/config/load.ts';
+const read=file=>JSON.parse(fs.readFileSync(file,'utf8'));
+const hash=file=>createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+const runtimeCommit=fs.readFileSync('tmp/v77-frozen-runtime.txt','utf8').trim();
+const corpusFingerprint='b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a';
+function tree(root){const rows=[];function visit(folder){for(const name of fs.readdirSync(folder).sort()){const file=path.join(folder,name),stat=fs.lstatSync(file);if(stat.isDirectory())visit(file);else if(stat.isFile())rows.push([path.relative(root,file),hash(file)]);else throw new Error('Unexpected source/dist entry');}}visit(root);return createHash('sha256').update(JSON.stringify(rows)).digest('hex');}
+assert.equal(execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),runtimeCommit);
+assert.equal(execFileSync('git',['status','--porcelain','--untracked-files=no'],{encoding:'utf8'}).trim(),'');
+const original=read('tmp/v77-launch-manifest.json');
+const readiness=read('tmp/v77-postdeploy-check.json');
+assert.equal(readiness.runtimeCommit,runtimeCommit);assert.deepEqual(readiness.launchManifest,original);
+assert.equal(readiness.local.allExitCodes,0);assert.equal(readiness.tests,3910);assert.equal(readiness.testFiles,152);
+assert(readiness.compiled.passed);assert.equal(readiness.compiled.groups.length,23);
+for(const ci of [readiness.ci,readiness.documentationCI]){assert.equal(ci.headSha,runtimeCommit);assert.equal(ci.conclusion,'success');}
+assert.equal(readiness.deployment,'build/restart/socket successful');
+assert.deepEqual(readiness.protocol,read('tmp/v77-protocol-results.json'));
+assert.equal(readiness.protocol.passed,true);assert.equal(readiness.protocol.results.length,10);
+assert(readiness.protocol.results.every(r=>r.ok&&r.schemaValid&&r.exact));
+assert.deepEqual(readiness.protocolAccounting,{logicalControls:10,fulfilledRequirements:10,failures:0,endpointRequests:16});
+assert.equal(tree('packages/core/src'),original.sourceDigest);assert.equal(tree('packages/core/dist'),original.distDigest);
+const inputs=read('tmp/language-v22-input-review.json');
+const packet=read('tmp/language-v22-blind-inputs.json');
+assert.equal(packet.corpusFingerprint,corpusFingerprint);
+assert.equal(createHash('sha256').update(JSON.stringify(packet.cases)).digest('hex'),corpusFingerprint);
+assert.equal(packet.cases.length,22);assert.equal(new Set(inputs.cases.map(c=>c.id)).size,22);
+assert.deepEqual(inputs.cases.map(c=>c.id).sort(),packet.cases.map(c=>c.id).sort());
+for(const [folder,extension] of [['src','ts'],['dist','js']]){
+ const corpus=await import('../packages/core/'+folder+'/bench/language-corpus-v22.'+extension);
+ assert.equal(createHash('sha256').update(JSON.stringify(corpus.LANGUAGE_CORPUS_V22)).digest('hex'),corpusFingerprint);
+}
+
+assert.equal(inputs.corpusFingerprint,corpusFingerprint);assert.equal(inputs.cases.length,22);assert(inputs.cases.every(c=>c.approved===true));assert.equal(inputs.reviewer.reviewedWithoutOutputs,true);assert.equal(inputs.reviewer.independent,true);
+assert.equal(inputs.schemaVersion,'language-input-review-v1');
+for(const [field,value] of Object.entries({kind:'model',id:'gpt-5.6-sol',independent:true,didNotAuthorCorpus:true,didNotTuneRuntime:true,reviewedWithoutOutputs:true}))assert.equal(inputs.reviewer[field],value);
+const config=loadConfig({overrides:{models:{answer:{max_output_tokens:2400}}}});
+const modelPolicy=Object.fromEntries(['derive','answer','embedding','expansion'].map(role=>{const m=config.models[role];return [role,{id:m.id,enabled:m.enabled,maxOutputTokens:m.maxOutputTokens??null,timeoutMs:m.timeoutMs,reasoningEffort:m.reasoningEffort??null}];}));
+for(const role of ['derive','answer']){assert.equal(modelPolicy[role].id,'gpt-5.6-luna');assert.equal(modelPolicy[role].maxOutputTokens,2400);assert.equal(modelPolicy[role].enabled,true);}
+const reported=read('bench-results/language-selected-v77.json');
+for(const [role,reportRole] of [['derive','retention'],['answer','answer'],['embedding','embedding'],['expansion','expansion']]){
+ assert.equal(modelPolicy[role].id,reported.models[reportRole]);assert.equal(modelPolicy[role].enabled,true);
+}
+assert.equal(modelPolicy.expansion.id,'llama-3.2-3b-instruct');assert.equal(modelPolicy.embedding.id,'text-embedding-qwen3-embedding-0.6b');
+assert.deepEqual(reported.modelOutputTokenLimits,{answer:2400,retention:2400});
+const captureControls=read('tmp/v77-full-capture-controls.json');assert(captureControls.passed);assert.equal(captureControls.providerCalls,0);assert.equal(captureControls.captureSha256,hash('tmp/capture-language-full-v77.mjs'));assert.equal(captureControls.validatorSha256,hash('tmp/v77-full-trace-integrity.mjs'));
+const files=['scripts/bench-language.mjs','tmp/capture-language-full-v77.mjs','tmp/v77-full-launch-integrity.mjs','tmp/start-v77-full.mjs','tmp/run-v77-full-development.sh','tmp/run-v77-full-held-out.sh','tmp/validate-v77-full.mjs','tmp/v77-full-trace-integrity.mjs','tmp/v77-full-trial-plan-draft.md','bench-results/language-selected-v77.json','tmp/language-v22-blind-inputs.json','tmp/v77-postdeploy-check.json','tmp/v77-protocol-results.json','tmp/v77-completion-contract.json','tmp/pr70-completion-budget.json','tmp/v77-full-capture-controls.json','tmp/test-v77-full-capture.mjs','tmp/language-v77-top-level-review.md','tmp/language-v77-harness-failure-forensics.md','tmp/language-v77-source-grading-disposition.md','tmp/record-v77-failed-diagnostics.mjs','tmp/v77-completion-gate.mjs','tmp/test-v77-completion-gate.mjs','tmp/v77-completion-gate-controls.json','tmp/prepare-v77-full-review.mjs','tmp/adjudicate-v77-full.mjs','tmp/v77-full-grading-contract.md','tmp/language-v77-full-harness-review.md','tmp/language-v77-full-capture-review.md'];
+const expected={runtimeCommit,corpusFingerprint,runs:2,splits:['development','held-out'],casesPerSplit:11,coordinatesPerCase:8,sourceDigest:original.sourceDigest,distDigest:original.distDigest,inputReviewSha256:hash('tmp/language-v22-input-review.json'),completionContract:read('tmp/v77-completion-contract.json'),modelPolicy,files:Object.fromEntries(files.map(file=>[file,hash(file)]))};
+const manifest='tmp/v77-full-launch-manifest.json';
+if(process.argv[2]==='--prepare'){
+ assert(!fs.existsSync(manifest));fs.writeFileSync(manifest,JSON.stringify(expected,null,2)+'\n');console.log(JSON.stringify({prepared:true,runtimeCommit,corpusFingerprint,providerCalls:0}));
+}else{
+ assert.deepEqual(read(manifest),expected);
+ const decision=read('tmp/v77-full-trial-decision.json');assert.equal(decision.decision,'proceed');assert.equal(decision.runtimeCommit,runtimeCommit);assert.equal(decision.freshHeldOutExecutedBeforeDecision,false);
+ const provenance=read('tmp/v77-completed-probe-provenance.json');assert.equal(provenance.runtimeCommit,runtimeCommit);assert.equal(provenance.status,'failed_infrastructure');assert.equal(provenance.plannedObservations,96);assert.equal(provenance.observations,0);assert.equal(provenance.positiveSemanticReadinessEvidence,false);assert.equal(provenance.caseAvailabilityFailures,12);
+ const approval=read('tmp/v77-full-preflight-approval.json');assert.equal(approval.approved,true);assert.equal(approval.reviewer,'gpt-5.6-sol');assert.equal(approval.runtimeCommit,runtimeCommit);assert.equal(approval.manifestSha256,hash(manifest));assert.equal(approval.decisionSha256,hash('tmp/v77-full-trial-decision.json'));assert.equal(approval.provenanceSha256,hash('tmp/v77-completed-probe-provenance.json'));assert.equal(approval.reviewSha256,hash('tmp/language-v77-full-preflight-review.md'));assert.equal(approval.completionContractSha256,hash('tmp/v77-completion-contract.json'));
+ if(process.argv[2]==='--check'){console.log(JSON.stringify({checked:true,runtimeCommit,providerCalls:0}));}
+ else{
+  const split=process.argv[2];assert(['development','held-out'].includes(split));
+  const started=read('tmp/v77-full-started.json');assert.equal(started.runtimeCommit,runtimeCommit);assert.equal(started.manifestSha256,hash(manifest));assert.equal(started.approvalSha256,hash('tmp/v77-full-preflight-approval.json'));
+  const receipt=`tmp/v77-full-${split}-launch-receipt.json`;assert(!fs.existsSync(receipt));
+  for(const suffix of ['.json','-trace.jsonl'])assert(!fs.existsSync(`bench-results/language-full-${split}-v77${suffix}`));
+  fs.writeFileSync(receipt,JSON.stringify({...expected,split,startedAt:new Date().toISOString(),approvalSha256:hash('tmp/v77-full-preflight-approval.json')},null,2)+'\n');
+ }
+}

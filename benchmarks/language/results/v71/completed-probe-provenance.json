@@ -1,0 +1,45 @@
+{
+  "runtimeCommit": "304b2195ae6c34fabab2b6c4106730a7edbf3186",
+  "purpose": "Coordinate/version/provenance checks only; usefulness and accepted meaning errors require independent review.",
+  "results": [
+    {
+      "probe": "selected",
+      "observations": 64,
+      "reportSha256": "5658ef58a91ba10151452e9b10ae48057f033a9899e32acef7d4c975d37bffdc",
+      "traceSha256": "65c102bab435f49789a98be1477c4c0ee5d6ecac1bda50652845c7e133323733",
+      "traceRows": 241,
+      "models": {
+        "retention": "gpt-5.6-luna",
+        "answer": "gpt-5.6-luna",
+        "embedding": "text-embedding-qwen3-embedding-0.6b",
+        "expansion": "llama-3.2-3b-instruct"
+      },
+      "modelOutputTokenLimits": {
+        "answer": 2400,
+        "retention": 2400
+      },
+      "caseAvailabilityFailures": 0,
+      "sourceByteChanges": 0
+    },
+    {
+      "probe": "built",
+      "observations": 32,
+      "reportSha256": "0ee34cf69c031135bd470513d28ac7a4fadb4557ccb8040a5f3181849b898b7a",
+      "traceSha256": "e442439f0d73c466df12bbd2abe693ab962b07dd9c3d216681176f8035e71044",
+      "traceRows": 146,
+      "models": {
+        "retention": "gpt-5.6-luna",
+        "answer": "gpt-5.6-luna",
+        "embedding": "text-embedding-qwen3-embedding-0.6b",
+        "expansion": "llama-3.2-3b-instruct"
+      },
+      "modelOutputTokenLimits": {
+        "answer": 2400,
+        "retention": 2400
+      },
+      "caseAvailabilityFailures": 0,
+      "sourceByteChanges": 0
+    }
+  ],
+  "freshHeldOutExecuted": false
+}

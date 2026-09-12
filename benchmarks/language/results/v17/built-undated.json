@@ -1,0 +1,857 @@
+{
+  "schemaVersion": "language-benchmark-v2",
+  "createdAt": "2026-09-07T20:05:28.485Z",
+  "corpusVersion": "language-discourse-v8",
+  "corpusFingerprint": "e2345553c93d5962321fb752cc8cc18434b9e0023fdf283d2709868a6f18c68a",
+  "selectedCaseIds": [
+    "v3-dev-undated"
+  ],
+  "runs": 1,
+  "setup": "separate-writable-fidelity-and-read-only-admission",
+  "queryMatrix": [
+    "query_language",
+    "answer_language",
+    "explicit_view"
+  ],
+  "split": "development",
+  "knowledgeLanguage": "en",
+  "proseProjectionVersion": "prose-v1",
+  "memoryViewVersion": "memory-view-v3",
+  "answerPromptVersion": "answer-generation-v17",
+  "answerVerifierVersion": "answer-verifier-v7",
+  "retentionPromptVersion": "retain-extraction-language-v11",
+  "retentionVerifierVersion": "retain-verifier-language-v5",
+  "models": {
+    "retention": "gpt-5.6-luna",
+    "answer": "gpt-5.6-luna",
+    "embedding": "text-embedding-qwen3-embedding-0.6b",
+    "expansion": "llama-3.2-3b-instruct"
+  },
+  "indexModelDerivation": false,
+  "independentlyReviewed": false,
+  "releaseEligible": false,
+  "adjudication": "pending: inspect review material; verifier agreement and typed expectations are not independent truth labels",
+  "thresholds": {
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "usefulQualifiedAnswerCoverage": 0.8,
+    "availabilityFailureRate": 0.05
+  },
+  "metrics": {
+    "availabilityFailures": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0
+    },
+    "answerOperationFailures": {
+      "numerator": 0,
+      "denominator": 8,
+      "rate": 0
+    },
+    "producedAnswers": {
+      "numerator": 8,
+      "denominator": 8,
+      "rate": 1
+    },
+    "producedAnswersOverRetained": {
+      "numerator": 8,
+      "denominator": 8,
+      "rate": 1
+    },
+    "answerReasons": {
+      "answered": 8
+    },
+    "routingReasons": {},
+    "holdStages": {},
+    "independentlyJudgedQualifiedAnswers": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "independentlyJustifiedAbstentions": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "languagePolicyRejections": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0
+    },
+    "acceptedLanguageViolations": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "translationQualificationErrors": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "unsafeFactualPromotion": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "noncanonicalEligibilityFlags": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0
+    },
+    "usefulRetentionCoverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "expectedRetentionMisses": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0
+    },
+    "falseHolds": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "expectedSafeHolds": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "typedSemanticsMatch": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "qualifiedRetrievalCoverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "ordinaryProseQualification": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "sourceByteChanges": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0
+    }
+  },
+  "byLanguage": {
+    "en": 1,
+    "ru": 0,
+    "mixed": 0
+  },
+  "byScenario": {
+    "unanchored-proposal": 1
+  },
+  "cases": [
+    {
+      "id": "v3-dev-undated",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "An unaccepted, unscheduled proposal refers to the day after an undated source. No calendar date is known; do not resolve tomorrow from processing time.",
+      "language": "en",
+      "scenario": "unanchored-proposal",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 8816,
+            "input_tokens": 2406,
+            "output_tokens": 484,
+            "total_tokens": 2890
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 2959,
+            "input_tokens": 1195,
+            "output_tokens": 182,
+            "total_tokens": 1377
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1474,
+              "input_tokens": 495,
+              "output_tokens": 55,
+              "total_tokens": 550
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1232,
+              "input_tokens": 325,
+              "output_tokens": 68,
+              "total_tokens": 393
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative · Proposal:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow, with the source-relative reference date unknown; the proposal has not been accepted, and no review is scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_055e6adf",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_509de8e4077c5886d9db04f3",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2686,
+              "input_tokens": 1297,
+              "output_tokens": 130,
+              "total_tokens": 1427
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2561,
+              "input_tokens": 826,
+              "output_tokens": 87,
+              "total_tokens": 913
+            }
+          },
+          "reviewAnswer": "Ada Marlow tentatively proposed reviewing the Zephyr QX-100 warranty tomorrow. The proposal has not been accepted, no review is scheduled, and its calendar date is unknown because the source-relative reference date is undated. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative · Proposal:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow, with the source-relative reference date unknown; the proposal has not been accepted, and no review is scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_055e6adf",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_509de8e4077c5886d9db04f3",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3533,
+              "input_tokens": 1302,
+              "output_tokens": 94,
+              "total_tokens": 1396
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1825,
+              "input_tokens": 831,
+              "output_tokens": 83,
+              "total_tokens": 914
+            }
+          },
+          "reviewAnswer": "Ada Marlow выдвинула предварительное предложение пересмотреть гарантию Zephyr QX-100 «завтра» относительно источника, но это предложение не принято и проверка не запланирована. Календарная дата неизвестна. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative · Proposal:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow, with the source-relative reference date unknown; the proposal has not been accepted, and no review is scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_055e6adf",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_509de8e4077c5886d9db04f3",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2720,
+              "input_tokens": 1288,
+              "output_tokens": 80,
+              "total_tokens": 1368
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1382,
+              "input_tokens": 817,
+              "output_tokens": 75,
+              "total_tokens": 892
+            }
+          },
+          "reviewAnswer": "Ada Marlow tentatively proposed reviewing the Zephyr QX-100 warranty tomorrow. The proposal has not been accepted, no review is scheduled, and the calendar date is unknown. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative · Proposal:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow, with the source-relative reference date unknown; the proposal has not been accepted, and no review is scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_055e6adf",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_509de8e4077c5886d9db04f3",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2610,
+              "input_tokens": 1295,
+              "output_tokens": 87,
+              "total_tokens": 1382
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1477,
+              "input_tokens": 824,
+              "output_tokens": 85,
+              "total_tokens": 909
+            }
+          },
+          "reviewAnswer": "Ada Marlow предложила провести проверку гарантии Zephyr QX-100 завтра. Это было предварительное, ещё не принятое предложение; проверка не запланирована, а календарная дата неизвестна. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative · Proposal:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow, with the source-relative reference date unknown; the proposal has not been accepted, and no review is scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_055e6adf",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_509de8e4077c5886d9db04f3",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3355,
+              "input_tokens": 1292,
+              "output_tokens": 127,
+              "total_tokens": 1419
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1525,
+              "input_tokens": 821,
+              "output_tokens": 83,
+              "total_tokens": 904
+            }
+          },
+          "reviewAnswer": "Ada Marlow tentatively proposed reviewing the Zephyr QX-100 warranty tomorrow. The proposal has not been accepted, no review is scheduled, and its calendar date is unknown. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative · Proposal:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow, with the source-relative reference date unknown; the proposal has not been accepted, and no review is scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_055e6adf",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_509de8e4077c5886d9db04f3",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2594,
+              "input_tokens": 1315,
+              "output_tokens": 103,
+              "total_tokens": 1418
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2172,
+              "input_tokens": 844,
+              "output_tokens": 78,
+              "total_tokens": 922
+            }
+          },
+          "reviewAnswer": "Ada Marlow предложила проверить гарантию Zephyr QX-100 завтра. Это предварительное, ещё не принятое предложение; проверка не запланирована. Календарная дата неизвестна, поскольку исходная дата, относительно которой указано «завтра», не установлена. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative · Proposal:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow, with the source-relative reference date unknown; the proposal has not been accepted, and no review is scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_055e6adf",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_509de8e4077c5886d9db04f3",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2860,
+              "input_tokens": 1299,
+              "output_tokens": 87,
+              "total_tokens": 1386
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1751,
+              "input_tokens": 828,
+              "output_tokens": 73,
+              "total_tokens": 901
+            }
+          },
+          "reviewAnswer": "Ada Marlow proposed, tentatively and without acceptance, reviewing the Zephyr QX-100 warranty tomorrow. The proposal was not scheduled, and its calendar date is unknown because the source-relative reference date is unknown. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative · Proposal:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow, with the source-relative reference date unknown; the proposal has not been accepted, and no review is scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_055e6adf",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_509de8e4077c5886d9db04f3",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2276,
+              "input_tokens": 1313,
+              "output_tokens": 101,
+              "total_tokens": 1414
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1148,
+              "input_tokens": 842,
+              "output_tokens": 26,
+              "total_tokens": 868
+            }
+          },
+          "reviewAnswer": "Ada Marlow предложила проверить гарантию Zephyr QX-100 завтра. Это было предварительное, ещё не принятое предложение; проверка не запланирована. Календарная дата неизвестна: «завтра» указано относительно недатированного источника. [memory/equipment:7]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Tentative · Proposal:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow, with the source-relative reference date unknown; the proposal has not been accepted, and no review is scheduled.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_055e6adf",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_509de8e4077c5886d9db04f3",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "tentative",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false,
+            "temporal": {
+              "time": {
+                "relation": "scheduled",
+                "status": "tentative",
+                "precision": "unknown"
+              },
+              "clock_relation": "undated",
+              "actionable": false
+            }
+          }
+        }
+      ],
+      "error": null
+    }
+  ]
+}

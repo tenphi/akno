@@ -1,3 +1,4 @@
+import { hasNonfactualProse, proseEligibleForView } from '../kb/prose.ts';
 import fs from 'node:fs';
 import path from 'node:path';
 import { annotateLines, LINE_FACT_COLUMNS, type LineFact } from '../kb/line-facts.ts';
@@ -316,6 +317,16 @@ export class Assembler {
     };
   }
 
+  private safeSummary(page: PageRow): string | null {
+    try {
+      return hasNonfactualProse(fs.readFileSync(path.join(this.#config.aknoPath, page.rel_path), 'utf8'))
+        ? null
+        : page.summary;
+    } catch {
+      return null;
+    }
+  }
+
   private buildCard(page: PageRow, hits: ChunkHit[], score: number, options: AssembleOptions): Card {
     const meta = this.chunkMeta(hits.map((hit) => hit.chunkId));
 
@@ -349,7 +360,7 @@ export class Assembler {
       slug: page.slug,
       title: page.title,
       role: page.role,
-      summary: page.summary,
+      summary: this.safeSummary(page),
       score: round(score),
       lines: annotateLines(lines, facts),
       matched_by: matchedBy(hits),
@@ -572,6 +583,11 @@ export class Assembler {
 
 function memoryLineMatches(line: Line, options: AssembleOptions): boolean {
   const memory = line.memory;
+  if (!memory && line.prose) {
+    if (['heading', 'comment'].includes(line.prose.reason)) return options.memoryView === 'all';
+    const eligible = proseEligibleForView(line.prose, options.memoryView);
+    return options.memorySelection === 'eligible' ? eligible : !eligible;
+  }
   if (!memory) return options.memorySelection === 'eligible';
   if (memory.status !== 'qualified') return options.memorySelection === 'contextual';
   const eligible = qualificationEligibleForView(memory, options.memoryView);
@@ -671,7 +687,7 @@ export function estimateTokens(card: Card | RecallResult): number {
     card.title,
     card.summary ?? '',
     card.breadcrumb ?? '',
-    ...card.lines.map((line) => line.text),
+    ...card.lines.map((line) => line.text + (line.prose ? JSON.stringify(line.prose) : '')),
     ...(card.superseded ?? []).map((entry) => entry.claim),
     ...(card.links ?? []),
     ...graphPathTokens(card.graph_paths),

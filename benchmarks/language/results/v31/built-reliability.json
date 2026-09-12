@@ -1,0 +1,1431 @@
+{
+  "schemaVersion": "language-benchmark-v2",
+  "createdAt": "2026-09-08T13:29:08.311Z",
+  "corpusVersion": "language-discourse-v17",
+  "corpusFingerprint": "d874f8abb19195bc31566e57b8b5e46d2541c2e07440d53833028cad884efb1c",
+  "selectedCaseIds": [
+    "v16-held-report",
+    "v16-held-assistant"
+  ],
+  "runs": 1,
+  "setup": "separate-writable-fidelity-and-read-only-admission",
+  "queryMatrix": [
+    "query_language",
+    "answer_language",
+    "explicit_view"
+  ],
+  "split": "development",
+  "knowledgeLanguage": "en",
+  "proseProjectionVersion": "prose-v1",
+  "memoryViewVersion": "memory-view-v6",
+  "answerPromptVersion": "answer-generation-v29",
+  "answerVerifierVersion": "answer-verifier-v17",
+  "retentionPromptVersion": "retain-extraction-language-v23",
+  "retentionVerifierVersion": "retain-verifier-language-v15",
+  "models": {
+    "retention": "gpt-5.6-luna",
+    "answer": "gpt-5.6-luna",
+    "embedding": "text-embedding-qwen3-embedding-0.6b",
+    "expansion": "llama-3.2-3b-instruct"
+  },
+  "indexModelDerivation": false,
+  "independentlyReviewed": false,
+  "releaseEligible": false,
+  "adjudication": "pending: inspect review material; verifier agreement and typed expectations are not independent truth labels",
+  "thresholds": {
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "usefulQualifiedAnswerCoverage": 0.9,
+    "availabilityFailureRate": 0.05,
+    "unsupportedRetainedOutputs": 0,
+    "unsupportedNonnullAnswers": 0
+  },
+  "metrics": {
+    "availabilityFailures": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "answerOperationFailures": {
+      "numerator": 0,
+      "denominator": 16,
+      "rate": 0
+    },
+    "producedAnswers": {
+      "numerator": 14,
+      "denominator": 16,
+      "rate": 0.875
+    },
+    "producedAnswersOverRetained": {
+      "numerator": 14,
+      "denominator": 16,
+      "rate": 0.875
+    },
+    "answerReasons": {
+      "answered": 14,
+      "draft_rejected": 2
+    },
+    "routingReasons": {},
+    "holdStages": {},
+    "independentlyJudgedQualifiedAnswers": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "independentlyJustifiedAbstentions": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "languagePolicyRejections": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "acceptedLanguageViolations": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "translationQualificationErrors": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "unsafeFactualPromotion": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "noncanonicalEligibilityFlags": {
+      "numerator": 1,
+      "denominator": 2,
+      "rate": 0.5
+    },
+    "usefulRetentionCoverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "expectedRetentionMisses": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "falseHolds": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "expectedSafeHolds": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "typedSemanticsMatch": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "qualifiedRetrievalCoverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "ordinaryProseQualification": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "sourceByteChanges": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    }
+  },
+  "byLanguage": {
+    "en": 0,
+    "ru": 1,
+    "mixed": 1
+  },
+  "byScenario": {
+    "nested-report": 1,
+    "tentative-assistant-report": 1
+  },
+  "cases": [
+    {
+      "id": "v16-held-report",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Preserve recorder Ada Marlow, inner speaker Bo Winters, no inspected terms or confirmation, permitted shipment of the device for fan-noise measurement rather than fan replacement, and no arranged shipment. No actual shipment or booking follows. Keep the measurement/replacement contrast in the same scoped memory.",
+      "language": "mixed",
+      "scenario": "nested-report",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          },
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 18936,
+            "input_tokens": 3730,
+            "output_tokens": 1359,
+            "total_tokens": 5089
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 6723,
+            "input_tokens": 2966,
+            "output_tokens": 496,
+            "total_tokens": 3462
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 813,
+              "input_tokens": 496,
+              "output_tokens": 22,
+              "total_tokens": 518
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1084,
+              "input_tokens": 464,
+              "output_tokens": 22,
+              "total_tokens": 486
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1630,
+              "input_tokens": 339,
+              "output_tokens": 74,
+              "total_tokens": 413
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1189,
+              "input_tokens": 495,
+              "output_tokens": 33,
+              "total_tokens": 528
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 2,
+      "noncanonicalEligibilityFlag": true,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 service terms permit sending the device away to measure fan noise, not to replace the fan; Ada Marlow only relays this account and has not read the terms or received confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_53daa450",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_3e4c266098d02aa80dcd1750",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3989,
+              "input_tokens": 1752,
+              "output_tokens": 161,
+              "total_tokens": 1913
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1997,
+              "input_tokens": 1882,
+              "output_tokens": 173,
+              "total_tokens": 2055
+            }
+          },
+          "reviewAnswer": "Ada Marlow recorded an unverified report that Bo Winters reportedly told her the Zephyr QX-100 service terms permit sending the device away to measure fan noise, not to replace the fan. Ada Marlow only relayed this account and had not read the terms or received confirmation. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 service terms permit sending the device away to measure fan noise, not to replace the fan; Ada Marlow only relays this account and has not read the terms or received confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_53daa450",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_3e4c266098d02aa80dcd1750",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4183,
+              "input_tokens": 1764,
+              "output_tokens": 216,
+              "total_tokens": 1980
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2217,
+              "input_tokens": 1894,
+              "output_tokens": 172,
+              "total_tokens": 2066
+            }
+          },
+          "reviewAnswer": "Ada Marlow записала непроверенный отчёт о том, что, по словам Bo Winters, условия обслуживания Zephyr QX-100 разрешают отправить устройство для измерения шума вентилятора, а не для замены вентилятора. Ada Marlow лишь передаёт этот рассказ и не читала условия и не получила подтверждения. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 service terms permit sending the device away to measure fan noise, not to replace the fan; Ada Marlow only relays this account and has not read the terms or received confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_53daa450",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_3e4c266098d02aa80dcd1750",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3987,
+              "input_tokens": 1751,
+              "output_tokens": 181,
+              "total_tokens": 1932
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3397,
+              "input_tokens": 1881,
+              "output_tokens": 135,
+              "total_tokens": 2016
+            }
+          },
+          "reviewAnswer": "Ada Marlow recorded an unverified report from Bo Winters that the Zephyr QX-100 service terms reportedly permit sending the device away to measure fan noise, not to replace the fan. Ada Marlow only relayed this account and had not read the terms or received confirmation. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 service terms permit sending the device away to measure fan noise, not to replace the fan; Ada Marlow only relays this account and has not read the terms or received confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_53daa450",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_3e4c266098d02aa80dcd1750",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4641,
+              "input_tokens": 1765,
+              "output_tokens": 227,
+              "total_tokens": 1992
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2474,
+              "input_tokens": 1895,
+              "output_tokens": 180,
+              "total_tokens": 2075
+            }
+          },
+          "reviewAnswer": "Ada Marlow записала непроверенный отчёт о том, что, по словам Bo Winters, условия обслуживания Zephyr QX-100 разрешают отправить устройство для измерения шума вентилятора, но не для замены вентилятора. Ada Marlow лишь передаёт этот рассказ; она не читала условия и не получила подтверждения. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 service terms permit sending the device away to measure fan noise, not to replace the fan; Ada Marlow only relays this account and has not read the terms or received confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_53daa450",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_3e4c266098d02aa80dcd1750",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6616,
+              "input_tokens": 1757,
+              "output_tokens": 166,
+              "total_tokens": 1923
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2375,
+              "input_tokens": 1887,
+              "output_tokens": 154,
+              "total_tokens": 2041
+            }
+          },
+          "reviewAnswer": "Ada Marlow recorded an unconfirmed report that Bo Winters reportedly told her the Zephyr QX-100 service terms permit sending the device away to measure fan noise, not to replace the fan. Ada only relayed this account and had not read the terms or received confirmation. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 service terms permit sending the device away to measure fan noise, not to replace the fan; Ada Marlow only relays this account and has not read the terms or received confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_53daa450",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_3e4c266098d02aa80dcd1750",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3205,
+              "input_tokens": 1775,
+              "output_tokens": 146,
+              "total_tokens": 1921
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1232,
+              "input_tokens": 1905,
+              "output_tokens": 42,
+              "total_tokens": 1947
+            }
+          },
+          "reviewAnswer": "Ada Marlow записала неподтверждённое сообщение о том, что Bo Winters якобы сказал ей: условия обслуживания Zephyr QX-100 разрешают отправить устройство для измерения шума вентилятора, но не для замены вентилятора. Ada Marlow лишь передаёт этот рассказ; она не читала условия и не получила подтверждения. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 service terms permit sending the device away to measure fan noise, not to replace the fan; Ada Marlow only relays this account and has not read the terms or received confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_53daa450",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_3e4c266098d02aa80dcd1750",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3531,
+              "input_tokens": 1759,
+              "output_tokens": 149,
+              "total_tokens": 1908
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2529,
+              "input_tokens": 1889,
+              "output_tokens": 187,
+              "total_tokens": 2076
+            }
+          },
+          "reviewAnswer": "Ada Marlow recorded an unverified report that Bo Winters told her the Zephyr QX-100 service terms permit sending the device away to measure fan noise, but not to replace the fan. Ada Marlow only relayed this account and had not read the terms or received confirmation. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 service terms permit sending the device away to measure fan noise, not to replace the fan; Ada Marlow only relays this account and has not read the terms or received confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_53daa450",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_3e4c266098d02aa80dcd1750",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4029,
+              "input_tokens": 1775,
+              "output_tokens": 190,
+              "total_tokens": 1965
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2489,
+              "input_tokens": 1905,
+              "output_tokens": 169,
+              "total_tokens": 2074
+            }
+          },
+          "reviewAnswer": "Ada Marlow записала неподтверждённое сообщение о том, что Bo Winters якобы сообщил ей: условия обслуживания Zephyr QX-100 разрешают отправить устройство для измерения шума вентилятора, но не для замены вентилятора. Ada Marlow лишь передаёт этот рассказ; она не читала условия и не получила подтверждения. [memory/equipment:6]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 service terms permit sending the device away to measure fan noise, not to replace the fan; Ada Marlow only relays this account and has not read the terms or received confirmation.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_53daa450",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_3e4c266098d02aa80dcd1750",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "text": "- Ada Marlow states that no shipment of the Zephyr QX-100 has been arranged.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_381b7fc6",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_3e4c266098d02aa80dcd1750",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "v16-held-assistant",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Preserve assistant attribution, tentative interpretation, quarterly contact inspection and no contract verification. This is an unverified assistant report, not an established requirement or a fictional stipulation.",
+      "language": "ru",
+      "scenario": "tentative-assistant-report",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 6672,
+            "input_tokens": 3646,
+            "output_tokens": 442,
+            "total_tokens": 4088
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 2496,
+            "input_tokens": 2604,
+            "output_tokens": 140,
+            "total_tokens": 2744
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1732,
+              "input_tokens": 487,
+              "output_tokens": 42,
+              "total_tokens": 529
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1697,
+              "input_tokens": 332,
+              "output_tokens": 68,
+              "total_tokens": 400
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** According to the assistant's preliminary reading, service for Zephyr QX-100 includes inspecting the contacts once per quarter, but the assistant did not check the contract and describes this only as an unverified assumption.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_cab1429a",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a027ed1253b44c0aa11f999f",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2761,
+              "input_tokens": 1720,
+              "output_tokens": 101,
+              "total_tokens": 1821
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1380,
+              "input_tokens": 1848,
+              "output_tokens": 83,
+              "total_tokens": 1931
+            }
+          },
+          "reviewAnswer": "The assistant tentatively reported that service for Zephyr QX-100 includes inspecting the contacts once per quarter. The assistant had not checked the contract and described this as an unverified assumption. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** According to the assistant's preliminary reading, service for Zephyr QX-100 includes inspecting the contacts once per quarter, but the assistant did not check the contract and describes this only as an unverified assumption.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_cab1429a",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a027ed1253b44c0aa11f999f",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "draft_rejected",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 0,
+            "verified_blocks": null,
+            "rejection_counts": {
+              "attribution": 1
+            }
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5704,
+              "input_tokens": 1730,
+              "output_tokens": 129,
+              "total_tokens": 1859
+            },
+            "verification": null
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** According to the assistant's preliminary reading, service for Zephyr QX-100 includes inspecting the contacts once per quarter, but the assistant did not check the contract and describes this only as an unverified assumption.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_cab1429a",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a027ed1253b44c0aa11f999f",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2810,
+              "input_tokens": 1720,
+              "output_tokens": 82,
+              "total_tokens": 1802
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1569,
+              "input_tokens": 1848,
+              "output_tokens": 100,
+              "total_tokens": 1948
+            }
+          },
+          "reviewAnswer": "The assistant tentatively reported that service for Zephyr QX-100 includes inspecting the contacts once per quarter. The assistant had not checked the contract and described this as an unverified assumption. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** According to the assistant's preliminary reading, service for Zephyr QX-100 includes inspecting the contacts once per quarter, but the assistant did not check the contract and describes this only as an unverified assumption.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_cab1429a",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a027ed1253b44c0aa11f999f",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "draft_rejected",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 0,
+            "verified_blocks": null,
+            "rejection_counts": {
+              "attribution": 1
+            }
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3337,
+              "input_tokens": 1725,
+              "output_tokens": 113,
+              "total_tokens": 1838
+            },
+            "verification": null
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** According to the assistant's preliminary reading, service for Zephyr QX-100 includes inspecting the contacts once per quarter, but the assistant did not check the contract and describes this only as an unverified assumption.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_cab1429a",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a027ed1253b44c0aa11f999f",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3206,
+              "input_tokens": 1724,
+              "output_tokens": 96,
+              "total_tokens": 1820
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1784,
+              "input_tokens": 1852,
+              "output_tokens": 126,
+              "total_tokens": 1978
+            }
+          },
+          "reviewAnswer": "The assistant tentatively reported that service for Zephyr QX-100 includes inspecting the contacts once per quarter. The assistant had not checked the contract and described this as an unverified assumption. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** According to the assistant's preliminary reading, service for Zephyr QX-100 includes inspecting the contacts once per quarter, but the assistant did not check the contract and describes this only as an unverified assumption.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_cab1429a",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a027ed1253b44c0aa11f999f",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2501,
+              "input_tokens": 1731,
+              "output_tokens": 89,
+              "total_tokens": 1820
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1719,
+              "input_tokens": 1859,
+              "output_tokens": 118,
+              "total_tokens": 1977
+            }
+          },
+          "reviewAnswer": "Предварительно ассистент сообщил, что обслуживание Zephyr QX-100 включает осмотр контактов раз в квартал; это было лишь непроверенным предположением, поскольку ассистент не проверил контракт. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** According to the assistant's preliminary reading, service for Zephyr QX-100 includes inspecting the contacts once per quarter, but the assistant did not check the contract and describes this only as an unverified assumption.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_cab1429a",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a027ed1253b44c0aa11f999f",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3770,
+              "input_tokens": 1724,
+              "output_tokens": 146,
+              "total_tokens": 1870
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1913,
+              "input_tokens": 1852,
+              "output_tokens": 131,
+              "total_tokens": 1983
+            }
+          },
+          "reviewAnswer": "The assistant tentatively reported that service for Zephyr QX-100 includes inspecting the contacts once per quarter. The assistant had not checked the contract and described this as an unverified assumption. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** According to the assistant's preliminary reading, service for Zephyr QX-100 includes inspecting the contacts once per quarter, but the assistant did not check the contract and describes this only as an unverified assumption.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_cab1429a",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a027ed1253b44c0aa11f999f",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2929,
+              "input_tokens": 1735,
+              "output_tokens": 116,
+              "total_tokens": 1851
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1570,
+              "input_tokens": 1863,
+              "output_tokens": 105,
+              "total_tokens": 1968
+            }
+          },
+          "reviewAnswer": "По предварительному чтению ассистент сообщил, что обслуживание Zephyr QX-100 включает осмотр контактов раз в квартал. Это было лишь неподтверждённое предположение: ассистент не проверял контракт. [memory/equipment:7]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Reported by assistant · Tentative:** According to the assistant's preliminary reading, service for Zephyr QX-100 includes inspecting the contacts once per quarter, but the assistant did not check the contract and describes this only as an unverified assumption.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_cab1429a",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_a027ed1253b44c0aa11f999f",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "error": null
+    }
+  ]
+}

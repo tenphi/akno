@@ -1,0 +1,65 @@
+{
+  "purpose": "Original pending and local bytes preserved; only publication copies normalized.",
+  "files": [
+    {
+      "file": "built-output-review-initial.json",
+      "originalSha256": "5fd5e5dee80ed0acfcadbb4c24314a66044f667ce3cacc58820eeb7342da0ec7",
+      "publishedSha256": "15fc2d20ebe02e38d8f9dbbcc11425b8269543a6b1a3c838552e6cca3dea4338",
+      "change": "Trailing line/EOF whitespace only; parsed JSON unchanged where applicable."
+    },
+    {
+      "file": "built-output-review.json",
+      "originalSha256": "0901051bef418cc9189424a4e00deb7c243e99215d687c4e5d419fbc9d9892b0",
+      "publishedSha256": "15fc2d20ebe02e38d8f9dbbcc11425b8269543a6b1a3c838552e6cca3dea4338",
+      "change": "Trailing line/EOF whitespace only; parsed JSON unchanged where applicable."
+    },
+    {
+      "file": "built-source-review-initial.md",
+      "originalSha256": "99e030ec3f7f0c977c5ce1a235fe6d45ed18f7561d7f9e5c16371ccddcc87ccb",
+      "publishedSha256": "5cacddc38de38d49a37bdd8403317791bb1fb11cad0b55d6ea36fc6129ee0299",
+      "change": "Trailing line/EOF whitespace only; parsed JSON unchanged where applicable."
+    },
+    {
+      "file": "built-source-review.md",
+      "originalSha256": "94c51d32952d7505e2bd22fab9c8366e88e16b648ee5ce460deeb983595aed14",
+      "publishedSha256": "e92c74ac410afb8ea778e2d573ec0d13401a0addfc8329baac78b55f79e4ef04",
+      "change": "Trailing line/EOF whitespace only; parsed JSON unchanged where applicable."
+    },
+    {
+      "file": "selected-output-review-initial.json",
+      "originalSha256": "132fa7e4d113ce7f3eeb21a6e810307b79a2f3d838d45f5161659ef89d740cec",
+      "publishedSha256": "d384b87b06aadabc961dc0b61dae40ee560868bfabcadddd9fc8ff235c028e77",
+      "change": "Trailing line/EOF whitespace only; parsed JSON unchanged where applicable."
+    },
+    {
+      "file": "selected-output-review.json",
+      "originalSha256": "fb920e8f2af365cae59b4b50fa2256b1d6f9d700a2348396a6774d44b873a831",
+      "publishedSha256": "d384b87b06aadabc961dc0b61dae40ee560868bfabcadddd9fc8ff235c028e77",
+      "change": "Trailing line/EOF whitespace only; parsed JSON unchanged where applicable."
+    },
+    {
+      "file": "selected-source-review-initial.md",
+      "originalSha256": "30bd97f6754e0391852f389914505b4a10ee6a0908027549dfb2ed52db892489",
+      "publishedSha256": "864d30dfc2dce08aea3415eb74df743b0c9e75cc7def9770eb3836cf51c650df",
+      "change": "Trailing line/EOF whitespace only; parsed JSON unchanged where applicable."
+    },
+    {
+      "file": "selected-source-review.md",
+      "originalSha256": "e515f17e740469c32aacf7753f59e2bbea666f966157487604728496a16ac07a",
+      "publishedSha256": "83bba20b216c6762e4f2788dad66735e6bd2b413f4e25f4cefa8e047549a5047",
+      "change": "Trailing line/EOF whitespace only; parsed JSON unchanged where applicable."
+    },
+    {
+      "file": "source-first-notes.md",
+      "originalSha256": "20fa31298a2413a04e9cc7bbf80546a9ec0ba0fe6734c53d5a1f039c9aea627f",
+      "publishedSha256": "46123009e45829d503f72b6e18965ef277820ab2c143f25d726a5611740a445e",
+      "change": "Trailing line/EOF whitespace only; parsed JSON unchanged where applicable."
+    },
+    {
+      "file": "reviews/preflight-review.md",
+      "originalSha256": "31e13a230348200bb230f4e8df6e68d8dffb58dd4859b3cbafa54f43e638344d",
+      "publishedSha256": "cae7fbafe099fae900e8dac4cb20c2c7837143d7687fe9fd3b8aabf4a214c133",
+      "change": "Trailing line/EOF whitespace only; parsed JSON unchanged where applicable."
+    }
+  ]
+}

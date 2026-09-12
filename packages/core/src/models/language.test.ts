@@ -1,0 +1,363 @@
+import { languageVerdictFixture } from '../../test/language-verdict.ts';
+import { runRetain } from '../write/retain.ts';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ModelClient } from './client.ts';
+import { generatedProse } from './language.ts';
+import { ConfigDoc } from '../config/schema.ts';
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
+
+function client(knowledgeLanguage: 'en' | null = 'en') {
+  return new ModelClient({
+    role: 'derive',
+    id: 'invented-language-model',
+    provider: {
+      name: 'invented',
+      baseUrl: 'https://invented.invalid/v1',
+      apiKey: null,
+      headers: {},
+      maxRetries: 0,
+    },
+    enabled: true,
+    requested: true,
+    timeoutMs: 1111,
+    unavailableReason: null,
+    knowledgeLanguage,
+  });
+}
+
+function responses(values: unknown[]) {
+  const requests: { messages: { role: string; content: string }[] }[] = [];
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (_url, init) => {
+      requests.push(JSON.parse(String(init.body)));
+      let value = values.shift();
+      if (value && typeof value === 'object' && 'compliant' in value)
+        value = languageVerdictFixture(
+          JSON.parse(requests.at(-1)!.messages.at(-1)!.content),
+          Boolean(value.compliant),
+        );
+      return new Response(
+        JSON.stringify({
+          choices: [{ message: { content: JSON.stringify(value) } }],
+          usage: { prompt_tokens: 111, completion_tokens: 22, total_tokens: 133 },
+        }),
+        { headers: { 'content-type': 'application/json' } },
+      );
+    }),
+  );
+  return requests;
+}
+
+describe('explicit generation language', () => {
+  it.each([
+    ['Обещана замена axle-cap.', false, ['axle-cap']],
+    ['Обещана замена колпачка оси.', true, []],
+    ['В цитате «axle-cap» и коде `cedar-fetch` сохранено написание.', true, []],
+    ['Идентификатор cedar-fetch сохранён.', true, ['cedar-fetch']],
+    ['Идентификатор cedar-fetch означает replacement of the axle cap.', false, ['cedar-fetch']],
+  ] as const)(
+    'sends attention hints without overriding the language verdict: %s',
+    async (text, compliant, reviewTokens) => {
+      const requests = responses([{ text }, { compliant }]);
+      const reference = { kind: 'identifier' as const, text: 'cedar-fetch' };
+      const result = await client().chat(
+        [{ role: 'user', content: 'Translate the component description.' }],
+        {
+          outputLanguage: 'ru',
+          languageReferences: [reference],
+        },
+      );
+      expect(result.ok).toBe(compliant);
+      if (!compliant) expect(result).toMatchObject({ value: null, reason: 'language_mismatch' });
+      expect(requests).toHaveLength(2);
+      const payload = JSON.parse(requests[1]!.messages[1]!.content);
+      expect(payload.excerpts).toEqual([text]);
+      expect(payload.review_tokens ?? []).toEqual(reviewTokens);
+      expect(payload.supplied_references ?? []).toEqual(text.includes(reference.text) ? [reference] : []);
+    },
+  );
+
+  it('bounds attention hints while keeping every excerpt in the same check', async () => {
+    const terms = Array.from(
+      { length: 40 },
+      (_, index) => `cedar-${String.fromCharCode(97 + Math.floor(index / 26), 97 + (index % 26))}`,
+    );
+    const output = { text: terms.join(' '), summary: 'Общее описание.' };
+    const requests = responses([output, { compliant: false }]);
+    const result = await client().chat([{ role: 'user', content: 'Describe.' }], { outputLanguage: 'ru' });
+    expect(result.ok).toBe(false);
+    const payload = JSON.parse(requests[1]!.messages[1]!.content);
+    expect(payload.review_tokens).toEqual(terms.slice(0, 32));
+    expect(payload.excerpts).toEqual([output.text, output.summary]);
+    expect(requests).toHaveLength(2);
+  });
+
+  it('counts attention hints toward the existing size ceiling', async () => {
+    const text = 'а'.repeat(23970) + ' cedar-fetch cedar-fetch';
+    const requests = responses([{ text }]);
+    const result = await client().chat([{ role: 'user', content: 'Describe.' }], { outputLanguage: 'ru' });
+    expect(result).toMatchObject({ ok: false, value: null, reason: 'language_check_failed' });
+    expect(requests).toHaveLength(1);
+  });
+
+  it('leaves English compound output free of Russian attention hints', async () => {
+    const requests = responses([
+      { text: 'A cedar-fetch identifier and an axle-cap description.' },
+      { compliant: true },
+    ]);
+    expect((await client().chat([{ role: 'user', content: 'Describe.' }])).ok).toBe(true);
+    expect(JSON.parse(requests[1]!.messages[1]!.content)).not.toHaveProperty('review_tokens');
+  });
+
+  it('carries immutable retention references to the first language check without overriding a false verdict', async () => {
+    const sentence =
+      'Ada Marlow has no answer to whether the Zephyr QX-100 agreement includes return delivery.';
+    const output = { candidates: [{ subject: 'Zephyr QX-100 agreement return delivery', text: sentence }] };
+    const requests = responses([output, { compliant: false }]);
+    const result = await runRetain('', client(), {
+      sourceItems: [
+        {
+          item_id: 'turn-1111',
+          role: 'user',
+          speaker: 'Ada Marlow',
+          text: 'Вопрос о Zephyr QX-100 пока без ответа.',
+        },
+        { item_id: 'turn-2222', role: 'assistant', speaker: 'assistant', text: 'Это вопрос о QX-100.' },
+      ],
+    });
+    expect(JSON.parse(requests[1]!.messages[1]!.content)).toEqual({
+      language: 'en',
+      excerpts: [output.candidates[0].subject, sentence],
+      supplied_references: [
+        { kind: 'name', text: 'Ada Marlow' },
+        { kind: 'identifier', text: 'QX-100' },
+      ],
+    });
+    expect(result.candidates).toEqual([]);
+    expect(result.degradedReason).toBe('language_mismatch');
+    expect(requests).toHaveLength(2);
+  });
+
+  it('supplies only source reference hints used in prose without removing that prose from the check', async () => {
+    const output = { text: 'Ada Marlow отклонила предложение для Zephyr QX-100.' };
+    const requests = responses([output, { compliant: false }]);
+    const result = await client().chat([{ role: 'user', content: 'Describe the record.' }], {
+      outputLanguage: 'ru',
+      languageReferences: [
+        { kind: 'name', text: 'Ada Marlow' },
+        { kind: 'identifier', text: 'Zephyr QX-100' },
+        { kind: 'title', text: 'Unused heading' },
+      ],
+    });
+    expect(JSON.parse(requests[1]!.messages[1]!.content)).toEqual({
+      language: 'ru',
+      excerpts: [output.text],
+      supplied_references: [
+        { kind: 'name', text: 'Ada Marlow' },
+        { kind: 'identifier', text: 'Zephyr QX-100' },
+      ],
+    });
+    // References are hints to the same first-pass check, not permission to override its verdict.
+    expect(result).toMatchObject({ ok: false, value: null, reason: 'language_mismatch' });
+    expect(requests).toHaveLength(2);
+  });
+
+  it('counts exact reference hints against the language check character budget', async () => {
+    const text = 'q'.repeat(13000);
+    const requests = responses([{ text }]);
+    const result = await client().chat([{ role: 'user', content: 'Describe the record.' }], {
+      languageReferences: [{ kind: 'title', text }],
+    });
+    expect(result).toMatchObject({ ok: false, value: null, reason: 'language_check_failed' });
+    expect(requests).toHaveLength(1);
+  });
+
+  it('supports only an explicit English knowledge target or the legacy unset policy', () => {
+    expect(ConfigDoc.safeParse({ knowledge_language: 'en' }).success).toBe(true);
+    expect(ConfigDoc.safeParse({ knowledge_language: null }).success).toBe(true);
+    expect(ConfigDoc.safeParse({ knowledge_language: 'ru' }).success).toBe(false);
+  });
+
+  it('checks generated prose while preserving exact Russian quotations and page references', async () => {
+    const output = {
+      candidates: [
+        {
+          text: 'Hypothetically, the warranty lasts five years.',
+          subject: 'Zephyr QX-100',
+          support: [{ quote: 'Предположим, что гарантия действует пять лет.' }],
+          discourse_frame: [{ quote: 'Это только гипотеза.' }],
+          destination: { slug: 'оборудование/zephyr', section: 'Гарантия' },
+        },
+      ],
+    };
+    const requests = responses([output, { compliant: true }]);
+    const result = await client().chat([
+      { role: 'user', content: 'Предположим, что гарантия действует пять лет.' },
+    ]);
+    expect(JSON.parse(result.value!)).toEqual(output);
+    expect(requests).toHaveLength(2);
+    expect(requests[0]?.messages[0]?.content).toContain('English');
+    expect(JSON.parse(requests[1]!.messages[1]!.content)).toEqual({
+      language: 'en',
+      excerpts: ['Hypothetically, the warranty lasts five years.', 'Zephyr QX-100'],
+    });
+    expect(result.usage?.totalTokens).toBe(266);
+  });
+
+  it.each([
+    [{ compliant: false }, 'language_mismatch'],
+    [{ other: true }, 'language_check_failed'],
+  ])('holds an invalid language result without exposing fallback prose', async (verdict, reason) => {
+    const requests = responses([{ summary: 'Гарантия действует пять лет.' }, verdict]);
+    const model = client();
+    const result = await model.chat([{ role: 'user', content: 'Summarize.' }]);
+    expect(result).toMatchObject({ ok: false, value: null, reason });
+    expect(model.degradedReason(result)).toBe(reason);
+    expect(requests).toHaveLength(2);
+  });
+
+  it.each([
+    { line: 'Гарантия действовала пять лет.' },
+    { decisions: [{ id: 'mem_1111', outcome: 'rewrite', replacement: 'Гарантия действует пять лет.' }] },
+  ])('holds wrong-language durable maintenance prose: %j', async (output) => {
+    const requests = responses([output, { compliant: false }]);
+    const result = await client().chat([{ role: 'user', content: 'Correct the recorded sentence.' }]);
+    expect(result).toMatchObject({ ok: false, value: null, reason: 'language_mismatch' });
+    expect(JSON.parse(requests[1]!.messages[1]!.content).excerpts).toHaveLength(1);
+  });
+
+  it('adds schema-specific prose without suppressing the shared language check', async () => {
+    const requests = responses([
+      { body: 'Новое утверждение.', after: 'A new sentence.' },
+      { compliant: false },
+    ]);
+    const result = await client().chat([{ role: 'user', content: 'Revise.' }], {
+      additionalLanguageProse: () => ['A new sentence.'],
+    });
+    expect(result).toMatchObject({ ok: false, value: null, reason: 'language_mismatch' });
+    expect(JSON.parse(requests[1]!.messages[1]!.content).excerpts).toEqual([
+      'Новое утверждение.',
+      'A new sentence.',
+    ]);
+  });
+
+  it('fails closed when schema-specific prose cannot be selected', async () => {
+    const requests = responses([{ operations: [{ after: 'Непроверенный текст.' }] }]);
+    const result = await client().chat([{ role: 'user', content: 'Revise.' }], {
+      additionalLanguageProse: () => {
+        throw new Error('invalid operation');
+      },
+    });
+    expect(result).toMatchObject({ ok: false, value: null, reason: 'language_check_failed' });
+    expect(requests).toHaveLength(1);
+  });
+
+  it('allows source transcription to preserve its original language explicitly', async () => {
+    const requests = responses(['Гарантия действует пять лет.']);
+    const result = await client().chat([{ role: 'user', content: 'Transcribe exactly.' }], {
+      outputLanguage: null,
+    });
+    expect(result.ok).toBe(true);
+    expect(requests).toHaveLength(1);
+    expect(requests[0]?.messages).toEqual([{ role: 'user', content: 'Transcribe exactly.' }]);
+  });
+
+  it('honors a Russian answer override without changing the knowledge policy', async () => {
+    const requests = responses([{ blocks: [{ text: 'Это только предположение.' }] }, { compliant: true }]);
+    const model = client();
+    expect((await model.chat([{ role: 'user', content: 'Answer.' }], { outputLanguage: 'ru' })).ok).toBe(
+      true,
+    );
+    expect(requests[0]?.messages[0]?.content).toContain('Russian');
+    expect(model.knowledgeLanguage).toBe('en');
+  });
+
+  it('adds no call when the owner leaves language unset or output is only a verdict', async () => {
+    let requests = responses([{ summary: 'Обычная заметка.' }]);
+    expect((await client(null).chat([{ role: 'user', content: 'Summarize.' }])).ok).toBe(true);
+    expect(requests).toHaveLength(1);
+    requests = responses([{ verdicts: [{ candidate_id: 'c1', supported: true }] }]);
+    expect((await client().chat([{ role: 'user', content: 'Verify.' }])).ok).toBe(true);
+    expect(requests).toHaveLength(1);
+  });
+
+  it('covers generated maintenance and title fields, while exact references remain exempt', () => {
+    expect(
+      generatedProse({
+        summary: 'A summary.',
+        patterns: [{ pattern: 'An observed pattern.' }],
+        principles: [{ principle: 'A derived principle.' }],
+        body: 'A rewritten body.',
+        title: 'A new title.',
+        attribution: { source_speaker: 'Бo' },
+        support: [{ quote: 'Точная цитата.' }],
+      }),
+    ).toEqual([
+      'A summary.',
+      'An observed pattern.',
+      'A derived principle.',
+      'A rewritten body.',
+      'A new title.',
+    ]);
+  });
+});
+
+describe('bounded language-check typed failures', () => {
+  it.each(['oversized', 'references', 'occurrences', 'expired'])(
+    'returns a typed failure without a checker call: %s',
+    async (mode) => {
+      const text =
+        mode === 'oversized'
+          ? 'x'.repeat(24001)
+          : mode === 'occurrences'
+            ? 'axle-cap '.repeat(1200)
+            : 'Ada Marlow has an invented label.';
+      const model = client();
+      const invalid = vi.spyOn(model, 'reportInvalidResponse');
+      const requests = responses([{ text }]);
+      if (mode === 'expired') {
+        let now = 0;
+        vi.spyOn(performance, 'now').mockImplementation(() => now);
+        const fetch = globalThis.fetch;
+        vi.stubGlobal(
+          'fetch',
+          vi.fn(async (...args: Parameters<typeof fetch>) => {
+            const response = await fetch(...args);
+            now = 22;
+            return response;
+          }),
+        );
+      }
+      const result = await model.chat([{ role: 'user', content: 'Describe.' }], {
+        outputLanguage: mode === 'occurrences' ? 'ru' : 'en',
+        ...(mode === 'references'
+          ? {
+              languageReferences: Array.from({ length: 65 }, () => ({
+                kind: 'name' as const,
+                text: 'Ada Marlow',
+              })),
+            }
+          : {}),
+        ...(mode === 'expired' ? { timeoutMs: 11 } : {}),
+      });
+      expect(result).toMatchObject({ ok: false, value: null, reason: 'language_check_failed' });
+      expect(invalid).toHaveBeenCalledWith('language_check_failed');
+      expect(requests).toHaveLength(1);
+    },
+  );
+  it.each([24000, 24001])('counts the serialized input at its exact %s-unit boundary', async (size) => {
+    const overhead = JSON.stringify({ language: 'en', excerpts: [''] }).length;
+    const text = 'x'.repeat(size - overhead);
+    const requests = responses([{ text }, { compliant: true }]);
+    const result = await client().chat([{ role: 'user', content: 'Describe.' }]);
+    expect(result.ok).toBe(size === 24000);
+    expect(requests).toHaveLength(size === 24000 ? 2 : 1);
+    if (size === 24000) expect(requests[1]!.messages[1]!.content).toHaveLength(24000);
+    else expect(result.reason).toBe('language_check_failed');
+  });
+});

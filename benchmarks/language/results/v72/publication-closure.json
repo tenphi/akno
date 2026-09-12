@@ -1,0 +1,12 @@
+{
+  "review": "publication-review.md",
+  "initialReview": "publication-review-initial.md",
+  "corrections": [
+    "property-stage-review.md",
+    "retention-scope-design.md",
+    "remaining-boundary-design.md"
+  ],
+  "scope": "Formatting only: local snapshot references are nonlinked code paths; original review bytes remain local and hashed.",
+  "substantiveReview": "approved",
+  "preservation": "all required artifacts copied"
+}

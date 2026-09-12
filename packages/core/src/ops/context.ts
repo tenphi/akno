@@ -1,3 +1,4 @@
+import { proseEligibleForView } from '../kb/prose.ts';
 import {
   ContextInput,
   type Card,
@@ -34,6 +35,10 @@ import { inferMemoryView, qualificationEligibleForView } from '../memory/intent.
  * it came from.
  */
 export async function context(ctx: AknoContext, rawInput: unknown): Promise<ContextOutput> {
+  return { ...(await assembleContext(ctx, rawInput)), knowledge_language: ctx.config.knowledgeLanguage };
+}
+
+async function assembleContext(ctx: AknoContext, rawInput: unknown): Promise<ContextOutput> {
   const input = ContextInput.parse(rawInput);
   if (input.profile === 'auto_recall') {
     return autoRecallContext(ctx, { ...input, profile: 'auto_recall', query: input.query! });
@@ -858,6 +863,11 @@ function temporallyEligibleResult(
   if (intent.current && result.superseded) return null;
 
   const lines = result.lines.filter((line) => {
+    if (
+      line.prose &&
+      (['heading', 'comment'].includes(line.prose.reason) || !proseEligibleForView(line.prose, memoryView))
+    )
+      return false;
     const memory = line.memory;
     if (!memory) return !intent.current || ordinaryCurrentEligible(line.text);
     if (memory.status !== 'qualified') return false;

@@ -1,3 +1,5 @@
+import { PROSE_PROJECTION_VERSION } from '../kb/prose.ts';
+import { replaceProseEntries } from '../memory/prose-projection.ts';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
@@ -309,7 +311,8 @@ export class Indexer {
     }
     const managedMemoryProjectionStale =
       !effectiveOnly &&
-      this.#store.meta('managed_memory_projection_version') !== MANAGED_MEMORY_PROJECTION_VERSION;
+      (this.#store.meta('managed_memory_projection_version') !== MANAGED_MEMORY_PROJECTION_VERSION ||
+        this.#store.meta('prose_projection_version') !== PROSE_PROJECTION_VERSION);
     const managedMemoryProjectionPaths = managedMemoryProjectionStale
       ? this.managedMemoryProjectionPaths(report)
       : [];
@@ -561,6 +564,7 @@ export class Indexer {
     );
     if (managedMemoryProjectionStale && !pageProjectionFailed && managedMemoryUpgradeComplete) {
       this.#store.setMeta('managed_memory_projection_version', MANAGED_MEMORY_PROJECTION_VERSION);
+      this.#store.setMeta('prose_projection_version', PROSE_PROJECTION_VERSION);
     }
 
     report.durationMs = performance.now() - started;
@@ -1089,6 +1093,7 @@ export class Indexer {
       report.observationsIndexed += observations.indexed;
       report.observationProjectionIssues += observations.issues;
       const managedMemories = replaceManagedMemoryEntries(this.#store, pageId, page, resolved.role);
+      replaceProseEntries(this.#store, pageId, page);
       report.managedMemoriesIndexed += managedMemories.indexed;
       report.managedMemoryRelationsIndexed += managedMemories.relations;
       report.managedMemoryProjectionIssues += managedMemories.issues;

@@ -1,0 +1,310 @@
+{
+  "schemaVersion": "language-diagnostic-output-review-v1",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-5.6-sol",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v11-held-report",
+      "run": 1,
+      "retentionUseful": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "reason": "Attribution, the adjustment-versus-new-lens contrast, and lack of confirmation survive, but the retained proposition changes service-provided courier collection into a pickup already scheduled. That unsupported scheduling claim is a substantive scope/time distortion.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedRetrieval": false,
+          "usefulQualifiedAnswer": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer preserves Ada/Bo attribution, unverified status, and the adjustment-versus-new-lens contrast, but repeats the unsupported claim that pickup was scheduled rather than reporting that collection was included; it is therefore not a faithful useful answer."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedRetrieval": false,
+          "usefulQualifiedAnswer": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer preserves Ada/Bo attribution, unverified status, and the adjustment-versus-new-lens contrast, but repeats the unsupported claim that pickup was scheduled rather than reporting that collection was included; it is therefore not a faithful useful answer."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedRetrieval": false,
+          "usefulQualifiedAnswer": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer preserves Ada/Bo attribution, unverified status, and the adjustment-versus-new-lens contrast, but repeats the unsupported claim that pickup was scheduled rather than reporting that collection was included; it is therefore not a faithful useful answer."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedRetrieval": false,
+          "usefulQualifiedAnswer": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "Retrieved evidence carries the unsupported change from included courier collection to a scheduled pickup. The null answer is not useful."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedRetrieval": false,
+          "usefulQualifiedAnswer": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer preserves Ada/Bo attribution, unverified status, and the adjustment-versus-new-lens contrast, but repeats the unsupported claim that pickup was scheduled rather than reporting that collection was included; it is therefore not a faithful useful answer."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedRetrieval": false,
+          "usefulQualifiedAnswer": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer preserves Ada/Bo attribution, unverified status, and the adjustment-versus-new-lens contrast, but repeats the unsupported claim that pickup was scheduled rather than reporting that collection was included; it is therefore not a faithful useful answer."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedRetrieval": false,
+          "usefulQualifiedAnswer": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer preserves Ada/Bo attribution, unverified status, and the adjustment-versus-new-lens contrast, but repeats the unsupported claim that pickup was scheduled rather than reporting that collection was included; it is therefore not a faithful useful answer."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedRetrieval": false,
+          "usefulQualifiedAnswer": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer preserves Ada/Bo attribution, unverified status, and the adjustment-versus-new-lens contrast, but repeats the unsupported claim that pickup was scheduled rather than reporting that collection was included; it is therefore not a faithful useful answer."
+        }
+      ]
+    },
+    {
+      "id": "v11-held-rejected",
+      "run": 1,
+      "retentionUseful": true,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "reason": "The retained record faithfully preserves Ada Marlow’s rejected shipping offer for lens inspection and explicitly states that shipment is not planned; typed rejected/non-current status is consistent.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedRetrieval": true,
+          "usefulQualifiedAnswer": true,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer identifies the rejected lens-inspection shipping offer and preserves that shipment is not planned in the requested language."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedRetrieval": true,
+          "usefulQualifiedAnswer": true,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer identifies the rejected lens-inspection shipping offer and preserves that shipment is not planned in the requested language."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedRetrieval": true,
+          "usefulQualifiedAnswer": true,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer directly states that Ada Marlow rejected the lens-inspection shipping offer. For the focused question, rejected status already conveys that this is not a current actionable plan; restating that shipment is not planned is redundant."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedRetrieval": true,
+          "usefulQualifiedAnswer": true,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer identifies the rejected lens-inspection shipping offer and preserves that shipment is not planned in the requested language."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedRetrieval": true,
+          "usefulQualifiedAnswer": true,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer identifies the rejected lens-inspection shipping offer and preserves that shipment is not planned in the requested language."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedRetrieval": true,
+          "usefulQualifiedAnswer": true,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer directly states that Ada Marlow rejected the lens-inspection shipping offer. For the focused question, rejected status already conveys that this is not a current actionable plan; restating that shipment is not planned is redundant."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedRetrieval": true,
+          "usefulQualifiedAnswer": true,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer identifies the rejected lens-inspection shipping offer and preserves that shipment is not planned in the requested language."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedRetrieval": true,
+          "usefulQualifiedAnswer": true,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer identifies the rejected lens-inspection shipping offer and preserves that shipment is not planned in the requested language."
+        }
+      ]
+    },
+    {
+      "id": "v11-held-alternatives",
+      "run": 1,
+      "retentionUseful": true,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "reason": "The retained record faithfully preserves both equally unsupported competing hypotheses, names neither as selected, and uses tentative, non-current, non-answer-eligible typed qualification.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedRetrieval": true,
+          "usefulQualifiedAnswer": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The retrieved evidence is relevant and fully preserves both tentative, equally unsupported hypotheses, but the null answer is not useful."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedRetrieval": true,
+          "usefulQualifiedAnswer": true,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer names both competing hypotheses, preserves equal lack of support and absence of a selected cause, and uses the requested language without factual promotion."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedRetrieval": true,
+          "usefulQualifiedAnswer": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The retrieved evidence is relevant and fully preserves both tentative, equally unsupported hypotheses, but the null answer is not useful."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedRetrieval": true,
+          "usefulQualifiedAnswer": true,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer names both competing hypotheses, preserves equal lack of support and absence of a selected cause, and uses the requested language without factual promotion."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedRetrieval": true,
+          "usefulQualifiedAnswer": true,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer names both competing hypotheses, preserves equal lack of support and absence of a selected cause, and uses the requested language without factual promotion."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedRetrieval": true,
+          "usefulQualifiedAnswer": true,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer names both competing hypotheses, preserves equal lack of support and absence of a selected cause, and uses the requested language without factual promotion."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedRetrieval": true,
+          "usefulQualifiedAnswer": true,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer names both competing hypotheses, preserves equal lack of support and absence of a selected cause, and uses the requested language without factual promotion."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedRetrieval": true,
+          "usefulQualifiedAnswer": true,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer names both competing hypotheses, preserves equal lack of support and absence of a selected cause, and uses the requested language without factual promotion."
+        }
+      ]
+    }
+  ],
+  "summary": "The nested-report case has a substantive scope/time distortion: included courier collection became an already scheduled pickup. The rejected-plan and competing-hypothesis retention records are faithful. Of 24 answers, 14 are useful: all seven non-null report answers fail for the same scheduling distortion, and two hypothesis answers are null. Focused rejected-offer answers remain useful when they state the rejected disposition without redundantly restating that shipment is not planned."
+}

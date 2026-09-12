@@ -1,0 +1,153 @@
+{
+  "runtimeCommit": "1ceb557224602d132bb3c5944c2ac81ac7d2a696",
+  "purpose": "protocol-only",
+  "answerOutputTokenLimit": 2400,
+  "results": [
+    {
+      "kind": "generation",
+      "status": "completed",
+      "expected": {
+        "record_readings": [
+          {
+            "evidence_id": "E1",
+            "selected_meaning": "The retained coverage question remains unanswered.",
+            "clarification_or_ambiguity": null
+          }
+        ],
+        "blocks": [
+          {
+            "rendering_mode": "copy",
+            "evidence_ids": [
+              "E1"
+            ]
+          }
+        ],
+        "missing_concepts": []
+      },
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "reason": null,
+      "value": "{\"record_readings\":[{\"evidence_id\":\"E1\",\"selected_meaning\":\"The retained coverage question remains unanswered.\",\"clarification_or_ambiguity\":null}],\"blocks\":[{\"rendering_mode\":\"copy\",\"evidence_ids\":[\"E1\"]}],\"missing_concepts\":[]}",
+      "usage": {
+        "inputTokens": 972,
+        "outputTokens": 81,
+        "totalTokens": 1053,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 0
+      },
+      "callerMaxTokens": 2222
+    },
+    {
+      "kind": "verification",
+      "status": "completed",
+      "expected": {
+        "verdicts": [
+          {
+            "block_id": "B1",
+            "excerpt_selection": {
+              "selected_by_retained_excerpt": false,
+              "unselected_content": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only."
+            },
+            "source_alignments": [
+              {
+                "evidence_id": "E1",
+                "source_context": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                "actor": {
+                  "source_anchor": null,
+                  "answer_anchor": null,
+                  "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                  "relation": "not_selected"
+                },
+                "object_and_operation": {
+                  "source_anchor": "E1_bf777a9014ca_1",
+                  "answer_anchor": "B1_bf777a9014ca_1",
+                  "source_specifics": "Invented protocol comparison text only. Invented p",
+                  "answer_specifics": "Invented protocol comparison text only. Invented p",
+                  "relation": "preserved"
+                },
+                "qualification": {
+                  "source_anchor": "E1_bf777a9014ca_1",
+                  "answer_anchor": null,
+                  "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                  "relation": "omitted"
+                },
+                "tested_property": {
+                  "source_anchor": "E1_bf777a9014ca_1",
+                  "answer_anchor": "B1_bf777a9014ca_1",
+                  "source_property": "Invented protocol comparison t",
+                  "answer_property": "Invented protocol comparison t",
+                  "relation": "preserved"
+                }
+              },
+              {
+                "evidence_id": "E2",
+                "source_context": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                "actor": {
+                  "source_anchor": null,
+                  "answer_anchor": null,
+                  "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                  "relation": "not_selected"
+                },
+                "object_and_operation": {
+                  "source_anchor": "E2_bf777a9014ca_1",
+                  "answer_anchor": "B1_bf777a9014ca_1",
+                  "source_specifics": "Invented protocol comparison text only. Invented p",
+                  "answer_specifics": "Invented protocol comparison text only. Invented p",
+                  "relation": "preserved"
+                },
+                "qualification": {
+                  "source_anchor": "E2_bf777a9014ca_1",
+                  "answer_anchor": "B1_bf777a9014ca_1",
+                  "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                  "relation": "preserved"
+                },
+                "tested_property": {
+                  "source_anchor": null,
+                  "answer_anchor": "B1_bf777a9014ca_1",
+                  "source_property": null,
+                  "answer_property": "Invented protocol comparison t",
+                  "relation": "changed"
+                }
+              }
+            ],
+            "comparison": {
+              "source_meaning": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+              "candidate_meaning": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+              "action_arguments": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+              "qualification_scope": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only."
+            },
+            "mismatches": [
+              {
+                "dimension": "action_arguments_preserved",
+                "kind": "changed_action_or_role",
+                "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only."
+              },
+              {
+                "dimension": "qualification_scope_preserved",
+                "kind": "changed_qualification",
+                "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only."
+              }
+            ],
+            "proposition_supported": true,
+            "action_arguments_preserved": false,
+            "qualification_scope_preserved": false
+          }
+        ]
+      },
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "reason": null,
+      "value": "{\"verdicts\":[{\"block_id\":\"B1\",\"excerpt_selection\":{\"selected_by_retained_excerpt\":false,\"unselected_content\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\"},\"source_alignments\":[{\"evidence_id\":\"E1\",\"source_context\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"Invented protocol comparison text only. Invented p\",\"answer_specifics\":\"Invented protocol comparison text only. Invented p\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_property\":\"Invented protocol comparison t\",\"answer_property\":\"Invented protocol comparison t\",\"relation\":\"preserved\"},\"qualification\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":null,\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"omitted\"}},{\"evidence_id\":\"E2\",\"source_context\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"Invented protocol comparison text only. Invented p\",\"answer_specifics\":\"Invented protocol comparison text only. Invented p\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":null,\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_property\":null,\"answer_property\":\"Invented protocol comparison t\",\"relation\":\"changed\"},\"qualification\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"preserved\"}}],\"comparison\":{\"source_meaning\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"candidate_meaning\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"action_arguments\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"qualification_scope\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\"},\"mismatches\":[{\"dimension\":\"action_arguments_preserved\",\"kind\":\"changed_action_or_role\",\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\"},{\"dimension\":\"qualification_scope_preserved\",\"kind\":\"changed_qualification\",\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\"}],\"proposition_supported\":true,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false}]}",
+      "usage": {
+        "inputTokens": 4795,
+        "outputTokens": 1063,
+        "totalTokens": 5858,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 27
+      },
+      "callerMaxTokens": 2222
+    }
+  ]
+}

@@ -31,6 +31,7 @@ export const LINE_FACT_COLUMNS = 'id, claim, line_start, confidence, valid_to';
 export function annotateLines<T extends Line>(lines: T[], facts: LineFact[]): T[] {
   if (facts.length === 0) return lines;
   return lines.map((line) => {
+    if (line.prose?.answer_eligible === false) return line;
     const live = facts.filter((fact) => fact.line_start === line.n && fact.valid_to === null);
     if (live.length === 0) return line;
     const best = live.reduce((a, b) => (b.confidence > a.confidence ? b : a));

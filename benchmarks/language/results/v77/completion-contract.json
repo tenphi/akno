@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "pr70-completion-contract-v1",
+  "authorizedBy": "User explicitly allowed a lower success target or a changed approach and required completion within ten further iterations.",
+  "declaredBeforeFullTrial": true,
+  "reviewBasis": "tmp/language-v77-top-level-review.md",
+  "scope": "Frozen invented English/Russian and mixed-source corpus, English generated knowledge, English/Russian requested answers, both memory-view selection modes, isolated 2400-token role ceilings.",
+  "fullTrial": {
+    "corpus": "v22",
+    "corpusFingerprint": "b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a",
+    "splits": [
+      "development",
+      "held-out"
+    ],
+    "runs": 2,
+    "writableCasesPerSplit": 10,
+    "readOnlyCasesPerSplit": 1,
+    "coordinatesPerCase": 8
+  },
+  "completionThresholds": {
+    "usefulQualifiedAnswerCoverage": 0.8,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "availabilityFailureRate": 0.05,
+    "unsupportedRetainedOutputs": 0,
+    "unsupportedNonnullAnswers": 0
+  },
+  "originalAnswerCoverageThreshold": 0.9,
+  "originalGatePreservedSeparately": true,
+  "applyToEachSplitRunIndependently": true,
+  "readOnlyAnswersExcludedFromWritableCoverage": true,
+  "nullWritableAnswersNeverUseful": true,
+  "pooledPassOverrideAllowed": false,
+  "replacementSemanticRunsAllowed": false,
+  "terminalTrialPolicy": "One full evaluation of the frozen chosen runtime. Publish the result and finish this PR without tuning against that held-out output. Any failure remains a failure; no further threshold decrease or source-safety relaxation.",
+  "maximumFurtherRuntimeRevisionsAfterV77": 1,
+  "revisionCriterion": "A demonstrated accepted safety defect or one source-owned deterministic structural cause of a case-sized coverage loss; not another isolated wording variant.",
+  "finalAction": "Publish reviewed code and evidence in existing PR70; leave open and unmerged; do not edit issues. If all completion gates pass, state the bounded pass. Otherwise state that reliability acceptance remains unmet and identify remaining scope.",
+  "limitations": [
+    "Independent model grading is fallible and is not human validation.",
+    "Correlated finite invented cases do not establish universal multilingual or longitudinal reliability.",
+    "The existing service answer overlay of1024tokens is outside this2400-token trial evidence."
+  ]
+}

@@ -7,6 +7,7 @@ import type { AknoContext } from '../context.ts';
 import { replaceNestedStringArrayValue, replaceTopLevelString } from '../kb/frontmatter.ts';
 import { parsePage, resolvePagePolicy } from '../kb/page.ts';
 import { parseJsonLoose } from '../models/client.ts';
+import { revisionLanguageProse } from './revision-language.ts';
 import { isReserved } from '../reserved.ts';
 import { newPrefixedId, sha256 } from '../store/ids.ts';
 import type { ChangeFile } from '../write/journal.ts';
@@ -2526,6 +2527,7 @@ export async function decideMaintenancePlanWithCurator(
       const revision = await ctx.models.derive.chat(curatorRevisionMessages(plan, item, feedback), {
         schema: CURATOR_REVISION_SCHEMA,
         maxTokens: REVISION_MAX_OUTPUT_TOKENS,
+        additionalLanguageProse: (value) => revisionLanguageProse(value, item.operations),
       });
       const revised =
         revision.ok && revision.value

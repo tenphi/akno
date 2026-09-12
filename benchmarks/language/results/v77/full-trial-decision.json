@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "pr70-terminal-measurement-decision-v1",
+  "decision": "proceed",
+  "runtimeCommit": "a67faa3fd3a6f59450a35c4af1d66baa96fee4e8",
+  "freshHeldOutExecutedBeforeDecision": false,
+  "diagnosticDisposition": "Both exposed probes failed in the external capture harness before every planned answer coordinate; 12case failures,96planned but zero recorded query observations. Retention and source-byte outcomes are unknown in these reports. No positive diagnostic semantic-readiness evidence exists.",
+  "reason": "Independent zero-egress reproduction isolates an unconditional model-ID assertion rejecting the correctly configured query-expansion role. The full-only capture records the role model and checks expansion separately; mocked controls exercise production expansion modes, semantic operations, wrong-model and exception paths. Production runtime and semantic gates are unchanged. Under the user's bounded-finish instruction, a new terminal fullV22measurement supplies the missing quality evidence without replacing either failed diagnostic.",
+  "nextMeasurement": "CompleteV22development and held-out,twice per split,320writable plus32read-only planned coordinates; first and only full measurement on this runtime/corpus.",
+  "gatePolicy": "Report original90%answer gate and predeclared80%completion gate from identical independently graded observations, each split/run separately; other thresholds unchanged.",
+  "replacementDiagnosticRunsAllowed": false,
+  "productionRuntimeChanged": false,
+  "semanticRetriesAdded": false,
+  "providerControlReruns": 0,
+  "terminalAfterFullMeasurement": true,
+  "requiresTwoIndependentHarnessReviewsAndHashBoundPreflight": true,
+  "finalAction": "Publish result and remaining limitations in existingPR70, leaveopen/unmerged, noissueedits. No tuning on freshheldout after execution."
+}

@@ -1,3 +1,4 @@
+import { semanticAudit } from './semantic-audit.ts';
 import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
@@ -96,7 +97,7 @@ async function startStubChat(): Promise<StubServer> {
         ? derive(user, byPage)
         : system.startsWith('You independently verify whether drafted answer blocks')
           ? (answerScripted?.verification ?? { verdicts: [] })
-          : system.startsWith('You answer a factual question using only supplied memory evidence')
+          : system.startsWith('You answer a question using only supplied memory evidence')
             ? (answerScripted?.generation ?? { blocks: [], missing_concepts: [] })
             : system.startsWith('You classify structurally incompatible claims')
               ? conflictScripted
@@ -1456,7 +1457,17 @@ describe('observe', () => {
         blocks: [{ text: PATTERN, evidence_ids: ['E2'] }],
         missing_concepts: [],
       },
-      { verdicts: [{ block_id: 'B1', supported: true }] },
+      {
+        verdicts: [
+          {
+            block_id: 'B1',
+            ...semanticAudit(true, true, true),
+            proposition_supported: true,
+            action_arguments_preserved: true,
+            qualification_scope_preserved: true,
+          },
+        ],
+      },
     );
 
     const result = await mem.answer({

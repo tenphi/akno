@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "built-qualified-answer-probe-v1",
+  "createdAt": "2026-09-07T19:14:45.461Z",
+  "contract": "answer-generation-v15",
+  "model": "gpt-5.6-luna",
+  "setup": "Invented fixed qualified Markdown, built package indexing and live answer path; no extraction model in this probe.",
+  "source": "Ada Marlow considered the counterfactual that, had she chosen the Zephyr QX-100 warranty extension, battery replacement in the fifth year would have been covered; this was an unrealized scenario rather than the coverage she selected.",
+  "qualification": {
+    "status": "qualified",
+    "id": "mem_built1111",
+    "level": 1,
+    "kind": "claim",
+    "subject": "unresolved",
+    "source_role": "user",
+    "source_speaker": "Ada Marlow",
+    "commitment": "counterfactual",
+    "disposition": "active",
+    "polarity": "affirmed",
+    "basis": "self_attested",
+    "answer_eligible": false,
+    "current_eligible": false
+  },
+  "bytesStable": true,
+  "answers": [
+    {
+      "language": "en",
+      "effectiveAnswerLanguage": "en",
+      "answer": "Ada Marlow described an unrealized counterfactual in which, if she had chosen the Zephyr QX-100 warranty extension, battery replacement in the fifth year would have been covered. This was not the coverage she selected. [equipment:4]",
+      "reason": "answered",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      }
+    },
+    {
+      "language": "ru",
+      "effectiveAnswerLanguage": "ru",
+      "answer": "Ada Marlow рассматривала нереализованный контрфактический сценарий: если бы она выбрала расширение гарантии Zephyr QX-100, замена батареи на пятом году была бы покрыта. Это не было фактически выбранным ею покрытием. [equipment:4]",
+      "reason": "answered",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      }
+    }
+  ]
+}

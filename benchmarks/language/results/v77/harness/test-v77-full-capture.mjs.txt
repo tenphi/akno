@@ -1,0 +1,44 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
+import {ModelClient} from '../packages/core/src/models/client.ts';
+import {expandQuery} from '../packages/core/src/recall/expand.ts';
+import {placeManagedItems} from '../packages/core/src/write/placement.ts';
+import {markerFromProvidedCandidate} from '../packages/core/src/write/managed-memory.ts';
+import {validateTrace} from './v77-full-trace-integrity.mjs';
+const trace='tmp/v77-full-capture-test-trace.jsonl';assert(!fs.existsSync(trace));process.env.AKNO_EVAL_TRACE=trace;
+let providerCalls=0,stubCalls=0,throwExpansion=false;
+globalThis.fetch=()=>{providerCalls++;throw new Error('Network forbidden in capture control');};
+const result={ok:true,value:JSON.stringify({queries:['invented component search'],answers:['The invented record has an open question.'],concepts:['component']}),endpointRequests:0,latencyMs:0,usage:null};
+const failure=new Error('Invented expansion transport failure');
+ModelClient.prototype.chatTransport=async function(){stubCalls++;if(throwExpansion)throw failure;return result;};
+ModelClient.prototype.chat=async function(messages,options){return this.chatTransport(messages,options);};
+await import('./capture-language-full-v77.mjs');
+function model(id){const m=Object.create(ModelClient.prototype);Object.defineProperty(m,'modelId',{value:id});Object.defineProperty(m,'available',{value:true});return m;}
+const expansion=model('llama-3.2-3b-instruct'),luna=model('gpt-5.6-luna');
+for(const mode of ['lookup','question','explore']){const r=await expandQuery('invented component',mode,expansion,true,1111);assert.equal(r.degraded,null);assert(r.queries.includes('invented component search'));}
+for(const system of ['You select the canonical home','You extract durable memory','You answer a question','You independently verify whether drafted','You independently verify proposed retained memories']){
+ assert.equal(await luna.chat([{role:'system',content:system},{role:'user',content:'Invented control'}]),result);
+}
+const candidate={candidate_id:'candidate-1111',kind:'plan',text:'Ada Marlow plans to inspect the Zephyr QX-100.',subject:'Zephyr QX-100',attribution:{source_role:'user',source_speaker:'Ada Marlow'},discourse:{commitment:'none',disposition:'accepted'},epistemic:{basis:'self_attested'},support:[{quote:'I plan to inspect the Zephyr QX-100.'}],discourse_frame:[{quote:'I plan to inspect the Zephyr QX-100.'}],destination:{slug:'equipment/zephyr-qx-100'}};
+const marker=markerFromProvidedCandidate('mem_1111',candidate,{receipt:'aaaaaaaaaaaa',candidate:'bbbbbbbbbbbb',proofGroup:'cccccccccccc',selection:'provided'});
+const placement=await placeManagedItems('# Invented component notes\n',[{id:'mem_1111',text:candidate.text,marker}],luna);assert.equal(placement.modelOutcome,result);
+let rows=fs.readFileSync(trace,'utf8').trim().split('\n').map(x=>JSON.parse(x));const validLifecycle=validateTrace(rows);assert.equal(validLifecycle.modelCalls,9);assert.equal(stubCalls,9);
+const languageRows=structuredClone(rows);const langStart=languageRows.find(r=>r.kind==='transport-start');langStart.language=true;langStart.callerMaxTokens=1024;languageRows.find(r=>r.kind==='transport-result'&&r.transport_id===langStart.transport_id).kind='language-check';assert.equal(validateTrace(languageRows).modelCalls,9);langStart.callerMaxTokens=1023;assert.throws(()=>validateTrace(languageRows),/Language transport ceiling changed/);
+const wrongExpansion=structuredClone(rows);wrongExpansion.find(r=>r.kind==='model-call-start'&&r.operation===null).modelId='gpt-5.6-luna';assert.throws(()=>validateTrace(wrongExpansion));
+const priorCalls=stubCalls;
+await assert.rejects(()=>expansion.chat([{role:'system',content:'You answer a question'}]),/role model changed/);
+await assert.rejects(()=>luna.chat([{role:'system',content:'A user asked a question of their personal knowledge base.'}]),/role model changed/);
+await assert.rejects(()=>model('invented-unknown-model').chat([{role:'system',content:'You answer a question'}]),/role model changed/);
+await assert.rejects(()=>luna.chat([{role:'system',content:'Invented unknown operation'}]),/Unknown full-trial operation/);
+assert.equal(stubCalls,priorCalls);
+rows=fs.readFileSync(trace,'utf8').trim().split('\n').map(x=>JSON.parse(x));
+assert.equal(rows.filter(r=>r.kind==='model-call-throw').length,4);
+assert.throws(()=>validateTrace(rows));
+throwExpansion=true;
+await assert.rejects(()=>expandQuery('invented component','question',expansion,true,1111),e=>e===failure);
+rows=fs.readFileSync(trace,'utf8').trim().split('\n').map(x=>JSON.parse(x));
+const tail=rows.slice(-4);assert.deepEqual(tail.map(r=>r.kind),['model-call-start','transport-start','transport-throw','model-call-throw']);assert.equal(tail[0].modelId,'llama-3.2-3b-instruct');
+const combinedValid=rows.filter(r=>r.call_id<=9*2||r.transport_id<=9*2); // The first nine successful calls use two IDs each.
+assert.equal(validateTrace(combinedValid).modelCalls,9);
+assert.equal(providerCalls,0);
+const receipt={passed:true,providerCalls,stubCalls,controls:['actual lookup expansion','actual question expansion','actual explore expansion','five recognized Luna semantic operations','recognized Luna placement preserves its separate operation','wrong semantic model rejected before stub','wrong expansion model rejected before stub','unknown model rejected before stub','unknown Luna operation rejected before stub','policy exceptions traced','expansion exception identity preserved and traced','unknown model invalidates trace','successful calls preserve result identity','language transport exactly1024;1023fails'],validLifecycle,validatorSha256:createHash('sha256').update(fs.readFileSync('tmp/v77-full-trace-integrity.mjs')).digest('hex'),captureSha256:createHash('sha256').update(fs.readFileSync('tmp/capture-language-full-v77.mjs')).digest('hex'),traceSha256:createHash('sha256').update(fs.readFileSync(trace)).digest('hex')};
+fs.writeFileSync('tmp/v77-full-capture-controls.json',JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify(receipt));

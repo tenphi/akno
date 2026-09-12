@@ -1,0 +1,164 @@
+{
+  "runtimeCommit": "12ba4209e7aeeb5b37dbd7f87ae810c6c73f1131",
+  "tests": 2571,
+  "testFiles": 141,
+  "checks": {
+    "build/typecheck": "passed",
+    "lint": "passed",
+    "knip": "passed",
+    "suite": "passed",
+    "formatting": "passed",
+    "docs:doctor": "passed",
+    "docs:build": "passed",
+    "smoke": "passed",
+    "smoke:packages": "passed",
+    "check:repository": "passed",
+    "redeploy:build/restart/socket": "passed"
+  },
+  "compiledChecks": {
+    "compiledSourceClock": true,
+    "compiledFramedAnswers": true,
+    "immutableOwnTextReferences": true,
+    "staleAndForeignBlockReferencesRejected": true,
+    "mandatorySemantics": true,
+    "mandatorySelection": true,
+    "strictVerdictJson": true,
+    "readingsPrivate": true,
+    "sourceBytesUnchanged": true,
+    "extraModelPasses": 0
+  },
+  "ci": {
+    "run": 34310964404,
+    "conclusion": "success"
+  },
+  "documentationCI": {
+    "run": 34310964445,
+    "conclusion": "success"
+  },
+  "qualificationChecks": {
+    "compiledContinuedReportUncertainty": true,
+    "compiledProposerFloor": true,
+    "compiledHypotheticalVersions": true,
+    "mandatorySemantics": true,
+    "unrelatedInstallationHeld": true,
+    "sourceBytesUnchanged": true,
+    "extraModelPasses": 0
+  },
+  "budgetControls": {
+    "invalidBudgetInputsRejected": true,
+    "answerOnlyOverride": true,
+    "configuredLimit": 1024,
+    "trialLimit": 2400,
+    "inheritedFromRuntime": "9fd704d90faa3d2cf137bc9c6a161c32dabd4def"
+  },
+  "compiledRendering": {
+    "compiledCopyAndTranslation": true,
+    "currentPayloadLanguageChecked": true,
+    "strictCopyBranches": true,
+    "completeRecordVerification": true,
+    "mandatorySemantics": true,
+    "mandatorySelection": true,
+    "strictJson": true,
+    "leadingDenialVerifiedWithoutRepair": true,
+    "sourceBytesUnchanged": true,
+    "extraModelPasses": 0
+  },
+  "protocolControls": {
+    "runtimeCommit": "12ba4209e7aeeb5b37dbd7f87ae810c6c73f1131",
+    "purpose": "protocol-only",
+    "answerOutputTokenLimit": 2400,
+    "results": [
+      {
+        "kind": "generation",
+        "status": "completed",
+        "expected": {
+          "record_readings": [
+            {
+              "evidence_id": "E1",
+              "selected_meaning": "The retained coverage question remains unanswered.",
+              "clarification_or_ambiguity": null
+            }
+          ],
+          "blocks": [
+            {
+              "rendering_mode": "copy",
+              "evidence_ids": [
+                "E1"
+              ]
+            }
+          ],
+          "missing_concepts": []
+        },
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "reason": null
+      },
+      {
+        "kind": "verification",
+        "status": "completed",
+        "expected": {
+          "verdicts": [
+            {
+              "block_id": "B1",
+              "source_alignments": [
+                {
+                  "evidence_id": "E1",
+                  "source_context": "The coverage question remains open; the neighboring amberfin fact is not selected.",
+                  "actor": {
+                    "source_anchor": null,
+                    "answer_anchor": null,
+                    "relation": "not_selected",
+                    "detail": "No named action actor."
+                  },
+                  "object_and_mechanism": {
+                    "source_anchor": "E1_f60973925c8c_1",
+                    "answer_anchor": "B1_3ab207b47cb7_1",
+                    "relation": "preserved",
+                    "detail": "Same question."
+                  },
+                  "qualification": {
+                    "source_anchor": "E1_f60973925c8c_2",
+                    "answer_anchor": "B1_3ab207b47cb7_2",
+                    "relation": "preserved",
+                    "detail": "Unknown answer preserved."
+                  }
+                }
+              ],
+              "comparison": {
+                "source_meaning": "An unresolved coverage question.",
+                "candidate_meaning": "An unresolved coverage question.",
+                "action_arguments": "Same warranty and delivery object.",
+                "qualification_scope": "Uncertainty remains explicit."
+              },
+              "mismatches": [],
+              "proposition_supported": true,
+              "action_arguments_preserved": true,
+              "qualification_scope_preserved": true,
+              "excerpt_selection": {
+                "selected_by_retained_excerpt": true,
+                "unselected_content": null
+              }
+            }
+          ]
+        },
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "reason": null
+      }
+    ]
+  },
+  "compiledBoundaries": {
+    "compiled600CharacterBound": true,
+    "compiledSourceClock": true,
+    "sourceClockQuotesExcluded": true,
+    "unknownProposalFullyVerified": true,
+    "compiledReporterReversal": true,
+    "compiledGenericPassive": true,
+    "compiledCoverageInstrument": true,
+    "mandatorySemantics": true,
+    "sourceBytesUnchanged": true,
+    "extraModelPasses": 0
+  }
+}

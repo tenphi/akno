@@ -1,3 +1,4 @@
+import type { Line } from '@tenphi/akno-protocol';
 import { styleText } from 'node:util';
 
 /**
@@ -102,4 +103,14 @@ export function ms(value: number): string {
   if (value < 1) return `${value.toFixed(2)}ms`;
   if (value < 1000) return `${value.toFixed(0)}ms`;
   return `${(value / 1000).toFixed(1)}s`;
+}
+
+/** Keep a selected excerpt visibly qualified even when its heading is outside the CLI window. */
+export function proseLabel(source: Line): string {
+  const prose = source.prose;
+  if (!prose || prose.answer_eligible) return '';
+  const scope = [...new Set(prose.frame.map((frame) => frame.n))].join(',');
+  return style.grey(
+    ` [${prose.status === 'unresolved' ? 'unresolved context' : prose.reason}; ${prose.view}${scope ? `; scope L${scope}` : ''}]`,
+  );
 }

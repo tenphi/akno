@@ -1,0 +1,12 @@
+{
+  "corpusFingerprint": "b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a",
+  "cases": 22,
+  "development": 11,
+  "heldOut": 11,
+  "approved": 22,
+  "sourceContentsDisplayedToImplementationAgent": false,
+  "sourceFile": "packages/core/src/bench/language-corpus-v22.ts",
+  "sourceFileSha256": "36dda31989cedc4841e25b1e0da400396fc387681468f1c03484ea4dec025f45",
+  "proposalSha256": "be3be90774b9464bba8198eb674bb32d3fd55214d63579e9d67dcb82e8353870",
+  "reviewSha256": "4dce3533b4c0816596b56488daedda3315568928a3a57b2e588a8d4c22b7e4ba"
+}

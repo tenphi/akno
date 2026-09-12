@@ -1,0 +1,27 @@
+{
+  "runtimeCommit": "1eb002b84c05927b1ac1c5f69e974908de36c224",
+  "publicationReview": "tmp/language-v73-publication-review.md",
+  "initialFindings": [
+    {
+      "finding": "Ignored raw-trace hyperlink would be broken in a fresh checkout.",
+      "resolution": "Only the copied clock design review now names the local trace as plain text and links its artifact manifest; original review preserved."
+    },
+    {
+      "finding": "Corrected built abstention flags had unchanged reasons that still called abstention justified.",
+      "resolution": "Original grader clarified all eight final reasons and correction receipts. Initial and intermediate corrected JSON/Markdown preserved; no scores changed."
+    },
+    {
+      "finding": "README needed to distinguish copied evidence from locally preserved raw traces/logs.",
+      "resolution": "README explicitly names local raw traces/logs and links their hashes."
+    },
+    {
+      "finding": "PR wording could confuse zero case availability failures with zero answer-operation failures.",
+      "resolution": "PR now explicitly says case availability; the language-policy operation failure stays documented."
+    }
+  ],
+  "originalManifestPreserved": true,
+  "sourceOrTraceChanged": false,
+  "providerCallsRepeated": false,
+  "semanticGateChanged": false,
+  "freshHeldOutExecuted": false
+}

@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+node tmp/v77-full-launch-integrity.mjs development
+AKNO_EVAL_TRACE=bench-results/language-full-development-v77-trace.jsonl node --import ./tmp/capture-language-full-v77.mjs scripts/bench-language.mjs --live --corpus v22 --split development --runs 2 --answer-output-tokens 2400 --output bench-results/language-full-development-v77.json

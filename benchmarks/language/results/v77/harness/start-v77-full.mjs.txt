@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import assert from 'node:assert/strict';
+const hash=file=>createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+execFileSync(process.execPath,['tmp/v77-full-launch-integrity.mjs','--check'],{stdio:'inherit'});
+const marker='tmp/v77-full-started.json';assert(!fs.existsSync(marker));
+for(const split of ['development','held-out'])for(const file of [`tmp/v77-full-${split}-launch-receipt.json`,`bench-results/language-full-${split}-v77.json`,`bench-results/language-full-${split}-v77-trace.jsonl`])assert(!fs.existsSync(file));
+const manifest=JSON.parse(fs.readFileSync('tmp/v77-full-launch-manifest.json','utf8'));
+const start={runtimeCommit:manifest.runtimeCommit,corpusFingerprint:manifest.corpusFingerprint,startedAt:new Date().toISOString(),manifestSha256:hash('tmp/v77-full-launch-manifest.json'),approvalSha256:hash('tmp/v77-full-preflight-approval.json'),splits:manifest.splits,runs:manifest.runs,writableObservations:320,readOnlyObservations:32};
+fs.writeFileSync(marker,JSON.stringify(start,null,2)+'\n');console.log(JSON.stringify(start));

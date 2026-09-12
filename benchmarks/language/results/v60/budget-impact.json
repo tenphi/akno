@@ -1,0 +1,99 @@
+{
+  "comparison": "Descriptive observations of the same exposed query matrix across revisions. Runtime, retained content and verification coverage differ; both trials declare the same role ceilings shown below. This does not isolate a causal latency or quality effect.",
+  "probes": [
+    {
+      "probe": "selected",
+      "previous": {
+        "queries": 48,
+        "producedAnswers": 42,
+        "declaredOutputTokenLimits": {
+          "answer": 2400,
+          "retention": 2400
+        },
+        "generation": {
+          "observedCalls": 48,
+          "knownOutputTokenReceipts": 48,
+          "outputTokens": 14498,
+          "medianLatencyMs": 4730,
+          "p95LatencyMs": 7164
+        },
+        "verification": {
+          "observedCalls": 44,
+          "knownOutputTokenReceipts": 44,
+          "outputTokens": 26037,
+          "medianLatencyMs": 6946,
+          "p95LatencyMs": 9357
+        }
+      },
+      "current": {
+        "queries": 48,
+        "producedAnswers": 39,
+        "declaredOutputTokenLimits": {
+          "answer": 2400,
+          "retention": 2400
+        },
+        "generation": {
+          "observedCalls": 48,
+          "knownOutputTokenReceipts": 48,
+          "outputTokens": 15043,
+          "medianLatencyMs": 4852,
+          "p95LatencyMs": 6302
+        },
+        "verification": {
+          "observedCalls": 41,
+          "knownOutputTokenReceipts": 41,
+          "outputTokens": 27572,
+          "medianLatencyMs": 6683,
+          "p95LatencyMs": 9583
+        }
+      }
+    },
+    {
+      "probe": "built-reliability",
+      "previous": {
+        "queries": 32,
+        "producedAnswers": 24,
+        "declaredOutputTokenLimits": {
+          "answer": 2400,
+          "retention": 2400
+        },
+        "generation": {
+          "observedCalls": 24,
+          "knownOutputTokenReceipts": 24,
+          "outputTokens": 5298,
+          "medianLatencyMs": 4287,
+          "p95LatencyMs": 5242
+        },
+        "verification": {
+          "observedCalls": 24,
+          "knownOutputTokenReceipts": 24,
+          "outputTokens": 13121,
+          "medianLatencyMs": 6513,
+          "p95LatencyMs": 9389
+        }
+      },
+      "current": {
+        "queries": 32,
+        "producedAnswers": 29,
+        "declaredOutputTokenLimits": {
+          "answer": 2400,
+          "retention": 2400
+        },
+        "generation": {
+          "observedCalls": 32,
+          "knownOutputTokenReceipts": 32,
+          "outputTokens": 8693,
+          "medianLatencyMs": 4395,
+          "p95LatencyMs": 8146
+        },
+        "verification": {
+          "observedCalls": 32,
+          "knownOutputTokenReceipts": 32,
+          "outputTokens": 19219,
+          "medianLatencyMs": 6898,
+          "p95LatencyMs": 11314
+        }
+      }
+    }
+  ]
+}

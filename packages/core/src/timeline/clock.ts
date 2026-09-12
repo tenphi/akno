@@ -56,6 +56,7 @@ export function temporalSourceKind(time: RetainedTime): Exclude<TimelineSourceKi
 }
 
 export function temporalActionable(time: RetainedTime, disposition: TimelineDisposition | null): boolean {
+  if (time.precision === 'unknown' || (!time.start && !time.until)) return false;
   if (time.status === 'tentative') return false;
   if (disposition !== 'active' && disposition !== 'accepted') return false;
   return time.relation === 'scheduled' || time.relation === 'due';

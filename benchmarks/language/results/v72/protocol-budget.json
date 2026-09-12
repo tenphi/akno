@@ -1,0 +1,52 @@
+{
+  "runtimeCommit": "93c7444ff2d860d88649af97db3ccf75bc6c82fd",
+  "purpose": "Observed protocol fixtures only, not a universal character-to-token bound or semantic result.",
+  "twoRecordVerifier": {
+    "jsonCharacters": 5078,
+    "usage": {
+      "inputTokens": 5875,
+      "outputTokens": 1063,
+      "totalTokens": 6938,
+      "cachedInputTokens": 0,
+      "reasoningOutputTokens": 31
+    },
+    "callerMaxTokens": 2222,
+    "effectiveInitialOutputLimit": 2222,
+    "propertyStates": [
+      "preserved",
+      "absent_from_both"
+    ]
+  },
+  "structuredClock": {
+    "jsonCharacters": 688,
+    "usage": {
+      "inputTokens": 1123,
+      "outputTokens": 186,
+      "totalTokens": 1309,
+      "cachedInputTokens": 0,
+      "reasoningOutputTokens": 0
+    },
+    "callerMaxTokens": 2222,
+    "effectiveInitialOutputLimit": 2222
+  },
+  "retention": {
+    "jsonCharacters": 1066,
+    "usage": {
+      "inputTokens": 864,
+      "outputTokens": 271,
+      "totalTokens": 1135,
+      "cachedInputTokens": 0,
+      "reasoningOutputTokens": 16
+    },
+    "callerMaxTokens": 3744,
+    "effectiveInitialOutputLimit": 2400,
+    "sourcePolarityValues": [
+      "affirmed",
+      "negated"
+    ]
+  },
+  "roleMaxTokens": 2400,
+  "extraSemanticPasses": 0,
+  "service1024OverlayValidated": false,
+  "ceilingExplanation": "The existing ModelClient tokenCeiling(perCall, perRole) uses the minimum of supplied caller and role ceilings. The retention fixture requests 3744, and its explicitly configured 2400 role cap limits transport to 2400. This is the original per-batch request allowance, not a cap increase."
+}

@@ -1,0 +1,59 @@
+{
+  "runtimeCommit": "44e6e714f1758948f306ec90cdae9b0d453e3604",
+  "purpose": "Coordinate/version/provenance checks only; usefulness and accepted meaning errors require independent review.",
+  "results": [
+    {
+      "probe": "selected",
+      "observations": 64,
+      "reportSha256": "93a854748e54d9f5f9f4ef8495e285831c1a5590ea0556f933735edaaa524f35",
+      "traceSha256": "94217bd2b6e541cfbb6b03118f00108244d40cd62c7f140aebbf8b92ccc1b062",
+      "traceRows": 1376,
+      "traceLifecycle": {
+        "modelCalls": 259,
+        "transports": 327,
+        "modelThrows": 0,
+        "transportThrows": 0,
+        "balanced": true
+      },
+      "models": {
+        "retention": "gpt-5.6-luna",
+        "answer": "gpt-5.6-luna",
+        "embedding": "text-embedding-qwen3-embedding-0.6b",
+        "expansion": "llama-3.2-3b-instruct"
+      },
+      "modelOutputTokenLimits": {
+        "answer": 2400,
+        "retention": 2400
+      },
+      "caseAvailabilityFailures": 1,
+      "sourceByteChanges": 0
+    },
+    {
+      "probe": "built",
+      "observations": 32,
+      "reportSha256": "12d64f8a5f87266d5523132167638f81198e2c739b75ac70dbda701a0d00b4c1",
+      "traceSha256": "2b355c02a4eb767529864f5052b64a92e9b1e6c1781aeb31a979d8d770c89d86",
+      "traceRows": 717,
+      "traceLifecycle": {
+        "modelCalls": 133,
+        "transports": 170,
+        "modelThrows": 0,
+        "transportThrows": 0,
+        "balanced": true
+      },
+      "models": {
+        "retention": "gpt-5.6-luna",
+        "answer": "gpt-5.6-luna",
+        "embedding": "text-embedding-qwen3-embedding-0.6b",
+        "expansion": "llama-3.2-3b-instruct"
+      },
+      "modelOutputTokenLimits": {
+        "answer": 2400,
+        "retention": 2400
+      },
+      "caseAvailabilityFailures": 0,
+      "sourceByteChanges": 0
+    }
+  ],
+  "freshHeldOutExecuted": false
+}

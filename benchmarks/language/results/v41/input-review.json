@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "language-input-review-v1",
+  "corpusFingerprint": "2b1913d73efee8c14007feb2a4745711e27518a47e20ca5df52bf1cc1f3e8372",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-5.6-sol",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutOutputs": true
+  },
+  "cases": [
+    {
+      "id": "v18-held-report",
+      "approved": true,
+      "reason": "The mixed source supports Ada as recorder, Bo as inner reporter, permission to send the device for dial/regulator calibration rather than replacement, Ada’s lack of inspection or confirmation, and no collection instruction. Both questions target the same unverified report without treating permission as a booking."
+    },
+    {
+      "id": "v18-held-hypothesis",
+      "approved": true,
+      "reason": "The Russian source expressly frames the weekly pressure-valve inspection and missed-check consequence as hypothetical, while leaving actual requirements and any actual miss unknown. The bilingual questions faithfully target that hypothetical rule."
+    },
+    {
+      "id": "v18-held-counterfactual",
+      "approved": true,
+      "reason": "The source entails Ada’s actual rejection and nonpurchase plus the unrealized seventh-year charging-port coverage conditional on purchase. Both questions accurately focus on the counterfactual alternative without implying current coverage."
+    },
+    {
+      "id": "v18-held-question",
+      "approved": true,
+      "reason": "Ada records an unanswered preventive filter-cleaning coverage question and establishes neither inclusion nor exclusion. The English and Russian questions request the open record rather than its unknown answer."
+    },
+    {
+      "id": "v18-held-exclusion",
+      "approved": true,
+      "reason": "The source directly asserts the narrow cracked-support-feet exclusion and explicitly leaves motor-housing repair unsettled. Both questions preserve the action/component scope and the expectation does not claim independent verification."
+    },
+    {
+      "id": "v18-held-assistant",
+      "approved": true,
+      "reason": "The assistant source supports a tentative monthly hinge-lubrication interpretation, lack of contract inspection, and no basis for confirmation. Both questions preserve generic assistant attribution and do not promote the report."
+    },
+    {
+      "id": "v18-held-fiction",
+      "approved": true,
+      "reason": "The source clearly makes Ada the author of fiction in which Vulpine Mutual promises fictional Bo free cable replacement during the first six ownership weeks. The bilingual questions and expectation preserve all roles, duration, and absence of a real agreement."
+    },
+    {
+      "id": "v18-held-rejected",
+      "approved": true,
+      "reason": "The source supports Ada’s rejection of the service-centre shipment for thermostat measurement, no plan under the offer, and no booked handover. The bilingual focused questions fairly ask which offer she declined while full retention keeps all lifecycle facts."
+    },
+    {
+      "id": "v18-held-undated",
+      "approved": true,
+      "reason": "The source supports an unaccepted warranty-exceptions review proposal with no meeting and defines next week relative to an undated original record, leaving its calendar week unknown. Both questions and the expectation preserve that clock."
+    },
+    {
+      "id": "v18-held-alternatives",
+      "approved": true,
+      "reason": "The Russian source supports two competing tentative causes, an improperly seated internal connector and faulty temperature probe, with no evidence and Ada selecting neither. The bilingual questions are equivalent and the commitment flexibility is semantically fair."
+    },
+    {
+      "id": "v18-held-admission",
+      "approved": true,
+      "reason": "The invented eighty-eight-month assertion is understandable, while read-only admission fairly requires no saved write and justifies abstention without changing source bytes."
+    },
+    {
+      "id": "v19-held-report",
+      "approved": true,
+      "reason": "The three-turn source supports Ada as outer recorder, Bo as inner reporter, permission to send the device to a service bench for return-spring tension measurement rather than replacement, unread/unconfirmed terms, and no booked collection. The EN/RU questions equivalently target that report."
+    },
+    {
+      "id": "v19-held-hypothesis",
+      "approved": true,
+      "reason": "The Russian source expressly introduces a hypothetical two-month foam-filter check and its conditional missed-check consequence, with unknown actual requirements and no actual miss. Both questions faithfully target the hypothetical rule."
+    },
+    {
+      "id": "v19-held-counterfactual",
+      "approved": true,
+      "reason": "The source supports actual rejection/nonpurchase and unrealized ninth-year rotary-knob repair coverage conditional on buying the extension. The bilingual questions fairly focus on the alternative, and the expectation keeps nonpurchase and noncoverage material."
+    },
+    {
+      "id": "v19-held-question",
+      "approved": true,
+      "reason": "The Russian source records Ada’s unresolved preventive coolant-refill coverage question with neither inclusion nor exclusion established. The EN/RU questions are equivalent and do not invent an external asking or writing action."
+    },
+    {
+      "id": "v19-held-exclusion",
+      "approved": true,
+      "reason": "The source directly asserts the damaged support-bracket exclusion and narrowly states that this record does not resolve fan-motor repair coverage, without claiming whole-contract silence. The bilingual questions fairly request both scoped parts."
+    },
+    {
+      "id": "v19-held-assistant",
+      "approved": true,
+      "reason": "The English assistant source supports a tentative quarterly functional check of the status display, no contract examination or confirmation, and a possible contractual condition rather than device physical state. Both questions preserve the generic assistant role and uncertainty."
+    },
+    {
+      "id": "v19-held-fiction",
+      "approved": true,
+      "reason": "The source supports Ada’s actual proposal to discuss and the embedded fictional Vulpine Mutual promise to fictional Bo of free axle-cap replacements during the first ten ownership weeks, with no real agreement or completed discussion. The bilingual questions faithfully target that fiction."
+    },
+    {
+      "id": "v19-held-rejected",
+      "approved": true,
+      "reason": "The source supports Ada as the rejecting actor, laboratory shipment for rotor-balance measurement, no plan under the offer, and no booked pickup. Both questions are equivalent; the schema clarification does not erase the explicit source statement about her plan."
+    },
+    {
+      "id": "v19-held-undated",
+      "approved": true,
+      "reason": "The source supports Ada’s explicit proposal to review warranty exclusions next year, no adopted plan or meeting, and a year relative to an undated original record whose calendar year is unrecoverable. The questions and expectation preserve proposal commitment separately from tentative timing."
+    },
+    {
+      "id": "v19-held-alternatives",
+      "approved": true,
+      "reason": "The mixed source supports Ada’s discussion of a slipping drive belt and jammed cooling fan as competing tentative hypotheses, no evidence for either, and Ada personally selecting no cause. Both questions equivalently target this qualified discussion."
+    },
+    {
+      "id": "v19-held-admission",
+      "approved": true,
+      "reason": "The invented ninety-nine-month assertion is clear and bilingual-answerable in principle, while the isolated read-only setup fairly requires an admission hold with no saved evidence or unsupported answer."
+    }
+  ],
+  "summary": "All 22 frozen V19 cases are approved. Their expectations follow from the invented sources, the English and Russian questions are semantically equivalent, and the admission, attribution, action-agency, uncertainty, counterfactual, fictional, exclusion-scope, and source-relative-time requirements are fair."
+}

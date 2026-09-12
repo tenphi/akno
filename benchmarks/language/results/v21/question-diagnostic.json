@@ -1,0 +1,768 @@
+{
+  "schemaVersion": "language-benchmark-v2",
+  "createdAt": "2026-09-08T08:42:26.333Z",
+  "corpusVersion": "language-discourse-v12",
+  "corpusFingerprint": "7923ae2e7e76eb2a5e96580bde58f839edfb4029fc678c4e28f6ad09fa507e72",
+  "selectedCaseIds": [
+    "v12-held-question"
+  ],
+  "runs": 1,
+  "setup": "separate-writable-fidelity-and-read-only-admission",
+  "queryMatrix": [
+    "query_language",
+    "answer_language",
+    "explicit_view"
+  ],
+  "split": "held-out",
+  "knowledgeLanguage": "en",
+  "proseProjectionVersion": "prose-v1",
+  "memoryViewVersion": "memory-view-v5",
+  "answerPromptVersion": "answer-generation-v21",
+  "answerVerifierVersion": "answer-verifier-v11",
+  "retentionPromptVersion": "retain-extraction-language-v15",
+  "retentionVerifierVersion": "retain-verifier-language-v8",
+  "models": {
+    "retention": "gpt-5.6-luna",
+    "answer": "gpt-5.6-luna",
+    "embedding": "text-embedding-qwen3-embedding-0.6b",
+    "expansion": "llama-3.2-3b-instruct"
+  },
+  "indexModelDerivation": false,
+  "independentlyReviewed": false,
+  "releaseEligible": false,
+  "adjudication": "pending: inspect review material; verifier agreement and typed expectations are not independent truth labels",
+  "thresholds": {
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "usefulQualifiedAnswerCoverage": 0.9,
+    "availabilityFailureRate": 0.05
+  },
+  "metrics": {
+    "availabilityFailures": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0
+    },
+    "answerOperationFailures": {
+      "numerator": 1,
+      "denominator": 8,
+      "rate": 0.125
+    },
+    "producedAnswers": {
+      "numerator": 7,
+      "denominator": 8,
+      "rate": 0.875
+    },
+    "producedAnswersOverRetained": {
+      "numerator": 7,
+      "denominator": 8,
+      "rate": 0.875
+    },
+    "answerReasons": {
+      "answered": 7,
+      "generation_failed": 1
+    },
+    "routingReasons": {},
+    "holdStages": {},
+    "independentlyJudgedQualifiedAnswers": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "independentlyJustifiedAbstentions": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "languagePolicyRejections": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "acceptedLanguageViolations": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "translationQualificationErrors": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "unsafeFactualPromotion": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "noncanonicalEligibilityFlags": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0
+    },
+    "usefulRetentionCoverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "expectedRetentionMisses": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0
+    },
+    "falseHolds": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "expectedSafeHolds": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "typedSemanticsMatch": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "qualifiedRetrievalCoverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "ordinaryProseQualification": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "sourceByteChanges": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0
+    }
+  },
+  "byLanguage": {
+    "en": 1,
+    "ru": 0,
+    "mixed": 0
+  },
+  "byScenario": {
+    "open-question": 1
+  },
+  "cases": [
+    {
+      "id": "v12-held-question",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Remember Ada Marlow’s unanswered question about a packing crate for a repair return. Do not infer provision or exclusion from the open question.",
+      "language": "en",
+      "scenario": "open-question",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": true,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 8643,
+            "input_tokens": 2950,
+            "output_tokens": 609,
+            "total_tokens": 3559
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 2331,
+            "input_tokens": 1803,
+            "output_tokens": 130,
+            "total_tokens": 1933
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1163,
+              "input_tokens": 493,
+              "output_tokens": 41,
+              "total_tokens": 534
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1813,
+              "input_tokens": 333,
+              "output_tokens": 57,
+              "total_tokens": 390
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "questions",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Open question:** Ada Marlow still has an unresolved question about whether the Zephyr QX-100 agreement provides a packing crate when the device is returned for repair; she has found no answer and makes no claim that a crate is either provided or excluded.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_79454abc",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_7069dd966f2261b030868225",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2497,
+              "input_tokens": 1337,
+              "output_tokens": 92,
+              "total_tokens": 1429
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1528,
+              "input_tokens": 1218,
+              "output_tokens": 26,
+              "total_tokens": 1244
+            }
+          },
+          "reviewAnswer": "Ada Marlow recorded an unresolved, open question about whether the Zephyr QX-100 agreement provides a packing crate when the device is returned for repair. She found no answer and made no claim that a crate is either provided or excluded. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "questions",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Open question:** Ada Marlow still has an unresolved question about whether the Zephyr QX-100 agreement provides a packing crate when the device is returned for repair; she has found no answer and makes no claim that a crate is either provided or excluded.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_79454abc",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_7069dd966f2261b030868225",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3546,
+              "input_tokens": 1356,
+              "output_tokens": 137,
+              "total_tokens": 1493
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2090,
+              "input_tokens": 1237,
+              "output_tokens": 114,
+              "total_tokens": 1351
+            }
+          },
+          "reviewAnswer": "Ada Marlow зафиксировала открытый, нерешённый вопрос о том, предусматривает ли соглашение для Zephyr QX-100 упаковочный ящик при возврате устройства в ремонт. Ответ не найден; она не утверждает ни то, что ящик предоставляется, ни то, что он не предоставляется. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "questions",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Open question:** Ada Marlow still has an unresolved question about whether the Zephyr QX-100 agreement provides a packing crate when the device is returned for repair; she has found no answer and makes no claim that a crate is either provided or excluded.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_79454abc",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_7069dd966f2261b030868225",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2170,
+              "input_tokens": 1337,
+              "output_tokens": 92,
+              "total_tokens": 1429
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1073,
+              "input_tokens": 1218,
+              "output_tokens": 26,
+              "total_tokens": 1244
+            }
+          },
+          "reviewAnswer": "Ada Marlow recorded an unresolved, open question about whether the Zephyr QX-100 agreement provides a packing crate when the device is returned for repair. She found no answer and made no claim that a crate is either provided or excluded. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "questions",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Open question:** Ada Marlow still has an unresolved question about whether the Zephyr QX-100 agreement provides a packing crate when the device is returned for repair; she has found no answer and makes no claim that a crate is either provided or excluded.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_79454abc",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_7069dd966f2261b030868225",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "generation_failed",
+          "answerValidation": null,
+          "answerDegraded": [
+            "language_mismatch"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2451,
+              "input_tokens": 1351,
+              "output_tokens": 106,
+              "total_tokens": 1457
+            },
+            "verification": null
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "questions",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Open question:** Ada Marlow still has an unresolved question about whether the Zephyr QX-100 agreement provides a packing crate when the device is returned for repair; she has found no answer and makes no claim that a crate is either provided or excluded.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_79454abc",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_7069dd966f2261b030868225",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2725,
+              "input_tokens": 1342,
+              "output_tokens": 91,
+              "total_tokens": 1433
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2296,
+              "input_tokens": 1223,
+              "output_tokens": 92,
+              "total_tokens": 1315
+            }
+          },
+          "reviewAnswer": "Ada Marlow recorded an open question about whether the Zephyr QX-100 agreement provides a packing crate when the device is returned for repair. She has found no answer and makes no claim that a crate is either provided or excluded. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "questions",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Open question:** Ada Marlow still has an unresolved question about whether the Zephyr QX-100 agreement provides a packing crate when the device is returned for repair; she has found no answer and makes no claim that a crate is either provided or excluded.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_79454abc",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_7069dd966f2261b030868225",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2846,
+              "input_tokens": 1355,
+              "output_tokens": 104,
+              "total_tokens": 1459
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1729,
+              "input_tokens": 1236,
+              "output_tokens": 96,
+              "total_tokens": 1332
+            }
+          },
+          "reviewAnswer": "Ada Marlow записала открытый вопрос о том, предусматривает ли соглашение для Zephyr QX-100 упаковочный ящик при возврате устройства на ремонт. Ответ на этот вопрос не найден; Ada Marlow не утверждает ни что ящик предоставляется, ни что он исключён. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "questions",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Open question:** Ada Marlow still has an unresolved question about whether the Zephyr QX-100 agreement provides a packing crate when the device is returned for repair; she has found no answer and makes no claim that a crate is either provided or excluded.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_79454abc",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_7069dd966f2261b030868225",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3174,
+              "input_tokens": 1341,
+              "output_tokens": 90,
+              "total_tokens": 1431
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2333,
+              "input_tokens": 1222,
+              "output_tokens": 78,
+              "total_tokens": 1300
+            }
+          },
+          "reviewAnswer": "Ada Marlow recorded an open question about whether the Zephyr QX-100 agreement provides a packing crate when the device is returned for repair. She found no answer and makes no claim that a crate is either provided or excluded. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "questions",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Open question:** Ada Marlow still has an unresolved question about whether the Zephyr QX-100 agreement provides a packing crate when the device is returned for repair; she has found no answer and makes no claim that a crate is either provided or excluded.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_79454abc",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_7069dd966f2261b030868225",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3632,
+              "input_tokens": 1351,
+              "output_tokens": 100,
+              "total_tokens": 1451
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2292,
+              "input_tokens": 1232,
+              "output_tokens": 80,
+              "total_tokens": 1312
+            }
+          },
+          "reviewAnswer": "Ada Marlow записала открытый вопрос о том, предусматривает ли соглашение по Zephyr QX-100 упаковочный ящик при возврате устройства на ремонт. Ответ не найден; Ada Marlow не утверждает, что ящик предоставляется или что он исключён. [memory/equipment:7]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Open question:** Ada Marlow still has an unresolved question about whether the Zephyr QX-100 agreement provides a packing crate when the device is returned for repair; she has found no answer and makes no claim that a crate is either provided or excluded.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_79454abc",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_7069dd966f2261b030868225",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "error": null
+    }
+  ]
+}

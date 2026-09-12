@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "language-input-review-v1",
+  "corpusFingerprint": "7923ae2e7e76eb2a5e96580bde58f839edfb4029fc678c4e28f6ad09fa507e72",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-5.6-sol",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutOutputs": true
+  },
+  "cases": [
+    {
+      "id": "v11-held-report",
+      "approved": true,
+      "reason": "The Russian source explicitly attributes the report to Bo Winters through recorder Ada Marlow, limits courier collection to lens adjustment rather than replacement, and states that the report is unconfirmed; the expectation and bilingual questions are faithful."
+    },
+    {
+      "id": "v11-held-hypothesis",
+      "approved": true,
+      "reason": "The mixed-language source expressly frames the two-week grille-check rule and missed-check consequence as an assumption for discussion while declaring the real rule unknown; the expectation preserves that scope and the questions ask for the hypothesis."
+    },
+    {
+      "id": "v11-held-counterfactual",
+      "approved": true,
+      "reason": "The source states both Ada Marlow’s actual rejection and the unrealized fourth-year lens-repair coverage conditional on acceptance; requiring both while allowing discussion answers to focus on the alternative is supported and fair."
+    },
+    {
+      "id": "v11-held-question",
+      "approved": true,
+      "reason": "The Russian source records an unanswered loan-device question and explicitly refuses both provision and exclusion conclusions; the expectation and bilingual questions faithfully preserve its open status."
+    },
+    {
+      "id": "v11-held-exclusion",
+      "approved": true,
+      "reason": "The source directly asserts exclusion of polishing surface scratches and expressly says nothing about cracks; treating it as qualified user-asserted factual negation without external verification is supported."
+    },
+    {
+      "id": "v11-held-assistant",
+      "approved": true,
+      "reason": "The assistant explicitly offers a tentative, unverified claim of three lens adjustments per year and says the terms were not checked; the attribution, quantity, and epistemic limits in the expectation are all supported."
+    },
+    {
+      "id": "v11-held-fiction",
+      "approved": true,
+      "reason": "The mixed-language source clearly marks the promise, parties, service, and ownership-period duration as fictional and identifies Ada as recorder rather than Bo as reporter; the expectation and questions are faithful."
+    },
+    {
+      "id": "v11-held-rejected",
+      "approved": true,
+      "reason": "The source states that Ada rejected the shipping offer for lens inspection and that shipment is not planned; the expectation accurately preserves the rejected option without implying execution."
+    },
+    {
+      "id": "v11-held-undated",
+      "approved": true,
+      "reason": "The source proposes a review next week, denies an arranged appointment, and explicitly makes the relative date unrecoverable because the original note is undated; the expectation reasonably requires readable preservation of that temporal uncertainty."
+    },
+    {
+      "id": "v11-held-alternatives",
+      "approved": true,
+      "reason": "The source names dirty grille and misaligned lens as equally unsupported, unconfirmed competing hypotheses with no selected cause; the semantic expectation correctly allows tentative or hypothetical encoding while barring factual promotion."
+    },
+    {
+      "id": "v11-held-admission",
+      "approved": true,
+      "reason": "The source supplies a factual duration, but the setup makes every destination read-only and the memory folder empty; requiring a retention hold and abstention is justified."
+    },
+    {
+      "id": "v12-held-report",
+      "approved": true,
+      "reason": "The mixed-language source explicitly nests Bo Winters’s unverified report under Ada Marlow’s recording and contrasts cooling-duct cleaning with new-fan installation; the expectation and questions retain every material qualification."
+    },
+    {
+      "id": "v12-held-hypothesis",
+      "approved": true,
+      "reason": "The Russian source expressly assumes a five-month mounting-check interval and conditional missed-check violation for discussion while saying the actual rule is unknown; the expectation is fully entailed."
+    },
+    {
+      "id": "v12-held-counterfactual",
+      "approved": true,
+      "reason": "The mixed-language source distinguishes Ada’s actual declined extension from third-year duct cleaning that would have applied only upon acceptance; requiring both facts and preventing actual-coverage inference is fair."
+    },
+    {
+      "id": "v12-held-question",
+      "approved": true,
+      "reason": "The English source records an unresolved packing-crate question for repair return and expressly withholds both provision and exclusion claims; the expectation and bilingual questions match."
+    },
+    {
+      "id": "v12-held-exclusion",
+      "approved": true,
+      "reason": "The Russian source directly asserts worn-label replacement is excluded and disclaims any statement about casing damage; the requested qualified denial is supported without implying external verification."
+    },
+    {
+      "id": "v12-held-assistant",
+      "approved": true,
+      "reason": "The assistant explicitly labels four annual duct cleanings as its tentative, unchecked, unconfirmed suggestion; the expectation faithfully requires source attribution, quantity, and uncertainty."
+    },
+    {
+      "id": "v12-held-fiction",
+      "approved": true,
+      "reason": "The source marks the three-year free mounting-check promise as invented, names Ada as source and Bo as a fictional participant, and limits its duration; the expectation and queries are precise and supported."
+    },
+    {
+      "id": "v12-held-rejected",
+      "approved": true,
+      "reason": "The Russian source says Ada considered and rejected a workshop trip for mounting checks and has no trip planned; the expectation preserves the complete rejected-plan meaning without overclaiming."
+    },
+    {
+      "id": "v12-held-undated",
+      "approved": true,
+      "reason": "The mixed-language source proposes comparison next month, denies a scheduled meeting, and says the source date and calendar month are unknown; requiring readable source-relative uncertainty is supported."
+    },
+    {
+      "id": "v12-held-alternatives",
+      "approved": true,
+      "reason": "The source explicitly gives a loose bracket and clogged duct as equally unsupported, unconfirmed alternatives with no selected cause; the expectation follows the packet’s embedded-commitment contract and reasonably bars factual/current eligibility for either cause."
+    },
+    {
+      "id": "v12-held-admission",
+      "approved": true,
+      "reason": "The source contains a factual warranty duration, but all destinations are read-only and the memory folder is empty; holding retention and abstaining is the correct expectation."
+    }
+  ],
+  "summary": "All 22 cases are approved. Each expectation follows from its invented source and admission setup, the English/Russian questions faithfully target the retained proposition, and the packet’s embedded-commitment contract correctly distinguishes discussion provenance from the factual status of hypotheses, reports, questions, fiction, proposals, and counterfactuals."
+}

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "language-input-review-v1",
+  "corpusFingerprint": "9525a08284faf6ba9c79305ded7b23e19b7323fdbd305a13752c4bc8e1d32975",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-5.6-sol",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutOutputs": true
+  },
+  "cases": [
+    {
+      "id": "v3-dev-denial",
+      "approved": true,
+      "reason": "The source directly records an asserted exclusion of housing replacement. The expectation correctly requires semantic negation without extending coverage or implying external verification."
+    },
+    {
+      "id": "v3-dev-report",
+      "approved": true,
+      "reason": "The assistant explicitly presents sensor-cleaning coverage as an unconfirmed suspicion. Preserving assistant attribution and tentative status is entailed and useful."
+    },
+    {
+      "id": "v3-dev-alternatives",
+      "approved": true,
+      "reason": "Annual and biennial service are explicitly introduced as incompatible, unestablished hypotheses. A useful record must retain both without selecting either as actual."
+    },
+    {
+      "id": "v3-dev-example",
+      "approved": true,
+      "reason": "Ada Marlow records a fictional example in which Bo Winters imagines a twenty-year warranty and explicitly denies that it is real. Fictional scope and nested attribution both follow from the source."
+    },
+    {
+      "id": "v3-dev-undated",
+      "approved": true,
+      "reason": "The review is an unaccepted, unscheduled proposal, and the undated source provides no anchor for resolving tomorrow to a calendar date. The temporal restraint is required."
+    },
+    {
+      "id": "v6-held-report",
+      "approved": true,
+      "reason": "Ada Marlow reports an unverified statement from Bo Winters about control-panel replacement. The expectation faithfully requires both attribution levels and lack of verification without establishing coverage."
+    },
+    {
+      "id": "v6-held-hypothesis",
+      "approved": true,
+      "reason": "The seasonal-inspection requirement is explicitly an assumption for discussion and is denied actual-obligation status. The expectation preserves that hypothetical scope."
+    },
+    {
+      "id": "v6-held-counterfactual",
+      "approved": true,
+      "reason": "Ada Marlow factually denies choosing the extension and confines year-five battery coverage to an unrealized alternative. The expectation correctly preserves both the decision polarity and counterfactual coverage."
+    },
+    {
+      "id": "v6-held-question",
+      "approved": true,
+      "reason": "Repair-labor reimbursement is explicitly left as an undetermined open question. Identifying the question without resolving the embedded reimbursement issue is the faithful useful response."
+    },
+    {
+      "id": "v6-held-exclusion",
+      "approved": true,
+      "reason": "The source asserts that corrosion damage is excluded. Requiring negative coverage in the prose and negated typed polarity is sound; ordinary factual wording is compatible with the stated metadata-provenance contract and does not itself imply independent verification."
+    },
+    {
+      "id": "v6-held-admission",
+      "approved": true,
+      "reason": "The setup explicitly marks the four-year assertion as read-only and held, with queries over an empty memory folder. Holding retention, abstaining, and preserving existing files are justified by that admission constraint."
+    }
+  ]
+}

@@ -21,6 +21,11 @@ packaged default.jsonc → platform machine config → checkout config/local.jso
 An installed package has no checkout `config/local.jsonc`. `AKNO_CONFIG` selects an explicit machine-config
 path. Use `akno config` to see the resolved, redacted result and every contributing source.
 
+`knowledge_language: "en"` selects English for new generated knowledge. The default `null` preserves previous
+behavior. Source quotations and existing pages stay unchanged, and answers can independently request English
+or Russian. See [knowledge language and discourse](language-and-discourse.md) for coverage, exact caller
+attestations, typed failures, and evaluation.
+
 The default private state is `~/.akno` on macOS and `$XDG_STATE_HOME/akno` on Linux (falling back to
 `~/.local/state/akno`). The default Linux socket is `$XDG_RUNTIME_DIR/akno/akno.sock`; when no runtime directory
 is available it stays under private state. `AKNO_STATE_DIR`, `AKNO_SOCKET`, `state_dir`, and `server.socket`

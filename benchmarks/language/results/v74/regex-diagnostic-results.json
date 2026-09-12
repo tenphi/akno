@@ -1,0 +1,77 @@
+{
+  "runtimeCommit": "1f7309bc851690af3132cc00f0c7272347c7b2de",
+  "declarationSha256": "ef8b9217aee3cfc4bf2217e55b9442d03ce955b1ea03a7a17569c3a3801f4fda",
+  "startedAt": "2026-09-09T22:13:11.973Z",
+  "purpose": "Four minimal differential schema diagnostics for V74 request failures. No corpus or full failed fixture is repeated. Success/failure is evidence, not a required all-pass gate.",
+  "results": [
+    {
+      "id": "plain-sentence",
+      "status": "completed",
+      "callerCap": 400,
+      "effectiveCap": 400,
+      "ok": true,
+      "reason": null,
+      "error": null,
+      "value": "{\"quote\":\"Ada Marlow inspected Zephyr QX-100.\"}",
+      "schemaValid": true,
+      "exact": true,
+      "usage": {
+        "inputTokens": 60,
+        "outputTokens": 24,
+        "totalTokens": 84,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 0
+      },
+      "endpointRequests": 1
+    },
+    {
+      "id": "unicode-content",
+      "status": "completed",
+      "callerCap": 400,
+      "effectiveCap": 400,
+      "ok": false,
+      "reason": "request_failed",
+      "error": "answer endpoint returned 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'akno_response': '[\\\\\\\\p{L}\\\\\\\\p{N}]' is not a 'regex'.\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}",
+      "value": null,
+      "schemaValid": false,
+      "exact": false,
+      "usage": null,
+      "endpointRequests": 1
+    },
+    {
+      "id": "ascii-lookahead",
+      "status": "completed",
+      "callerCap": 400,
+      "effectiveCap": 400,
+      "ok": false,
+      "reason": "request_failed",
+      "error": "answer endpoint returned 400: {\n  \"error\": {\n    \"message\": \"Invalid JSON schema: regex lookaround is not supported. Found at $.properties.quote.pattern.\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}",
+      "value": null,
+      "schemaValid": false,
+      "exact": false,
+      "usage": null,
+      "endpointRequests": 1
+    },
+    {
+      "id": "ascii-content",
+      "status": "completed",
+      "callerCap": 400,
+      "effectiveCap": 400,
+      "ok": true,
+      "reason": null,
+      "error": null,
+      "value": "{\"quote\":\"Ada Marlow inspected Zephyr QX-100.\"}",
+      "schemaValid": true,
+      "exact": true,
+      "usage": {
+        "inputTokens": 60,
+        "outputTokens": 38,
+        "totalTokens": 98,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 12
+      },
+      "endpointRequests": 1
+    }
+  ],
+  "completedAt": "2026-09-09T22:13:15.843Z"
+}

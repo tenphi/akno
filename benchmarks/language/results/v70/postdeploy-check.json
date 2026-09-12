@@ -1,0 +1,1013 @@
+{
+  "runtimeCommit": "1ceb557224602d132bb3c5944c2ac81ac7d2a696",
+  "tests": 3298,
+  "testFiles": 145,
+  "checks": {
+    "build": "passed",
+    "lint": "passed",
+    "knip": "passed",
+    "suite": "passed",
+    "formatting": "passed",
+    "repositorySafety": "passed",
+    "documentationDoctor": "passed",
+    "documentationBuild": "passed",
+    "smoke": "passed",
+    "installedPackageSmoke": "passed",
+    "redeployBuildRestartSocket": "passed"
+  },
+  "ci": {
+    "run": 34380970436,
+    "conclusion": "success"
+  },
+  "documentationCI": {
+    "run": 34380970553,
+    "conclusion": "success"
+  },
+  "compiled": {
+    "alignment": [
+      {
+        "compiledSourceClock": true,
+        "compiledFramedAnswers": true,
+        "immutableOwnTextReferences": true,
+        "staleAndForeignBlockReferencesRejected": true,
+        "mandatorySemantics": true,
+        "mandatorySelection": true,
+        "strictVerdictJson": true,
+        "readingsPrivate": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0
+      }
+    ],
+    "qualification": [
+      {
+        "compiledContinuedReportUncertainty": true,
+        "compiledProposerFloor": true,
+        "compiledHypotheticalVersions": true,
+        "mandatorySemantics": true,
+        "unrelatedInstallationHeld": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0
+      }
+    ],
+    "rendering": [
+      {
+        "compiledQuestionSeparation": true,
+        "compiledFullOriginalFrameUnchanged": true,
+        "compiledCopyAndTranslation": true,
+        "currentPayloadLanguageChecked": true,
+        "strictCopyBranches": true,
+        "completeRecordVerification": true,
+        "mandatorySemantics": true,
+        "mandatorySelection": true,
+        "strictJson": true,
+        "leadingDenialVerifiedWithoutRepair": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0
+      },
+      {
+        "compiledTwoFrameSchema": true,
+        "excerptSelectionBeforeAlignments": true,
+        "mandatoryNegativeSelection": true,
+        "modelCompetenceClaimed": false
+      },
+      {
+        "liveProtocolControls": [
+          {
+            "kind": "generation",
+            "status": "completed",
+            "expected": {
+              "record_readings": [
+                {
+                  "evidence_id": "E1",
+                  "selected_meaning": "The retained coverage question remains unanswered.",
+                  "clarification_or_ambiguity": null
+                }
+              ],
+              "blocks": [
+                {
+                  "rendering_mode": "copy",
+                  "evidence_ids": [
+                    "E1"
+                  ]
+                }
+              ],
+              "missing_concepts": []
+            },
+            "ok": true,
+            "schemaValid": true,
+            "exact": true,
+            "reason": null,
+            "value": "{\"record_readings\":[{\"evidence_id\":\"E1\",\"selected_meaning\":\"The retained coverage question remains unanswered.\",\"clarification_or_ambiguity\":null}],\"blocks\":[{\"rendering_mode\":\"copy\",\"evidence_ids\":[\"E1\"]}],\"missing_concepts\":[]}",
+            "usage": {
+              "inputTokens": 972,
+              "outputTokens": 81,
+              "totalTokens": 1053,
+              "cachedInputTokens": 0,
+              "reasoningOutputTokens": 0
+            },
+            "callerMaxTokens": 2222
+          },
+          {
+            "kind": "verification",
+            "status": "completed",
+            "expected": {
+              "verdicts": [
+                {
+                  "block_id": "B1",
+                  "excerpt_selection": {
+                    "selected_by_retained_excerpt": false,
+                    "unselected_content": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only."
+                  },
+                  "source_alignments": [
+                    {
+                      "evidence_id": "E1",
+                      "source_context": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                      "actor": {
+                        "source_anchor": null,
+                        "answer_anchor": null,
+                        "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                        "relation": "not_selected"
+                      },
+                      "object_and_operation": {
+                        "source_anchor": "E1_bf777a9014ca_1",
+                        "answer_anchor": "B1_bf777a9014ca_1",
+                        "source_specifics": "Invented protocol comparison text only. Invented p",
+                        "answer_specifics": "Invented protocol comparison text only. Invented p",
+                        "relation": "preserved"
+                      },
+                      "qualification": {
+                        "source_anchor": "E1_bf777a9014ca_1",
+                        "answer_anchor": null,
+                        "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                        "relation": "omitted"
+                      },
+                      "tested_property": {
+                        "source_anchor": "E1_bf777a9014ca_1",
+                        "answer_anchor": "B1_bf777a9014ca_1",
+                        "source_property": "Invented protocol comparison t",
+                        "answer_property": "Invented protocol comparison t",
+                        "relation": "preserved"
+                      }
+                    },
+                    {
+                      "evidence_id": "E2",
+                      "source_context": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                      "actor": {
+                        "source_anchor": null,
+                        "answer_anchor": null,
+                        "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                        "relation": "not_selected"
+                      },
+                      "object_and_operation": {
+                        "source_anchor": "E2_bf777a9014ca_1",
+                        "answer_anchor": "B1_bf777a9014ca_1",
+                        "source_specifics": "Invented protocol comparison text only. Invented p",
+                        "answer_specifics": "Invented protocol comparison text only. Invented p",
+                        "relation": "preserved"
+                      },
+                      "qualification": {
+                        "source_anchor": "E2_bf777a9014ca_1",
+                        "answer_anchor": "B1_bf777a9014ca_1",
+                        "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                        "relation": "preserved"
+                      },
+                      "tested_property": {
+                        "source_anchor": null,
+                        "answer_anchor": "B1_bf777a9014ca_1",
+                        "source_property": null,
+                        "answer_property": "Invented protocol comparison t",
+                        "relation": "changed"
+                      }
+                    }
+                  ],
+                  "comparison": {
+                    "source_meaning": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                    "candidate_meaning": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                    "action_arguments": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                    "qualification_scope": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only."
+                  },
+                  "mismatches": [
+                    {
+                      "dimension": "action_arguments_preserved",
+                      "kind": "changed_action_or_role",
+                      "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only."
+                    },
+                    {
+                      "dimension": "qualification_scope_preserved",
+                      "kind": "changed_qualification",
+                      "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only."
+                    }
+                  ],
+                  "proposition_supported": true,
+                  "action_arguments_preserved": false,
+                  "qualification_scope_preserved": false
+                }
+              ]
+            },
+            "ok": true,
+            "schemaValid": true,
+            "exact": true,
+            "reason": null,
+            "value": "{\"verdicts\":[{\"block_id\":\"B1\",\"excerpt_selection\":{\"selected_by_retained_excerpt\":false,\"unselected_content\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\"},\"source_alignments\":[{\"evidence_id\":\"E1\",\"source_context\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"Invented protocol comparison text only. Invented p\",\"answer_specifics\":\"Invented protocol comparison text only. Invented p\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_property\":\"Invented protocol comparison t\",\"answer_property\":\"Invented protocol comparison t\",\"relation\":\"preserved\"},\"qualification\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":null,\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"omitted\"}},{\"evidence_id\":\"E2\",\"source_context\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"Invented protocol comparison text only. Invented p\",\"answer_specifics\":\"Invented protocol comparison text only. Invented p\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":null,\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_property\":null,\"answer_property\":\"Invented protocol comparison t\",\"relation\":\"changed\"},\"qualification\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"preserved\"}}],\"comparison\":{\"source_meaning\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"candidate_meaning\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"action_arguments\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"qualification_scope\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\"},\"mismatches\":[{\"dimension\":\"action_arguments_preserved\",\"kind\":\"changed_action_or_role\",\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\"},{\"dimension\":\"qualification_scope_preserved\",\"kind\":\"changed_qualification\",\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\"}],\"proposition_supported\":true,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false}]}",
+            "usage": {
+              "inputTokens": 4795,
+              "outputTokens": 1063,
+              "totalTokens": 5858,
+              "cachedInputTokens": 0,
+              "reasoningOutputTokens": 27
+            },
+            "callerMaxTokens": 2222
+          }
+        ]
+      }
+    ],
+    "boundaries": [
+      {
+        "compiledOrdinaryQuestionPreserved": true,
+        "compiledRussianExplainedProposal": true,
+        "compiledProposalClockRetractions": true,
+        "compiledNominalAssistantAttribution": true,
+        "compiledRussianSourceTimeAnchor": true,
+        "compiledRussianUnknownClock": true,
+        "compiledClockMandatorySemantics": true,
+        "compiled600CharacterBound": true,
+        "compiledSourceClock": true,
+        "sourceClockQuotesExcluded": true,
+        "unknownProposalFullyVerified": true,
+        "compiledReporterReversal": true,
+        "compiledGenericPassive": true,
+        "compiledCoverageInstrument": true,
+        "mandatorySemantics": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0
+      }
+    ],
+    "retention": [
+      {
+        "compiledExtractionAndRepairFieldOrder": true,
+        "compiledExplicitRepairTargets": true,
+        "compiledReadOnlyAdmittedContext": true,
+        "compiledClosedReportClarification": true,
+        "compiledQuotedBookingAlias": true,
+        "compiledSubjectFrameCompleteness": true,
+        "providedCandidateUnchanged": true,
+        "repairPositionPreserved": true,
+        "mandatoryFullSourceSemantics": true,
+        "extraModelPasses": 0
+      }
+    ],
+    "person": [
+      {
+        "compiledPersonProposal": true,
+        "independentOwnershipRequired": true,
+        "noSynthesizedProposal": true,
+        "unresolvedDevicePreserved": true,
+        "passiveAgentPreserved": true,
+        "unrelatedProductBytesUnchanged": true,
+        "extraModelPasses": 0
+      }
+    ],
+    "retention-shape": [
+      {
+        "compiledRetentionFieldOrder": true,
+        "compiledRestrictiveNamingDenial": true,
+        "sourceAndSubjectBoundNaming": true,
+        "affirmativeBookingStillRequiresTime": true,
+        "governingEpistemicQualification": true,
+        "canonicalModalFrameStillHeld": true,
+        "completeOriginalSource": true,
+        "mandatoryFullSourceSemantics": true,
+        "extraModelPasses": 0
+      }
+    ],
+    "epistemic-object": [
+      {
+        "compiledEpistemicObjectControls": true,
+        "answerCases": 8,
+        "mandatoryOriginalFrame": true,
+        "negativeSemanticsRejected": true,
+        "negativeAlignmentRejected": true,
+        "invalidOmittedAnchorUnavailable": true,
+        "contractualAndPhysicalStateSupported": true,
+        "recordAndPersonalSubjectsDistinct": true,
+        "retentionSemanticsRequired": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0,
+        "modelCompetenceClaimed": false
+      }
+    ],
+    "translation": [
+      {
+        "compiledQuestionSeparation": true,
+        "compiledFullOriginalFrameUnchanged": true,
+        "compiledTranslationOnly": true,
+        "forbiddenCopyRejected": true,
+        "declaredLanguagePolicyRestriction": true,
+        "currentPayloadLanguageChecked": true,
+        "strictCopyBranches": true,
+        "completeRecordVerification": true,
+        "mandatorySemantics": true,
+        "mandatorySelection": true,
+        "strictJson": true,
+        "leadingDenialVerifiedWithoutRepair": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0
+      },
+      {
+        "liveProtocolControls": [
+          {
+            "kind": "generation",
+            "status": "completed",
+            "expected": {
+              "record_readings": [
+                {
+                  "evidence_id": "E1",
+                  "selected_meaning": "The retained coverage question remains unanswered.",
+                  "clarification_or_ambiguity": null
+                }
+              ],
+              "blocks": [
+                {
+                  "rendering_mode": "translate",
+                  "text": "Открытый вопрос silverpine: покрывает ли гарантия обратную доставку? Ответ неизвестен.",
+                  "evidence_ids": [
+                    "E1"
+                  ]
+                }
+              ],
+              "missing_concepts": []
+            },
+            "ok": true,
+            "schemaValid": true,
+            "exact": true,
+            "reason": null
+          }
+        ]
+      }
+    ],
+    "presentation": [
+      {
+        "compiledReportDisplayPhrases": true,
+        "compiledExactNamedSourceHint": true,
+        "compiledConditionalTentativeScope": true,
+        "namedAndGenericSources": true,
+        "englishAndRussian": true,
+        "generationOnly": true,
+        "mandatorySemantics": true,
+        "sourceBytesUnchanged": true,
+        "cases": 8,
+        "extraModelPasses": 0
+      }
+    ],
+    "text-bound": [
+      {
+        "compiledNormalizedTextBound": true,
+        "boundaries": [
+          399,
+          400,
+          401
+        ],
+        "utf16AstralBoundary": true,
+        "preciseOriginalPositionRepair": true,
+        "immutableAdmittedSibling": true,
+        "completeOriginalSource": true,
+        "mandatoryFullSourceSemantics": true,
+        "extraModelPasses": 0,
+        "modelCompetenceClaimed": false
+      }
+    ],
+    "reference": [
+      {
+        "compiledSourceAttachedRecord": true,
+        "cases": 8,
+        "completeOriginalSource": true,
+        "componentOwnershipDistinct": true,
+        "competingAndUnrelatedSubjectsRejected": true,
+        "scopeAndObjectChangesRejected": true,
+        "mandatoryFullSourceSemantics": true,
+        "extraModelPasses": 0,
+        "modelCompetenceClaimed": false
+      }
+    ],
+    "group": [
+      {
+        "compiledGroupRelativeEpistemicScope": true,
+        "cases": 13,
+        "englishRussianAndFiniteParaphrases": true,
+        "omittedNullAndChangedActualAnchors": true,
+        "validNegativeVerdictsOrdinaryRejection": true,
+        "impersonalSourcePreserved": true,
+        "independentPrivateLimitUnselected": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0,
+        "modelCompetenceClaimed": false
+      }
+    ],
+    "bounded": [
+      {
+        "compiledUnansweredCoverageRoles": true,
+        "compiledNominalCounterfactual": true,
+        "compiledOriginalUnknownClock": true,
+        "compiledAlignmentBranches": 20,
+        "compiledCoordinatedPersonalReport": true,
+        "mandatoryFullSourceVerification": true,
+        "extraSemanticPasses": 0,
+        "modelCompetenceClaimed": false
+      },
+      {
+        "compiledExactAdvisoryRepair": true,
+        "compiledOriginalObligation": true,
+        "compiledCompactAuditSourceAuthority": true,
+        "mandatoryFullSourceVerification": true,
+        "extraSemanticPasses": 0,
+        "modelCompetenceClaimed": false
+      },
+      {
+        "compiledTwoPartNegativeReport": true,
+        "compiledEnglishSourceEntry": true,
+        "compiledEnglishAndRussianCounterfactual": true,
+        "compiledComparisonBeforeRelation": true,
+        "strictPairedAlignmentShapes": true,
+        "extraSemanticPasses": 0,
+        "modelCompetenceClaimed": false
+      },
+      {
+        "compiledAffirmativeReportBoundary": true,
+        "compiledAffirmativeSourceClockBoundary": true,
+        "compiledAffirmativeCounterfactualBoundary": true,
+        "colonScopePreserved": true,
+        "extraSemanticPasses": 0,
+        "modelCompetenceClaimed": false
+      },
+      {
+        "compiledCounterfactualRightBoundary": true,
+        "modelCompetenceClaimed": false
+      },
+      {
+        "compiledRussianExplainedProposalClock": true,
+        "compiledIndependentUnknownCalendar": true,
+        "compiledClockRetractionAndConditionalBoundaries": true,
+        "compiledTentativeRecordScope": true,
+        "mandatoryFullSourceVerification": true,
+        "extraSemanticPasses": 0,
+        "modelCompetenceClaimed": false
+      },
+      {
+        "compiledAttributionBoundReportRelay": true,
+        "compiledReportSemanticNegative": true,
+        "compiledInitialRecordingIndependentClocks": true,
+        "compiledImmediateRetractionBoundary": true,
+        "compiledMechanismBranches": 20,
+        "legacyMechanismShapeRejected": true,
+        "incidentalOperationCaps80Each": true,
+        "modelCompetenceClaimed": false
+      }
+    ],
+    "property": [
+      {
+        "compiledPropertyCases": 10,
+        "separateNegativePropertyEnforced": true,
+        "allPositiveNegativeHeld": true,
+        "positivePropertyCannotOverrideSemanticsOrSelection": true,
+        "copyAndTranslation": true,
+        "strictWireCaps50And30": true,
+        "mixedCitationOwnership": true,
+        "foreignStaleAndMalformedHeld": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0,
+        "modelCompetenceClaimed": false
+      },
+      {
+        "compiledPromptClockPhraseMeetsFrozenFloor": true,
+        "compiledCompleteReportSentences": true,
+        "compiledPresentationRepair": true,
+        "oneRepairAndMandatorySemantics": true,
+        "unchanged400UnitBound": true,
+        "modelCompetenceClaimed": false
+      }
+    ]
+  },
+  "protocol": {
+    "runtimeCommit": "1ceb557224602d132bb3c5944c2ac81ac7d2a696",
+    "purpose": "protocol-only",
+    "answerOutputTokenLimit": 2400,
+    "results": [
+      {
+        "kind": "generation",
+        "status": "completed",
+        "expected": {
+          "record_readings": [
+            {
+              "evidence_id": "E1",
+              "selected_meaning": "The retained coverage question remains unanswered.",
+              "clarification_or_ambiguity": null
+            }
+          ],
+          "blocks": [
+            {
+              "rendering_mode": "copy",
+              "evidence_ids": [
+                "E1"
+              ]
+            }
+          ],
+          "missing_concepts": []
+        },
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "reason": null,
+        "value": "{\"record_readings\":[{\"evidence_id\":\"E1\",\"selected_meaning\":\"The retained coverage question remains unanswered.\",\"clarification_or_ambiguity\":null}],\"blocks\":[{\"rendering_mode\":\"copy\",\"evidence_ids\":[\"E1\"]}],\"missing_concepts\":[]}",
+        "usage": {
+          "inputTokens": 972,
+          "outputTokens": 81,
+          "totalTokens": 1053,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 0
+        },
+        "callerMaxTokens": 2222
+      },
+      {
+        "kind": "verification",
+        "status": "completed",
+        "expected": {
+          "verdicts": [
+            {
+              "block_id": "B1",
+              "excerpt_selection": {
+                "selected_by_retained_excerpt": false,
+                "unselected_content": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only."
+              },
+              "source_alignments": [
+                {
+                  "evidence_id": "E1",
+                  "source_context": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                  "actor": {
+                    "source_anchor": null,
+                    "answer_anchor": null,
+                    "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                    "relation": "not_selected"
+                  },
+                  "object_and_operation": {
+                    "source_anchor": "E1_bf777a9014ca_1",
+                    "answer_anchor": "B1_bf777a9014ca_1",
+                    "source_specifics": "Invented protocol comparison text only. Invented p",
+                    "answer_specifics": "Invented protocol comparison text only. Invented p",
+                    "relation": "preserved"
+                  },
+                  "qualification": {
+                    "source_anchor": "E1_bf777a9014ca_1",
+                    "answer_anchor": null,
+                    "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                    "relation": "omitted"
+                  },
+                  "tested_property": {
+                    "source_anchor": "E1_bf777a9014ca_1",
+                    "answer_anchor": "B1_bf777a9014ca_1",
+                    "source_property": "Invented protocol comparison t",
+                    "answer_property": "Invented protocol comparison t",
+                    "relation": "preserved"
+                  }
+                },
+                {
+                  "evidence_id": "E2",
+                  "source_context": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                  "actor": {
+                    "source_anchor": null,
+                    "answer_anchor": null,
+                    "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                    "relation": "not_selected"
+                  },
+                  "object_and_operation": {
+                    "source_anchor": "E2_bf777a9014ca_1",
+                    "answer_anchor": "B1_bf777a9014ca_1",
+                    "source_specifics": "Invented protocol comparison text only. Invented p",
+                    "answer_specifics": "Invented protocol comparison text only. Invented p",
+                    "relation": "preserved"
+                  },
+                  "qualification": {
+                    "source_anchor": "E2_bf777a9014ca_1",
+                    "answer_anchor": "B1_bf777a9014ca_1",
+                    "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                    "relation": "preserved"
+                  },
+                  "tested_property": {
+                    "source_anchor": null,
+                    "answer_anchor": "B1_bf777a9014ca_1",
+                    "source_property": null,
+                    "answer_property": "Invented protocol comparison t",
+                    "relation": "changed"
+                  }
+                }
+              ],
+              "comparison": {
+                "source_meaning": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                "candidate_meaning": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                "action_arguments": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                "qualification_scope": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only."
+              },
+              "mismatches": [
+                {
+                  "dimension": "action_arguments_preserved",
+                  "kind": "changed_action_or_role",
+                  "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only."
+                },
+                {
+                  "dimension": "qualification_scope_preserved",
+                  "kind": "changed_qualification",
+                  "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only."
+                }
+              ],
+              "proposition_supported": true,
+              "action_arguments_preserved": false,
+              "qualification_scope_preserved": false
+            }
+          ]
+        },
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "reason": null,
+        "value": "{\"verdicts\":[{\"block_id\":\"B1\",\"excerpt_selection\":{\"selected_by_retained_excerpt\":false,\"unselected_content\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\"},\"source_alignments\":[{\"evidence_id\":\"E1\",\"source_context\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"Invented protocol comparison text only. Invented p\",\"answer_specifics\":\"Invented protocol comparison text only. Invented p\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_property\":\"Invented protocol comparison t\",\"answer_property\":\"Invented protocol comparison t\",\"relation\":\"preserved\"},\"qualification\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":null,\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"omitted\"}},{\"evidence_id\":\"E2\",\"source_context\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"Invented protocol comparison text only. Invented p\",\"answer_specifics\":\"Invented protocol comparison text only. Invented p\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":null,\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_property\":null,\"answer_property\":\"Invented protocol comparison t\",\"relation\":\"changed\"},\"qualification\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"preserved\"}}],\"comparison\":{\"source_meaning\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"candidate_meaning\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"action_arguments\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"qualification_scope\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\"},\"mismatches\":[{\"dimension\":\"action_arguments_preserved\",\"kind\":\"changed_action_or_role\",\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\"},{\"dimension\":\"qualification_scope_preserved\",\"kind\":\"changed_qualification\",\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\"}],\"proposition_supported\":true,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false}]}",
+        "usage": {
+          "inputTokens": 4795,
+          "outputTokens": 1063,
+          "totalTokens": 5858,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 27
+        },
+        "callerMaxTokens": 2222
+      }
+    ]
+  },
+  "translation": {
+    "runtimeCommit": "1ceb557224602d132bb3c5944c2ac81ac7d2a696",
+    "purpose": "protocol-only",
+    "answerOutputTokenLimit": 2400,
+    "results": [
+      {
+        "kind": "generation",
+        "status": "completed",
+        "expected": {
+          "record_readings": [
+            {
+              "evidence_id": "E1",
+              "selected_meaning": "The retained coverage question remains unanswered.",
+              "clarification_or_ambiguity": null
+            }
+          ],
+          "blocks": [
+            {
+              "rendering_mode": "translate",
+              "text": "Открытый вопрос silverpine: покрывает ли гарантия обратную доставку? Ответ неизвестен.",
+              "evidence_ids": [
+                "E1"
+              ]
+            }
+          ],
+          "missing_concepts": []
+        },
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "reason": null
+      }
+    ]
+  },
+  "retention": {
+    "runtimeCommit": "1ceb557224602d132bb3c5944c2ac81ac7d2a696",
+    "model": "gpt-5.6-luna",
+    "purpose": "Protocol-only constant JSON echo using actual compiled retention-verifier schemas; no semantic usefulness claim or memory writes.",
+    "controls": [
+      {
+        "sizes": [
+          1,
+          2
+        ],
+        "schema": {
+          "type": "object",
+          "properties": {
+            "verdicts": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "candidate_id": {
+                        "type": "string",
+                        "enum": [
+                          "cand_96755812f5cfa50a5a6e6e76"
+                        ]
+                      },
+                      "comparison": {
+                        "type": "object",
+                        "properties": {
+                          "source_meaning": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          },
+                          "candidate_meaning": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          },
+                          "action_arguments": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          },
+                          "qualification_scope": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          }
+                        },
+                        "required": [
+                          "source_meaning",
+                          "candidate_meaning",
+                          "action_arguments",
+                          "qualification_scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "mismatches": {
+                        "maxItems": 3,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "dimension": {
+                              "type": "string",
+                              "enum": [
+                                "proposition_supported",
+                                "action_arguments_preserved",
+                                "qualification_scope_preserved"
+                              ]
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "unsupported_content",
+                                "changed_value",
+                                "changed_action_or_role",
+                                "changed_qualification",
+                                "omitted_scope",
+                                "changed_repair_proposition"
+                              ]
+                            },
+                            "detail": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 240
+                            }
+                          },
+                          "required": [
+                            "dimension",
+                            "kind",
+                            "detail"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "proposition_supported": {
+                        "type": "boolean"
+                      },
+                      "action_arguments_preserved": {
+                        "type": "boolean"
+                      },
+                      "qualification_scope_preserved": {
+                        "type": "boolean"
+                      },
+                      "reason_code": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "source_unavailable",
+                              "discourse_uncertain",
+                              "time_unresolved",
+                              "noncanonical_without_context"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "candidate_id",
+                      "comparison",
+                      "mismatches",
+                      "proposition_supported",
+                      "action_arguments_preserved",
+                      "qualification_scope_preserved",
+                      "reason_code"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "candidate_id": {
+                        "type": "string",
+                        "enum": [
+                          "cand_ed15bad0fcdfda8ca7ff72cf"
+                        ]
+                      },
+                      "span_audit": {
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "frame_id": {
+                              "type": "string",
+                              "enum": [
+                                "F1",
+                                "F2"
+                              ]
+                            },
+                            "interpretation": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 240
+                            },
+                            "relationship": {
+                              "type": "string",
+                              "enum": [
+                                "restatement",
+                                "clarification",
+                                "contrast",
+                                "independent",
+                                "unresolved"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "frame_id",
+                            "interpretation",
+                            "relationship"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "comparison": {
+                        "type": "object",
+                        "properties": {
+                          "source_meaning": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          },
+                          "candidate_meaning": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          },
+                          "action_arguments": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          },
+                          "qualification_scope": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          }
+                        },
+                        "required": [
+                          "source_meaning",
+                          "candidate_meaning",
+                          "action_arguments",
+                          "qualification_scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "mismatches": {
+                        "maxItems": 3,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "dimension": {
+                              "type": "string",
+                              "enum": [
+                                "proposition_supported",
+                                "action_arguments_preserved",
+                                "qualification_scope_preserved"
+                              ]
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "unsupported_content",
+                                "changed_value",
+                                "changed_action_or_role",
+                                "changed_qualification",
+                                "omitted_scope",
+                                "changed_repair_proposition"
+                              ]
+                            },
+                            "detail": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 240
+                            }
+                          },
+                          "required": [
+                            "dimension",
+                            "kind",
+                            "detail"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "proposition_supported": {
+                        "type": "boolean"
+                      },
+                      "action_arguments_preserved": {
+                        "type": "boolean"
+                      },
+                      "qualification_scope_preserved": {
+                        "type": "boolean"
+                      },
+                      "reason_code": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "source_unavailable",
+                              "discourse_uncertain",
+                              "time_unresolved",
+                              "noncanonical_without_context"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "candidate_id",
+                      "span_audit",
+                      "comparison",
+                      "mismatches",
+                      "proposition_supported",
+                      "action_arguments_preserved",
+                      "qualification_scope_preserved",
+                      "reason_code"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "verdicts"
+          ],
+          "additionalProperties": false
+        },
+        "messages": [
+          {
+            "role": "system",
+            "content": "This is a protocol-only JSON echo control. Copy the supplied constant JSON exactly. Do not interpret claims or make a semantic judgment."
+          },
+          {
+            "role": "user",
+            "content": "{\"verdicts\":[{\"candidate_id\":\"cand_96755812f5cfa50a5a6e6e76\",\"comparison\":{\"source_meaning\":\"Invented protocol marker.\",\"candidate_meaning\":\"Invented protocol marker.\",\"action_arguments\":\"Invented protocol marker.\",\"qualification_scope\":\"Invented protocol marker.\"},\"mismatches\":[],\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null},{\"candidate_id\":\"cand_ed15bad0fcdfda8ca7ff72cf\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented protocol marker.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented protocol marker.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented protocol marker.\",\"candidate_meaning\":\"Invented protocol marker.\",\"action_arguments\":\"Invented protocol marker.\",\"qualification_scope\":\"Invented protocol marker.\"},\"mismatches\":[],\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null}]}"
+          }
+        ],
+        "maxTokens": 3744,
+        "status": "completed",
+        "ok": true,
+        "value": "{\"verdicts\":[{\"candidate_id\":\"cand_96755812f5cfa50a5a6e6e76\",\"comparison\":{\"source_meaning\":\"Invented protocol marker.\",\"candidate_meaning\":\"Invented protocol marker.\",\"action_arguments\":\"Invented protocol marker.\",\"qualification_scope\":\"Invented protocol marker.\"},\"mismatches\":[],\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null},{\"candidate_id\":\"cand_ed15bad0fcdfda8ca7ff72cf\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented protocol marker.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented protocol marker.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented protocol marker.\",\"candidate_meaning\":\"Invented protocol marker.\",\"action_arguments\":\"Invented protocol marker.\",\"qualification_scope\":\"Invented protocol marker.\"},\"mismatches\":[],\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null}]}",
+        "reason": null,
+        "error": null,
+        "latencyMs": 2431.8374580000004,
+        "usage": {
+          "inputTokens": 806,
+          "outputTokens": 251,
+          "totalTokens": 1057,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 15
+        },
+        "schemaValid": true
+      }
+    ]
+  },
+  "retentionEchoes": [
+    {
+      "ok": true,
+      "schemaValid": true,
+      "exact": true
+    }
+  ],
+  "modelCompetenceClaimed": false,
+  "freshHeldOutExecuted": false
+}

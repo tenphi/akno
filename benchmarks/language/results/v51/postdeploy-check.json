@@ -1,0 +1,36 @@
+[
+  {
+    "mode": "complete",
+    "accepted": 1,
+    "calls": 2,
+    "compiledSchema": true
+  },
+  {
+    "mode": "missing",
+    "accepted": 0,
+    "calls": 2,
+    "compiledSchema": true
+  },
+  {
+    "mode": "duplicate",
+    "accepted": 0,
+    "calls": 2,
+    "compiledSchema": true
+  },
+  {
+    "mode": "negative",
+    "accepted": 0,
+    "calls": 2,
+    "compiledSchema": true
+  },
+  {
+    "mode": "terminal-truncation",
+    "accepted": 0,
+    "calls": 2,
+    "compiledSchema": true
+  },
+  {
+    "compiledCoverageRoles": true,
+    "compiledProposalAgency": true
+  }
+]
