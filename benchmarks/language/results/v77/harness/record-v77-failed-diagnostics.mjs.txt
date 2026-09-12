@@ -1,0 +1,14 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';import {validateTrace} from './v77-trace-integrity.mjs';
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));const hash=p=>createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+const manifest=read('tmp/v77-launch-manifest.json'),start=read('tmp/v77-probes-started.json');assert.equal(start.runtimeCommit,manifest.runtimeCommit);
+for(const [p,h] of Object.entries(manifest.files))assert.equal(hash(p),h);
+const results=[];
+for(const [mode,file,count] of [['selected','selected',8],['built','built-reliability',4]]){
+ const reportPath=`bench-results/language-${file}-v77.json`,tracePath=`bench-results/language-${file}-v77-trace.jsonl`;
+ const r=read(reportPath),receipt=read(`tmp/v77-${mode}-launch-receipt.json`);assert.equal(receipt.runtimeCommit,manifest.runtimeCommit);assert.equal(r.cases.length,count);
+ for(const c of r.cases){assert.equal(c.error,'evaluation_operation_failed');assert.equal(c.availabilityFailure,true);assert.equal(c.queries.length,0);assert.equal(c.retention,null);assert.equal(c.bytesStable,null);}
+ const rows=fs.readFileSync(tracePath,'utf8').trim().split('\n').map(x=>JSON.parse(x));assert(!rows.some(r=>['answer','answer-verifier'].includes(r.kind)));
+ results.push({mode,cases:count,plannedObservations:count*8,observations:0,caseAvailabilityFailures:count,retention:'unknown',sourceBytes:'unknown',semanticSafety:'not measured',reportPath,reportSha256:hash(reportPath),tracePath,traceSha256:hash(tracePath),traceRows:rows.length,traceLifecycle:validateTrace(rows),launchReceiptSha256:hash(`tmp/v77-${mode}-launch-receipt.json`)});
+}
+const record={runtimeCommit:manifest.runtimeCommit,status:'failed_infrastructure',cause:'The capture hook incorrectly required Luna for configured non-Luna query expansion before recording its lifecycle.',results,plannedObservations:96,observations:0,caseAvailabilityFailures:12,positiveSemanticReadinessEvidence:false,sourceBytesVerified:false,originalValidator:'failed: missing all planned query coordinates',originalValidatorLogSha256:hash('tmp/v77-completed-validator-failure.log'),reviewPath:'tmp/language-v77-harness-failure-forensics.md',reviewSha256:hash('tmp/language-v77-harness-failure-forensics.md'),replacementDiagnosticsAllowed:false};
+fs.writeFileSync('tmp/v77-completed-probe-provenance.json',JSON.stringify(record,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify(record));

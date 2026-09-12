@@ -1,0 +1,338 @@
+{
+  "schemaVersion": "v77-ordinary-projection-replay-v1",
+  "runtimeCommit": "a67faa3fd3a6f59450a35c4af1d66baa96fee4e8",
+  "helper": "tmp/core-v77/src/kb/prose.ts#proseQualifications",
+  "metric": "packages/core/src/bench/language.ts:483",
+  "cases": [
+    {
+      "id": "v22-held-nested-report",
+      "run": 1,
+      "ordinaryFactual": false,
+      "content": "# Zephyr QX-100\n\n## Пересказ\nAda Marlow передаёт непроверенное сообщение Bo Winters: правила Vulpine Mutual разрешают принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, но не для его замены. Ada не видела правила, не проверяла сообщение и ещё не упаковала своё устройство.\n",
+      "qualifications": [
+        {
+          "line": 1,
+          "text": "# Zephyr QX-100",
+          "qualification": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "f25eebd83a981a642e224b59e8d90b29678e4730876ff0953412076d1b14bafe",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "line": 3,
+          "text": "## Пересказ",
+          "qualification": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "f25eebd83a981a642e224b59e8d90b29678e4730876ff0953412076d1b14bafe",
+            "frame": [
+              {
+                "n": 3,
+                "text": "## Пересказ"
+              }
+            ]
+          }
+        },
+        {
+          "line": 4,
+          "text": "Ada Marlow передаёт непроверенное сообщение Bo Winters: правила Vulpine Mutual разрешают принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, но не для его замены. Ada не видела правила, не проверяла сообщение и ещё не упаковала своё устройство.",
+          "qualification": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "f25eebd83a981a642e224b59e8d90b29678e4730876ff0953412076d1b14bafe",
+            "frame": []
+          }
+        }
+      ],
+      "ordinaryCorrect": false
+    },
+    {
+      "id": "v22-held-assistant-speculation",
+      "run": 1,
+      "ordinaryFactual": false,
+      "content": "# Zephyr QX-100\n\n## Assistant report\nThe assistant speculates that Zephyr QX-100 servicing may include an optical-shutter check after every eleven operating cycles. The assistant has not read the agreement or verified the guess; it is neither an established duty nor a device state.\n",
+      "qualifications": [
+        {
+          "line": 1,
+          "text": "# Zephyr QX-100",
+          "qualification": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "e0ffece4cfe2a86b18838138229cd968ffe5cac677b4bb7bacac022b201099d3",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "line": 3,
+          "text": "## Assistant report",
+          "qualification": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "e0ffece4cfe2a86b18838138229cd968ffe5cac677b4bb7bacac022b201099d3",
+            "frame": [
+              {
+                "n": 3,
+                "text": "## Assistant report"
+              }
+            ]
+          }
+        },
+        {
+          "line": 4,
+          "text": "The assistant speculates that Zephyr QX-100 servicing may include an optical-shutter check after every eleven operating cycles. The assistant has not read the agreement or verified the guess; it is neither an established duty nor a device state.",
+          "qualification": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "e0ffece4cfe2a86b18838138229cd968ffe5cac677b4bb7bacac022b201099d3",
+            "frame": []
+          }
+        }
+      ],
+      "ordinaryCorrect": false
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "run": 1,
+      "ordinaryFactual": false,
+      "content": "# Zephyr QX-100\n\n## Предварительные версии\nAda Marlow рассматривает деформированную шайбу и плохо закреплённую крышку фильтра как конкурирующие причины возможного дребезга Zephyr QX-100. Ни одна причина не выбрана и не подтверждена; сам дребезг записью не подтверждён.\n",
+      "qualifications": [
+        {
+          "line": 1,
+          "text": "# Zephyr QX-100",
+          "qualification": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "737f7c3ec0ab74d91be52e6a7a14b327b35651dc5bcd40d20beb4a81ac54df9d",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "line": 3,
+          "text": "## Предварительные версии",
+          "qualification": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "737f7c3ec0ab74d91be52e6a7a14b327b35651dc5bcd40d20beb4a81ac54df9d",
+            "frame": [
+              {
+                "n": 3,
+                "text": "## Предварительные версии"
+              }
+            ]
+          }
+        },
+        {
+          "line": 4,
+          "text": "Ada Marlow рассматривает деформированную шайбу и плохо закреплённую крышку фильтра как конкурирующие причины возможного дребезга Zephyr QX-100. Ни одна причина не выбрана и не подтверждена; сам дребезг записью не подтверждён.",
+          "qualification": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "737f7c3ec0ab74d91be52e6a7a14b327b35651dc5bcd40d20beb4a81ac54df9d",
+            "frame": []
+          }
+        }
+      ],
+      "ordinaryCorrect": false
+    },
+    {
+      "id": "v22-held-nested-report",
+      "run": 2,
+      "ordinaryFactual": false,
+      "content": "# Zephyr QX-100\n\n## Пересказ\nAda Marlow передаёт непроверенное сообщение Bo Winters: правила Vulpine Mutual разрешают принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, но не для его замены. Ada не видела правила, не проверяла сообщение и ещё не упаковала своё устройство.\n",
+      "qualifications": [
+        {
+          "line": 1,
+          "text": "# Zephyr QX-100",
+          "qualification": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "f25eebd83a981a642e224b59e8d90b29678e4730876ff0953412076d1b14bafe",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "line": 3,
+          "text": "## Пересказ",
+          "qualification": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "f25eebd83a981a642e224b59e8d90b29678e4730876ff0953412076d1b14bafe",
+            "frame": [
+              {
+                "n": 3,
+                "text": "## Пересказ"
+              }
+            ]
+          }
+        },
+        {
+          "line": 4,
+          "text": "Ada Marlow передаёт непроверенное сообщение Bo Winters: правила Vulpine Mutual разрешают принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, но не для его замены. Ada не видела правила, не проверяла сообщение и ещё не упаковала своё устройство.",
+          "qualification": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "f25eebd83a981a642e224b59e8d90b29678e4730876ff0953412076d1b14bafe",
+            "frame": []
+          }
+        }
+      ],
+      "ordinaryCorrect": false
+    },
+    {
+      "id": "v22-held-assistant-speculation",
+      "run": 2,
+      "ordinaryFactual": false,
+      "content": "# Zephyr QX-100\n\n## Assistant report\nThe assistant speculates that Zephyr QX-100 servicing may include an optical-shutter check after every eleven operating cycles. The assistant has not read the agreement or verified the guess; it is neither an established duty nor a device state.\n",
+      "qualifications": [
+        {
+          "line": 1,
+          "text": "# Zephyr QX-100",
+          "qualification": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "e0ffece4cfe2a86b18838138229cd968ffe5cac677b4bb7bacac022b201099d3",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "line": 3,
+          "text": "## Assistant report",
+          "qualification": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "e0ffece4cfe2a86b18838138229cd968ffe5cac677b4bb7bacac022b201099d3",
+            "frame": [
+              {
+                "n": 3,
+                "text": "## Assistant report"
+              }
+            ]
+          }
+        },
+        {
+          "line": 4,
+          "text": "The assistant speculates that Zephyr QX-100 servicing may include an optical-shutter check after every eleven operating cycles. The assistant has not read the agreement or verified the guess; it is neither an established duty nor a device state.",
+          "qualification": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "e0ffece4cfe2a86b18838138229cd968ffe5cac677b4bb7bacac022b201099d3",
+            "frame": []
+          }
+        }
+      ],
+      "ordinaryCorrect": false
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "run": 2,
+      "ordinaryFactual": false,
+      "content": "# Zephyr QX-100\n\n## Предварительные версии\nAda Marlow рассматривает деформированную шайбу и плохо закреплённую крышку фильтра как конкурирующие причины возможного дребезга Zephyr QX-100. Ни одна причина не выбрана и не подтверждена; сам дребезг записью не подтверждён.\n",
+      "qualifications": [
+        {
+          "line": 1,
+          "text": "# Zephyr QX-100",
+          "qualification": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "737f7c3ec0ab74d91be52e6a7a14b327b35651dc5bcd40d20beb4a81ac54df9d",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "line": 3,
+          "text": "## Предварительные версии",
+          "qualification": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "737f7c3ec0ab74d91be52e6a7a14b327b35651dc5bcd40d20beb4a81ac54df9d",
+            "frame": [
+              {
+                "n": 3,
+                "text": "## Предварительные версии"
+              }
+            ]
+          }
+        },
+        {
+          "line": 4,
+          "text": "Ada Marlow рассматривает деформированную шайбу и плохо закреплённую крышку фильтра как конкурирующие причины возможного дребезга Zephyr QX-100. Ни одна причина не выбрана и не подтверждена; сам дребезг записью не подтверждён.",
+          "qualification": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "737f7c3ec0ab74d91be52e6a7a14b327b35651dc5bcd40d20beb4a81ac54df9d",
+            "frame": []
+          }
+        }
+      ],
+      "ordinaryCorrect": false
+    }
+  ]
+}

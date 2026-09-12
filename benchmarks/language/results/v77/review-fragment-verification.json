@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "packetFingerprint": "fbfe5a20ed6a66f26a3e9312d16649700224d2eef8e3c7adbcd1a8e002e79d1d",
+  "results": [
+    {
+      "split": "held-out",
+      "cases": 22,
+      "fragmentFingerprint": "6ab53440192c486b13338bf7ed6712d6131b122be506540582221eb81c6468d5",
+      "reportFingerprint": "c70a0ac4e0235db40cfaf3ec1184968cb2ab8841d7e72261c30b50287b0897f4",
+      "exactMatch": true
+    }
+  ],
+  "providerCalls": 0
+}

@@ -1,0 +1,460 @@
+{
+  "purpose": "Review snapshots keep their original local links. This map identifies each published copy; original local paths refer to hash-preserved execution and review artifacts.",
+  "files": [
+    {
+      "source": "bench-results/language-selected-v77.json",
+      "published": "selected-diagnostic-failed.json",
+      "sha256": "942723612bcc78556bcc902355bf17d3992af4df6ad07a60f92db5535e697652"
+    },
+    {
+      "source": "bench-results/language-built-reliability-v77.json",
+      "published": "built-diagnostic-failed.json",
+      "sha256": "6ff310abb216727bae17224444a507f1884ff1e14c98dbb917c2c2e996408de5"
+    },
+    {
+      "source": "tmp/language-selected-output-packet-v77.json",
+      "published": "selected-failed-source-output-packet.json",
+      "sha256": "4a6213fbd16143157d84e8f1c70f56ae4786506fb25f825facddac68b0241b74"
+    },
+    {
+      "source": "tmp/v77-selected-launch-receipt.json",
+      "published": "selected-launch-receipt.json",
+      "sha256": "d97fe9a553b183c5c99ad5506b79d823abbe075b9cb007e358b8b80ef3bd6e6e"
+    },
+    {
+      "source": "tmp/language-built-output-packet-v77.json",
+      "published": "built-failed-source-output-packet.json",
+      "sha256": "12e98d28a6da605d447083154b7bc5285b1b7e684e9504c7ee6eaf263cbc920e"
+    },
+    {
+      "source": "tmp/v77-built-launch-receipt.json",
+      "published": "built-launch-receipt.json",
+      "sha256": "425c70785bbb626aad24fedf4c99efa8b9a9b9764cb0c71a0ad27841d42d71e7"
+    },
+    {
+      "source": "bench-results/language-full-development-v77.json",
+      "published": "development.json",
+      "sha256": "2388c83c9a4a4bd0108947f2a938f109f6ca5d06346e90c6bb7b946657d31ab1"
+    },
+    {
+      "source": "tmp/v77-full-development-launch-receipt.json",
+      "published": "development-launch-receipt.json",
+      "sha256": "d9f78f38cf9756ea236dc426af99229a971475a8763a8b42a6a02850585682bc"
+    },
+    {
+      "source": "bench-results/language-full-held-out-v77.json",
+      "published": "held-out.json",
+      "sha256": "b2be8db89ba16d39a076d3e4fb799603928333ba810d70eefd8a97284add3292"
+    },
+    {
+      "source": "tmp/v77-full-held-out-launch-receipt.json",
+      "published": "held-out-launch-receipt.json",
+      "sha256": "5434bc6a89c4d7d687816c57835d8ff1b1150fef993b14022735be7039cf5192"
+    },
+    {
+      "source": "tmp/v77-protocol-declaration.json",
+      "published": "protocol-declaration.json",
+      "sha256": "8858515916e931d6cc8b2311506e9d92c0a6373f0264c053d470009819bc71a4"
+    },
+    {
+      "source": "tmp/v77-protocol-results.json",
+      "published": "protocol-results.json",
+      "sha256": "7dd366c9ea51cb625bd23a6ac9bef2a689edbdce45e215b047d7d40f2d343d71"
+    },
+    {
+      "source": "tmp/v77-postdeploy-check.json",
+      "published": "postdeploy-check.json",
+      "sha256": "e2f520178119639302e86f9588182dab325bb3a667d7d21112e462122cbec3a5"
+    },
+    {
+      "source": "tmp/v77-probes-started.json",
+      "published": "probes-started.json",
+      "sha256": "40b9677753d562bfd92c4fe470f0452fa263d8fade8c28e94e857330290f5a9d"
+    },
+    {
+      "source": "tmp/v77-completed-probe-provenance.json",
+      "published": "completed-probe-provenance.json",
+      "sha256": "61ea9139d6de411fe407d5cf99c7a3df35b234459e59409c71d39beac7bd2838"
+    },
+    {
+      "source": "tmp/v77-compiled-results.json",
+      "published": "compiled-results.json",
+      "sha256": "10733452a0c3d3bcd0c4cc1763d775cbe85cc25eceb6dd93de1a65c2a47e17a7"
+    },
+    {
+      "source": "tmp/v77-launch-manifest.json",
+      "published": "launch-manifest.json",
+      "sha256": "63a870777254b223883485027638452bc832c0907c0070cefafec577267ccf3e"
+    },
+    {
+      "source": "tmp/v77-preflight-approval.json",
+      "published": "preflight-approval.json",
+      "sha256": "da442b05235616994ace575cdb477e0522c8eb7944933d838c2d45ade98a6a3c"
+    },
+    {
+      "source": "tmp/v77-completion-contract.json",
+      "published": "completion-contract.json",
+      "sha256": "d7d70c3cce1c05dddcd01c35ee419912499021797a60dbbcf9537f7ddd2c2efc"
+    },
+    {
+      "source": "tmp/v77-full-capture-controls.json",
+      "published": "full-capture-controls.json",
+      "sha256": "0145c89206df98a653172ff77c7e8748031652e806b9e7ff4199b34ddd3208af"
+    },
+    {
+      "source": "tmp/v77-completion-gate-controls.json",
+      "published": "completion-gate-controls.json",
+      "sha256": "7004ab80497eeff01adbd64cba7ef53e95b4d38f5713a2a82deb71000a7ffc64"
+    },
+    {
+      "source": "tmp/v77-full-trial-decision.json",
+      "published": "full-trial-decision.json",
+      "sha256": "e42a1952a57cc5e34ea4d51a63ae46e3882c5ecb807f24cd28f8838d8ea33a9d"
+    },
+    {
+      "source": "tmp/v77-full-launch-manifest.json",
+      "published": "full-launch-manifest.json",
+      "sha256": "39b2e1fd7e3f9c514c420f5ec562f9bccc406a24089eb467f008b6eb4b6f1fba"
+    },
+    {
+      "source": "tmp/v77-full-preflight-approval.json",
+      "published": "full-preflight-approval.json",
+      "sha256": "0246691dbceac63c9869e0551af791e74f3d3e63b409193af82cae73f3e07577"
+    },
+    {
+      "source": "tmp/v77-full-started.json",
+      "published": "full-started.json",
+      "sha256": "bfcc3cf41432043012be8f9b7313d5f797ae93b908a92cebfd485d86a44aa465"
+    },
+    {
+      "source": "tmp/v77-full-completed-provenance.json",
+      "published": "full-completed-provenance.json",
+      "sha256": "3f3fb1fcce6b33afed4998470cd03043feaf2e8cc0837bce1ca1ca6a44ad8b14"
+    },
+    {
+      "source": "tmp/v77-full-original-gate.json",
+      "published": "full-original-gate.json",
+      "sha256": "be74bb0980a17752c6b94fcb029172ea8eefc041da97cefa00a0fb8726a17696"
+    },
+    {
+      "source": "tmp/v77-full-completion-gate.json",
+      "published": "full-completion-gate.json",
+      "sha256": "2ae6ad156e4d04d4cb1b88aa6d864caf64575df651cdf7142b7232d5d27d4da4"
+    },
+    {
+      "source": "tmp/v77-full-output-summary.json",
+      "published": "full-output-summary.json",
+      "sha256": "d5787f52c5705e1b94aa5c6baed77cf7f6c2de5d8b8d3029feedaad1d255a09d"
+    },
+    {
+      "source": "tmp/pr70-completion-budget.json",
+      "published": "completion-budget-at-launch.json",
+      "sha256": "4fb8f75e44b75cf5348743525ca53bbe7560a256955733eff7e536a9add079e9"
+    },
+    {
+      "source": "tmp/language-v22-input-review.json",
+      "published": "input-review.json",
+      "sha256": "43cf93d1c76858cdb9421fb013fc3a74497ce185d9ebc7b00359980c529669fb"
+    },
+    {
+      "source": "tmp/language-v77-full-output-packet.json",
+      "published": "source-output-packet.json",
+      "sha256": "e9edeef769727a2e7f38eba26ab60331eb4222d8572d6c2e295d3045fb2eadc8"
+    },
+    {
+      "source": "tmp/language-v77-full-output-review-initial.json",
+      "published": "output-review-initial.json",
+      "sha256": "99ea5670f2e65ebbdd31f1e5162673ef24b36c81fe67ffe7f972ccd54ef03f14"
+    },
+    {
+      "source": "tmp/language-v77-full-output-review.json",
+      "published": "output-review.json",
+      "sha256": "ea42d3a32cbc4ebcbb0cfe82e1ed94b77d31b02a944366224afae21e75f2b6c8"
+    },
+    {
+      "source": "tmp/language-v77-full-source-review.md",
+      "published": "source-review.md",
+      "sha256": "e73cbd68c6a1de4b011fddcf5a8f528f160079c30655b62d093f08fce8750c72"
+    },
+    {
+      "source": "tmp/language-v77-full-source-review-initial.md",
+      "published": "source-review-initial.md",
+      "sha256": "e73cbd68c6a1de4b011fddcf5a8f528f160079c30655b62d093f08fce8750c72"
+    },
+    {
+      "source": "tmp/language-v77-full-review-reconciliation.md",
+      "published": "source-review-reconciliation.md",
+      "sha256": "73c025b848a682905476de0317ba878655e6050b8b51815bb602c3b3f5b04c80"
+    },
+    {
+      "source": "tmp/language-v77-full-source-first-notes.md",
+      "published": "source-first-notes.md",
+      "sha256": "3aff0dfd76728ea5e9e1274ab5389b3a2be4bc920a8432bd17fa219d25af926e"
+    },
+    {
+      "source": "tmp/language-v77-full-forensic-source-first-notes.md",
+      "published": "forensic-source-first-notes.md",
+      "sha256": "8fa9cd8372f9b9cd86871101263d25dbf143918c464c282ba514da6227b521a3"
+    },
+    {
+      "source": "tmp/language-v77-full-forensics.md",
+      "published": "full-forensics.md",
+      "sha256": "784d5c471ce5bfefc3bb717cce2cfc36f59d334972dc79d5048c5952a244d9cc"
+    },
+    {
+      "source": "tmp/language-v77-full-forensics-initial.md",
+      "published": "full-forensics-initial.md",
+      "sha256": "41418bbef2f8d7bd28162c0a75847e737c2168ad581ea9be88804ed4f2ebba9f"
+    },
+    {
+      "source": "tmp/language-v77-full-forensics-pre-crossreview.md",
+      "published": "full-forensics-pre-crossreview.md",
+      "sha256": "41418bbef2f8d7bd28162c0a75847e737c2168ad581ea9be88804ed4f2ebba9f"
+    },
+    {
+      "source": "tmp/language-v77-full-forensics-before-ordinary-correction.md",
+      "published": "full-forensics-before-ordinary-correction.md",
+      "sha256": "358252c6c14b32889138e3993bcc8f51b683803a2b40949b5aa77d7f04e1d96a"
+    },
+    {
+      "source": "tmp/language-v77-full-held-out-forensics-final-before-ordinary-correction.md",
+      "published": "held-out-forensics-before-ordinary-correction.md",
+      "sha256": "574977cceb4a82f77b5026503a1e47fd78b14f8e43b9fdd3c4d63d0888cc502b"
+    },
+    {
+      "source": "tmp/language-v77-full-held-out-forensics-final-pre-crossreview.md",
+      "published": "held-out-forensics-pre-crossreview.md",
+      "sha256": "e2ce32fe66a6328e0b28f4879057ca1b4f5a5ee8b4aed6d073f84b66a7f4ae7b"
+    },
+    {
+      "source": "tmp/language-v77-full-development-forensics-final-pre-crossreview.md",
+      "published": "development-forensics-pre-crossreview.md",
+      "sha256": "2c62c363f85f3496d0b8c48df2dd77cb83d8c026bbccddc5612a2234791e0f03"
+    },
+    {
+      "source": "tmp/language-v77-full-crossreview-reconciliation.md",
+      "published": "forensic-reconciliation.md",
+      "sha256": "bd79b7d2b3c32667a868b081b0a59020de5bcdc3071ae5643e83d7784d0590ef"
+    },
+    {
+      "source": "tmp/language-v77-rubric-adjudication-initial.md",
+      "published": "reviews/rubric-adjudication-initial.md",
+      "sha256": "57d18bc65ea1aa60601e044014f312760f444508c14355878c4a8829b96f1c6f"
+    },
+    {
+      "source": "tmp/language-v77-rubric-adjudication-final.md",
+      "published": "reviews/rubric-adjudication-final.md",
+      "sha256": "83b1373e23bfc9fe61f01591068c21413cbe27213f5de396956b3be258e93254"
+    },
+    {
+      "source": "tmp/v77-final-review-disposition.md",
+      "published": "reviews/final-review-disposition.md",
+      "sha256": "40048f74fea37ed48b226b12c6acb939535c37c947c8447bb5903b78ce753f77"
+    },
+    {
+      "source": "tmp/v77-ordinary-projection-replay.json",
+      "published": "ordinary-projection-replay.json",
+      "sha256": "556fbea3e95cd750cf66c0865dbcb602e73cd336f7dbf13381021cfa1f76f585"
+    },
+    {
+      "source": "tmp/language-v77-ordinary-projection-correction.md",
+      "published": "reviews/ordinary-projection-correction.md",
+      "sha256": "786360db28362f536ada746ddd49d5f87dd77297a78b17ffcce913ef8bd2ee1c"
+    },
+    {
+      "source": "tmp/language-v77-full-held-out-output-packet.json",
+      "published": "held-out-source-output-fragment.json",
+      "sha256": "ca6d4a52eac35625eb5992518425031083afd13c10aafe6cd74058f0a0a2ad03"
+    },
+    {
+      "source": "tmp/language-v77-held-output-review-initial.json",
+      "published": "held-out-output-review-initial.json",
+      "sha256": "9dfad73b27d11a5ebf776687bc4090a1e9e6cacc8a5df0389234f894bc97bc15"
+    },
+    {
+      "source": "tmp/language-v77-held-source-review.md",
+      "published": "held-out-source-review-initial.md",
+      "sha256": "6daa161b6b1cf1b38dccbfb01997bddd7d2dbabefee241e3110c05605711170d"
+    },
+    {
+      "source": "tmp/v77-review-fragment-verification.json",
+      "published": "review-fragment-verification.json",
+      "sha256": "6615ac77f20cc2abd4706d3182d9d15eb1bfc689813578a5df3747b094981b3f"
+    },
+    {
+      "source": "tmp/language-v77-full-held-out-forensics-initial.md",
+      "published": "held-out-forensics-initial.md",
+      "sha256": "d00a9c845963d8f00425b16b2cd34d3a1921cf294ff6291efb0338a2b7ea9ad0"
+    },
+    {
+      "source": "tmp/language-v77-full-held-out-forensics-final.md",
+      "published": "held-out-forensics-final.md",
+      "sha256": "f0da02319d713b46a85d86b983240baae3466bfef28b7f9c9031d42eaca41591"
+    },
+    {
+      "source": "tmp/language-v77-full-development-forensics-initial.md",
+      "published": "development-forensics-initial.md",
+      "sha256": "29a6c890e456117c98a5cbf8d72ee16565b7e54e630b6c8505674aacc69c5047"
+    },
+    {
+      "source": "tmp/language-v77-full-development-forensics-final.md",
+      "published": "development-forensics-final.md",
+      "sha256": "91e91ae1c8f206feff78e184439cceda975f21bd008dc2672a1019cb2a850ea9"
+    },
+    {
+      "source": "tmp/v77-full-trial-plan-draft.md",
+      "published": "terminal-trial-plan.md",
+      "sha256": "2f016890c8406a733dc5cf1bfedff31a34483e9ceb14b8bd6cd7eb8d517f93be"
+    },
+    {
+      "source": "tmp/v77-full-grading-contract.md",
+      "published": "full-grading-contract.md",
+      "sha256": "9130b1ebd8c40cc53ab3123536742cdf30ac5acac36a166f945c680bda92c2e6"
+    },
+    {
+      "source": "tmp/v77-full-final-disposition.json",
+      "published": "final-disposition.json",
+      "sha256": "4950980cbf4c056f4468ac9a3073dfd1988623bb2ef4634fcf247337d2b49998"
+    },
+    {
+      "source": "tmp/language-v77-top-level-review.md",
+      "published": "reviews/top-level-review.md",
+      "sha256": "4bc2b41ed1effca2c9333774caa5816e368513ac11022bd04c871e35d703d0b3"
+    },
+    {
+      "source": "tmp/language-v77-top-level-review-before-release-action-correction.md",
+      "published": "reviews/top-level-review-before-release-action-correction.md",
+      "sha256": "b6b519708c572a32b4f707e9446a0164dde8cee8f10a80b3e92d0053e0fe764f"
+    },
+    {
+      "source": "tmp/language-v77-protocol-declaration-review.md",
+      "published": "reviews/protocol-declaration-review.md",
+      "sha256": "a164fb3e0f49036287fbc4bae45167e7b4499f9bce7fd2b042f9784479bb6658"
+    },
+    {
+      "source": "tmp/language-v77-preflight-review.md",
+      "published": "reviews/preflight-review.md",
+      "sha256": "3549a98c8b851ed61e9c8751c8c1b6e71f06d0ba508a5baa52fe36ce29c9ea16"
+    },
+    {
+      "source": "tmp/language-v77-harness-failure-forensics.md",
+      "published": "reviews/harness-failure-forensics.md",
+      "sha256": "820f8c83c06ae55c6dd65fed6eab910be174164e3acd42f4dee6d062a0a4d0f8"
+    },
+    {
+      "source": "tmp/language-v77-source-grading-disposition.md",
+      "published": "reviews/source-grading-disposition.md",
+      "sha256": "d1d6ecae57e74251920d8b385d17a89f03f6e86dbb5a46b9733f0bbc7afc1e1f"
+    },
+    {
+      "source": "tmp/language-v77-full-harness-review-initial.md",
+      "published": "reviews/full-harness-review-initial.md",
+      "sha256": "4702ad293fcb70c5cbf4b5bcfc89a52a0a09469366e16ebae30b8899f3f69ffb"
+    },
+    {
+      "source": "tmp/language-v77-full-harness-review-before-placement-correction.md",
+      "published": "reviews/full-harness-review-before-placement-correction.md",
+      "sha256": "d29557252b787c20969c350d078a623fd41b2712dde313eb94becc301330af13"
+    },
+    {
+      "source": "tmp/language-v77-full-harness-review.md",
+      "published": "reviews/full-harness-review.md",
+      "sha256": "71c36e26d53d8acd1124264cceafee34d25af8e215fb896342d50a26b427dd84"
+    },
+    {
+      "source": "tmp/language-v77-full-capture-review.md",
+      "published": "reviews/full-capture-review.md",
+      "sha256": "a7eef630a22c4fb46171507153ec3a46807a1362c27b3e21935442e667df0a4a"
+    },
+    {
+      "source": "tmp/language-v77-full-preflight-review.md",
+      "published": "reviews/full-preflight-review.md",
+      "sha256": "d3e4f859b20ca88faeeb312d7ec73a52ca281789654ca760c488837b2fcfc484"
+    },
+    {
+      "source": "tmp/language-v77-final-scope-review.md",
+      "published": "reviews/final-scope-review.md",
+      "sha256": "4d5259fa1e11196ec6af71dae865b224213e142d5a702fb7fb4a12d5cc00661c"
+    },
+    {
+      "source": "tmp/capture-language-full-v77.mjs",
+      "published": "harness/capture-language-full-v77.mjs.txt",
+      "sha256": "b06082c7fd1758671adb1ccfb05a2fce31fd7c9ac50d16379fe4a5e8cabca295"
+    },
+    {
+      "source": "tmp/v77-full-trace-integrity.mjs",
+      "published": "harness/v77-full-trace-integrity.mjs.txt",
+      "sha256": "8f5aabb680b16755c15bf2bd604763960c9f70e8dd4946e0207ab5e471630b0c"
+    },
+    {
+      "source": "tmp/test-v77-full-capture.mjs",
+      "published": "harness/test-v77-full-capture.mjs.txt",
+      "sha256": "b823466c9b157ab301816613f6779c7a1eaa5a7c0521d56ba48dc92cd3ad2583"
+    },
+    {
+      "source": "tmp/v77-completion-gate.mjs",
+      "published": "harness/v77-completion-gate.mjs.txt",
+      "sha256": "169793cde3d585ed786d8319b21e61a77708dbbb95e9471ee1978b75266ceb9c"
+    },
+    {
+      "source": "tmp/test-v77-completion-gate.mjs",
+      "published": "harness/test-v77-completion-gate.mjs.txt",
+      "sha256": "e02cebad5e72fa2184b688d6a428731154bdf65556bffa505017ba10735e32b3"
+    },
+    {
+      "source": "tmp/adjudicate-v77-full.mjs",
+      "published": "harness/adjudicate-v77-full.mjs.txt",
+      "sha256": "7ef85c8c70bf02b78624c06c7ad6b233e093b09d94d54759ca8768eccbf4a35a"
+    },
+    {
+      "source": "tmp/prepare-v77-full-review.mjs",
+      "published": "harness/prepare-v77-full-review.mjs.txt",
+      "sha256": "0f1990b89e39ef748be410c0067388b4d6ed045c94917f6a070fd3170358758e"
+    },
+    {
+      "source": "tmp/prepare-v77-partial-review.mjs",
+      "published": "harness/prepare-v77-partial-review.mjs.txt",
+      "sha256": "498010c8da15307f018daf776664e1ee0fb95c1d7600ca7c05608daa75d57e8a"
+    },
+    {
+      "source": "tmp/verify-v77-review-fragments.mjs",
+      "published": "harness/verify-v77-review-fragments.mjs.txt",
+      "sha256": "1ac867dfd454ef1935d0ec4e15c849f0026f12cba38d4ac367c71bcc09ebdccb"
+    },
+    {
+      "source": "tmp/summarize-v77-full.mjs",
+      "published": "harness/summarize-v77-full.mjs.txt",
+      "sha256": "8e6138c8a8c9466a35e77dcdebd1bc745560df7084fd2a7364613b436792add8"
+    },
+    {
+      "source": "tmp/v77-full-launch-integrity.mjs",
+      "published": "harness/v77-full-launch-integrity.mjs.txt",
+      "sha256": "5d1d0839b93a7dbed6149bbc1561bb24bf6def6eb2013a28c01f7b3d13459b60"
+    },
+    {
+      "source": "tmp/start-v77-full.mjs",
+      "published": "harness/start-v77-full.mjs.txt",
+      "sha256": "30a93b10a2519d358d15d8107708100289bc124bff8792e29702c3197c426bf0"
+    },
+    {
+      "source": "tmp/run-v77-full-development.sh",
+      "published": "harness/run-v77-full-development.sh.txt",
+      "sha256": "6beb8dfbe4e63236d63fca61b4e321a36ec053e27d0ef256ac6893a8def41ca2"
+    },
+    {
+      "source": "tmp/run-v77-full-held-out.sh",
+      "published": "harness/run-v77-full-held-out.sh.txt",
+      "sha256": "484e30fbc72080d4bf47942becf51e611698cc61084c11e7cff3dc1f805eccd3"
+    },
+    {
+      "source": "tmp/validate-v77-full.mjs",
+      "published": "harness/validate-v77-full.mjs.txt",
+      "sha256": "d4e227bf26e26cddc4e8a4148a086d7e112e711c596bf3bcb39fe0d0389f90bc"
+    },
+    {
+      "source": "tmp/record-v77-failed-diagnostics.mjs",
+      "published": "harness/record-v77-failed-diagnostics.mjs.txt",
+      "sha256": "6659e86266b67cb6bbaaf8635f805b28e3346cba59354d17640d0f1efab7f10d"
+    }
+  ]
+}

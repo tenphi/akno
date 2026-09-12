@@ -1,0 +1,1550 @@
+{
+  "runtimeCommit": "a67faa3fd3a6f59450a35c4af1d66baa96fee4e8",
+  "declarationSha256": "8858515916e931d6cc8b2311506e9d92c0a6373f0264c053d470009819bc71a4",
+  "purpose": "Ten once-only invented strict-schema echo controls; not semantic grading or universal budget proof. The maximum answer verifier uses the V75 natural-sentence fixture with only four actor/qualification diagnostics changed from160 to80 BMP units, matching the narrowed provider wire80/local160 contract. All other schema/field lengths/counts/caps remain unchanged. The maximum four-branch repair uses the independently reviewed V76 natural-sentence amendment from the outset with identical schema, field lengths/counts and caps. The original earlier failures remain preserved.",
+  "modelId": "gpt-5.6-luna",
+  "reasoningEffort": "low",
+  "startedAt": "2026-09-10T01:09:35.581Z",
+  "results": [
+    {
+      "id": "rendering-copy",
+      "index": 0,
+      "api": "responses",
+      "status": "completed",
+      "expected": {
+        "record_readings": [
+          {
+            "evidence_id": "E1",
+            "selected_meaning": "The retained coverage question remains unanswered.",
+            "clarification_or_ambiguity": null
+          }
+        ],
+        "blocks": [
+          {
+            "rendering_mode": "copy",
+            "evidence_ids": [
+              "E1"
+            ]
+          }
+        ],
+        "missing_concepts": []
+      },
+      "callerCap": 2222,
+      "effectiveCap": 2222,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 2222,
+          "effectiveCap": 2222,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"record_readings\":[{\"evidence_id\":\"E1\",\"selected_meaning\":\"The retained coverage question remains unanswered.\",\"clarification_or_ambiguity\":null}],\"blocks\":[{\"rendering_mode\":\"copy\",\"evidence_ids\":[\"E1\"]}],\"missing_concepts\":[]}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 457,
+            "outputTokens": 78,
+            "totalTokens": 535,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 10
+          }
+        },
+        {
+          "kind": "language-check",
+          "callerCap": 1024,
+          "effectiveCap": 1024,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"hint_roles\":[],\"prose_result\":{\"status\":\"compliant\",\"counterexample\":null}}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 949,
+            "outputTokens": 84,
+            "totalTokens": 1033,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 54
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": null,
+      "reason": null,
+      "error": null,
+      "value": "{\"record_readings\":[{\"evidence_id\":\"E1\",\"selected_meaning\":\"The retained coverage question remains unanswered.\",\"clarification_or_ambiguity\":null}],\"blocks\":[{\"rendering_mode\":\"copy\",\"evidence_ids\":[\"E1\"]}],\"missing_concepts\":[]}",
+      "endpointRequests": 2,
+      "usage": {
+        "inputTokens": 1406,
+        "outputTokens": 162,
+        "totalTokens": 1568,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 64
+      }
+    },
+    {
+      "id": "two-record-answer-verifier",
+      "index": 1,
+      "api": "responses",
+      "status": "completed",
+      "expected": {
+        "verdicts": [
+          {
+            "block_id": "B1",
+            "excerpt_selection": {
+              "selected_by_retained_excerpt": false,
+              "unselected_content": "The latch question does not establish coverage within the stated scope. This invented record remains open. The source account is unresolved. The proposed check requires review. The comparison preserves the original uncertainty in this note."
+            },
+            "source_alignments": [
+              {
+                "evidence_id": "E1",
+                "source_context": "The latch question does not select another question in the invented record. This invented record has no recorded answer. The source account requires review. The proposed check remains open. The retained question does not establish coverage.",
+                "actor": {
+                  "source_anchor": null,
+                  "answer_anchor": null,
+                  "detail": "The named actor and personal knowledge limit remain attached to the same action.",
+                  "relation": "not_selected"
+                },
+                "object_and_operation": {
+                  "source_anchor": "E1_bf777a9014ca_1",
+                  "answer_anchor": "B1_bf777a9014ca_1",
+                  "source_specifics": "The spring inspection has no recorded answer here.",
+                  "answer_specifics": "The spring inspection does not establish coverage.",
+                  "relation": "preserved"
+                },
+                "qualification": {
+                  "source_anchor": "E1_bf777a9014ca_1",
+                  "answer_anchor": null,
+                  "detail": "The original tentative report retains its stated actor and personal uncertainty.",
+                  "relation": "omitted"
+                },
+                "tested_property": {
+                  "source_anchor": "E1_bf777a9014ca_1",
+                  "answer_anchor": "B1_bf777a9014ca_1",
+                  "source_property": "The review is unresolved here.",
+                  "answer_property": "The result is unresolved here.",
+                  "relation": "preserved"
+                }
+              },
+              {
+                "evidence_id": "E2",
+                "source_context": "The latch question does not assert a completed test. This invented record does not establish coverage. The source account is separate from completed work. The proposed check is unresolved. The comparison has no recorded answer in this note.",
+                "actor": {
+                  "source_anchor": null,
+                  "answer_anchor": null,
+                  "detail": "The named actor and personal knowledge limit remain attached to the same action.",
+                  "relation": "not_selected"
+                },
+                "object_and_operation": {
+                  "source_anchor": "E2_bf777a9014ca_1",
+                  "answer_anchor": "B1_bf777a9014ca_1",
+                  "source_specifics": "The connector test is separate from completed work. The comparison remains open.",
+                  "answer_specifics": "The connector test adds no independent confirmation. The result requires review.",
+                  "relation": "preserved"
+                },
+                "qualification": {
+                  "source_anchor": "E2_bf777a9014ca_1",
+                  "answer_anchor": "B1_bf777a9014ca_1",
+                  "detail": "The original tentative report retains its stated actor and personal uncertainty.",
+                  "relation": "preserved"
+                },
+                "tested_property": {
+                  "source_anchor": null,
+                  "answer_anchor": null,
+                  "source_property": null,
+                  "answer_property": null,
+                  "relation": "absent_from_both"
+                }
+              }
+            ],
+            "comparison": {
+              "source_meaning": "Ada Marlow records two unanswered questions about separate proposed component checks. The source account preserves the original uncertainty for this example. The proposed check is separate from completed work. The comparison does not establish coverage. The selected passage remains open. The draft requires review here.",
+              "candidate_meaning": "The candidate presents the two selected questions without supplying their missing answers. The source account does not assert a completed test within the stated scope. The proposed check does not select another question. The comparison adds no independent confirmation. The selected passage requires review in this note.",
+              "action_arguments": "The connector and the spring remain separate objects of their respective proposed tests. The proposed check adds no independent confirmation in the invented record. The comparison does not select another question. The selected passage is unresolved. The retained question remains open. The separate note requires review.",
+              "qualification_scope": "The invented verdict compares unresolved questions and preserves their lack of a settled result. The selected passage has no recorded answer. The retained question is unresolved. This protocol example remains open. The draft does not establish coverage. The separate note preserves the original uncertainty in this note."
+            },
+            "mismatches": [
+              {
+                "dimension": "action_arguments_preserved",
+                "kind": "changed_action_or_role",
+                "detail": "This invented record does not select another question here. The source account does not establish coverage. The proposed check has no recorded answer. The comparison is unresolved. The selected passage adds no independent confirmation here."
+              },
+              {
+                "dimension": "qualification_scope_preserved",
+                "kind": "changed_qualification",
+                "detail": "This invented record adds no independent confirmation in this note. The source account does not select another question. The proposed check does not establish coverage. The comparison is separate from completed work. The draft remains open."
+              }
+            ],
+            "proposition_supported": true,
+            "action_arguments_preserved": false,
+            "qualification_scope_preserved": false
+          }
+        ]
+      },
+      "callerCap": 2222,
+      "effectiveCap": 2222,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 2222,
+          "effectiveCap": 2222,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"verdicts\":[{\"block_id\":\"B1\",\"excerpt_selection\":{\"selected_by_retained_excerpt\":false,\"unselected_content\":\"The latch question does not establish coverage within the stated scope. This invented record remains open. The source account is unresolved. The proposed check requires review. The comparison preserves the original uncertainty in this note.\"},\"source_alignments\":[{\"evidence_id\":\"E1\",\"source_context\":\"The latch question does not select another question in the invented record. This invented record has no recorded answer. The source account requires review. The proposed check remains open. The retained question does not establish coverage.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"The named actor and personal knowledge limit remain attached to the same action.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"The spring inspection has no recorded answer here.\",\"answer_specifics\":\"The spring inspection does not establish coverage.\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_property\":\"The review is unresolved here.\",\"answer_property\":\"The result is unresolved here.\",\"relation\":\"preserved\"},\"qualification\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":null,\"detail\":\"The original tentative report retains its stated actor and personal uncertainty.\",\"relation\":\"omitted\"}},{\"evidence_id\":\"E2\",\"source_context\":\"The latch question does not assert a completed test. This invented record does not establish coverage. The source account is separate from completed work. The proposed check is unresolved. The comparison has no recorded answer in this note.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"The named actor and personal knowledge limit remain attached to the same action.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"The connector test is separate from completed work. The comparison remains open.\",\"answer_specifics\":\"The connector test adds no independent confirmation. The result requires review.\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":null,\"answer_anchor\":null,\"source_property\":null,\"answer_property\":null,\"relation\":\"absent_from_both\"},\"qualification\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"detail\":\"The original tentative report retains its stated actor and personal uncertainty.\",\"relation\":\"preserved\"}}],\"comparison\":{\"source_meaning\":\"Ada Marlow records two unanswered questions about separate proposed component checks. The source account preserves the original uncertainty for this example. The proposed check is separate from completed work. The comparison does not establish coverage. The selected passage remains open. The draft requires review here.\",\"candidate_meaning\":\"The candidate presents the two selected questions without supplying their missing answers. The source account does not assert a completed test within the stated scope. The proposed check does not select another question. The comparison adds no independent confirmation. The selected passage requires review in this note.\",\"action_arguments\":\"The connector and the spring remain separate objects of their respective proposed tests. The proposed check adds no independent confirmation in the invented record. The comparison does not select another question. The selected passage is unresolved. The retained question remains open. The separate note requires review.\",\"qualification_scope\":\"The invented verdict compares unresolved questions and preserves their lack of a settled result. The selected passage has no recorded answer. The retained question is unresolved. This protocol example remains open. The draft does not establish coverage. The separate note preserves the original uncertainty in this note.\"},\"mismatches\":[{\"dimension\":\"action_arguments_preserved\",\"kind\":\"changed_action_or_role\",\"detail\":\"This invented record does not select another question here. The source account does not establish coverage. The proposed check has no recorded answer. The comparison is unresolved. The selected passage adds no independent confirmation here.\"},{\"dimension\":\"qualification_scope_preserved\",\"kind\":\"changed_qualification\",\"detail\":\"This invented record adds no independent confirmation in this note. The source account does not select another question. The proposed check does not establish coverage. The comparison is separate from completed work. The draft remains open.\"}],\"proposition_supported\":true,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false}]}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 5795,
+            "outputTokens": 944,
+            "totalTokens": 6739,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 0
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": null,
+      "reason": null,
+      "error": null,
+      "value": "{\"verdicts\":[{\"block_id\":\"B1\",\"excerpt_selection\":{\"selected_by_retained_excerpt\":false,\"unselected_content\":\"The latch question does not establish coverage within the stated scope. This invented record remains open. The source account is unresolved. The proposed check requires review. The comparison preserves the original uncertainty in this note.\"},\"source_alignments\":[{\"evidence_id\":\"E1\",\"source_context\":\"The latch question does not select another question in the invented record. This invented record has no recorded answer. The source account requires review. The proposed check remains open. The retained question does not establish coverage.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"The named actor and personal knowledge limit remain attached to the same action.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"The spring inspection has no recorded answer here.\",\"answer_specifics\":\"The spring inspection does not establish coverage.\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_property\":\"The review is unresolved here.\",\"answer_property\":\"The result is unresolved here.\",\"relation\":\"preserved\"},\"qualification\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":null,\"detail\":\"The original tentative report retains its stated actor and personal uncertainty.\",\"relation\":\"omitted\"}},{\"evidence_id\":\"E2\",\"source_context\":\"The latch question does not assert a completed test. This invented record does not establish coverage. The source account is separate from completed work. The proposed check is unresolved. The comparison has no recorded answer in this note.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"The named actor and personal knowledge limit remain attached to the same action.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"The connector test is separate from completed work. The comparison remains open.\",\"answer_specifics\":\"The connector test adds no independent confirmation. The result requires review.\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":null,\"answer_anchor\":null,\"source_property\":null,\"answer_property\":null,\"relation\":\"absent_from_both\"},\"qualification\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"detail\":\"The original tentative report retains its stated actor and personal uncertainty.\",\"relation\":\"preserved\"}}],\"comparison\":{\"source_meaning\":\"Ada Marlow records two unanswered questions about separate proposed component checks. The source account preserves the original uncertainty for this example. The proposed check is separate from completed work. The comparison does not establish coverage. The selected passage remains open. The draft requires review here.\",\"candidate_meaning\":\"The candidate presents the two selected questions without supplying their missing answers. The source account does not assert a completed test within the stated scope. The proposed check does not select another question. The comparison adds no independent confirmation. The selected passage requires review in this note.\",\"action_arguments\":\"The connector and the spring remain separate objects of their respective proposed tests. The proposed check adds no independent confirmation in the invented record. The comparison does not select another question. The selected passage is unresolved. The retained question remains open. The separate note requires review.\",\"qualification_scope\":\"The invented verdict compares unresolved questions and preserves their lack of a settled result. The selected passage has no recorded answer. The retained question is unresolved. This protocol example remains open. The draft does not establish coverage. The separate note preserves the original uncertainty in this note.\"},\"mismatches\":[{\"dimension\":\"action_arguments_preserved\",\"kind\":\"changed_action_or_role\",\"detail\":\"This invented record does not select another question here. The source account does not establish coverage. The proposed check has no recorded answer. The comparison is unresolved. The selected passage adds no independent confirmation here.\"},{\"dimension\":\"qualification_scope_preserved\",\"kind\":\"changed_qualification\",\"detail\":\"This invented record adds no independent confirmation in this note. The source account does not select another question. The proposed check does not establish coverage. The comparison is separate from completed work. The draft remains open.\"}],\"proposition_supported\":true,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false}]}",
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 5795,
+        "outputTokens": 944,
+        "totalTokens": 6739,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 0
+      }
+    },
+    {
+      "id": "answer-clock-translation",
+      "index": 2,
+      "api": "responses",
+      "status": "completed",
+      "expected": {
+        "record_readings": [
+          {
+            "evidence_id": "E1",
+            "selected_meaning": "The original proposal and its unresolved source clock.",
+            "clarification_or_ambiguity": null
+          }
+        ],
+        "blocks": [
+          {
+            "rendering_mode": "translate",
+            "translated_record": {
+              "proposition_and_nontemporal_scope": "Предложение · Предварительный срок: Ada Marlow предложила рассмотреть смету Zephyr QX-100 в следующем месяце. Ada Marlow не приняла план и не организовала встречу; это только предложение.",
+              "source_clock_anchor": "Следующий месяц отсчитывается от времени первоначальной записи без даты.",
+              "remaining_clock_qualifications": "Отсчёт ведётся не от времени обработки. Календарный месяц неизвестен."
+            },
+            "evidence_ids": [
+              "E1"
+            ]
+          }
+        ],
+        "missing_concepts": []
+      },
+      "callerCap": 2222,
+      "effectiveCap": 2222,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 2222,
+          "effectiveCap": 2222,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"record_readings\":[{\"evidence_id\":\"E1\",\"selected_meaning\":\"The original proposal and its unresolved source clock.\",\"clarification_or_ambiguity\":null}],\"blocks\":[{\"rendering_mode\":\"translate\",\"translated_record\":{\"proposition_and_nontemporal_scope\":\"Предложение · Предварительный срок: Ada Marlow предложила рассмотреть смету Zephyr QX-100 в следующем месяце. Ada Marlow не приняла план и не организовала встречу; это только предложение.\",\"source_clock_anchor\":\"Следующий месяц отсчитывается от времени первоначальной записи без даты.\",\"remaining_clock_qualifications\":\"Отсчёт ведётся не от времени обработки. Календарный месяц неизвестен.\"},\"evidence_ids\":[\"E1\"]}],\"missing_concepts\":[]}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 550,
+            "outputTokens": 171,
+            "totalTokens": 721,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 0
+          }
+        },
+        {
+          "kind": "language-check",
+          "callerCap": 1024,
+          "effectiveCap": 1024,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"hint_roles\":[],\"prose_result\":{\"status\":\"compliant\",\"counterexample\":null}}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 1008,
+            "outputTokens": 88,
+            "totalTokens": 1096,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 58
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": null,
+      "reason": null,
+      "error": null,
+      "value": "{\"record_readings\":[{\"evidence_id\":\"E1\",\"selected_meaning\":\"The original proposal and its unresolved source clock.\",\"clarification_or_ambiguity\":null}],\"blocks\":[{\"rendering_mode\":\"translate\",\"translated_record\":{\"proposition_and_nontemporal_scope\":\"Предложение · Предварительный срок: Ada Marlow предложила рассмотреть смету Zephyr QX-100 в следующем месяце. Ada Marlow не приняла план и не организовала встречу; это только предложение.\",\"source_clock_anchor\":\"Следующий месяц отсчитывается от времени первоначальной записи без даты.\",\"remaining_clock_qualifications\":\"Отсчёт ведётся не от времени обработки. Календарный месяц неизвестен.\"},\"evidence_ids\":[\"E1\"]}],\"missing_concepts\":[]}",
+      "endpointRequests": 2,
+      "usage": {
+        "inputTokens": 1558,
+        "outputTokens": 259,
+        "totalTokens": 1817,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 58
+      }
+    },
+    {
+      "id": "positive-retention-verifier",
+      "index": 3,
+      "api": "responses",
+      "status": "completed",
+      "expected": {
+        "verdicts": [
+          {
+            "candidate_id": "cand_13d16614a67e59df919186d6",
+            "comparison": {
+              "source_meaning": "Invented source inspection.",
+              "candidate_meaning": "Invented candidate inspection.",
+              "action_arguments": "Invented actor and component.",
+              "qualification_scope": "Invented active record scope."
+            },
+            "source_selected_polarity": "affirmed",
+            "mismatches": [],
+            "polarity_evidence": null,
+            "proposition_supported": true,
+            "action_arguments_preserved": true,
+            "qualification_scope_preserved": true,
+            "reason_code": null
+          },
+          {
+            "candidate_id": "cand_97927623ee8f2283a796b536",
+            "span_audit": [
+              {
+                "frame_id": "F1",
+                "interpretation": "Invented inspection marker 1-0.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F2",
+                "interpretation": "Invented inspection marker 1-1.",
+                "relationship": "independent"
+              }
+            ],
+            "comparison": {
+              "source_meaning": "Invented source inspection.",
+              "candidate_meaning": "Invented candidate inspection.",
+              "action_arguments": "Invented actor and component.",
+              "qualification_scope": "Invented active record scope."
+            },
+            "source_selected_polarity": "affirmed",
+            "mismatches": [],
+            "polarity_evidence": null,
+            "proposition_supported": true,
+            "action_arguments_preserved": true,
+            "qualification_scope_preserved": true,
+            "reason_code": null
+          }
+        ]
+      },
+      "callerCap": 3744,
+      "effectiveCap": 2400,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 3744,
+          "effectiveCap": 2400,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"verdicts\":[{\"candidate_id\":\"cand_13d16614a67e59df919186d6\",\"comparison\":{\"source_meaning\":\"Invented source inspection.\",\"candidate_meaning\":\"Invented candidate inspection.\",\"action_arguments\":\"Invented actor and component.\",\"qualification_scope\":\"Invented active record scope.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[],\"polarity_evidence\":null,\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null},{\"candidate_id\":\"cand_97927623ee8f2283a796b536\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented inspection marker 1-0.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented inspection marker 1-1.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented source inspection.\",\"candidate_meaning\":\"Invented candidate inspection.\",\"action_arguments\":\"Invented actor and component.\",\"qualification_scope\":\"Invented active record scope.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[],\"polarity_evidence\":null,\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null}]}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 1722,
+            "outputTokens": 296,
+            "totalTokens": 2018,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 19
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": null,
+      "reason": null,
+      "error": null,
+      "value": "{\"verdicts\":[{\"candidate_id\":\"cand_13d16614a67e59df919186d6\",\"comparison\":{\"source_meaning\":\"Invented source inspection.\",\"candidate_meaning\":\"Invented candidate inspection.\",\"action_arguments\":\"Invented actor and component.\",\"qualification_scope\":\"Invented active record scope.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[],\"polarity_evidence\":null,\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null},{\"candidate_id\":\"cand_97927623ee8f2283a796b536\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented inspection marker 1-0.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented inspection marker 1-1.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented source inspection.\",\"candidate_meaning\":\"Invented candidate inspection.\",\"action_arguments\":\"Invented actor and component.\",\"qualification_scope\":\"Invented active record scope.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[],\"polarity_evidence\":null,\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null}]}",
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 1722,
+        "outputTokens": 296,
+        "totalTokens": 2018,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 19
+      }
+    },
+    {
+      "id": "maximum-frame-negative-retention-verifier",
+      "index": 4,
+      "api": "responses",
+      "status": "completed",
+      "expected": {
+        "verdicts": [
+          {
+            "candidate_id": "cand_452be17697d6185d2a600b47",
+            "span_audit": [
+              {
+                "frame_id": "F1",
+                "interpretation": "Invented inspection marker 0-0.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F2",
+                "interpretation": "Invented inspection marker 0-1.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F3",
+                "interpretation": "Invented inspection marker 0-2.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F4",
+                "interpretation": "Invented inspection marker 0-3.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F5",
+                "interpretation": "Invented inspection marker 0-4.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F6",
+                "interpretation": "Invented inspection marker 0-5.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F7",
+                "interpretation": "Invented inspection marker 0-6.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F8",
+                "interpretation": "Invented inspection marker 0-7.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F9",
+                "interpretation": "Invented inspection marker 0-8.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F10",
+                "interpretation": "Invented inspection marker 0-9.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F11",
+                "interpretation": "Invented inspection marker 0-10.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F12",
+                "interpretation": "Invented inspection marker 0-11.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F13",
+                "interpretation": "Invented inspection marker 0-12.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F14",
+                "interpretation": "Invented inspection marker 0-13.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F15",
+                "interpretation": "Invented inspection marker 0-14.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F16",
+                "interpretation": "Invented inspection marker 0-15.",
+                "relationship": "independent"
+              }
+            ],
+            "comparison": {
+              "source_meaning": "Invented source inspection.",
+              "candidate_meaning": "Invented candidate inspection.",
+              "action_arguments": "Invented actor and component.",
+              "qualification_scope": "Invented active record scope."
+            },
+            "source_selected_polarity": "affirmed",
+            "mismatches": [
+              {
+                "dimension": "proposition_supported",
+                "kind": "changed_value",
+                "source": {
+                  "frame_id": "F1",
+                  "exact_excerpt": "Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineaallllllll."
+                },
+                "candidate": {
+                  "kind": "text",
+                  "exact_excerpt": "Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineaallllllll."
+                },
+                "detail": "This protocol-only negative compares the invented marker silverpineaallllllllll."
+              },
+              {
+                "dimension": "action_arguments_preserved",
+                "kind": "changed_value",
+                "source": {
+                  "frame_id": "F2",
+                  "exact_excerpt": "Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineabllllllll."
+                },
+                "candidate": {
+                  "kind": "text",
+                  "exact_excerpt": "Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineabllllllll."
+                },
+                "detail": "This protocol-only negative compares the invented marker silverpineabllllllllll."
+              },
+              {
+                "dimension": "qualification_scope_preserved",
+                "kind": "changed_value",
+                "source": {
+                  "frame_id": "F3",
+                  "exact_excerpt": "Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineacllllllll."
+                },
+                "candidate": {
+                  "kind": "text",
+                  "exact_excerpt": "Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineacllllllll."
+                },
+                "detail": "This protocol-only negative compares the invented marker silverpineacllllllllll."
+              }
+            ],
+            "polarity_evidence": null,
+            "proposition_supported": false,
+            "action_arguments_preserved": false,
+            "qualification_scope_preserved": false,
+            "reason_code": null
+          },
+          {
+            "candidate_id": "cand_c2d9ebc9799e5d337e611338",
+            "span_audit": [
+              {
+                "frame_id": "F1",
+                "interpretation": "Invented inspection marker 1-0.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F2",
+                "interpretation": "Invented inspection marker 1-1.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F3",
+                "interpretation": "Invented inspection marker 1-2.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F4",
+                "interpretation": "Invented inspection marker 1-3.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F5",
+                "interpretation": "Invented inspection marker 1-4.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F6",
+                "interpretation": "Invented inspection marker 1-5.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F7",
+                "interpretation": "Invented inspection marker 1-6.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F8",
+                "interpretation": "Invented inspection marker 1-7.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F9",
+                "interpretation": "Invented inspection marker 1-8.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F10",
+                "interpretation": "Invented inspection marker 1-9.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F11",
+                "interpretation": "Invented inspection marker 1-10.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F12",
+                "interpretation": "Invented inspection marker 1-11.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F13",
+                "interpretation": "Invented inspection marker 1-12.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F14",
+                "interpretation": "Invented inspection marker 1-13.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F15",
+                "interpretation": "Invented inspection marker 1-14.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F16",
+                "interpretation": "Invented inspection marker 1-15.",
+                "relationship": "independent"
+              }
+            ],
+            "comparison": {
+              "source_meaning": "Invented source inspection.",
+              "candidate_meaning": "Invented candidate inspection.",
+              "action_arguments": "Invented actor and component.",
+              "qualification_scope": "Invented active record scope."
+            },
+            "source_selected_polarity": "affirmed",
+            "mismatches": [
+              {
+                "dimension": "proposition_supported",
+                "kind": "changed_value",
+                "source": {
+                  "frame_id": "F1",
+                  "exact_excerpt": "Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineaqllllllll."
+                },
+                "candidate": {
+                  "kind": "text",
+                  "exact_excerpt": "Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineaqllllllll."
+                },
+                "detail": "This protocol-only negative compares the invented marker silverpineadllllllllll."
+              },
+              {
+                "dimension": "action_arguments_preserved",
+                "kind": "changed_value",
+                "source": {
+                  "frame_id": "F2",
+                  "exact_excerpt": "Bo Winters inspected the Zephyr QX-100 frame beside marker silverpinearllllllll."
+                },
+                "candidate": {
+                  "kind": "text",
+                  "exact_excerpt": "Bo Winters inspected the Zephyr QX-100 frame beside marker silverpinearllllllll."
+                },
+                "detail": "This protocol-only negative compares the invented marker silverpineaellllllllll."
+              },
+              {
+                "dimension": "qualification_scope_preserved",
+                "kind": "changed_value",
+                "source": {
+                  "frame_id": "F3",
+                  "exact_excerpt": "Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineasllllllll."
+                },
+                "candidate": {
+                  "kind": "text",
+                  "exact_excerpt": "Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineasllllllll."
+                },
+                "detail": "This protocol-only negative compares the invented marker silverpineafllllllllll."
+              }
+            ],
+            "polarity_evidence": null,
+            "proposition_supported": false,
+            "action_arguments_preserved": false,
+            "qualification_scope_preserved": false,
+            "reason_code": null
+          }
+        ]
+      },
+      "callerCap": 8544,
+      "effectiveCap": 2400,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 8544,
+          "effectiveCap": 2400,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"verdicts\":[{\"candidate_id\":\"cand_452be17697d6185d2a600b47\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented inspection marker 0-0.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented inspection marker 0-1.\",\"relationship\":\"independent\"},{\"frame_id\":\"F3\",\"interpretation\":\"Invented inspection marker 0-2.\",\"relationship\":\"independent\"},{\"frame_id\":\"F4\",\"interpretation\":\"Invented inspection marker 0-3.\",\"relationship\":\"independent\"},{\"frame_id\":\"F5\",\"interpretation\":\"Invented inspection marker 0-4.\",\"relationship\":\"independent\"},{\"frame_id\":\"F6\",\"interpretation\":\"Invented inspection marker 0-5.\",\"relationship\":\"independent\"},{\"frame_id\":\"F7\",\"interpretation\":\"Invented inspection marker 0-6.\",\"relationship\":\"independent\"},{\"frame_id\":\"F8\",\"interpretation\":\"Invented inspection marker 0-7.\",\"relationship\":\"independent\"},{\"frame_id\":\"F9\",\"interpretation\":\"Invented inspection marker 0-8.\",\"relationship\":\"independent\"},{\"frame_id\":\"F10\",\"interpretation\":\"Invented inspection marker 0-9.\",\"relationship\":\"independent\"},{\"frame_id\":\"F11\",\"interpretation\":\"Invented inspection marker 0-10.\",\"relationship\":\"independent\"},{\"frame_id\":\"F12\",\"interpretation\":\"Invented inspection marker 0-11.\",\"relationship\":\"independent\"},{\"frame_id\":\"F13\",\"interpretation\":\"Invented inspection marker 0-12.\",\"relationship\":\"independent\"},{\"frame_id\":\"F14\",\"interpretation\":\"Invented inspection marker 0-13.\",\"relationship\":\"independent\"},{\"frame_id\":\"F15\",\"interpretation\":\"Invented inspection marker 0-14.\",\"relationship\":\"independent\"},{\"frame_id\":\"F16\",\"interpretation\":\"Invented inspection marker 0-15.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented source inspection.\",\"candidate_meaning\":\"Invented candidate inspection.\",\"action_arguments\":\"Invented actor and component.\",\"qualification_scope\":\"Invented active record scope.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[{\"dimension\":\"proposition_supported\",\"detail\":\"This protocol-only negative compares the invented marker silverpineaallllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F1\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineaallllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineaallllllll.\"}},{\"dimension\":\"action_arguments_preserved\",\"detail\":\"This protocol-only negative compares the invented marker silverpineabllllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F2\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineabllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineabllllllll.\"}},{\"dimension\":\"qualification_scope_preserved\",\"detail\":\"This protocol-only negative compares the invented marker silverpineacllllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F3\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineacllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineacllllllll.\"}}],\"polarity_evidence\":null,\"proposition_supported\":false,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false,\"reason_code\":null},{\"candidate_id\":\"cand_c2d9ebc9799e5d337e611338\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented inspection marker 1-0.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented inspection marker 1-1.\",\"relationship\":\"independent\"},{\"frame_id\":\"F3\",\"interpretation\":\"Invented inspection marker 1-2.\",\"relationship\":\"independent\"},{\"frame_id\":\"F4\",\"interpretation\":\"Invented inspection marker 1-3.\",\"relationship\":\"independent\"},{\"frame_id\":\"F5\",\"interpretation\":\"Invented inspection marker 1-4.\",\"relationship\":\"independent\"},{\"frame_id\":\"F6\",\"interpretation\":\"Invented inspection marker 1-5.\",\"relationship\":\"independent\"},{\"frame_id\":\"F7\",\"interpretation\":\"Invented inspection marker 1-6.\",\"relationship\":\"independent\"},{\"frame_id\":\"F8\",\"interpretation\":\"Invented inspection marker 1-7.\",\"relationship\":\"independent\"},{\"frame_id\":\"F9\",\"interpretation\":\"Invented inspection marker 1-8.\",\"relationship\":\"independent\"},{\"frame_id\":\"F10\",\"interpretation\":\"Invented inspection marker 1-9.\",\"relationship\":\"independent\"},{\"frame_id\":\"F11\",\"interpretation\":\"Invented inspection marker 1-10.\",\"relationship\":\"independent\"},{\"frame_id\":\"F12\",\"interpretation\":\"Invented inspection marker 1-11.\",\"relationship\":\"independent\"},{\"frame_id\":\"F13\",\"interpretation\":\"Invented inspection marker 1-12.\",\"relationship\":\"independent\"},{\"frame_id\":\"F14\",\"interpretation\":\"Invented inspection marker 1-13.\",\"relationship\":\"independent\"},{\"frame_id\":\"F15\",\"interpretation\":\"Invented inspection marker 1-14.\",\"relationship\":\"independent\"},{\"frame_id\":\"F16\",\"interpretation\":\"Invented inspection marker 1-15.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented source inspection.\",\"candidate_meaning\":\"Invented candidate inspection.\",\"action_arguments\":\"Invented actor and component.\",\"qualification_scope\":\"Invented active record scope.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[{\"dimension\":\"proposition_supported\",\"detail\":\"This protocol-only negative compares the invented marker silverpineadllllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F1\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineaqllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineaqllllllll.\"}},{\"dimension\":\"action_arguments_preserved\",\"detail\":\"This protocol-only negative compares the invented marker silverpineaellllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F2\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpinearllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpinearllllllll.\"}},{\"dimension\":\"qualification_scope_preserved\",\"detail\":\"This protocol-only negative compares the invented marker silverpineafllllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F3\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineasllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineasllllllll.\"}}],\"polarity_evidence\":null,\"proposition_supported\":false,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false,\"reason_code\":null}]}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 3364,
+            "outputTokens": 1536,
+            "totalTokens": 4900,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 31
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": null,
+      "reason": null,
+      "error": null,
+      "value": "{\"verdicts\":[{\"candidate_id\":\"cand_452be17697d6185d2a600b47\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented inspection marker 0-0.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented inspection marker 0-1.\",\"relationship\":\"independent\"},{\"frame_id\":\"F3\",\"interpretation\":\"Invented inspection marker 0-2.\",\"relationship\":\"independent\"},{\"frame_id\":\"F4\",\"interpretation\":\"Invented inspection marker 0-3.\",\"relationship\":\"independent\"},{\"frame_id\":\"F5\",\"interpretation\":\"Invented inspection marker 0-4.\",\"relationship\":\"independent\"},{\"frame_id\":\"F6\",\"interpretation\":\"Invented inspection marker 0-5.\",\"relationship\":\"independent\"},{\"frame_id\":\"F7\",\"interpretation\":\"Invented inspection marker 0-6.\",\"relationship\":\"independent\"},{\"frame_id\":\"F8\",\"interpretation\":\"Invented inspection marker 0-7.\",\"relationship\":\"independent\"},{\"frame_id\":\"F9\",\"interpretation\":\"Invented inspection marker 0-8.\",\"relationship\":\"independent\"},{\"frame_id\":\"F10\",\"interpretation\":\"Invented inspection marker 0-9.\",\"relationship\":\"independent\"},{\"frame_id\":\"F11\",\"interpretation\":\"Invented inspection marker 0-10.\",\"relationship\":\"independent\"},{\"frame_id\":\"F12\",\"interpretation\":\"Invented inspection marker 0-11.\",\"relationship\":\"independent\"},{\"frame_id\":\"F13\",\"interpretation\":\"Invented inspection marker 0-12.\",\"relationship\":\"independent\"},{\"frame_id\":\"F14\",\"interpretation\":\"Invented inspection marker 0-13.\",\"relationship\":\"independent\"},{\"frame_id\":\"F15\",\"interpretation\":\"Invented inspection marker 0-14.\",\"relationship\":\"independent\"},{\"frame_id\":\"F16\",\"interpretation\":\"Invented inspection marker 0-15.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented source inspection.\",\"candidate_meaning\":\"Invented candidate inspection.\",\"action_arguments\":\"Invented actor and component.\",\"qualification_scope\":\"Invented active record scope.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[{\"dimension\":\"proposition_supported\",\"detail\":\"This protocol-only negative compares the invented marker silverpineaallllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F1\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineaallllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineaallllllll.\"}},{\"dimension\":\"action_arguments_preserved\",\"detail\":\"This protocol-only negative compares the invented marker silverpineabllllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F2\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineabllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineabllllllll.\"}},{\"dimension\":\"qualification_scope_preserved\",\"detail\":\"This protocol-only negative compares the invented marker silverpineacllllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F3\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineacllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineacllllllll.\"}}],\"polarity_evidence\":null,\"proposition_supported\":false,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false,\"reason_code\":null},{\"candidate_id\":\"cand_c2d9ebc9799e5d337e611338\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented inspection marker 1-0.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented inspection marker 1-1.\",\"relationship\":\"independent\"},{\"frame_id\":\"F3\",\"interpretation\":\"Invented inspection marker 1-2.\",\"relationship\":\"independent\"},{\"frame_id\":\"F4\",\"interpretation\":\"Invented inspection marker 1-3.\",\"relationship\":\"independent\"},{\"frame_id\":\"F5\",\"interpretation\":\"Invented inspection marker 1-4.\",\"relationship\":\"independent\"},{\"frame_id\":\"F6\",\"interpretation\":\"Invented inspection marker 1-5.\",\"relationship\":\"independent\"},{\"frame_id\":\"F7\",\"interpretation\":\"Invented inspection marker 1-6.\",\"relationship\":\"independent\"},{\"frame_id\":\"F8\",\"interpretation\":\"Invented inspection marker 1-7.\",\"relationship\":\"independent\"},{\"frame_id\":\"F9\",\"interpretation\":\"Invented inspection marker 1-8.\",\"relationship\":\"independent\"},{\"frame_id\":\"F10\",\"interpretation\":\"Invented inspection marker 1-9.\",\"relationship\":\"independent\"},{\"frame_id\":\"F11\",\"interpretation\":\"Invented inspection marker 1-10.\",\"relationship\":\"independent\"},{\"frame_id\":\"F12\",\"interpretation\":\"Invented inspection marker 1-11.\",\"relationship\":\"independent\"},{\"frame_id\":\"F13\",\"interpretation\":\"Invented inspection marker 1-12.\",\"relationship\":\"independent\"},{\"frame_id\":\"F14\",\"interpretation\":\"Invented inspection marker 1-13.\",\"relationship\":\"independent\"},{\"frame_id\":\"F15\",\"interpretation\":\"Invented inspection marker 1-14.\",\"relationship\":\"independent\"},{\"frame_id\":\"F16\",\"interpretation\":\"Invented inspection marker 1-15.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented source inspection.\",\"candidate_meaning\":\"Invented candidate inspection.\",\"action_arguments\":\"Invented actor and component.\",\"qualification_scope\":\"Invented active record scope.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[{\"dimension\":\"proposition_supported\",\"detail\":\"This protocol-only negative compares the invented marker silverpineadllllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F1\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineaqllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineaqllllllll.\"}},{\"dimension\":\"action_arguments_preserved\",\"detail\":\"This protocol-only negative compares the invented marker silverpineaellllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F2\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpinearllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpinearllllllll.\"}},{\"dimension\":\"qualification_scope_preserved\",\"detail\":\"This protocol-only negative compares the invented marker silverpineafllllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F3\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineasllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineasllllllll.\"}}],\"polarity_evidence\":null,\"proposition_supported\":false,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false,\"reason_code\":null}]}",
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 3364,
+        "outputTokens": 1536,
+        "totalTokens": 4900,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 31
+      }
+    },
+    {
+      "id": "four-branch-retention-repair",
+      "index": 5,
+      "api": "responses",
+      "status": "completed",
+      "expected": {
+        "repairs": [
+          {
+            "candidate_index": 0,
+            "reported_proposition": "Bo Winters reports that the Zephyr QX-100 agreement permits a workshop to measure the latch gap while expressly excluding latch replacement; this account carries the silverpine marker in this dry run.",
+            "relay_attribution": "Ada Marlow relays Bo Winters's account and labels her full retelling amberfin.",
+            "personal_limits": "Ada Marlow has not read the agreement or independently checked the account, and tags an unverified retelling quartzleaf."
+          },
+          {
+            "candidate_index": 1,
+            "proposition_and_nontemporal_scope": "Ada Marlow proposes reviewing Zephyr QX-100 repair terms next month. She has not accepted a plan or organized a meeting; this remains her proposal, with no agreement by the other people recorded.",
+            "source_clock_anchor_and_unknown_date": "Next month means the month after the original source record, whose date is wholly unknown.",
+            "excluded_reference_clocks": "Processing time is not the reference point for «next month».",
+            "unresolved_calendar_period": "The calendar month of this proposal remains unknown."
+          },
+          {
+            "candidate_index": 2,
+            "proposition_and_nontemporal_scope": "Ada Marlow suggests reviewing the Zephyr QX-100 inspection terms next month. She has not accepted a plan nor arranged a meeting. The original note records only her proposal and does not establish anyone else’s agreement.",
+            "source_clock_anchor_and_unknown_date": "The original record has no recorded date; next month refers to the month after that source record was written.",
+            "unresolved_calendar_period": "The calendar month for a suggested review cannot be established yet."
+          },
+          {
+            "candidate_index": 3,
+            "candidate": {
+              "kind": "claim",
+              "subject": "Zephyr QX-100",
+              "text": "Ada Marlow has not arranged delivery of Zephyr QX-100.",
+              "attribution": {
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "chain": []
+              },
+              "discourse": {
+                "commitment": "asserted",
+                "disposition": "active"
+              },
+              "epistemic": {
+                "basis": "self_attested"
+              },
+              "polarity": "negated",
+              "support": [
+                {
+                  "item_id": "denial",
+                  "quote": "Ada Marlow has not arranged delivery of Zephyr QX-100."
+                }
+              ],
+              "discourse_frame": [
+                {
+                  "item_id": "denial",
+                  "quote": "Ada Marlow has not arranged delivery of Zephyr QX-100."
+                }
+              ],
+              "relations": [],
+              "time": null,
+              "page": null
+            }
+          }
+        ]
+      },
+      "callerCap": 3200,
+      "effectiveCap": 2400,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 3200,
+          "effectiveCap": 2400,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"repairs\":[{\"candidate_index\":0,\"reported_proposition\":\"Bo Winters reports that the Zephyr QX-100 agreement permits a workshop to measure the latch gap while expressly excluding latch replacement; this account carries the silverpine marker in this dry run.\",\"relay_attribution\":\"Ada Marlow relays Bo Winters's account and labels her full retelling amberfin.\",\"personal_limits\":\"Ada Marlow has not read the agreement or independently checked the account, and tags an unverified retelling quartzleaf.\"},{\"candidate_index\":1,\"proposition_and_nontemporal_scope\":\"Ada Marlow proposes reviewing Zephyr QX-100 repair terms next month. She has not accepted a plan or organized a meeting; this remains her proposal, with no agreement by the other people recorded.\",\"source_clock_anchor_and_unknown_date\":\"Next month means the month after the original source record, whose date is wholly unknown.\",\"excluded_reference_clocks\":\"Processing time is not the reference point for «next month».\",\"unresolved_calendar_period\":\"The calendar month of this proposal remains unknown.\"},{\"candidate_index\":2,\"proposition_and_nontemporal_scope\":\"Ada Marlow suggests reviewing the Zephyr QX-100 inspection terms next month. She has not accepted a plan nor arranged a meeting. The original note records only her proposal and does not establish anyone else’s agreement.\",\"source_clock_anchor_and_unknown_date\":\"The original record has no recorded date; next month refers to the month after that source record was written.\",\"unresolved_calendar_period\":\"The calendar month for a suggested review cannot be established yet.\"},{\"candidate_index\":3,\"candidate\":{\"kind\":\"claim\",\"attribution\":{\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"chain\":[]},\"discourse\":{\"commitment\":\"asserted\",\"disposition\":\"active\"},\"epistemic\":{\"basis\":\"self_attested\"},\"polarity\":\"negated\",\"support\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":\"denial\"}],\"discourse_frame\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":\"denial\"}],\"relations\":[],\"time\":null,\"text\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"subject\":\"Zephyr QX-100\",\"page\":null}}]}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 1401,
+            "outputTokens": 499,
+            "totalTokens": 1900,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 15
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": null,
+      "reason": null,
+      "error": null,
+      "value": "{\"repairs\":[{\"candidate_index\":0,\"reported_proposition\":\"Bo Winters reports that the Zephyr QX-100 agreement permits a workshop to measure the latch gap while expressly excluding latch replacement; this account carries the silverpine marker in this dry run.\",\"relay_attribution\":\"Ada Marlow relays Bo Winters's account and labels her full retelling amberfin.\",\"personal_limits\":\"Ada Marlow has not read the agreement or independently checked the account, and tags an unverified retelling quartzleaf.\"},{\"candidate_index\":1,\"proposition_and_nontemporal_scope\":\"Ada Marlow proposes reviewing Zephyr QX-100 repair terms next month. She has not accepted a plan or organized a meeting; this remains her proposal, with no agreement by the other people recorded.\",\"source_clock_anchor_and_unknown_date\":\"Next month means the month after the original source record, whose date is wholly unknown.\",\"excluded_reference_clocks\":\"Processing time is not the reference point for «next month».\",\"unresolved_calendar_period\":\"The calendar month of this proposal remains unknown.\"},{\"candidate_index\":2,\"proposition_and_nontemporal_scope\":\"Ada Marlow suggests reviewing the Zephyr QX-100 inspection terms next month. She has not accepted a plan nor arranged a meeting. The original note records only her proposal and does not establish anyone else’s agreement.\",\"source_clock_anchor_and_unknown_date\":\"The original record has no recorded date; next month refers to the month after that source record was written.\",\"unresolved_calendar_period\":\"The calendar month for a suggested review cannot be established yet.\"},{\"candidate_index\":3,\"candidate\":{\"kind\":\"claim\",\"attribution\":{\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"chain\":[]},\"discourse\":{\"commitment\":\"asserted\",\"disposition\":\"active\"},\"epistemic\":{\"basis\":\"self_attested\"},\"polarity\":\"negated\",\"support\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":\"denial\"}],\"discourse_frame\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":\"denial\"}],\"relations\":[],\"time\":null,\"text\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"subject\":\"Zephyr QX-100\",\"page\":null}}]}",
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 1401,
+        "outputTokens": 499,
+        "totalTokens": 1900,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 15
+      }
+    },
+    {
+      "id": "maximum-language-chat_completions-compliant",
+      "index": 6,
+      "api": "chat_completions",
+      "status": "completed",
+      "expected": {
+        "hint_roles": [
+          {
+            "hint_id": "h0",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h1",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h2",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h3",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h4",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h5",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h6",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h7",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h8",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h9",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h10",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h11",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h12",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h13",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h14",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h15",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h16",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h17",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h18",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h19",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h20",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h21",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h22",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h23",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h24",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h25",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h26",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h27",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h28",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h29",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h30",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h31",
+            "classification": "supplied_identifier"
+          }
+        ],
+        "prose_result": {
+          "status": "compliant",
+          "counterexample": null
+        }
+      },
+      "callerCap": 1024,
+      "effectiveCap": 1024,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 1024,
+          "effectiveCap": 1024,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"hint_roles\":[{\"hint_id\":\"h0\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h1\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h2\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h3\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h4\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h5\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h6\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h7\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h8\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h9\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h10\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h11\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h12\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h13\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h14\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h15\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h16\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h17\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h18\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h19\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h20\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h21\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h22\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h23\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h24\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h25\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h26\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h27\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h28\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h29\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h30\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h31\",\"classification\":\"supplied_identifier\"}],\"prose_result\":{\"status\":\"compliant\",\"counterexample\":null}}",
+          "endpointRequests": 3,
+          "usage": {
+            "inputTokens": 859,
+            "outputTokens": 412,
+            "totalTokens": 1271,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 0
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": "compliant",
+      "reason": null,
+      "error": null,
+      "value": "{\"hint_roles\":[{\"hint_id\":\"h0\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h1\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h2\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h3\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h4\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h5\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h6\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h7\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h8\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h9\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h10\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h11\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h12\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h13\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h14\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h15\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h16\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h17\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h18\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h19\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h20\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h21\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h22\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h23\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h24\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h25\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h26\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h27\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h28\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h29\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h30\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h31\",\"classification\":\"supplied_identifier\"}],\"prose_result\":{\"status\":\"compliant\",\"counterexample\":null}}",
+      "endpointRequests": 3,
+      "usage": {
+        "inputTokens": 859,
+        "outputTokens": 412,
+        "totalTokens": 1271,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 0
+      }
+    },
+    {
+      "id": "maximum-language-chat_completions-noncompliant",
+      "index": 7,
+      "api": "chat_completions",
+      "status": "completed",
+      "expected": {
+        "hint_roles": [
+          {
+            "hint_id": "h0",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h1",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h2",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h3",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h4",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h5",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h6",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h7",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h8",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h9",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h10",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h11",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h12",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h13",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h14",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h15",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h16",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h17",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h18",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h19",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h20",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h21",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h22",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h23",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h24",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h25",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h26",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h27",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h28",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h29",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h30",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h31",
+            "classification": "foreign_ordinary"
+          }
+        ],
+        "prose_result": {
+          "status": "noncompliant",
+          "counterexample": {
+            "kind": "hint",
+            "hint_id": "h0"
+          }
+        }
+      },
+      "callerCap": 1024,
+      "effectiveCap": 1024,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 1024,
+          "effectiveCap": 1024,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"hint_roles\":[{\"hint_id\":\"h0\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h1\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h2\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h3\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h4\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h5\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h6\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h7\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h8\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h9\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h10\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h11\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h12\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h13\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h14\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h15\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h16\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h17\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h18\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h19\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h20\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h21\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h22\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h23\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h24\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h25\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h26\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h27\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h28\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h29\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h30\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h31\",\"classification\":\"foreign_ordinary\"}],\"prose_result\":{\"status\":\"noncompliant\",\"counterexample\":{\"kind\":\"hint\",\"hint_id\":\"h0\"}}}",
+          "endpointRequests": 3,
+          "usage": {
+            "inputTokens": 869,
+            "outputTokens": 422,
+            "totalTokens": 1291,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 0
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": "noncompliant",
+      "reason": null,
+      "error": null,
+      "value": "{\"hint_roles\":[{\"hint_id\":\"h0\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h1\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h2\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h3\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h4\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h5\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h6\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h7\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h8\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h9\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h10\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h11\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h12\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h13\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h14\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h15\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h16\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h17\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h18\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h19\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h20\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h21\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h22\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h23\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h24\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h25\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h26\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h27\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h28\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h29\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h30\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h31\",\"classification\":\"foreign_ordinary\"}],\"prose_result\":{\"status\":\"noncompliant\",\"counterexample\":{\"kind\":\"hint\",\"hint_id\":\"h0\"}}}",
+      "endpointRequests": 3,
+      "usage": {
+        "inputTokens": 869,
+        "outputTokens": 422,
+        "totalTokens": 1291,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 0
+      }
+    },
+    {
+      "id": "maximum-language-responses-compliant",
+      "index": 8,
+      "api": "responses",
+      "status": "completed",
+      "expected": {
+        "hint_roles": [
+          {
+            "hint_id": "h0",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h1",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h2",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h3",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h4",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h5",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h6",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h7",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h8",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h9",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h10",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h11",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h12",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h13",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h14",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h15",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h16",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h17",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h18",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h19",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h20",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h21",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h22",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h23",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h24",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h25",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h26",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h27",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h28",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h29",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h30",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h31",
+            "classification": "supplied_identifier"
+          }
+        ],
+        "prose_result": {
+          "status": "compliant",
+          "counterexample": null
+        }
+      },
+      "callerCap": 1024,
+      "effectiveCap": 1024,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 1024,
+          "effectiveCap": 1024,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"hint_roles\":[{\"hint_id\":\"h0\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h1\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h2\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h3\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h4\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h5\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h6\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h7\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h8\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h9\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h10\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h11\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h12\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h13\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h14\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h15\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h16\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h17\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h18\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h19\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h20\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h21\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h22\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h23\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h24\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h25\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h26\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h27\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h28\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h29\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h30\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h31\",\"classification\":\"supplied_identifier\"}],\"prose_result\":{\"status\":\"compliant\",\"counterexample\":null}}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 856,
+            "outputTokens": 426,
+            "totalTokens": 1282,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 11
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": "compliant",
+      "reason": null,
+      "error": null,
+      "value": "{\"hint_roles\":[{\"hint_id\":\"h0\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h1\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h2\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h3\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h4\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h5\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h6\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h7\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h8\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h9\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h10\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h11\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h12\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h13\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h14\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h15\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h16\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h17\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h18\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h19\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h20\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h21\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h22\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h23\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h24\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h25\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h26\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h27\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h28\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h29\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h30\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h31\",\"classification\":\"supplied_identifier\"}],\"prose_result\":{\"status\":\"compliant\",\"counterexample\":null}}",
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 856,
+        "outputTokens": 426,
+        "totalTokens": 1282,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 11
+      }
+    },
+    {
+      "id": "maximum-language-responses-noncompliant",
+      "index": 9,
+      "api": "responses",
+      "status": "completed",
+      "expected": {
+        "hint_roles": [
+          {
+            "hint_id": "h0",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h1",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h2",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h3",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h4",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h5",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h6",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h7",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h8",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h9",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h10",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h11",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h12",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h13",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h14",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h15",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h16",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h17",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h18",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h19",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h20",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h21",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h22",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h23",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h24",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h25",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h26",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h27",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h28",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h29",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h30",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h31",
+            "classification": "foreign_ordinary"
+          }
+        ],
+        "prose_result": {
+          "status": "noncompliant",
+          "counterexample": {
+            "kind": "hint",
+            "hint_id": "h0"
+          }
+        }
+      },
+      "callerCap": 1024,
+      "effectiveCap": 1024,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 1024,
+          "effectiveCap": 1024,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"hint_roles\":[{\"hint_id\":\"h0\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h1\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h2\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h3\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h4\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h5\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h6\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h7\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h8\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h9\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h10\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h11\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h12\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h13\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h14\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h15\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h16\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h17\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h18\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h19\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h20\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h21\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h22\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h23\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h24\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h25\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h26\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h27\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h28\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h29\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h30\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h31\",\"classification\":\"foreign_ordinary\"}],\"prose_result\":{\"status\":\"noncompliant\",\"counterexample\":{\"kind\":\"hint\",\"hint_id\":\"h0\"}}}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 866,
+            "outputTokens": 441,
+            "totalTokens": 1307,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 16
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": "noncompliant",
+      "reason": null,
+      "error": null,
+      "value": "{\"hint_roles\":[{\"hint_id\":\"h0\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h1\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h2\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h3\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h4\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h5\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h6\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h7\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h8\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h9\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h10\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h11\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h12\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h13\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h14\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h15\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h16\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h17\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h18\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h19\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h20\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h21\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h22\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h23\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h24\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h25\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h26\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h27\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h28\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h29\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h30\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h31\",\"classification\":\"foreign_ordinary\"}],\"prose_result\":{\"status\":\"noncompliant\",\"counterexample\":{\"kind\":\"hint\",\"hint_id\":\"h0\"}}}",
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 866,
+        "outputTokens": 441,
+        "totalTokens": 1307,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 16
+      }
+    }
+  ],
+  "completedAt": "2026-09-10T01:10:21.972Z",
+  "passed": true
+}

@@ -162,6 +162,41 @@ is required. The scanner does not understand arbitrary implicit discourse, every
 language. Unsupported implicit qualifications may be missed; conservative false holds and bounded supported
 cases must be assessed separately from model quality.
 
+## Current evaluated scope
+
+PR #70 now has a terminal V22 result at frozen runtime `a67faa3`: **FAIL** under the
+separately authorized 80% useful-answer completion target. The original 90% answer gate is
+**FAIL** and remains preserved. Both verdicts use the same independent source-only review;
+retention/retrieval, source accuracy, qualification, language, source-byte and availability requirements
+were not relaxed.
+
+| Split / run     | Useful answers | Complete retained sets | Useful retrievals | Availability failures | Ordinary mismatches |
+| --------------- | -------------: | ---------------------: | ----------------: | --------------------: | ------------------: |
+| development / 1 |          63/80 |                   9/10 |             36/40 |                  1/11 |                0/11 |
+| development / 2 |          52/80 |                   7/10 |             28/40 |                  4/11 |                0/11 |
+| held-out / 1    |          52/80 |                   7/10 |             32/40 |                  0/11 |                3/11 |
+| held-out / 2    |          53/80 |                   7/10 |             32/40 |                  0/11 |                3/11 |
+
+The final independent grade is **220/320 useful writable answers (68.8%)** and **30/40 complete retained sets**. There were 221 published writable answers and 99 writable nulls. The grade records 0 unsupported retained sets, 0 unsupported published answers, 0 qualification errors, 0 accepted language violations and 0 unsafe factual promotions. All 32 read-only nulls were justified policy holds. Source bytes and replay passed in all 44 case-runs. The availability gate records 5/44 failed cases, distinct from the two answer coordinates explicitly typed verification-unavailable. Ordinary Markdown matched 38/44 expected classifications.
+
+This measures a finite invented English/Russian and mixed-source corpus with English generated knowledge,
+English/Russian requested answers, both explicit and inferred views, and isolated 2,400-token retention/answer
+ceilings. The existing service's 1,024-token answer overlay remains outside this evidence. Independent model
+review is fallible; the result does not establish arbitrary-language, implicit-discourse or longitudinal reliability.
+
+The exposed V77 diagnostics were unusable because their external capture hook rejected the correctly configured
+query-expansion model. All 96 planned answer cells were absent; retention and source-byte results were unknown.
+Those failures remain preserved. Two independent reviewers approved a separate corrected full-only capture,
+with mocked controls exercising the actual expansion and placement functions, before the terminal full trial.
+No failed diagnostic was replaced and production runtime, models, semantic passes and caps stayed unchanged.
+
+The remaining failures include loss of central report, assistant, time and competing-hypothesis records; incomplete retention of some independent propositions; source-answerable nulls after retention; a published counterfactual answer that states only the true antecedent instead of the requested unrealized benefit; development availability failures; and three nonfactual ordinary-Markdown passages incorrectly marked eligible as factual evidence in both held-out runs (six failures). The latter is an admission-boundary defect even though the independently graded generated outputs showed no factual promotion. Reviewer disagreements about focused subsets and redundant qualifications remain visible in the preserved reviews. They do not change the failing disposition.
+
+The bounded PR work is finished with reliability acceptance unmet. No further tuning, replacement trial or threshold reduction follows this result. The language-policy and finite Markdown boundaries remain implemented; automatic retention and answering still need a structural redesign and fresh evaluation.
+
+The [complete V77 evidence](../benchmarks/language/results/v77/README.md) includes both gates, per-run results,
+original failures, input/output reviews, independent forensics, and frozen execution receipts.
+
 ## Evaluation
 
 The frozen language/discourse corpora separate development and held-out cases with invented English,

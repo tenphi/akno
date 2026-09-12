@@ -1,0 +1,91 @@
+{
+  "runtimeCommit": "a67faa3fd3a6f59450a35c4af1d66baa96fee4e8",
+  "corpusFingerprint": "b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a",
+  "purpose": "All repeated cells and provenance validated. Model output, independent usefulness grades and acceptance remain separate.",
+  "cells": [
+    {
+      "split": "development",
+      "run": 1,
+      "cases": 11,
+      "writableObservations": 80,
+      "readOnlyObservations": 8,
+      "caseAvailabilityFailures": 1,
+      "sourceByteChanges": 0,
+      "producedWritableAnswers": 63,
+      "producedReadOnlyAnswers": 0,
+      "reportSha256": "2388c83c9a4a4bd0108947f2a938f109f6ca5d06346e90c6bb7b946657d31ab1",
+      "traceSha256": "978e2192b16948dfc4d85e3f192615aab55dd36ba4774b2592b2a6b0911b1319",
+      "traceRows": 3216,
+      "traceLifecycle": {
+        "modelCalls": 617,
+        "transports": 771,
+        "modelThrows": 0,
+        "transportThrows": 0,
+        "balanced": true
+      }
+    },
+    {
+      "split": "development",
+      "run": 2,
+      "cases": 11,
+      "writableObservations": 80,
+      "readOnlyObservations": 8,
+      "caseAvailabilityFailures": 4,
+      "sourceByteChanges": 0,
+      "producedWritableAnswers": 52,
+      "producedReadOnlyAnswers": 0,
+      "reportSha256": "2388c83c9a4a4bd0108947f2a938f109f6ca5d06346e90c6bb7b946657d31ab1",
+      "traceSha256": "978e2192b16948dfc4d85e3f192615aab55dd36ba4774b2592b2a6b0911b1319",
+      "traceRows": 3216,
+      "traceLifecycle": {
+        "modelCalls": 617,
+        "transports": 771,
+        "modelThrows": 0,
+        "transportThrows": 0,
+        "balanced": true
+      }
+    },
+    {
+      "split": "held-out",
+      "run": 1,
+      "cases": 11,
+      "writableObservations": 80,
+      "readOnlyObservations": 8,
+      "caseAvailabilityFailures": 0,
+      "sourceByteChanges": 0,
+      "producedWritableAnswers": 52,
+      "producedReadOnlyAnswers": 0,
+      "reportSha256": "b2be8db89ba16d39a076d3e4fb799603928333ba810d70eefd8a97284add3292",
+      "traceSha256": "b2e08b9882e5c2fbcf17b593bdfdfa7315c1d881060988aa5229df7cefcea312",
+      "traceRows": 3022,
+      "traceLifecycle": {
+        "modelCalls": 582,
+        "transports": 717,
+        "modelThrows": 0,
+        "transportThrows": 0,
+        "balanced": true
+      }
+    },
+    {
+      "split": "held-out",
+      "run": 2,
+      "cases": 11,
+      "writableObservations": 80,
+      "readOnlyObservations": 8,
+      "caseAvailabilityFailures": 0,
+      "sourceByteChanges": 0,
+      "producedWritableAnswers": 54,
+      "producedReadOnlyAnswers": 0,
+      "reportSha256": "b2be8db89ba16d39a076d3e4fb799603928333ba810d70eefd8a97284add3292",
+      "traceSha256": "b2e08b9882e5c2fbcf17b593bdfdfa7315c1d881060988aa5229df7cefcea312",
+      "traceRows": 3022,
+      "traceLifecycle": {
+        "modelCalls": 582,
+        "transports": 717,
+        "modelThrows": 0,
+        "transportThrows": 0,
+        "balanced": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+node tmp/v77-full-launch-integrity.mjs held-out
+AKNO_EVAL_TRACE=bench-results/language-full-held-out-v77-trace.jsonl node --import ./tmp/capture-language-full-v77.mjs scripts/bench-language.mjs --live --corpus v22 --split held-out --runs 2 --answer-output-tokens 2400 --output bench-results/language-full-held-out-v77.json

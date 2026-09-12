@@ -1,10 +1,18 @@
 # Language and discourse evaluation
 
+## Terminal V77 result
+
+The [terminal V77/V22 evaluation](results/v77/README.md) fails both the original 90% useful-answer gate and the separately predeclared 80% completion target. The final independent grade is **220/320 useful writable answers** and **30/40 complete retained sets**. All 44 source-byte/replay checks pass, but coverage, availability and ordinary-prose requirements remain unmet. PR #70 finishes this bounded evaluation with explicit reliability limits and no further tuning against its held-out outputs. Both verdicts, initial/corrected reviews, diagnostic failures and execution receipts are preserved.
+
+## Historical checkpoints
+
+The entries below describe their recorded trial boundary; this section does not supersede the terminal result.
+
 The [V41 exposed probes](results/v41/README.md) yielded 26/32 useful selected answers and 8/16 built-package answers, with no accepted errors. Fourteen writable nulls and incomplete retention defer full execution under the [amendment](v41-trial-amendment.md). Approved v19 held-out inputs remain unexecuted.
 
 The [V40 exposed probes](results/v40/README.md) yielded 26/32 useful selected answers and 16/16 built-package answers. Six selected answers lose a personal nonselector, and selected complete retention is 2/4. The [amendment](v40-trial-amendment.md) defers fresh execution; no full V40 trial began, and approved v19 held-out inputs remain unexecuted.
 
-The latest complete [V39 trial](results/v39/README.md) fails: **251/320 useful answers**, 30/40 complete retained sets, three accepted contractual-word-sense errors and one placement availability failure. Its exposed probes had met readiness targets, but the full repeated trial did not establish stability. All v18 sources are now exposed. The [V40 plan](v40-trial-plan.md) addresses the observed failures and requires independent approval of fresh v19 held-out inputs before execution. Models and acceptance gates are unchanged.
+The complete [V39 trial](results/v39/README.md) fails: **251/320 useful answers**, 30/40 complete retained sets, three accepted contractual-word-sense errors and one placement availability failure. Its exposed probes had met readiness targets, but the full repeated trial did not establish stability. All v18 sources are now exposed. The [V40 plan](v40-trial-plan.md) addresses the observed failures and requires independent approval of fresh v19 held-out inputs before execution. Models and acceptance gates are unchanged.
 
 The following entries preserve earlier decisions at their respective trial boundaries; references to unexecuted inputs describe their status at that time.
 

@@ -1,0 +1,14 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
+const digest=s=>createHash('sha256').update(s).digest('hex');
+const packet=JSON.parse(fs.readFileSync('tmp/language-v77-full-output-packet.json','utf8'));
+const results=[];
+for(const split of ['development','held-out']){
+ const path=`tmp/language-v77-full-${split}-output-packet.json`;if(!fs.existsSync(path))continue;
+ const fragment=JSON.parse(fs.readFileSync(path,'utf8'));const {fragmentFingerprint,...content}=fragment;
+ assert.equal(fragmentFingerprint,digest(JSON.stringify(content)));assert.equal(fragment.notFullGate,true);
+ assert.equal(fragment.corpusFingerprint,packet.corpusFingerprint);assert(packet.reportFingerprints.includes(fragment.reportFingerprint));
+ assert.deepEqual(fragment.cases,packet.cases.filter(c=>c.source.split===split));
+ results.push({split,cases:fragment.cases.length,fragmentFingerprint,reportFingerprint:fragment.reportFingerprint,exactMatch:true});
+}
+fs.writeFileSync('tmp/v77-review-fragment-verification.json',JSON.stringify({passed:true,packetFingerprint:packet.packetFingerprint,results,providerCalls:0},null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify({passed:true,fragments:results.length,providerCalls:0}));

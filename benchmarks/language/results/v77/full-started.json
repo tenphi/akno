@@ -1,0 +1,14 @@
+{
+  "runtimeCommit": "a67faa3fd3a6f59450a35c4af1d66baa96fee4e8",
+  "corpusFingerprint": "b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a",
+  "startedAt": "2026-09-12T17:52:46.847Z",
+  "manifestSha256": "39b2e1fd7e3f9c514c420f5ec562f9bccc406a24089eb467f008b6eb4b6f1fba",
+  "approvalSha256": "0246691dbceac63c9869e0551af791e74f3d3e63b409193af82cae73f3e07577",
+  "splits": [
+    "development",
+    "held-out"
+  ],
+  "runs": 2,
+  "writableObservations": 320,
+  "readOnlyObservations": 32
+}
