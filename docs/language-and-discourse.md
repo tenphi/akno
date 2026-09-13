@@ -2,8 +2,10 @@
 
 Akno separates source language, generated knowledge language, and answer language. Set
 `knowledge_language: "en"` in machine configuration to generate English knowledge from English, Russian,
-or mixed sources. The default `null` preserves previous generation behavior. The setting is never inferred
-from the latest source, query, operating-system locale, or provider response.
+or mixed sources. The default `null` preserves previous language targeting only. Markdown qualification,
+retention verification, and the updated answer behavior apply with either setting; `null` does not restore
+the previous processing pipeline. The setting is never inferred from the latest source, query,
+operating-system locale, or provider response.
 
 ```jsonc
 { "knowledge_language": "en" }
@@ -11,7 +13,7 @@ from the latest source, query, operating-system locale, or provider response.
 
 English is the initial supported knowledge target. `answer({ answer_language: "ru", ... })`, or
 `akno answer ... --language ru`, independently requests a Russian answer. Without an override, the knowledge
-language applies; if both are unset, generation retains its legacy prompt behavior. Hosts discover the effective
+language applies; if both are unset, no explicit answer-language policy is added. Hosts discover the effective
 policy in `context.knowledge_language` and remain responsible for their own final conversation responses.
 
 For an automatically extracted record with one intact source support, answering also receives its bounded
@@ -234,6 +236,13 @@ The integration removes the forced report rewrite before source verification, jo
 A final deterministic consistency fix at `9045eda` recognizes the exact Russian source-clock sentence already prescribed by generation, including day references. It passes the local language/discourse/semantic controls, but is outside this frozen live score: no coordinate was rerun or credited for it.
 
 This closes the bounded PR work within seven of the ten allowed iterations. The opt-in language policy and bounded Markdown protections are implemented; reliability acceptance remains unmet and issues #61/#62 remain open.
+
+The separate [release profile smoke](../benchmarks/language/results/release-profile-smoke/README.md)
+checks the shipped 2,400-token answer ceiling under default and English language targeting. Both reports
+were retained and four source-supported answers were produced. The original smoke report preserves its
+failed telemetry assertions and an unexecuted English fault injection; corrected stage detection and
+generic malformed-verifier handling are covered by a separate zero-egress supplement. No live case was
+rerun, and these operational checks do not alter the frozen quality score or establish reliability.
 
 The [fixed-comparison evidence](../benchmarks/language/results/fixed-comparison/README.md) includes initial/final grades, exact correction ledgers, public outputs, integrity checks and separate-model reviews. The [historical V77 evidence](../benchmarks/language/results/v77/README.md) retains its original result and a dated terminology correction.
 
