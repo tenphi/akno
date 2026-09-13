@@ -309,7 +309,7 @@ describe('single pre-semantic clock text transaction', () => {
 
 describe('mixed original-position repair ownership', () => {
   it.each(['valid', 'malformed', 'duplicate'])(
-    'supports all four disjoint branches with immutable noncontiguous siblings: %s',
+    'keeps three disjoint repair branches separate from a pending report audit: %s',
     async (mode) => {
       const plainClock = definition.replace(', а не после обработки', '');
       const secondProposal = proposal.replace('repair terms', 'inspection terms');
@@ -370,12 +370,6 @@ describe('mixed original-position repair ownership', () => {
       const repairs = [
         delta,
         {
-          candidate_index: 2,
-          reported_proposition: reportProposition,
-          relay_attribution: reportRelay,
-          personal_limits: reportLimit,
-        },
-        {
           ...plainDelta,
           candidate_index: 4,
           proposition_and_nontemporal_scope: delta.proposition_and_nontemporal_scope.replace(
@@ -403,13 +397,16 @@ describe('mixed original-position repair ownership', () => {
         if (requests.length === 1)
           return { ok: true, latencyMs: 11, value: JSON.stringify({ candidates: records }) };
         if (payload.repair_targets) {
-          expect(payload.repair_targets.map((entry: any) => entry.candidate_index)).toEqual([0, 2, 4, 6]);
+          expect(payload.repair_targets.map((entry: any) => entry.candidate_index)).toEqual([0, 4, 6]);
+          expect(
+            payload.read_only_admitted_context.find((entry: any) => entry.candidate_index === 2)?.text,
+          ).toBe(report.text);
           expect(options.schema!.safeParse({ repairs }).success).toBe(true);
           for (const [entry, foreignIndex] of [
             [repairs[0], 2],
-            [repairs[1], 4],
-            [repairs[2], 6],
-            [repairs[3], 0],
+            [repairs[0], 4],
+            [repairs[1], 6],
+            [repairs[2], 0],
           ] as const)
             expect(
               options.schema!.safeParse({ repairs: [{ ...entry, candidate_index: foreignIndex }] }).success,
@@ -417,7 +414,7 @@ describe('mixed original-position repair ownership', () => {
           const schema = toEndpointSchema(options.schema!);
           expect(strictModeViolations(schema)).toEqual([]);
           expect(JSON.stringify(schema)).not.toMatch(/"(?:oneOf|const)":/u);
-          expect(options.additionalLanguageProse?.({ repairs })).toHaveLength(3);
+          expect(options.additionalLanguageProse?.({ repairs })).toHaveLength(2);
           return {
             ok: true,
             latencyMs: 11,
@@ -436,6 +433,15 @@ describe('mixed original-position repair ownership', () => {
               source_selected_polarity: candidate.polarity,
               ...frameAuditFields(candidate),
               ...retentionAudit(candidate),
+              ...(candidate.report_limit_concern
+                ? {
+                    report_limit_alignment: {
+                      relation: 'preserved',
+                      source: { frame_id: 'F1', exact_excerpt: 'Ada Marlow has not read the agreement' },
+                      candidate: { exact_excerpt: 'she has not read the agreement' },
+                    },
+                  }
+                : {}),
               proposition_supported: true,
               action_arguments_preserved: true,
               qualification_scope_preserved: true,
@@ -455,12 +461,13 @@ describe('mixed original-position repair ownership', () => {
         } as unknown as ModelClient,
         { sourceItems },
       );
-      expect(result.candidates).toHaveLength(mode === 'valid' ? 7 : 3);
+      expect(result.candidates).toHaveLength(mode === 'valid' ? 7 : 4);
+      expect(result.candidates.find((candidate) => candidate.text === report.text)).toBeDefined();
       if (mode === 'valid') expect(result.held).toEqual([]);
       const obligations = requests.flatMap((payload) => payload.repair_obligations ?? []);
-      expect(obligations).toHaveLength(mode === 'valid' ? 4 : 0);
+      expect(obligations).toHaveLength(mode === 'valid' ? 3 : 0);
       if (mode === 'valid')
-        for (const initialRecord of [records[0], records[2], records[4], records[6]])
+        for (const initialRecord of [records[0], records[4], records[6]])
           expect(
             obligations.some(
               (entry: any) => JSON.stringify(entry.original) === JSON.stringify(initialRecord),

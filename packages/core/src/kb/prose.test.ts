@@ -9,6 +9,14 @@ describe('ordinary Markdown discourse', () => {
     ['## Questions', 'Which warranty applies?', 'questions'],
     ['## Plans', 'Ada Marlow will inspect the Zephyr QX-100.', 'planning'],
     ['## Conversation', 'Bo Winters: The warranty lasts five years.', 'reports'],
+    ['## Assistant report', 'The case is silver.', 'reports'],
+    ['## **Nested report:**', 'The case is silver.', 'reports'],
+    ['## Пересказ', 'Корпус серебристый.', 'reports'],
+    ['## Сообщение ассистента', 'Корпус серебристый.', 'reports'],
+    ['## Preliminary versions', 'A bent guide rail causes the noise.', 'discussion'],
+    ['## Possible causes ###', 'A bent guide rail causes the noise.', 'discussion'],
+    ['## Предварительные версии', 'Причина шума — изогнутая направляющая.', 'discussion'],
+    ['## Возможные причины', 'Причина шума — изогнутая направляющая.', 'discussion'],
   ])('keeps enclosing scope when only a later line is selected: %s', (heading, claim, view) => {
     const lines = ['# Equipment', '', heading, '', '### Details', '', claim];
     const [selected] = qualifyProseLines([{ n: 7, text: claim }], lines);
@@ -18,6 +26,50 @@ describe('ordinary Markdown discourse', () => {
       source_hash: sha256(lines.join('\n')),
     });
     expect(selected?.prose?.frame).toContainEqual({ n: 3, text: heading });
+  });
+
+  it.each(['Assistant report', 'Пересказ', 'Preliminary versions', 'Предварительные версии'])(
+    'closes category scope at a sibling heading: %s',
+    (title) => {
+      const q = proseQualifications([
+        `## ${title}`,
+        'The case is silver.',
+        '### Details',
+        'The case has a handle.',
+        '## Recorded details',
+        'The case is blue.',
+      ]);
+      expect(q.get(2)?.answer_eligible).toBe(false);
+      expect(q.get(4)?.answer_eligible).toBe(false);
+      expect(q.get(6)?.answer_eligible).toBe(true);
+    },
+  );
+
+  it.each([
+    ['Report serial number', 'The report number is 1111.'],
+    ['Preliminary coating specification', 'The case is silver.'],
+    ['Version 3 dimensions', 'The width is 1111 mm.'],
+    ['Предварительные размеры', 'Ширина: 1111 мм.'],
+    ['Пересказ: номер документа', 'Номер документа: 1111.'],
+    ['`Report`', 'The case is silver.'],
+    ['Rep*ort', 'The case is silver.'],
+  ])('keeps descriptive factual headings eligible: %s', (title, text) => {
+    expect(proseQualifications([`## ${title}`, text]).get(2)).toMatchObject({
+      view: 'factual',
+      answer_eligible: true,
+      frame: [],
+    });
+  });
+
+  it('does not treat bare category words inside ordinary data as structural scope', () => {
+    const q = proseQualifications([
+      '## Recorded details',
+      'Document category: assistant report.',
+      '',
+      'The case is silver.',
+    ]);
+    expect(q.get(2)?.answer_eligible).toBe(true);
+    expect(q.get(4)?.answer_eligible).toBe(true);
   });
 
   it('a sibling heading ends a scenario but nested headings do not', () => {

@@ -648,7 +648,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
     })),
     missing_concepts: parsed.data.missing_concepts,
   };
-  const checked = validateDraft(materialized, evidence, answerLanguage);
+  const checked = validateDraft(materialized, evidence, answerLanguage, recordRendering !== undefined);
   const verified =
     checked.blocks.length > 0
       ? await verifyDraftSupport(
@@ -1359,6 +1359,7 @@ function validateDraft(
   draft: AnswerDraft,
   evidence: AnswerContextItem[],
   outputLanguage?: OutputLanguage | null,
+  completeRecord = false,
 ): {
   blocks: AnswerDraft['blocks'];
   rejected: number;
@@ -1378,6 +1379,27 @@ function validateDraft(
     const sources = block.evidence_ids.map((id) => byId.get(id));
     if (uniqueIds.size !== block.evidence_ids.length || sources.some((source) => !source)) {
       reject('citation');
+      continue;
+    }
+    // Full-record rendering selects its readable source name even when factual composition
+    // could omit attribution. A language verdict cannot authorize changing those exact bytes.
+    if (
+      completeRecord &&
+      sources.some(
+        (source) =>
+          source?.type === 'page' &&
+          source.lines.some((line) => {
+            const speaker = line.memory?.status === 'qualified' ? line.memory.source_speaker?.trim() : null;
+            return (
+              speaker &&
+              !genericSourceSpeaker(speaker) &&
+              sourceSpeakerInReadableText(speaker, line.text) &&
+              !sourceSpeakerInReadableText(speaker, block.text)
+            );
+          }),
+      )
+    ) {
+      reject('attribution');
       continue;
     }
     // Projection hashes, ids and line numbers describe evidence; they cannot support a claimed value.

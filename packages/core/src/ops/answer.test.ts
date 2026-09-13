@@ -65,6 +65,301 @@ afterEach(async () => {
 });
 
 describe('grounded answer discovery surface', () => {
+  it.each([
+    {
+      kind: 'question' as const,
+      commitment: 'none' as const,
+      view: 'questions' as const,
+      en: 'Ada Marlow has an open question whether Zephyr QX-100 inspections are covered. Ada Marlow does not know the answer; this record establishes neither coverage nor exclusion.',
+      ru: 'У Ada Marlow остаётся открытый вопрос о покрытии осмотров Zephyr QX-100. Ada Marlow не знает ответа; эта запись не устанавливает ни покрытие, ни исключение.',
+      queries: [
+        'What open questions remain about Zephyr QX-100?',
+        'Какие открытые вопросы остались о Zephyr QX-100?',
+      ],
+    },
+    {
+      kind: 'claim' as const,
+      commitment: 'tentative' as const,
+      view: 'discussion' as const,
+      en: 'Ada Marlow is considering two preliminary Zephyr QX-100 explanations: a bent latch or a loose hinge. Ada Marlow has selected neither cause; neither has evidence, and the noise itself is unconfirmed.',
+      ru: 'Ada Marlow рассматривает две предварительные версии для Zephyr QX-100: погнутая защёлка или плохо закреплённая петля. Ada Marlow не выбрала ни одну причину; свидетельств нет ни для одной, и сам шум не подтверждён.',
+      queries: [
+        'What hypotheses were discussed about Zephyr QX-100?',
+        'Какие гипотезы обсуждались о Zephyr QX-100?',
+      ],
+    },
+  ])('preserves a complete $view unit through every language/view coordinate', async (unit) => {
+    const neighbor = 'Ada Marlow inspected the Zephyr QX-100 handle.';
+    const marker: ManagedMemoryMarker = {
+      id: 'mem_frame',
+      supports: [
+        {
+          receipt: 'aaaaaaaaaaaa',
+          candidate: 'bbbbbbbbbbbb',
+          proofGroup: 'cccccccccccc',
+          selection: 'extracted',
+        },
+      ],
+      kind: unit.kind,
+      subject: 'unresolved',
+      sourceRole: 'user',
+      speaker: 'Ada Marlow',
+      reporters: [],
+      commitment: unit.commitment,
+      disposition: 'active',
+      polarity: 'affirmed',
+      basis: 'self_attested',
+      evidence: [],
+      links: [],
+    };
+    const readable = renderManagedMemoryPayload('- ' + unit.en, marker);
+    await seedSourceFrame({
+      text: '- ' + unit.en,
+      marker,
+      frame: `${unit.en} ${neighbor}`,
+      kind: unit.kind,
+      commitment: unit.commitment,
+      polarity: 'affirmed',
+      sourceSpeaker: 'Ada Marlow',
+      neighbor:
+        '\n<!-- akno:item mem_neighbor v=2 supports=dddddddddddd@eeeeeeeeeeee@ffffffffffff@provided level=1 kind=claim subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->\n- ' +
+        neighbor +
+        '\n',
+    });
+    const indexed = await memory.read({ slug: 'products/zephyr-qx-100' });
+    expect(
+      indexed.page?.lines.find((line) => line.text === readable)?.memory,
+      JSON.stringify(indexed),
+    ).toMatchObject({ status: 'qualified' });
+    await useAnswerModel({
+      knowledgeLanguage: 'en',
+      generation: (request: Record<string, unknown>) => {
+        const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+        expect(payload.memory_view).toBe(unit.view);
+        expect(payload.complete_record_rendering.text).toBe(readable.replace(/^[-*] /u, '').trim());
+        expect(payload.evidence).toHaveLength(1);
+        expect(payload.evidence[0].excerpt).not.toContain(neighbor);
+        return {
+          record_readings: [
+            { evidence_id: 'E1', selected_meaning: unit.en, clarification_or_ambiguity: null },
+          ],
+          blocks: [
+            {
+              ...(payload.output_language === 'en'
+                ? { rendering_mode: 'copy' }
+                : { rendering_mode: 'translate', text: unit.ru }),
+              evidence_ids: ['E1'],
+            },
+          ],
+          missing_concepts: [],
+        };
+      },
+      verification: (request: Record<string, unknown>) => {
+        const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+        const block = payload.blocks[0];
+        expect(block.rendering_scope).toBe('complete_retained_record');
+        expect(block.cited_evidence).toHaveLength(1);
+        const sourceAnchor = block.cited_evidence[0].retention_source_frame[0].anchor_id;
+        const answerAnchor = block.answer_segments[0].anchor_id;
+        const preserved = {
+          source_anchor: sourceAnchor,
+          answer_anchor: answerAnchor,
+          relation: 'preserved',
+          detail: 'The actor and complete qualified unit remain selected.',
+        };
+        return {
+          verdicts: [
+            {
+              ...verdict('B1', true),
+              excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+              source_alignments: [
+                {
+                  evidence_id: 'E1',
+                  source_context: unit.en,
+                  actor: preserved,
+                  qualification: preserved,
+                  object_and_operation: {
+                    source_anchor: sourceAnchor,
+                    answer_anchor: answerAnchor,
+                    relation: 'preserved',
+                    source_specifics: 'The selected inspection question or preliminary explanations.',
+                    answer_specifics: 'The same inspection question or preliminary explanations.',
+                  },
+                  tested_property: {
+                    source_anchor: null,
+                    answer_anchor: null,
+                    source_property: null,
+                    answer_property: null,
+                    relation: 'absent_from_both',
+                  },
+                },
+              ],
+            },
+          ],
+        };
+      },
+    });
+    for (const question of unit.queries)
+      for (const explicit of [false, true])
+        for (const language of ['en', 'ru'] as const) {
+          const result = await memory.answer({
+            question,
+            answer_language: language,
+            ...(explicit ? { memory_view: unit.view } : {}),
+            filter: { source: 'page' },
+            expand: false,
+            graph: false,
+          });
+          expect(result.reason_code, JSON.stringify(result)).toBe('answered');
+          expect(result.answer).toContain(language === 'en' ? unit.en : unit.ru);
+          expect(result.answer).not.toContain(neighbor);
+          expect(result.citations).toHaveLength(1);
+        }
+  });
+
+  it.each([
+    'preserved',
+    'transliterated',
+    'omitted',
+    'longer-name',
+    'joined-name',
+    'combining-mark',
+    'marked-name',
+    'metadata-only',
+    'generic-role',
+    'focused',
+    'semantic-negative',
+  ] as const)(
+    'preserves a selected factual source name in complete-record translations: %s',
+    async (mode) => {
+      const speaker = mode === 'generic-role' ? 'user' : 'Ada Marlow';
+      const readableSpeaker = mode === 'metadata-only' ? 'Bo Winters' : speaker;
+      const retained = `${readableSpeaker} states that the silverpine warranty includes inspections.`;
+      const focused = mode === 'focused';
+      await seedSourceFrame({
+        text: '- ' + retained + (focused ? ' [invented/reference:33]' : ''),
+        frame:
+          retained + (mode === 'metadata-only' ? ' Ada Marlow appears only in this unselected frame.' : ''),
+        kind: 'claim',
+        commitment: 'asserted',
+        polarity: 'affirmed',
+        sourceSpeaker: speaker,
+      });
+      const outputSpeaker =
+        mode === 'transliterated'
+          ? 'Ада Марлоу'
+          : mode === 'longer-name'
+            ? 'Ada Marlowson'
+            : mode === 'joined-name'
+              ? 'Other-Ada Marlow'
+              : mode === 'combining-mark'
+                ? 'Ada Marlow\u0301'
+                : mode === 'marked-name'
+                  ? '**Ada Marlow**'
+                  : mode === 'generic-role'
+                    ? 'Пользователь'
+                    : readableSpeaker;
+      const text =
+        mode === 'omitted' || focused
+          ? 'Гарантия silverpine включает осмотры.'
+          : `${outputSpeaker} утверждает, что гарантия silverpine включает осмотры.`;
+      const rejectedLocally = [
+        'transliterated',
+        'omitted',
+        'longer-name',
+        'joined-name',
+        'combining-mark',
+      ].includes(mode);
+      await useAnswerModel({
+        knowledgeLanguage: 'en',
+        generation: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          expect(Boolean(payload.complete_record_rendering), JSON.stringify(payload)).toBe(!focused);
+          return {
+            record_readings: [
+              {
+                evidence_id: 'E1',
+                selected_meaning:
+                  'The selected record states that the silverpine warranty includes inspections.',
+                clarification_or_ambiguity: null,
+              },
+            ],
+            blocks: [{ ...(focused ? {} : { rendering_mode: 'translate' }), text, evidence_ids: ['E1'] }],
+            missing_concepts: [],
+          };
+        },
+        // Even an approving language/source model cannot override the exact selected name boundary.
+        verification: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          const block = payload.blocks[0];
+          const sourceAnchor = block.cited_evidence[0].retention_source_frame[0].anchor_id;
+          const answerAnchor = block.answer_segments[0].anchor_id;
+          const notSelected = {
+            source_anchor: null,
+            answer_anchor: null,
+            relation: 'not_selected',
+            detail: 'No additional qualification is selected.',
+          };
+          return {
+            verdicts: [
+              {
+                ...verdict('B1', mode !== 'semantic-negative'),
+                excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+                source_alignments: [
+                  {
+                    evidence_id: 'E1',
+                    source_context: retained,
+                    actor: focused
+                      ? notSelected
+                      : {
+                          source_anchor: sourceAnchor,
+                          answer_anchor: answerAnchor,
+                          relation: 'preserved',
+                          detail: 'The source speaker remains the same.',
+                        },
+                    object_and_operation: {
+                      source_anchor: sourceAnchor,
+                      answer_anchor: answerAnchor,
+                      relation: 'preserved',
+                      source_specifics: 'Warranty inclusion of inspections.',
+                      answer_specifics: 'Warranty inclusion of inspections.',
+                    },
+                    qualification: notSelected,
+                    tested_property: {
+                      source_anchor: null,
+                      answer_anchor: null,
+                      source_property: null,
+                      answer_property: null,
+                      relation: 'absent_from_both',
+                    },
+                  },
+                ],
+              },
+            ],
+          };
+        },
+      });
+      const result = await memory.answer({
+        question: 'What does the silverpine warranty include?',
+        answer_language: 'ru',
+        memory_view: 'factual',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.reason_code, JSON.stringify(result)).toBe(
+        rejectedLocally
+          ? 'draft_rejected'
+          : mode === 'semantic-negative'
+            ? 'verification_rejected'
+            : 'answered',
+      );
+      expect(modelRequests).toHaveLength(rejectedLocally ? 2 : 3);
+      if (rejectedLocally) expect(result.validation?.rejection_counts).toEqual({ attribution: 1 });
+      expect(result.answer === null).toBe(rejectedLocally || mode === 'semantic-negative');
+    },
+  );
+
   it.each(['en', 'ru'] as const)(
     'keeps source spelling guidance local to generation and tentative scope local to verification (%s)',
     async (language) => {
@@ -5062,9 +5357,10 @@ async function seedSourceFrame(options?: {
   text: string;
   frame: string;
   kind: 'claim' | 'question';
-  commitment: 'asserted' | 'none' | 'hypothetical';
+  commitment: 'asserted' | 'none' | 'hypothetical' | 'tentative';
   polarity: 'negated' | 'affirmed';
   sourceSpeaker?: string;
+  neighbor?: string;
   marker?: ManagedMemoryMarker;
 }): Promise<string> {
   write(
@@ -5074,6 +5370,7 @@ async function seedSourceFrame(options?: {
           managedMemoryBlock(options.marker, renderManagedMemoryPayload(options.text, options.marker))
       : `# Zephyr QX-100\n\n<!-- akno:item mem_frame v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=${options?.kind ?? 'question'} subject=unresolved source-role=user${options?.sourceSpeaker ? ` speaker=${encodeURIComponent(options.sourceSpeaker)}` : ''} reports=0 commitment=${options?.commitment ?? 'none'} disposition=active polarity=${options?.polarity ?? 'affirmed'} basis=self_attested -->\n${options?.text ?? '- **Open question:** The open silverpine question is whether the warranty covers return delivery; its answer remains unknown.'}\n`,
   );
+  if (options?.neighbor) fs.appendFileSync(path.join(root, 'products/zephyr-qx-100.md'), options.neighbor);
   await memory.index({ verify: true });
   const frame =
     options?.frame ??

@@ -5,6 +5,7 @@ import Database from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { open, type Akno } from '../src/open.ts';
 import { sha256 } from '../src/store/ids.ts';
+import { PROSE_PROJECTION_VERSION } from '../src/kb/prose.ts';
 
 let root: string;
 let state: string;
@@ -77,6 +78,52 @@ function request(language?: 'en' | 'ru') {
 }
 
 describe('language and ordinary prose through production operations', () => {
+  it('rebuilds stale heading qualifications on an ordinary index pass without editing source files', async () => {
+    const content =
+      '# Zephyr QX-100\n\n## Assistant report\nThe case is silver.\n\n## Recorded details\nThe handle is blue.\n';
+    const target = path.join(root, 'memory/equipment.md');
+    fs.writeFileSync(target, content);
+    const initialStat = fs.statSync(target);
+    memory = await start();
+    await memory.index({ structuralOnly: true });
+    await memory.close();
+
+    // Simulate a derived index from the older classifier while keeping file hashes and mtimes current.
+    const stale = new Database(path.join(state, 'akno.db'));
+    try {
+      stale.prepare("UPDATE meta SET value = 'prose-v1' WHERE key = 'prose_projection_version'").run();
+      stale.prepare("UPDATE prose_entries SET view = 'factual', eligible = 1 WHERE line = 4").run();
+    } finally {
+      stale.close();
+    }
+
+    memory = await start();
+    await memory.index({ structuralOnly: true });
+    const read = await memory.read({ slug: 'memory/equipment', from_line: 4, to_line: 4 });
+    expect(read.page?.lines[0]?.prose).toMatchObject({ view: 'reports', answer_eligible: false });
+    expect(read.page?.lines[0]?.prose?.frame).toContainEqual({ n: 3, text: '## Assistant report' });
+    const db = new Database(path.join(state, 'akno.db'), { readonly: true });
+    try {
+      expect(db.prepare("SELECT value FROM meta WHERE key = 'prose_projection_version'").get()).toEqual({
+        value: PROSE_PROJECTION_VERSION,
+      });
+      expect(db.prepare('SELECT view, eligible FROM prose_entries WHERE line = 4').get()).toEqual({
+        view: 'reports',
+        // Stored eligibility is for the qualified view, not permission to use the report as a fact.
+        eligible: 1,
+      });
+      expect(db.prepare('SELECT view, eligible FROM prose_entries WHERE line = 7').get()).toEqual({
+        view: 'factual',
+        eligible: 1,
+      });
+    } finally {
+      db.close();
+    }
+    expect(fs.readFileSync(target, 'utf8')).toBe(content);
+    expect(fs.statSync(target).mtimeMs).toBe(initialStat.mtimeMs);
+    expect(fs.readdirSync(path.join(root, 'memory'))).toEqual(['equipment.md']);
+  });
+
   it('preserves original bytes through indexing, restart, rebuild and qualified inspection', async () => {
     const content =
       '# Zephyr QX-100\n\n## Гипотеза о гарантии\nЗамена покрывается гарантией.\n\n## Recorded details\nThe case is silver.\n';

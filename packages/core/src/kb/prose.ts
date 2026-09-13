@@ -2,7 +2,7 @@ import type { Line, MemoryView, ProseQualification } from '@tenphi/akno-protocol
 import { parseFrontmatter } from './frontmatter.ts';
 import { sha256 } from '../store/ids.ts';
 
-export const PROSE_PROJECTION_VERSION = 'prose-v1';
+export const PROSE_PROJECTION_VERSION = 'prose-v2';
 type Meaning = Pick<ProseQualification, 'view' | 'reason'>;
 const FACTUAL: Meaning = { view: 'factual', reason: 'asserted' };
 const CONDITIONAL =
@@ -18,7 +18,37 @@ const PLANNED =
 const SPEAKER =
   /^\s*(?:[-*]\s*)?(?:\*\*)?(?:user|assistant|system|external|пользователь|ассистент|система)(?:\*\*)?\s*:/iu;
 
+function categoryHeading(text: string): Meaning | null {
+  const title = text
+    .trim()
+    .replace(/\s+#+\s*$/, '')
+    .replace(/^(\*{1,2}|_{1,2})(.+)\1$/u, '$2')
+    .replace(/[:：]\s*$/, '')
+    .trim();
+  // Category titles establish scope; a token inside a document's descriptive title does not.
+  // For example, a report number is ordinary data, whereas an assistant report is attribution.
+  if (
+    /^(?:(?:assistant|user|system|external|nested|attributed)\s+)?(?:reports?|retellings?)$/iu.test(title) ||
+    /^(?:(?:вложенный|внешний)\s+)?(?:пересказ|сообщение|сообщения)(?:\s+(?:ассистента|пользователя|системы))?$/iu.test(
+      title,
+    )
+  )
+    return { view: 'reports', reason: 'heading_scope' };
+  if (
+    /^(?:preliminary|tentative|possible|competing)\s+(?:versions?|explanations?|causes?|hypothes[ei]s)$/iu.test(
+      title,
+    ) ||
+    /^(?:предварительн\p{L}*|возможн\p{L}*)\s+(?:верси\p{L}*|объяснени\p{L}*|причин\p{L}*|гипотез\p{L}*)$/iu.test(
+      title,
+    )
+  )
+    return { view: 'discussion', reason: 'heading_scope' };
+  return null;
+}
+
 function meaning(text: string, heading = false): Meaning {
+  const category = heading ? categoryHeading(text) : null;
+  if (category) return category;
   if (CONDITIONAL.test(text)) return { view: 'discussion', reason: 'conditional' };
   if (REJECTED.test(text)) return { view: 'history', reason: 'rejected' };
   if (TENTATIVE.test(text)) return { view: 'discussion', reason: 'tentative' };

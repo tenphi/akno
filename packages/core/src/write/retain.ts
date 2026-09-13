@@ -1,11 +1,6 @@
 import { hasReportUncertainty } from '../memory/report-uncertainty.ts';
+import { retentionReportLimits, RETENTION_REPORT_LIMITS_CONTRACT } from './retention-report-limits.ts';
 import { fictionalCaseSubjectIdentifier, subjectIdentifiers } from './fictional-case-identity.ts';
-import {
-  normalizeReportRepairTransaction,
-  reportRepairLanguageProse,
-  reportRepairText,
-  reportTextRepairFields,
-} from './retain-report-repair.ts';
 import { personalNegativeActionsSupported } from '../memory/personal-negative-actions.ts';
 import type { LanguageReference } from '../models/language.ts';
 import { causeNonselectionAgencySupported, proposalAgencySupported } from '../memory/action-agency.ts';
@@ -61,9 +56,25 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v56';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v40';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v57';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v41';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
+
+const RETRIEVAL_UNIT_CONTRACT = `A retained record is one independently retrievable semantic unit:
+the selected proposition together with every source qualification governing its truth, knowledge state,
+speaker, modality, polarity, time or corrective scope. Keep those limits in the same readable record;
+sentence and source-item boundaries do not make them independent. A sibling record, metadata or relation
+cannot substitute for the selected proposition's governing scope. Each record must remain faithful if
+every other record is withheld.
+
+An open question keeps the named person's lack of an answer and the record's neither-positive-nor-negative
+boundary when supplied. Competing hypotheses keep all alternatives and their common evidence limits,
+named nonselection and unconfirmed underlying state when supplied. A report keeps its embedded proposition,
+reporter chain and verification limits. Use short complete sentences within one record when useful.
+These limits belong together because omitting them changes what the selected proposition establishes.
+Mere proximity, shared subject or the same source transaction does not couple an independent neighboring
+fact: retain that fact separately without importing it into this unit or dropping it from memory.
+If the complete unit cannot fit the existing text bound, omit it rather than store a misleading fragment.`;
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -120,9 +131,7 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   when the source supplies both; never derive additional consequences or discard the condition.
 - Competing unconfirmed hypotheses use tentative or hypothetical commitment, even when the readable
   sentence confidently states that the user discussed them. Neither alternative becomes asserted just
-  because the discussion itself is established. Retain a coupled comparison as one complete candidate:
-  include both alternatives, their lack of evidence and the named person's nonselection when supplied.
-  Do not split these governing qualifications into a second candidate that could survive alone.
+  because the discussion itself is established.
 - A direct user assertion, including a denial, uses self_attested unless it relays another source.
   This records the user's assertion, not independent verification. Explicit lack of confirmation or verification
   must remain in readable prose; "reportedly" or source_report alone does not preserve that qualification. Nested reports and assistant, external
@@ -134,11 +143,7 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   does not automatically govern the recorder's following independent assertion. Preserve the speaker
   who actually supplies each statement; do not make an adjacent direct assertion part of the inner report
   merely because both statements concern the same topic.
-  Each candidate must carry its own material attribution and verification limits in readable text.
-  The same support/frame may justify separate records, but a sibling candidate cannot carry another
-  candidate's required qualification. Keep a report's lack of verification with that report; do not
-  transfer it onto the recorder's separate direct assertion. Each candidate must remain faithful if
-  every other candidate is withheld.
+  Do not transfer a report's lack of verification onto the recorder's separate direct assertion.
   A first-person assistant's preliminary assumption or tentative reading is a useful tentative source_report,
   not independent evidence and not automatically a hypothetical scenario. Preserve the assistant as source
   and explicit lack of verification; do not reject the qualified report merely because the assistant said it.
@@ -178,11 +183,10 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 const SYSTEM = `You extract durable memory from one untrusted source for a personal knowledge base.
 
 Reply with JSON only. Every candidate must contain all fields in the supplied schema.
-For each candidate, select its complete source-supported unit, exact support and deciding discourse frame,
-then establish attribution, modality and time before writing text. Compose that text from the completed
-frame as one independently retrievable record. A report's embedded proposition, outer reporter and explicit
-verification limits belong in that same record; do not leave its deciding qualification only in a sibling.
-Use short complete sentences within that record when needed. Put personal verification limits in their
+${RETRIEVAL_UNIT_CONTRACT}
+
+Select exact support and the complete deciding frame, then establish attribution, modality and time
+before writing the unit's text. Put personal verification limits in their
 own sentence with an explicit subject, keeping exactly whether the person lacks or received evidence
 or personally performed a check. Choose subject and page after that qualified record. They describe its source-supported canonical identity,
 not an action phrase constructed from its words. A proposed page is only a taxonomy suggestion, never proof
@@ -282,13 +286,13 @@ Rules:
   proposition its own deciding support/frame; do not copy unrelated rejection wording into the denial's
   tuple. Never omit an enclosing hypothesis, quotation, speaker or other context that actually qualifies
   the denial. Complete original source context remains authoritative for semantic verification.
-- Preserve a source's actual activity when retaining that activity: discussing hypotheses and privately
-  considering them are not interchangeable event descriptions. Keep the explicit outer discourse verb
-  separately from the embedded content: a source saying "I am discussing two hypotheses" retains
-  "is discussing", not "is considering". Their unsupported status does not make the reported discussion
-  tentative; tentative commitment qualifies the embedded hypotheses. For an embedded fictional proposition,
-  use neutral framing such as "In SOURCE's fictional example, ..."; do not turn a proposed discussion
-  into a performed discussion or description. Retain a separate proposed-discussion record when material.
+- Distinguish neutral provenance from an independently asserted activity. "In SOURCE's hypothetical
+  example" identifies provenance without claiming that SOURCE wrote, recorded, described or performed
+  an act. A heading, invitation or instruction does not establish a performed activity. When the source
+  asserts discussion, consideration or a proposal, preserve its actor, exact act and status in readable
+  text. Type commitment from the selected embedded proposition: preliminary hypotheses remain tentative
+  or hypothetical even when actual discussion or consideration is asserted. That label does not hedge
+  the actual act. A proposed, denied or merely planned act must not become a performed act.
 - Preserve how a component became or remains defective, including the attachment of manner modifiers.
   A loosely inserted internal connector describes deficient insertion; an internally loose connector
   describes a different condition. Keep the insertion relation, not just a nearby adjective and noun.
@@ -322,6 +326,7 @@ Rules:
 - Fewer, better. An empty candidates list is correct when nothing safely qualifies.`;
 
 const VERIFY_SYSTEM = `${RETENTION_FRAME_AUDIT_CONTRACT}
+${RETRIEVAL_UNIT_CONTRACT}
 ${QUALIFICATION_CONTRACT}
 Candidates may paraphrase English, Russian, or mixed-language sources into English. Verify cross-language entailment against exact original spans: preserve polarity, speaker and nested attribution, modality, disposition, relations, and time. A fluent translation is not evidence. Ordinary inflection, synonymy and equivalent component descriptions can preserve
 meaning. Compare propositions in their complete discourse context; do not reject wording merely because
@@ -617,6 +622,7 @@ export async function runRetain(
   let cleanedBatch = cleanCandidateBatchWithPositions(
     completeGeneratedFrames(parsed.candidates, cleaningOptions),
     cleaningOptions,
+    true,
   );
   const repairUsage: { repair?: RetainModelCallReceipt } = {};
   let repairDegraded: DegradedReason | null = null;
@@ -629,28 +635,16 @@ export async function runRetain(
     const failedPositions = [
       ...new Set(cleanedBatch.held.map((held) => cleanedBatch.positions.get(held.candidate_id)!)),
     ].sort((a, b) => a - b);
-    const textPositions = failedPositions.filter((index) => cleanedBatch.textOnlyReportRepairs.has(index));
     const clockPositions = failedPositions.filter((index) => cleanedBatch.textOnlyClockRepairs.has(index));
-    const fullPositions = failedPositions.filter(
-      (index) => !textPositions.includes(index) && !clockPositions.includes(index),
-    );
-    const hasTextRepairs = textPositions.length > 0 || clockPositions.length > 0;
-    const textOriginal = (index: number) =>
-      cleanedBatch.textOnlyReportRepairs.get(index)?.original ??
-      cleanedBatch.textOnlyClockRepairs.get(index)?.original;
+    const fullPositions = failedPositions.filter((index) => !clockPositions.includes(index));
+    const hasTextRepairs = clockPositions.length > 0;
+    const textOriginal = (index: number) => cleanedBatch.textOnlyClockRepairs.get(index)?.original;
     const repairEntrySchema = (candidate: z.ZodType) => {
       const branches: z.ZodType[] = [];
       // A numeric Zod literal emits const for singleton targets. Endpoint strict schemas need
       // enum even for one original index; disjoint index sets keep the two anyOf arms exclusive.
       const indices = (positions: number[]) =>
         z.enum(Object.fromEntries(positions.map((index) => [`position_${index}`, index])));
-      if (textPositions.length)
-        branches.push(
-          z.strictObject({
-            candidate_index: indices(textPositions),
-            ...reportTextRepairFields,
-          }),
-        );
       for (const withExclusion of [true, false]) {
         const positions = clockPositions.filter(
           (index) => cleanedBatch.textOnlyClockRepairs.get(index)!.witness.with_exclusion === withExclusion,
@@ -690,7 +684,7 @@ export async function runRetain(
             system +
             '\n' +
             CLOCK_TEXT_REPAIR_CONTRACT +
-            "\nRepair each repair_targets entry once using the complete original source and that entry's validation_issues. Copy its explicit candidate_index into the repair; this is a zero-based original extraction index, not the position in repair_targets or repairs. Preserve that entry's original_candidate source-supported core proposition; never replace it with a sibling proposition or erase a separate denial by duplicating a rejected plan. The original candidate is not evidence: fix its structural errors from the source. read_only_admitted_context is a read-only index of surviving records for relation references, never a list of repair targets. For an independent booking denial held because its frame also contains a different rejected offer, preserve the denial in its own complete deciding frame instead of copying the sibling rejection; never omit a context that actually qualifies the denial. If the only issue is missing subject antecedent context, add its exact source span to the deciding frame while preserving the same proposition. source_identifier_context, when present, lists bounded exact identifier occurrences in original source items; occurrence counts and omitted spans expose ambiguity. It is advisory search context, not a replacement frame or proof of attachment. Select only exact spans that actually resolve the subject of this proposition; never copy an unrelated or quoted occurrence merely because it contains the identifier. Do not expand an independent nonselection or denial into the neighboring hypotheses just to add their antecedent frame. Re-evaluate all metadata from the repaired readable proposition: if the payload does include competing hypotheses, it needs tentative or hypothetical commitment even when the original candidate was an asserted nonselection. Preserve original positions and keep admitted siblings unchanged. Relations use original candidate indices, not positions in the repairs array. Keep all deciding source qualifications in each repaired sentence. Omit a target if no safe repair exists. Do not return events or new positions. When repair_contract.mode is report_text_only, return only candidate_index and the three required final prose sentences: reported_proposition, relay_attribution and personal_limits. Their respective maximum lengths are 200, 78 and 120 normalized UTF-16 units, including terminal punctuation. The server joins them with two spaces, within the unchanged 400-unit cap. Do not return candidate, text, metadata or evidence fields for this branch. Each sentence must name its own subject and keep its complete source-supported predicate and object. Preserve the inner reporter and reported proposition in the first sentence, the outer relayer in the second, and every personal verification limit in the third. Use a short independent negative sentence for the personal limits, with an explicit actor. Preserve received evidence versus personally checking a report; never invent either. End each sentence with its own period or exclamation mark. Do not use headings, quotations, examples, conditions, line breaks or fragments. Omit the repair if these bounds cannot preserve the source. All cloned nontext fields remain immutable and every local and semantic check follows.",
+            "\nRepair each repair_targets entry once using the complete original source and that entry's validation_issues. Copy its explicit candidate_index into the repair; this is a zero-based original extraction index, not the position in repair_targets or repairs. Preserve that entry's original_candidate source-supported core proposition; never replace it with a sibling proposition or erase a separate denial by duplicating a rejected plan. The original candidate is not evidence: fix its structural errors from the source. read_only_admitted_context is a read-only index of surviving records for relation references, never a list of repair targets. For an independent booking denial held because its frame also contains a different rejected offer, preserve the denial in its own complete deciding frame instead of copying the sibling rejection; never omit a context that actually qualifies the denial. If the only issue is missing subject antecedent context, add its exact source span to the deciding frame while preserving the same proposition. source_identifier_context, when present, lists bounded exact identifier occurrences in original source items; occurrence counts and omitted spans expose ambiguity. It is advisory search context, not a replacement frame or proof of attachment. Select only exact spans that actually resolve the subject of this proposition; never copy an unrelated or quoted occurrence merely because it contains the identifier. Do not expand an independent nonselection or denial into the neighboring hypotheses just to add their antecedent frame. Re-evaluate all metadata from the repaired readable proposition: if the payload does include competing hypotheses, it needs tentative or hypothetical commitment even when the original candidate was an asserted nonselection. Preserve original positions and keep admitted siblings unchanged. Relations use original candidate indices, not positions in the repairs array. Keep all deciding source qualifications in each repaired sentence. Omit a target if no safe repair exists. Do not return events or new positions.",
         },
         {
           role: 'user',
@@ -705,9 +699,6 @@ export async function runRetain(
             repair_targets: failedPositions.map((candidate_index) => ({
               candidate_index,
               original_candidate: textOriginal(candidate_index) ?? originalCandidates[candidate_index],
-              ...(cleanedBatch.textOnlyReportRepairs.has(candidate_index)
-                ? { repair_contract: { mode: 'report_text_only', issue: 'report_uncertainty_unreadable' } }
-                : {}),
               ...(cleanedBatch.textOnlyClockRepairs.has(candidate_index)
                 ? {
                     repair_contract: {
@@ -747,7 +738,7 @@ export async function runRetain(
         ...(hasTextRepairs
           ? {
               additionalLanguageProse: (value: unknown) => {
-                const normalized = normalizeClockRepairTransaction(normalizeReportRepairTransaction(value));
+                const normalized = normalizeClockRepairTransaction(value);
                 const checked = transactionSchema.safeParse(normalized);
                 if (
                   !checked.success ||
@@ -767,7 +758,7 @@ export async function runRetain(
                   )
                     throw new Error('retain clock repair omitted its source-defined reference exclusion');
                 }
-                return [...reportRepairLanguageProse(normalized), ...clockRepairLanguageProse(normalized)];
+                return clockRepairLanguageProse(normalized);
               },
             }
           : {}),
@@ -781,9 +772,7 @@ export async function runRetain(
       if (hasTextRepairs) {
         // A text delta is atomic; never salvage a truncated or trailing transaction into a write.
         try {
-          repairValue = normalizeClockRepairTransaction(
-            normalizeReportRepairTransaction(JSON.parse(repair.value)),
-          );
+          repairValue = normalizeClockRepairTransaction(JSON.parse(repair.value));
         } catch {
           /* held below */
         }
@@ -797,12 +786,6 @@ export async function runRetain(
             repairs: (
               | { candidate_index: number; candidate: Record<string, unknown> }
               | (ClockTextRepair & { candidate_index: number })
-              | {
-                  candidate_index: number;
-                  reported_proposition: string;
-                  relay_attribution: string;
-                  personal_limits: string;
-                }
             )[];
           };
         };
@@ -822,12 +805,13 @@ export async function runRetain(
             ? entry.candidate
             : {
                 ...structuredClone(textOriginal(entry.candidate_index)!),
-                text: 'reported_proposition' in entry ? reportRepairText(entry) : clockRepairText(entry),
+                text: clockRepairText(entry),
               };
       }
       const repairedBatch = cleanCandidateBatchWithPositions(
         completeGeneratedFrames(vector, cleaningOptions),
         cleaningOptions,
+        true,
       );
       const immutable = cleanedBatch.candidates.map((candidate) => ({
         position: cleanedBatch.positions.get(candidate.candidate_id),
@@ -888,6 +872,7 @@ export async function runRetain(
       const original = repairObligations.get(cleanedBatch.positions.get(candidate.candidate_id)!);
       return original === undefined ? [] : [{ candidate_id: candidate.candidate_id, original }];
     }),
+    cleaned.reportLimitConcerns,
   );
   if (verified.error) {
     return {
@@ -947,6 +932,7 @@ async function verifyCandidates(
   source: { kind: string; text?: string; items?: readonly RetainSourceItem[] },
   candidates: readonly RetainCandidate[],
   repairObligations: readonly { candidate_id: string; original: unknown }[],
+  reportLimitConcerns: ReadonlySet<string>,
 ): Promise<{
   accepted: Set<string>;
   reasons: Map<string, RetainHoldReason>;
@@ -960,7 +946,14 @@ async function verifyCandidates(
   // Relations still see the complete candidate context; candidates themselves are never evidence.
   for (let start = 0; start < candidates.length; start += 2) {
     const batch = candidates.slice(start, start + 2);
-    const checked = await verifyCandidateBatch(model, source, batch, repairObligations, candidates);
+    const checked = await verifyCandidateBatch(
+      model,
+      source,
+      batch,
+      repairObligations,
+      candidates,
+      reportLimitConcerns,
+    );
     outcomes.push(checked.outcome);
     if (checked.error)
       return {
@@ -1004,6 +997,7 @@ async function verifyCandidateBatch(
   candidates: readonly RetainCandidate[],
   repairObligations: readonly { candidate_id: string; original: unknown }[],
   allCandidates: readonly RetainCandidate[],
+  reportLimitConcerns: ReadonlySet<string>,
 ): Promise<{
   accepted: Set<string>;
   reasons: Map<string, RetainHoldReason>;
@@ -1011,6 +1005,11 @@ async function verifyCandidateBatch(
   error: string | null;
 }> {
   const ids = candidates.map((candidate) => candidate.candidate_id) as [string, ...string[]];
+  const reportLimits = new Map(
+    candidates
+      .filter((candidate) => reportLimitConcerns.has(candidate.candidate_id))
+      .map((candidate) => [candidate.candidate_id, retentionReportLimits(candidate)]),
+  );
   const frameAudits = new Map(
     candidates.map((candidate) => [candidate.candidate_id, retentionFrameAudit(candidate.discourse_frame)]),
   );
@@ -1034,6 +1033,9 @@ async function verifyCandidateBatch(
     return z.strictObject({
       candidate_id: z.enum([candidate.candidate_id]),
       ...(audit ? { span_audit: audit.schema } : {}),
+      ...(reportLimits.has(candidate.candidate_id)
+        ? { report_limit_alignment: reportLimits.get(candidate.candidate_id)!.schema }
+        : {}),
       comparison: semanticVerdictFields.comparison,
       // Source comparison precedes label selection; field order itself supplies no authority.
       source_selected_polarity: z.enum(['affirmed', 'negated']),
@@ -1052,7 +1054,10 @@ async function verifyCandidateBatch(
   const schema = z.object({ verdicts: z.array(verdictSchema) });
   const outcome = await model.chat(
     [
-      { role: 'system', content: VERIFY_SYSTEM },
+      {
+        role: 'system',
+        content: VERIFY_SYSTEM + (reportLimits.size ? '\n\n' + RETENTION_REPORT_LIMITS_CONTRACT : ''),
+      },
       {
         role: 'user',
         content: JSON.stringify({
@@ -1075,6 +1080,9 @@ async function verifyCandidateBatch(
             ({ page: _page, origin: _origin, evidence: _evidence, ...candidate }) => ({
               ...candidate,
               negative_evidence_coordinates: negativeEvidence.get(candidate.candidate_id)!.coordinates,
+              ...(reportLimits.has(candidate.candidate_id)
+                ? { report_limit_concern: reportLimits.get(candidate.candidate_id)!.coordinates }
+                : {}),
               ...(frameAudits.get(candidate.candidate_id)
                 ? { frame_spans: frameAudits.get(candidate.candidate_id)!.spans }
                 : {}),
@@ -1117,6 +1125,13 @@ async function verifyCandidateBatch(
       (verdict) =>
         semanticVerdictConsistent(verdict) &&
         negativeEvidence.get(verdict.candidate_id)!.consistent(verdict) &&
+        (!reportLimits.has(verdict.candidate_id) ||
+          reportLimits
+            .get(verdict.candidate_id)!
+            .consistent(
+              'report_limit_alignment' in verdict ? verdict.report_limit_alignment : undefined,
+              verdict,
+            )) &&
         (!(
           verdict.proposition_supported &&
           verdict.action_arguments_preserved &&
@@ -1149,6 +1164,10 @@ async function verifyCandidateBatch(
           verdict.proposition_supported &&
           verdict.action_arguments_preserved &&
           verdict.qualification_scope_preserved &&
+          (!reportLimits.has(verdict.candidate_id) ||
+            reportLimits
+              .get(verdict.candidate_id)!
+              .preserved('report_limit_alignment' in verdict ? verdict.report_limit_alignment : undefined)) &&
           // A source-side classification is compared with immutable metadata, independently of
           // positive prose verdicts. Disagreement is a semantic hold, never permission to relabel.
           verdict.source_selected_polarity ===
@@ -1357,38 +1376,30 @@ export function cleanCandidateBatch(
 function cleanCandidateBatchWithPositions(
   value: unknown,
   options: CandidateCleaningOptions,
+  semanticReportVerification = false,
 ): {
   candidates: RetainCandidate[];
   held: RetainHeldCandidate[];
   positions: Map<string, number>;
+  reportLimitConcerns: Set<string>;
   textOnlyClockRepairs: Map<number, { original: Record<string, unknown>; witness: SourceClockRepairWitness }>;
   missingIdentifiers: Map<number, string[]>;
-  textOnlyReportRepairs: Map<
-    number,
-    { issue: 'report_uncertainty_unreadable'; original: Record<string, unknown> }
-  >;
 } {
   const positions = new Map<string, number>();
+  const reportLimitConcerns = new Set<string>();
   const textOnlyClockRepairs = new Map<
     number,
     { original: Record<string, unknown>; witness: SourceClockRepairWitness }
   >();
   // Keep the repair diagnosis typed and private instead of recovering it from public reason prose.
   const missingIdentifiers = new Map<number, string[]>();
-  const textOnlyReportRepairs = new Map<
-    number,
-    {
-      issue: 'report_uncertainty_unreadable';
-      original: Record<string, unknown>;
-    }
-  >();
   if (!Array.isArray(value))
     return {
       candidates: [],
       held: [],
       positions,
+      reportLimitConcerns,
       missingIdentifiers,
-      textOnlyReportRepairs,
       textOnlyClockRepairs,
     };
   const candidates: RetainCandidate[] = [];
@@ -1773,7 +1784,16 @@ function cleanCandidateBatchWithPositions(
       });
       continue;
     }
-    if (unreadableReportUncertainty) {
+    // Only runRetain enables this path and it always verifies the entire generated batch.
+    // Public/model-free cleaners cannot turn an unrecognized limit into an admitted record.
+    const verifyReportLimit =
+      unreadableReportUncertainty &&
+      !unreadableClock &&
+      semanticReportVerification &&
+      options.generated &&
+      Array.isArray(record.relations) &&
+      record.relations.length === 0;
+    if (unreadableReportUncertainty && !verifyReportLimit) {
       held.push({
         candidate_id: provisionalId,
         reason_code: 'discourse_uncertain',
@@ -1798,14 +1818,7 @@ function cleanCandidateBatchWithPositions(
       }
       continue;
     }
-    // Only this deferred failure may certify text-only repair. Every other per-candidate
-    // floor has already run; raw relations must be literally empty because they are cleaned later.
-    if (unreadableReportUncertainty) {
-      if (options.generated && Array.isArray(record.relations) && record.relations.length === 0)
-        textOnlyReportRepairs.set(index, {
-          issue: 'report_uncertainty_unreadable',
-          original: structuredClone(record),
-        });
+    if (unreadableReportUncertainty && !verifyReportLimit) {
       continue;
     }
     const candidate: RetainCandidate = {
@@ -1816,6 +1829,7 @@ function cleanCandidateBatchWithPositions(
     };
     seen.add(dedupeKey);
     candidates.push(candidate);
+    if (verifyReportLimit) reportLimitConcerns.add(candidate.candidate_id);
     originalToCandidate.set(index, candidate);
     rawRelations.set(candidate_id, record.relations);
     if (candidates.length >= 50) break;
@@ -1879,7 +1893,7 @@ function cleanCandidateBatchWithPositions(
     held,
     positions,
     missingIdentifiers,
-    textOnlyReportRepairs,
+    reportLimitConcerns,
     textOnlyClockRepairs,
   };
 }
