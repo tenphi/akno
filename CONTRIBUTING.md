@@ -42,6 +42,10 @@ pnpm smoke
 A change to published behavior also carries a Changesets file. After the feature PR merges, the release
 workflow opens or updates a separate version PR; publishing never happens from the feature branch.
 
+The frozen scripts in `benchmarks/language/results/fixed-comparison` are evidence snapshots whose hashes
+bind completed measurements. Lint excludes that archive so its original bytes remain intact. Active
+benchmark runners under `scripts/` remain linted.
+
 **macOS and Linux runtime.** `@tenphi/akno-core` and the CLI declare `"os": ["darwin", "linux"]`; see
 [Platform](docs/operations.md#platform). Linux provides XDG paths, native indexing, Poppler/Tesseract/LibreOffice
 document extraction, the socket service, systemd user-service lifecycle, scheduled timers, and syslog
