@@ -323,6 +323,60 @@ describe('source-relative time qualification', () => {
   );
 });
 
+describe('prescribed Russian source-clock sentence', () => {
+  const relation = 'отсчитывается от времени первоначальной записи без даты';
+  it.each([
+    'Сегодня',
+    'Завтра',
+    'Вчера',
+    'Следующий день',
+    'Прошлый день',
+    'Этот день',
+    'Следующая неделя',
+    'Прошлая неделя',
+    'Эта неделя',
+    'Следующий месяц',
+    'Прошлый месяц',
+    'Этот месяц',
+    'Следующий год',
+    'Прошлый год',
+    'Этот год',
+  ])('recognizes the prescribed interval without resolving its date: %s', (label) => {
+    for (const [open, close] of [['', ''], ...['«»', '“”', '‘’', '""', "''", '``']]) {
+      const text = `${open}${label}${close} ${relation}.`;
+      expect(hasDeicticTime(text), text).toBe(true);
+      expect(hasSourceRelativeAnchor(text), text).toBe(true);
+      expect(hasUnknownReferenceClock(text), text).toBe(true);
+    }
+  });
+
+  it.each([
+    `Не завтра ${relation}.`,
+    `Якобы завтра ${relation}.`,
+    `Пример: завтра ${relation}.`,
+    `Если завтра ${relation}.`,
+    `Ada Marlow спросила, завтра ${relation}?`,
+    `Завтра не ${relation}.`,
+    `Завтра «не» ${relation}.`,
+    'Завтра отсчитывается от времени обработки без даты.',
+    'Завтра отсчитывается от времени встречи без даты.',
+    'Завтра отсчитывается от времени осмотра без даты.',
+    'Завтра отсчитывается от времени первоначальной записи устройства без даты.',
+    'Завтра отсчитывается от времени первоначальной записи без даты устройства.',
+    'Завтра отсчитывается от времени первоначальной без даты.',
+    'Завтра отсчитывается от времени первоначальной записи.',
+    `Завтра ${relation}, если Ada Marlow согласится.`,
+    `Завтра ${relation}?`,
+    `Завтра ${relation}, но на самом деле от обработки.`,
+    `Завтра ${relation}; однако это неверно.`,
+    `Завтра ${relation}. На самом деле отсчёт идёт от обработки.`,
+    'Завтра отсчитывается от времени\nпервоначальной записи без даты.',
+    ...['«»', '“”', '‘’', '""', "''", '``'].map(([open, close]) => `${open}Завтра ${relation}.${close}`),
+  ])('requires an asserted, unretracted source clock: %s', (text) => {
+    expect(hasSourceRelativeAnchor(text)).toBe(false);
+  });
+});
+
 describe('undated original-record synonym', () => {
   it.each(['первоначальной записи без даты', 'недатированной первоначальной записи'])(
     'keeps source anchoring and unknown calendar scope together: %s',

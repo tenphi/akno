@@ -47,6 +47,18 @@ export function hasSourceRelativeAnchor(text: string): boolean {
       return new RegExp(`^${clockLabel}$`, 'iu').test(content) ? content : '⟦quotation⟧';
     },
   );
+  // The renderer prescribes this complete sentence for every supported interval, including
+  // tomorrow. Recognize that exact source/date attachment without widening generic clock prose.
+  const prescribedClock = new RegExp(
+    `(?:^|[.;!])[ \\t]*${clockLabel}[ \\t]+отсчитывается[ \\t]+от[ \\t]+времени[ \\t]+первоначальной[ \\t]+записи[ \\t]+без[ \\t]+даты`,
+    'giu',
+  );
+  if (
+    [...sourceTimeProse.matchAll(prescribedClock)].some((match) =>
+      hasUnretractedClauseEnd(sourceTimeProse, match.index + match[0].length),
+    )
+  )
+    return true;
   // The time belongs to the source record, not to a nearby device or processing event.
   // A question, condition or correction cannot close this assertion. The one allowed comma
   // contrast denies today's and processing clocks, optionally followed by a closed unknown date.

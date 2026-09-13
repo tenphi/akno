@@ -74,6 +74,9 @@ marker and boundary whitespace. Both copies and translations pass the existing l
 answer guard and source verifier. Original-source context cannot add a fact absent from the retained record.
 The complete record is the rendering unit on this path, so an independent clause already in that short
 retained record may also appear. This trades focused brevity for preserving the record's complete meaning.
+When the selected readable record names its non-generic source speaker, a local check requires that exact
+spelling in the rendered answer. A name present only in metadata or an unselected source clause cannot
+introduce a new named role into the answer.
 
 This path does not infer a record's language from its script, current configuration or historical receipt.
 The model chooses copy or translation; an incorrect language choice is withheld without a retry. Records
@@ -98,8 +101,24 @@ explicit unknown, tentative time envelope; readable prose names both the source 
 `mentioned_at` must come from a supplied source timestamp. Durations and hypothetical coverage intervals
 remain prose; an established schedule retains its cadence and time envelope, with structured recurrence
 only when its start is supported.
+The prescribed Russian source-clock sentence is recognized for day, week, month and year references,
+including “tomorrow.” Its explicit source anchor and unknown date do not bypass semantic verification.
 One recorded structural repair can address field-specific validation failures before semantic verification.
 It cannot retry a semantic rejection or remove the unresolved time envelope to admit the same claim.
+Automatically generated reports with an otherwise valid representation and no relations can reach the
+existing verifier when a finite wording recognizer cannot establish whether their personal epistemic limits
+are readable. The verifier receives the original generated text and must supply exact evidence from that
+record's own source frame and current prose, alongside all existing semantic verdicts. Missing or foreign
+evidence fails closed. A positive witness cannot override another omitted limit or negative verdict.
+This removes the specialized report rewrite; caller-provided and model-free cleaning stays strict.
+
+Extraction and verification share one definition of an independently retrievable record: its proposition
+and every source qualification that governs its meaning belong together, even across sentence boundaries.
+Open questions keep their personal and record-level limits; competing hypotheses keep their common
+evidence and nonselection scope. Independently asserted neighboring facts remain separate. Neutral source
+attribution cannot invent a performed activity, and an actual discussion can contain tentative hypotheses
+without making those hypotheses factual. These are model instructions, not a deterministic proof of complete
+partitioning or source coverage; the live evaluation measures whether the resulting records preserve them.
 The extraction schema places prose after exact support, discourse frame, attribution and time so the model
 can formulate each independently retrievable sentence with its qualifications already specified. Output
 ordering is a generation aid; incomplete or unsupported sentences still fail the same verification.
@@ -116,6 +135,12 @@ headings, block quotations, speaker turns and role headings, plans, questions, r
 source fences, and an explicit following qualification referring back across a paragraph break. Conditional
 and speaker scope continues across blank lines until the next heading. Sibling headings end their enclosing
 scope; nested headings retain it.
+
+Category headings such as `Assistant report`, `Пересказ`, `Preliminary versions` and
+`Предварительные версии` also qualify their otherwise assertion-shaped paragraphs. Category matching is
+bounded to the title structure: `Report serial number` and `Preliminary coating specification` remain
+ordinary factual headings. The same scope applies beneath nested headings and ends at a sibling heading.
+An index pass upgrades older classifications even when the Markdown file itself has not changed.
 
 | Reading                                                        | Factual use                                  | Inspection                                                    |
 | -------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------- |
@@ -164,38 +189,42 @@ cases must be assessed separately from model quality.
 
 ## Current evaluated scope
 
-PR #70 now has a terminal V22 result at frozen runtime `a67faa3`: **FAIL** under the
-separately authorized 80% useful-answer completion target. The original 90% answer gate is
-**FAIL** and remains preserved. Both verdicts use the same independent source-only review;
-retention/retrieval, source accuracy, qualification, language, source-byte and availability requirements
-were not relaxed.
+The current implementation provides an opt-in English knowledge language and bounded English/Russian
+discourse handling. The fixed comparison below measures retention, qualified retrieval and answers from
+22 invented sources, each run twice with all eight query-language, requested-answer-language and
+explicit/inferred-view combinations. These are exposed regression scenarios, not fresh generalization evidence.
 
-| Split / run     | Useful answers | Complete retained sets | Useful retrievals | Availability failures | Ordinary mismatches |
-| --------------- | -------------: | ---------------------: | ----------------: | --------------------: | ------------------: |
-| development / 1 |          63/80 |                   9/10 |             36/40 |                  1/11 |                0/11 |
-| development / 2 |          52/80 |                   7/10 |             28/40 |                  4/11 |                0/11 |
-| held-out / 1    |          52/80 |                   7/10 |             32/40 |                  0/11 |                3/11 |
-| held-out / 2    |          53/80 |                   7/10 |             32/40 |                  0/11 |                3/11 |
+The original useful-answer target was **80%**. V17 historically achieved 143/160 (89.4%) on corpus V9;
+the later 90% target and expanded corpora are separate experiments. V77's historical 220/320 (68.8%) also
+used a different answer ceiling. Treating these percentages as one learning curve was misleading.
+The new comparison freezes the same sources, procedure, model roles and budgets across V17, V31 and V77:
+2,400 tokens for retention and 1,024 for answers, matching the evaluated local policy. A separate model
+grades original sources and anonymous public outputs under one fixed rubric.
 
-The final independent grade is **220/320 useful writable answers (68.8%)** and **30/40 complete retained sets**. There were 221 published writable answers and 99 writable nulls. The grade records 0 unsupported retained sets, 0 unsupported published answers, 0 qualification errors, 0 accepted language violations and 0 unsafe factual promotions. All 32 read-only nulls were justified policy holds. Source bytes and replay passed in all 44 case-runs. The availability gate records 5/44 failed cases, distinct from the two answer coordinates explicitly typed verification-unavailable. Ordinary Markdown matched 38/44 expected classifications.
+| Revision | Legacy run 1 | Legacy run 2 | Recent run 1 | Recent run 2 | Useful total | Accepted answer errors |
+| -------- | -----------: | -----------: | -----------: | -----------: | -----------: | ---------------------: |
+| V17      |        68/80 |        71/80 |        24/80 |        30/80 |      193/320 |                     56 |
+| V31      |        64/80 |        53/80 |        48/80 |        51/80 |      216/320 |                     13 |
+| V77      |        63/80 |        59/80 |        36/80 |        53/80 |      211/320 |                     11 |
 
-This measures a finite invented English/Russian and mixed-source corpus with English generated knowledge,
-English/Russian requested answers, both explicit and inferred views, and isolated 2,400-token retention/answer
-ceilings. The existing service's 1,024-token answer overlay remains outside this evidence. Independent model
-review is fallible; the result does not establish arbitrary-language, implicit-discourse or longitudinal reliability.
+There is a real original-scenario regression: V17 scores 139/160 against V77's 122/160. Earlier revisions
+also lose more meaning on recent cases. None meets the declared quality gate. V31's five-answer net gain
+over V77, with lower legacy coverage and continuing qualification errors, does not justify a broad rollback.
+All three revisions preserve bytes and replay and justify all 32 read-only nulls. Each has six ordinary
+Markdown admission mismatches. Case-level availability failures are zero; the finer answer diagnostics
+record four failed calls for V31 and one for V17.
 
-The exposed V77 diagnostics were unusable because their external capture hook rejected the correctly configured
-query-expansion model. All 96 planned answer cells were absent; retention and source-byte results were unknown.
-Those failures remain preserved. Two independent reviewers approved a separate corrected full-only capture,
-with mocked controls exercising the actual expansion and placement functions, before the terminal full trial.
-No failed diagnostic was replaced and production runtime, models, semantic passes and caps stayed unchanged.
+One reviewed integration is now undergoing the same fixed comparison procedure. It removes unnecessary
+report rewriting before semantic verification, shares a complete retrieval-unit instruction between
+extraction and verification, preserves selected source-name spelling, and corrects report/hypothesis
+category headings with derived-projection migration. Its model-dependent improvements remain unproved
+until that run and independent grading finish. The 80% target still applies to retention, retrieval and
+useful answers in every block/run; accepted semantic, qualification, language and promotion errors must
+remain zero. The 90% answer target is reported separately. Pooled totals cannot rescue a failing block.
 
-The remaining failures include loss of central report, assistant, time and competing-hypothesis records; incomplete retention of some independent propositions; source-answerable nulls after retention; a published counterfactual answer that states only the true antecedent instead of the requested unrealized benefit; development availability failures; and three nonfactual ordinary-Markdown passages incorrectly marked eligible as factual evidence in both held-out runs (six failures). The latter is an admission-boundary defect even though the independently graded generated outputs showed no factual promotion. Reviewer disagreements about focused subsets and redundant qualifications remain visible in the preserved reviews. They do not change the failing disposition.
-
-The bounded PR work is finished with reliability acceptance unmet. No further tuning, replacement trial or threshold reduction follows this result. The language-policy and finite Markdown boundaries remain implemented; automatic retention and answering still need a structural redesign and fresh evaluation.
-
-The [complete V77 evidence](../benchmarks/language/results/v77/README.md) includes both gates, per-run results,
-original failures, input/output reviews, independent forensics, and frozen execution receipts.
+The [historical V77 evidence](../benchmarks/language/results/v77/README.md) retains its original results and
+a dated correction to the target terminology. The final fixed-comparison report will preserve the new
+comparison, the one integration result, initial grades and any explicit source-based corrections.
 
 ## Evaluation
 

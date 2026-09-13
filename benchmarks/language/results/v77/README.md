@@ -1,6 +1,12 @@
 # V77 terminal language and discourse evaluation
 
-The terminal V22 trial **fails both the original 90% useful-answer gate and the separately predeclared
+Historical report; terminology correction added on 2026-09-13: the project's original useful-answer target
+was **80%**, as recorded in the [V17 gate on corpus V9](../v17/gate.json). The **90%** target below belongs
+to later expanded corpora, including this V22 trial. Calling it the original project target was inaccurate.
+The preserved V77 grades and gate files are unchanged. The user subsequently authorized a fixed comparison
+of earlier and current revisions; the closing statement below records the decision at the time of V77.
+
+The terminal V22 trial **fails both the predeclared 90% useful-answer gate and the separately predeclared
 80% completion gate**. Reliability acceptance remains unmet. This closes the bounded implementation and
 evaluation work in PR #70 with a measured failure and explicit limits; it does not close issues #61/#62 or
 authorize a merge. No further tuning or replacement run follows this held-out result.

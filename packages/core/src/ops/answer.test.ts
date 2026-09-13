@@ -778,6 +778,9 @@ describe('grounded answer discovery surface', () => {
             'label-scope',
             'local-clock-negative',
             'language-negative',
+            'day-preserved',
+            'day-semantic-negative',
+            'day-local-clock-negative',
           ] as const)
         : ([
             'preserved',
@@ -795,8 +798,10 @@ describe('grounded answer discovery surface', () => {
     ),
   )(
     'renders complete qualified records with explicit clauses and exact names (%s / %s)',
-    async (kind, mode) => {
-      const source =
+    async (kind, variant) => {
+      const day = variant.startsWith('day-');
+      const mode = day ? variant.slice(4) : variant;
+      let source =
         kind === 'clock'
           ? 'Ada Marlow proposed reviewing the silverpine estimate next month relative to the original undated record, not processing time. The calendar month is unknown. Ada Marlow has not accepted a plan or organized a meeting; this remains only a proposal.'
           : 'Ada Marlow described an unrealized alternative: if she had bought the silverpine extension for Zephyr QX-100, repairs in year seven would have been covered. Ada Marlow did not buy the extension. This is not her current coverage.';
@@ -804,6 +809,13 @@ describe('grounded answer discovery surface', () => {
         kind === 'clock'
           ? 'Ada Marlow предложила рассмотреть смету silverpine в следующем месяце. Следующий месяц отсчитывается от времени первоначальной записи без даты. Отсчёт ведётся не от времени обработки. Календарный месяц неизвестен. Ada Marlow не приняла план и не организовала встречу; это только предложение.'
           : 'Если бы Ada Marlow купила расширение silverpine для Zephyr QX-100, ремонт в седьмой год был бы покрыт. Ada Marlow не купила расширение. Это не её действующее покрытие.';
+      if (day) {
+        source = source.replace('next month', 'tomorrow').replace('calendar month', 'calendar day');
+        text = text
+          .replace('в следующем месяце', 'завтра')
+          .replace('Следующий месяц', 'Завтра')
+          .replace('Календарный месяц', 'Календарный день');
+      }
       if (mode.startsWith('nominal-')) {
         text = mode.includes('infinitive')
           ? 'По словам Ada Marlow, нереализованный вариант состоял в том, чтобы приобрести продление silverpine для Zephyr QX-100: в таком случае ремонт был бы покрыт в седьмом году. Ada Marlow не приобрела это продление, поэтому оно не являлось её действующим покрытием.'

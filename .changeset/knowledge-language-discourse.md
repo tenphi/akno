@@ -20,9 +20,12 @@ roles, polarity, uncertainty, fictional scope and source-relative time. Expose t
 availability failures and answer rejection counts. One structural extraction repair can precede semantic
 verification; a semantic rejection is final. The default answer-role output ceiling becomes 2,400 tokens
 to accommodate verification, while explicit caller and provider-role limits remain authoritative.
-Generated reports with unfamiliar wording for personal epistemic limits go directly to the existing
-source verifier, which requires evidence from their own source and current text. They no longer undergo
-a forced report rewrite. Complete-record answers preserve the exact spelling of their named source.
+Otherwise-valid relation-free generated reports with unfamiliar wording for personal epistemic limits
+go directly to the existing source verifier, which requires evidence from their own source and current
+text. They no longer undergo a forced report rewrite. Complete-record answers preserve the exact
+spelling of a non-generic source speaker already named in the selected readable record.
+Recognize the prescribed Russian source-clock sentence for day, week, month and year references while
+retaining the independent unknown-date and semantic checks.
 
 Add an opt-in, versioned language/discourse evaluation with independent source-based grading and separate
 retention, retrieval, useful-answer, safety and availability metrics. Deterministic CI verifies the
