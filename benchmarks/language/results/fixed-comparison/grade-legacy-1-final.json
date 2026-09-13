@@ -1,0 +1,2739 @@
+{
+  "block": "legacy",
+  "run": 1,
+  "assembly": "Exact concatenation of final grades where a preserved correction exists, otherwise initial grades.",
+  "parts": [
+    {
+      "file": "grade-legacy-1-first-final.json",
+      "sha256": "453cbc70075ee40172d9a009b3425884e398c657793171fd18cf026d5f0e3558"
+    },
+    {
+      "file": "grade-legacy-1-rest-initial.json",
+      "sha256": "40eefaac0bad171988afadb4911daab15ffd2cbf25fef2ec6861eb722c165fe7"
+    }
+  ],
+  "cases": [
+    {
+      "id": "v3-dev-denial",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains Ada Marlow's asserted exclusion of housing replacement with exact polarity, attribution, and English prose."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English answer preserving Ada Marlow's negative assertion."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian answer preserving Ada Marlow's negative assertion."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian answer preserving Ada Marlow's negative assertion."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English answer preserving Ada Marlow's negative assertion."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian answer preserving Ada Marlow's negative assertion."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the exact relevant exclusion."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the exact relevant exclusion."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains the asserted warranty exclusion; casing is a faithful English rendering of корпус in this context."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English negative answer."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian negative answer."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian negative answer."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English negative answer."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian negative answer."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English answer with explicit source attribution."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian answer with explicit source attribution."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the exact relevant exclusion."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the exact relevant exclusion."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains Ada Marlow's asserted exclusion; body faithfully denotes the product housing here."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English negative answer with attribution."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian negative answer with attribution."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English negative answer with attribution."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian negative answer with attribution."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian negative answer with attribution."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the exact relevant exclusion."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the exact relevant exclusion."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v3-dev-report",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains assistant attribution, suspicion, possible sensor-cleaning coverage, and lack of confirmation in English."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English account of the assistant's unconfirmed suspicion."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian account of the assistant's unconfirmed suspicion."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian account; plural датчиков is a harmless generic rendering of sensor cleaning."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English account of the assistant's unconfirmed suspicion."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian account of the assistant's unconfirmed suspicion."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian account preserving tentative assistant attribution and non-confirmation."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the complete qualified report."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the complete qualified report."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains the assistant's tentative suspicion and explicit lack of confirmation in English."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Tentative framing and non-confirmation prevent promotion despite indicative wording in the embedded clause."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Russian answer retains tentative assistant attribution and non-confirmation."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "English answer retains tentative assistant attribution and non-confirmation."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Russian answer explicitly uses possibility and non-confirmation."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "English answer explicitly uses possibility and non-confirmation."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Russian answer retains the assistant's preliminary supposition and non-confirmation."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "English answer explicitly uses possibility and non-confirmation."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the complete qualified report."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the complete qualified report."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains assistant attribution, suspicion, and lack of confirmation in English."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English qualified report."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian qualified report."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English qualified report."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian qualified report, explicitly distinguishing it from established fact."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English qualified report with possibility and non-confirmation."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian qualified report."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English qualified report."
+            },
+            {
+              "id": "8",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct concise Russian qualified report."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the complete qualified report."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the complete qualified report."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v3-dev-alternatives",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retention": {
+            "complete": false,
+            "sourceEntailed": null,
+            "qualificationsPreserved": null,
+            "correctLanguage": null,
+            "unsafePromotion": false,
+            "reason": "Writable source produced no retained knowledge, losing both competing hypotheses and their unestablished discussion scope."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested annual and biennial hypotheses."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested annual and biennial hypotheses."
+            },
+            {
+              "id": "3",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested annual and biennial hypotheses."
+            },
+            {
+              "id": "4",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested annual and biennial hypotheses."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": false,
+              "reason": "Empty retrieval loses both competing hypotheses."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "reason": "Empty retrieval loses both competing hypotheses."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains both incompatible intervals, their unestablished status, and the instruction to keep both for discussion."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English identification of both unestablished hypotheses."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian identification of both unestablished hypotheses."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English identification of both unestablished hypotheses."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian identification of both unestablished hypotheses."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English identification without selecting either hypothesis."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian identification without selecting either hypothesis."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian identification without selecting either hypothesis."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves both hypotheses with their shared discussion scope."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves both hypotheses with their shared discussion scope."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Complete public record retains annual and biennial as unestablished hypothetical service intervals and explicitly links the annual record as contradicting the retained biennial record; this preserves both alternatives and their incompatible relationship for discussion."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the focused query with both competing unestablished hypotheses; the keep-for-discussion instruction is fulfilled by preserving both with their qualified relation."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian focused answer with both unestablished hypotheses."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English focused answer explicitly preserving non-establishment."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian focused answer with both hypotheses."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English focused answer with both hypotheses."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian focused answer with both hypotheses and non-establishment."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian focused answer with both hypotheses and non-establishment."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves both query-relevant unestablished hypotheses despite omitting the independent discussion-retention instruction."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves both query-relevant unestablished hypotheses despite omitting the independent discussion-retention instruction."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v3-dev-example",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains Ada Marlow's fictional example, Bo Winters's story role, the twenty-year duration, and non-reality."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English description within fictional scope."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian description within fictional scope."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian description with explicit hypothetical and fictional scope."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English description within fictional scope."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian description within fictional scope."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian description within fictional scope."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the complete fictional example."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the complete fictional example."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains the introduced fictional example, nested Bo Winters role, duration, and explicit non-reality."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English fictional example."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian fictional example; якобы and explicit non-reality preserve story scope."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English fictional example."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian fictional example."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English fictional example."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian fictional example; предлагает is acceptable here as the act inside the invented scenario."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English fictional example."
+            },
+            {
+              "id": "8",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian fictional example."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the complete fictional example."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the complete fictional example."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains Ada Marlow's preservation for discussion and the fully fictional twenty-year warranty scenario."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English fictional example."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian fictional example."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English fictional example."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian fictional example."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English fictional example."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian fictional example."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English fictional example."
+            },
+            {
+              "id": "8",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian fictional example."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the complete fictional example."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the complete fictional example."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v3-dev-undated",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains the actual proposal, source-relative tomorrow, unknown reference date, non-acceptance, and absence of scheduling in English."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English answer with source-relative time and unknown calendar date."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian answer with source-relative time and unknown calendar date."
+            },
+            {
+              "id": "3",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the proposed review and requested date status."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English answer with source-relative time and unknown calendar date."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian answer with source-relative time and unknown calendar date."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian answer with source-relative time and unknown calendar date."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the complete proposal and its temporal limits."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the complete proposal and its temporal limits."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retention": {
+            "complete": false,
+            "sourceEntailed": null,
+            "qualificationsPreserved": null,
+            "correctLanguage": null,
+            "unsafePromotion": false,
+            "reason": "Writable source was held for unresolved time, losing a valid proposal whose relative anchor and unknown calendar date were explicitly stated."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the proposed review and requested date status."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the proposed review and requested date status."
+            },
+            {
+              "id": "3",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the proposed review and requested date status."
+            },
+            {
+              "id": "4",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the proposed review and requested date status."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": false,
+              "reason": "Empty retrieval loses the valid source-relative proposal."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "reason": "Empty retrieval loses the valid source-relative proposal."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains the actual proposal, source-relative tomorrow, unknown source date, non-acceptance, and no scheduled review in English; tentative describes the unaccepted plan rather than denying that Ada proposed it."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English answer; source-relative anchor and unknown date are explicit."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian answer; source-relative anchor and unknown date are explicit."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English answer; source-relative anchor and unknown date are explicit."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian answer; source-relative anchor and unknown date are explicit."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English answer despite the Russian query because English was requested."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian answer with all temporal limits."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct English answer despite the Russian query because English was requested."
+            },
+            {
+              "id": "8",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Correct Russian answer with all temporal limits."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the complete proposal and its temporal limits."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the complete proposal and its temporal limits."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v9-held-report",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retention": {
+            "complete": false,
+            "sourceEntailed": null,
+            "qualificationsPreserved": null,
+            "correctLanguage": null,
+            "unsafePromotion": false,
+            "reason": "Writable nested report was held, losing Ada Marlow as recorder, Bo Winters as inner source, reported thermal-sensor coverage, and Ada's non-verification."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested source proposition."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested source proposition."
+            },
+            {
+              "id": "3",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested source proposition."
+            },
+            {
+              "id": "4",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested source proposition."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": false,
+              "reason": "Empty retrieval loses the query-relevant source proposition."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "reason": "Empty retrieval loses the query-relevant source proposition."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Preserves Ada Marlow as recorder, Bo Winters as inner source, the reported thermal-sensor coverage, and Ada’s non-verification without establishing actual coverage."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves nested attribution and Ada Marlow’s non-verification in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested nested, unverified report."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves nested attribution and Ada Marlow’s non-verification in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves nested attribution and Ada Marlow’s non-verification in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves nested attribution and Ada Marlow’s non-verification in the requested language."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves nested attribution and Ada Marlow’s non-verification in the requested language."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves nested attribution and Ada Marlow’s non-verification in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Preserves Ada Marlow as recorder, Bo Winters as inner source, the reported thermal-sensor coverage, and Ada’s non-verification without establishing actual coverage."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves nested attribution and Ada Marlow’s non-verification in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves nested attribution and Ada Marlow’s non-verification in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves nested attribution and Ada Marlow’s non-verification in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested nested, unverified report."
+            },
+            {
+              "id": "5",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested nested, unverified report."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves nested attribution and Ada Marlow’s non-verification in the requested language."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves nested attribution and Ada Marlow’s non-verification in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v9-held-hypothesis",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Preserves Ada Marlow’s hypothetical three-month seal-inspection interval and the unknown actual requirement without creating a duty or event."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Preserves Ada Marlow’s hypothetical three-month seal-inspection interval and the unknown actual requirement without creating a duty or event."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            },
+            {
+              "id": "8",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Preserves Ada Marlow’s hypothetical three-month seal-inspection interval and the unknown actual requirement without creating a duty or event."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": false,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Russian answer changes the inspected seal/уплотнение into a пломба (a tamper seal), altering the requested component despite preserving hypothetical scope and interval."
+            },
+            {
+              "id": "3",
+              "useful": false,
+              "sourceEntailed": false,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Russian answer changes the inspected seal/уплотнение into a пломба (a tamper seal), altering the requested component despite preserving hypothetical scope and interval."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the hypothetical three-month interval and unknown actual rule in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v9-held-counterfactual",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Preserves actual non-selection and counterfactual third-year cooling-fan coverage under the unchosen extra warranty."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves counterfactual scope, the unchosen warranty, and third-year cooling-fan coverage in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves counterfactual scope, the unchosen warranty, and third-year cooling-fan coverage in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves counterfactual scope, the unchosen warranty, and third-year cooling-fan coverage in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves counterfactual scope, the unchosen warranty, and third-year cooling-fan coverage in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves counterfactual scope, the unchosen warranty, and third-year cooling-fan coverage in the requested language."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves counterfactual scope, the unchosen warranty, and third-year cooling-fan coverage in the requested language."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves counterfactual scope, the unchosen warranty, and third-year cooling-fan coverage in the requested language."
+            },
+            {
+              "id": "8",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves counterfactual scope, the unchosen warranty, and third-year cooling-fan coverage in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Preserves actual non-selection and counterfactual third-year cooling-fan coverage under the unchosen extra warranty."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves counterfactual scope, the unchosen warranty, and third-year cooling-fan coverage in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves counterfactual scope, the unchosen warranty, and third-year cooling-fan coverage in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves counterfactual scope, the unchosen warranty, and third-year cooling-fan coverage in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves counterfactual scope, the unchosen warranty, and third-year cooling-fan coverage in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves counterfactual scope, the unchosen warranty, and third-year cooling-fan coverage in the requested language."
+            },
+            {
+              "id": "6",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested counterfactual extra-warranty benefit."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves counterfactual scope, the unchosen warranty, and third-year cooling-fan coverage in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retention": {
+            "complete": false,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains only Ada Marlow's actual rejection of the extra warranty; omits the counterfactual third-year cooling-fan coverage and its unrealized scope."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested counterfactual extra-warranty benefit."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested counterfactual extra-warranty benefit."
+            },
+            {
+              "id": "3",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested counterfactual extra-warranty benefit."
+            },
+            {
+              "id": "4",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested counterfactual extra-warranty benefit."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": false,
+              "reason": "Retrieves only the actual warranty rejection and omits the query-requested counterfactual third-year cooling-fan coverage."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "reason": "Retrieves only the actual warranty rejection and omits the query-requested counterfactual third-year cooling-fan coverage."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v9-held-question",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Preserves Ada Marlow’s unresolved on-site-repair coverage question without deciding either polarity."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer identifies the unresolved question without deciding coverage and uses the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer identifies the unresolved question without deciding coverage and uses the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer identifies the unresolved question without deciding coverage and uses the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer identifies the unresolved question without deciding coverage and uses the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer identifies the unresolved question without deciding coverage and uses the requested language."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer identifies the unresolved question without deciding coverage and uses the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Preserves Ada Marlow’s unresolved on-site-repair coverage question without deciding either polarity."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer identifies the unresolved question without deciding coverage and uses the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer identifies the unresolved question without deciding coverage and uses the requested language."
+            },
+            {
+              "id": "3",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested unresolved on-site-repair question."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer identifies the unresolved question without deciding coverage and uses the requested language."
+            },
+            {
+              "id": "5",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested unresolved on-site-repair question."
+            },
+            {
+              "id": "6",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested unresolved on-site-repair question."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Preserves Ada Marlow’s unresolved on-site-repair coverage question without deciding either polarity."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer identifies the unresolved question without deciding coverage and uses the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer identifies the unresolved question without deciding coverage and uses the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer identifies the unresolved question without deciding coverage and uses the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer identifies the unresolved question without deciding coverage and uses the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer identifies the unresolved question without deciding coverage and uses the requested language."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer identifies the unresolved question without deciding coverage and uses the requested language."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer identifies the unresolved question without deciding coverage and uses the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v9-held-exclusion",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Preserves the asserted exclusion for accidental liquid-spill damage with exact negative scope."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the exact negative coverage scope in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the exact negative coverage scope in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the exact negative coverage scope in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the exact negative coverage scope in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the exact negative coverage scope in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Preserves the asserted exclusion for accidental liquid-spill damage with exact negative scope."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the exact negative coverage scope in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the exact negative coverage scope in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the exact negative coverage scope in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the exact negative coverage scope in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the exact negative coverage scope in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Preserves the asserted exclusion for accidental liquid-spill damage with exact negative scope."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the exact negative coverage scope in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the exact negative coverage scope in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the exact negative coverage scope in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the exact negative coverage scope in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the exact negative coverage scope in the requested language."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Source-entailed answer preserves the exact negative coverage scope in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-relevant source proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v9-held-admission",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retention": {
+            "complete": false,
+            "sourceEntailed": null,
+            "qualificationsPreserved": null,
+            "correctLanguage": null,
+            "unsafePromotion": false,
+            "reason": "No retained knowledge, as required by the typed read-only policy hold."
+          },
+          "justifiedReadOnlyHold": true,
+          "answers": [
+            {
+              "id": "1",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer is the required abstention under the explicit read-only policy hold."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer is the required abstention under the explicit read-only policy hold."
+            },
+            {
+              "id": "3",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer is the required abstention under the explicit read-only policy hold."
+            },
+            {
+              "id": "4",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer is the required abstention under the explicit read-only policy hold."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": false,
+              "reason": "Empty retrieval is required because the policy hold permitted no retention."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "reason": "Empty retrieval is required because the policy hold permitted no retention."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retention": {
+            "complete": false,
+            "sourceEntailed": null,
+            "qualificationsPreserved": null,
+            "correctLanguage": null,
+            "unsafePromotion": false,
+            "reason": "No retained knowledge, as required by the typed read-only policy hold."
+          },
+          "justifiedReadOnlyHold": true,
+          "answers": [
+            {
+              "id": "1",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer is the required abstention under the explicit read-only policy hold."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer is the required abstention under the explicit read-only policy hold."
+            },
+            {
+              "id": "3",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer is the required abstention under the explicit read-only policy hold."
+            },
+            {
+              "id": "4",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer is the required abstention under the explicit read-only policy hold."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": false,
+              "reason": "Empty retrieval is required because the policy hold permitted no retention."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "reason": "Empty retrieval is required because the policy hold permitted no retention."
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retention": {
+            "complete": false,
+            "sourceEntailed": null,
+            "qualificationsPreserved": null,
+            "correctLanguage": null,
+            "unsafePromotion": false,
+            "reason": "No retained knowledge, as required by the typed read-only policy hold."
+          },
+          "justifiedReadOnlyHold": true,
+          "answers": [
+            {
+              "id": "1",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer is the required abstention under the explicit read-only policy hold."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer is the required abstention under the explicit read-only policy hold."
+            },
+            {
+              "id": "3",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer is the required abstention under the explicit read-only policy hold."
+            },
+            {
+              "id": "4",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer is the required abstention under the explicit read-only policy hold."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": false,
+              "reason": "Empty retrieval is required because the policy hold permitted no retention."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "reason": "Empty retrieval is required because the policy hold permitted no retention."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-09-13T12:08:49.100Z",
+  "scope": "Model-free check of the built helper after service redeployment; not a new live score or a full answer-path test.",
+  "observations": [
+    {
+      "label": "Завтра",
+      "predicates": [
+        true,
+        true,
+        true
+      ],
+      "conditionalHeld": true
+    },
+    {
+      "label": "Следующая неделя",
+      "predicates": [
+        true,
+        true,
+        true
+      ],
+      "conditionalHeld": true
+    },
+    {
+      "label": "Следующий месяц",
+      "predicates": [
+        true,
+        true,
+        true
+      ],
+      "conditionalHeld": true
+    },
+    {
+      "label": "Следующий год",
+      "predicates": [
+        true,
+        true,
+        true
+      ],
+      "conditionalHeld": true
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+{
+  "note": "Descriptive slices of the completed fixed comparison; these are not new selection or acceptance gates. Counts are answer coordinates, not independent source scenarios.",
+  "scoreHashes": {
+    "comparison": "7d9474914344107172a2bb2211749a3b9eab673278bba760b17608d3482cb59f",
+    "integration": "6ee20e25521ce1a9f5c2d17f9a7f9cc0412a5d3ff2543633bb8a8a647fff809f"
+  },
+  "arms": [
+    {
+      "label": "V77",
+      "groups": {
+        "queryLanguage": {
+          "en": {
+            "coordinates": 160,
+            "useful": 104,
+            "acceptedErrors": 6
+          },
+          "ru": {
+            "coordinates": 160,
+            "useful": 107,
+            "acceptedErrors": 5
+          }
+        },
+        "requestedAnswerLanguage": {
+          "en": {
+            "coordinates": 160,
+            "useful": 110,
+            "acceptedErrors": 4
+          },
+          "ru": {
+            "coordinates": 160,
+            "useful": 101,
+            "acceptedErrors": 7
+          }
+        },
+        "explicitView": {
+          "false": {
+            "coordinates": 160,
+            "useful": 100,
+            "acceptedErrors": 5
+          },
+          "true": {
+            "coordinates": 160,
+            "useful": 111,
+            "acceptedErrors": 6
+          }
+        }
+      }
+    },
+    {
+      "label": "V31",
+      "groups": {
+        "queryLanguage": {
+          "en": {
+            "coordinates": 160,
+            "useful": 111,
+            "acceptedErrors": 9
+          },
+          "ru": {
+            "coordinates": 160,
+            "useful": 105,
+            "acceptedErrors": 4
+          }
+        },
+        "requestedAnswerLanguage": {
+          "en": {
+            "coordinates": 160,
+            "useful": 111,
+            "acceptedErrors": 7
+          },
+          "ru": {
+            "coordinates": 160,
+            "useful": 105,
+            "acceptedErrors": 6
+          }
+        },
+        "explicitView": {
+          "false": {
+            "coordinates": 160,
+            "useful": 100,
+            "acceptedErrors": 5
+          },
+          "true": {
+            "coordinates": 160,
+            "useful": 116,
+            "acceptedErrors": 8
+          }
+        }
+      }
+    },
+    {
+      "label": "V17",
+      "groups": {
+        "queryLanguage": {
+          "en": {
+            "coordinates": 160,
+            "useful": 93,
+            "acceptedErrors": 33
+          },
+          "ru": {
+            "coordinates": 160,
+            "useful": 100,
+            "acceptedErrors": 23
+          }
+        },
+        "requestedAnswerLanguage": {
+          "en": {
+            "coordinates": 160,
+            "useful": 101,
+            "acceptedErrors": 24
+          },
+          "ru": {
+            "coordinates": 160,
+            "useful": 92,
+            "acceptedErrors": 32
+          }
+        },
+        "explicitView": {
+          "false": {
+            "coordinates": 160,
+            "useful": 85,
+            "acceptedErrors": 24
+          },
+          "true": {
+            "coordinates": 160,
+            "useful": 108,
+            "acceptedErrors": 32
+          }
+        }
+      }
+    },
+    {
+      "label": "Integration",
+      "groups": {
+        "queryLanguage": {
+          "en": {
+            "coordinates": 160,
+            "useful": 126,
+            "acceptedErrors": 6
+          },
+          "ru": {
+            "coordinates": 160,
+            "useful": 123,
+            "acceptedErrors": 3
+          }
+        },
+        "requestedAnswerLanguage": {
+          "en": {
+            "coordinates": 160,
+            "useful": 131,
+            "acceptedErrors": 4
+          },
+          "ru": {
+            "coordinates": 160,
+            "useful": 118,
+            "acceptedErrors": 5
+          }
+        },
+        "explicitView": {
+          "false": {
+            "coordinates": 160,
+            "useful": 114,
+            "acceptedErrors": 3
+          },
+          "true": {
+            "coordinates": 160,
+            "useful": 135,
+            "acceptedErrors": 6
+          }
+        }
+      }
+    }
+  ]
+}

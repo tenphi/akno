@@ -1,0 +1,17 @@
+{
+  "createdAt": "2026-09-13T09:39:52.405Z",
+  "controls": [
+    "unchanged public receipts accepted",
+    "missing-answer rejected",
+    "swapped-language rejected",
+    "fabricated-answer rejected",
+    "missing-replay rejected",
+    "public-throw rejected",
+    "wrong-source rejected",
+    "exact preserved corrections accepted",
+    "missing-ledger rejected",
+    "wrong-original rejected",
+    "wrong-final rejected",
+    "duplicate-coordinate rejected"
+  ]
+}

@@ -1,0 +1,227 @@
+{
+  "mode": "integration",
+  "gradeVersion": "final",
+  "corpusFingerprint": "27bbb05e7bc8089ba133e5723667190106d02e98b635e41328d683bd9700505a",
+  "postvalidationSha256": "8461d977453493fa558c72ecd96c6f48b89398f3d728a774bb1e6b33a94bd79a",
+  "scorerSha256": "5fb76fb99cf4c1d3199a8ffe8d03c7c943f0643e50c02e8dc690304cbfed5369",
+  "inputs": [
+    {
+      "file": "integration/packet-v2-legacy-1.json",
+      "sha256": "46d7167f1ba31c40a054e203d55efa0b3651a511ffbddbc975f4c085a664a955"
+    },
+    {
+      "file": "integration/grade-legacy-1-initial.json",
+      "sha256": "a6e2701adc8b97b5c501f1fe491331cb465e7680fa7989e5aaabd52808e5b99f"
+    },
+    {
+      "file": "integration/grade-legacy-1-final.json",
+      "sha256": "fd96624dca8397b73e99a720cbbf57ab46d61388add9721d373b036e3cee86df"
+    },
+    {
+      "file": "integration/packet-v2-legacy-2.json",
+      "sha256": "fdf44cd4f4165963071f8da038808a83f2dd59c73b78cc90b655aa9e6a62a8c2"
+    },
+    {
+      "file": "integration/grade-legacy-2-initial.json",
+      "sha256": "b4c86f55bd5f3c1378bd8e3a91bb88725ccd775f9b54aa3a239376a337794fa2"
+    },
+    {
+      "file": "integration/grade-legacy-2-final.json",
+      "sha256": "30915f03ea07d57fef9a6989ad86e228378d58f148f0f5566e65b2d39d847416"
+    },
+    {
+      "file": "integration/packet-v2-recent-1.json",
+      "sha256": "a5ec575c0d6cd8990c27b008d1b654a4e51f5abb5c3c49475abd13eca8e2a1a2"
+    },
+    {
+      "file": "integration/grade-recent-1-initial.json",
+      "sha256": "34625e53f5af6c1e016422bf92a0daf53e8adb3fabf89d1a50547459593d252f"
+    },
+    {
+      "file": "integration/grade-recent-1-final.json",
+      "sha256": "9577588954348c8fce80107e0a8206ed013a7f1d27e3ab6d2cb9a26c27e4aba8"
+    },
+    {
+      "file": "integration/packet-v2-recent-2.json",
+      "sha256": "c463c29b559c8f2f87e27e6b57002693b322adc2de135fe46cecab68234434c6"
+    },
+    {
+      "file": "integration/grade-recent-2-initial.json",
+      "sha256": "e3f280026000239055bae3f4066e6ee772936d759d263c9dfa8e8e1e15b336b7"
+    },
+    {
+      "file": "integration/grade-recent-2-final.json",
+      "sha256": "02dafe0d7fb5a8c83cf15ed65d7f9a20809d0e3a53f5cbd76654482f1365d129"
+    }
+  ],
+  "arms": [
+    {
+      "label": "Integration",
+      "candidate": "Candidate D",
+      "rows": [
+        {
+          "block": "legacy",
+          "run": 1,
+          "writableCases": 10,
+          "completeRetention": 10,
+          "writableAnswers": 80,
+          "usefulAnswers": 76,
+          "publishedAnswers": 76,
+          "writableNulls": 4,
+          "retrievals": 40,
+          "usefulRetrievals": 40,
+          "unsupportedRetention": 0,
+          "retentionQualificationErrors": 0,
+          "retentionLanguageErrors": 0,
+          "unsupportedAnswers": 0,
+          "answerQualificationErrors": 0,
+          "answerLanguageErrors": 0,
+          "unsafeRetainedSets": 0,
+          "unsafeAnswers": 0,
+          "readOnlyCases": 1,
+          "justifiedReadOnlyCases": 1,
+          "readOnlyAnswers": 8,
+          "readOnlyNulls": 8,
+          "caseAvailabilityFailures": 0,
+          "answerAvailabilityFailures": 0,
+          "ordinaryMismatches": 0,
+          "bytesFailures": 0,
+          "replayFailures": 0,
+          "answerRate": 0.95,
+          "retentionRate": 1,
+          "retrievalRate": 1
+        },
+        {
+          "block": "legacy",
+          "run": 2,
+          "writableCases": 10,
+          "completeRetention": 9,
+          "writableAnswers": 80,
+          "usefulAnswers": 66,
+          "publishedAnswers": 66,
+          "writableNulls": 14,
+          "retrievals": 40,
+          "usefulRetrievals": 36,
+          "unsupportedRetention": 0,
+          "retentionQualificationErrors": 0,
+          "retentionLanguageErrors": 0,
+          "unsupportedAnswers": 0,
+          "answerQualificationErrors": 0,
+          "answerLanguageErrors": 0,
+          "unsafeRetainedSets": 0,
+          "unsafeAnswers": 0,
+          "readOnlyCases": 1,
+          "justifiedReadOnlyCases": 1,
+          "readOnlyAnswers": 8,
+          "readOnlyNulls": 8,
+          "caseAvailabilityFailures": 1,
+          "answerAvailabilityFailures": 1,
+          "ordinaryMismatches": 0,
+          "bytesFailures": 0,
+          "replayFailures": 0,
+          "answerRate": 0.825,
+          "retentionRate": 0.9,
+          "retrievalRate": 0.9
+        },
+        {
+          "block": "recent",
+          "run": 1,
+          "writableCases": 10,
+          "completeRetention": 7,
+          "writableAnswers": 80,
+          "usefulAnswers": 53,
+          "publishedAnswers": 57,
+          "writableNulls": 23,
+          "retrievals": 40,
+          "usefulRetrievals": 34,
+          "unsupportedRetention": 0,
+          "retentionQualificationErrors": 0,
+          "retentionLanguageErrors": 0,
+          "unsupportedAnswers": 2,
+          "answerQualificationErrors": 2,
+          "answerLanguageErrors": 0,
+          "unsafeRetainedSets": 0,
+          "unsafeAnswers": 0,
+          "readOnlyCases": 1,
+          "justifiedReadOnlyCases": 1,
+          "readOnlyAnswers": 8,
+          "readOnlyNulls": 8,
+          "caseAvailabilityFailures": 1,
+          "answerAvailabilityFailures": 1,
+          "ordinaryMismatches": 0,
+          "bytesFailures": 0,
+          "replayFailures": 0,
+          "answerRate": 0.6625,
+          "retentionRate": 0.7,
+          "retrievalRate": 0.85
+        },
+        {
+          "block": "recent",
+          "run": 2,
+          "writableCases": 10,
+          "completeRetention": 8,
+          "writableAnswers": 80,
+          "usefulAnswers": 54,
+          "publishedAnswers": 59,
+          "writableNulls": 21,
+          "retrievals": 40,
+          "usefulRetrievals": 33,
+          "unsupportedRetention": 1,
+          "retentionQualificationErrors": 0,
+          "retentionLanguageErrors": 0,
+          "unsupportedAnswers": 5,
+          "answerQualificationErrors": 0,
+          "answerLanguageErrors": 0,
+          "unsafeRetainedSets": 0,
+          "unsafeAnswers": 0,
+          "readOnlyCases": 1,
+          "justifiedReadOnlyCases": 1,
+          "readOnlyAnswers": 8,
+          "readOnlyNulls": 8,
+          "caseAvailabilityFailures": 2,
+          "answerAvailabilityFailures": 3,
+          "ordinaryMismatches": 0,
+          "bytesFailures": 0,
+          "replayFailures": 0,
+          "answerRate": 0.675,
+          "retentionRate": 0.8,
+          "retrievalRate": 0.825
+        }
+      ],
+      "totals": {
+        "writableCases": 40,
+        "completeRetention": 34,
+        "writableAnswers": 320,
+        "usefulAnswers": 249,
+        "publishedAnswers": 258,
+        "writableNulls": 62,
+        "retrievals": 160,
+        "usefulRetrievals": 143,
+        "unsupportedRetention": 1,
+        "retentionQualificationErrors": 0,
+        "retentionLanguageErrors": 0,
+        "unsupportedAnswers": 7,
+        "answerQualificationErrors": 2,
+        "answerLanguageErrors": 0,
+        "unsafeRetainedSets": 0,
+        "unsafeAnswers": 0,
+        "readOnlyCases": 4,
+        "justifiedReadOnlyCases": 4,
+        "readOnlyAnswers": 32,
+        "readOnlyNulls": 32,
+        "caseAvailabilityFailures": 4,
+        "answerAvailabilityFailures": 5,
+        "ordinaryMismatches": 0,
+        "bytesFailures": 0,
+        "replayFailures": 0
+      },
+      "worstAnswerRate": 0.6625,
+      "worstRetentionRate": 0.7,
+      "worstRetrievalRate": 0.825,
+      "acceptedErrorFree": false,
+      "coverageTargetMet": false,
+      "higherAnswerTargetMet": false,
+      "rolloutEligible": false
+    }
+  ]
+}

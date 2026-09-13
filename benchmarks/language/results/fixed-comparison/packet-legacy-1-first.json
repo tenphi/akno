@@ -1,0 +1,3130 @@
+{
+  "corpusFingerprint": "27bbb05e7bc8089ba133e5723667190106d02e98b635e41328d683bd9700505a",
+  "block": "legacy",
+  "run": 1,
+  "part": "first",
+  "instructions": "Grade only supplied source and public outputs under source-first-obligations.json. Answer IDs/retrieval IDs are scoped to each case/candidate. Repeated coordinates reference exactly equal values. Null writable output loses usefulness but has no accepted content error. Report retention completeness separately from source entailment and language. No candidate runtime or private judgments are supplied.",
+  "cases": [
+    {
+      "id": "v3-dev-denial",
+      "source": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Гарантия Zephyr QX-100 не включает замену корпуса."
+        }
+      ],
+      "queries": {
+        "en": "Does the Zephyr QX-100 warranty include housing replacement?",
+        "ru": "Включает ли гарантия Zephyr QX-100 замену корпуса?"
+      },
+      "admission": "writable",
+      "view": "factual",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retained": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty does not include housing replacement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d0dfe347",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ee135945171e93a491570856",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "Ada Marlow states that the Zephyr QX-100 warranty does not include housing replacement. [memory/zephyr-qx-100:14]",
+                "requestedAnswerLanguage": "en",
+                "query": "Does the Zephyr QX-100 warranty include housing replacement?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "Ada Marlow утверждает, что гарантия Zephyr QX-100 не включает замену корпуса. [memory/zephyr-qx-100:14]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Does the Zephyr QX-100 warranty include housing replacement?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "Ada Marlow заявляет, что гарантия Zephyr QX-100 не включает замену корпуса. [memory/zephyr-qx-100:14]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Does the Zephyr QX-100 warranty include housing replacement?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "Ada Marlow states that the Zephyr QX-100 warranty does not include housing replacement. [memory/zephyr-qx-100:14]",
+                "requestedAnswerLanguage": "en",
+                "query": "Включает ли гарантия Zephyr QX-100 замену корпуса?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "Ada Marlow утверждает, что гарантия Zephyr QX-100 не включает замену корпуса. [memory/zephyr-qx-100:14]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Включает ли гарантия Zephyr QX-100 замену корпуса?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- Ada Marlow states that the Zephyr QX-100 warranty does not include housing replacement.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_d0dfe347",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_ee135945171e93a491570856",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "Does the Zephyr QX-100 warranty include housing replacement?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- Ada Marlow states that the Zephyr QX-100 warranty does not include housing replacement.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_d0dfe347",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_ee135945171e93a491570856",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "Включает ли гарантия Zephyr QX-100 замену корпуса?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "5",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retained": [
+            {
+              "text": "- The warranty for Zephyr QX-100 does not include replacement of the casing.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e3f21be9",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_b958ee0e22784cd2e1967c22",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "No. The warranty for Zephyr QX-100 does not include replacement of the casing. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Does the Zephyr QX-100 warranty include housing replacement?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "Гарантия на Zephyr QX-100 не включает замену корпуса. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Does the Zephyr QX-100 warranty include housing replacement?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "Нет. Гарантия на Zephyr QX-100 не включает замену корпуса. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Does the Zephyr QX-100 warranty include housing replacement?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "The warranty for Zephyr QX-100 does not include replacement of the casing. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Включает ли гарантия Zephyr QX-100 замену корпуса?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "Нет. Гарантия Zephyr QX-100 не включает замену корпуса. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Включает ли гарантия Zephyr QX-100 замену корпуса?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "No. The warranty for Zephyr QX-100 does not include replacement of the casing, according to Ada Marlow’s assertion. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Включает ли гарантия Zephyr QX-100 замену корпуса?"
+              }
+            },
+            {
+              "id": "7",
+              "value": {
+                "text": "Нет. По утверждению Ada Marlow, гарантия Zephyr QX-100 не включает замену корпуса. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Включает ли гарантия Zephyr QX-100 замену корпуса?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- The warranty for Zephyr QX-100 does not include replacement of the casing.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_e3f21be9",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_b958ee0e22784cd2e1967c22",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "Does the Zephyr QX-100 warranty include housing replacement?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- The warranty for Zephyr QX-100 does not include replacement of the casing.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_e3f21be9",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_b958ee0e22784cd2e1967c22",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "Включает ли гарантия Zephyr QX-100 замену корпуса?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "6",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "7",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retained": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty does not include replacement of the body.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_c283ddfb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e4f5b89c463378d5d490e07c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "No. Ada Marlow states that the Zephyr QX-100 warranty does not include replacement of the body. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Does the Zephyr QX-100 warranty include housing replacement?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "Нет. По утверждению Ada Marlow, гарантия Zephyr QX-100 не включает замену корпуса. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Does the Zephyr QX-100 warranty include housing replacement?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "No. Ada Marlow states that the Zephyr QX-100 warranty does not include replacement of the body. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Включает ли гарантия Zephyr QX-100 замену корпуса?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "Нет. По утверждению Ada Marlow, гарантия Zephyr QX-100 не включает замену корпуса. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Включает ли гарантия Zephyr QX-100 замену корпуса?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "Нет. Ada Marlow утверждает, что гарантия Zephyr QX-100 не включает замену корпуса. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Включает ли гарантия Zephyr QX-100 замену корпуса?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- Ada Marlow states that the Zephyr QX-100 warranty does not include replacement of the body.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_c283ddfb",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_e4f5b89c463378d5d490e07c",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "Does the Zephyr QX-100 warranty include housing replacement?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- Ada Marlow states that the Zephyr QX-100 warranty does not include replacement of the body.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_c283ddfb",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_e4f5b89c463378d5d490e07c",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "Включает ли гарантия Zephyr QX-100 замену корпуса?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "5",
+              "retrieval": "2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v3-dev-report",
+      "source": [
+        {
+          "item_id": "turn-1111",
+          "role": "assistant",
+          "text": "I suspect that the Zephyr QX-100 warranty includes sensor cleaning, but I have no confirmation."
+        }
+      ],
+      "queries": {
+        "en": "What did the assistant report about sensor cleaning under the Zephyr QX-100 warranty?",
+        "ru": "Что ассистент сообщил о чистке датчика по гарантии Zephyr QX-100?"
+      },
+      "admission": "writable",
+      "view": "reports",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retained": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant suspects that the Zephyr QX-100 warranty includes sensor cleaning, but the assistant has no confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_6ca8f46e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_113577dc0159a2a368d6a599",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "**Reported by assistant · Tentative:** The assistant suspects that the Zephyr QX-100 warranty includes sensor cleaning, but the assistant has no confirmation. [memory/zephyr-qx-100:14]",
+                "requestedAnswerLanguage": "en",
+                "query": "What did the assistant report about sensor cleaning under the Zephyr QX-100 warranty?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "**Сообщено ассистентом · Предварительно:** Ассистент подозревает, что гарантия Zephyr QX-100 включает очистку датчика, но у ассистента нет подтверждения. [memory/zephyr-qx-100:14]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What did the assistant report about sensor cleaning under the Zephyr QX-100 warranty?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "По словам ассистента · Предварительный статус: ассистент подозревает, что гарантия Zephyr QX-100 включает очистку датчиков, но у ассистента нет подтверждения. [memory/zephyr-qx-100:14]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What did the assistant report about sensor cleaning under the Zephyr QX-100 warranty?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "**Reported by assistant · Tentative:** The assistant suspects that the Zephyr QX-100 warranty includes sensor cleaning, but the assistant has no confirmation. [memory/zephyr-qx-100:14]",
+                "requestedAnswerLanguage": "en",
+                "query": "Что ассистент сообщил о чистке датчика по гарантии Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "По словам ассистента · предварительный статус: ассистент подозревает, что гарантия Zephyr QX-100 включает чистку датчика, но подтверждения у ассистента нет. [memory/zephyr-qx-100:14]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Что ассистент сообщил о чистке датчика по гарантии Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "**По словам ассистента · Предварительно:** Ассистент предполагает, что гарантия Zephyr QX-100 включает чистку датчика, но у ассистента нет подтверждения. [memory/zephyr-qx-100:14]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Что ассистент сообщил о чистке датчика по гарантии Zephyr QX-100?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Reported by assistant · Tentative:** The assistant suspects that the Zephyr QX-100 warranty includes sensor cleaning, but the assistant has no confirmation.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_6ca8f46e",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_113577dc0159a2a368d6a599",
+                      "source_role": "assistant",
+                      "source_speaker": "assistant",
+                      "commitment": "tentative",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "source_report",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "What did the assistant report about sensor cleaning under the Zephyr QX-100 warranty?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Reported by assistant · Tentative:** The assistant suspects that the Zephyr QX-100 warranty includes sensor cleaning, but the assistant has no confirmation.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_6ca8f46e",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_113577dc0159a2a368d6a599",
+                      "source_role": "assistant",
+                      "source_speaker": "assistant",
+                      "commitment": "tentative",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "source_report",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Что ассистент сообщил о чистке датчика по гарантии Zephyr QX-100?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retained": [
+            {
+              "text": "- **Reported by the assistant · Tentative:** The assistant tentatively suspects that the Zephyr QX-100 warranty includes sensor cleaning, but has no confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_2cd96f6e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_bab19d2e8e29c801c23d60bc",
+                "source_role": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "The assistant tentatively reported that the Zephyr QX-100 warranty includes sensor cleaning, but had no confirmation. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "What did the assistant report about sensor cleaning under the Zephyr QX-100 warranty?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "Ассистент предположительно сообщил, что гарантия Zephyr QX-100 включает очистку датчиков, но подтверждения этому нет. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What did the assistant report about sensor cleaning under the Zephyr QX-100 warranty?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "The assistant tentatively reported that the Zephyr QX-100 warranty includes sensor cleaning, but said it had no confirmation. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "What did the assistant report about sensor cleaning under the Zephyr QX-100 warranty?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "Ассистент предположительно сообщил, что гарантия Zephyr QX-100 может включать очистку датчиков, однако подтверждения этому нет. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What did the assistant report about sensor cleaning under the Zephyr QX-100 warranty?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "The assistant tentatively reported that the Zephyr QX-100 warranty may include sensor cleaning, but this was unconfirmed. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Что ассистент сообщил о чистке датчика по гарантии Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "Ассистент предварительно предположил, что гарантия Zephyr QX-100 включает чистку датчика, но подтверждения этому нет. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Что ассистент сообщил о чистке датчика по гарантии Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "7",
+              "value": {
+                "text": "The assistant tentatively reported that the Zephyr QX-100 warranty may include sensor cleaning, but stated that this was unconfirmed. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Что ассистент сообщил о чистке датчика по гарантии Zephyr QX-100?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Reported by the assistant · Tentative:** The assistant tentatively suspects that the Zephyr QX-100 warranty includes sensor cleaning, but has no confirmation.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_2cd96f6e",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_bab19d2e8e29c801c23d60bc",
+                      "source_role": "assistant",
+                      "commitment": "tentative",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "source_report",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "What did the assistant report about sensor cleaning under the Zephyr QX-100 warranty?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Reported by the assistant · Tentative:** The assistant tentatively suspects that the Zephyr QX-100 warranty includes sensor cleaning, but has no confirmation.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_2cd96f6e",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_bab19d2e8e29c801c23d60bc",
+                      "source_role": "assistant",
+                      "commitment": "tentative",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "source_report",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Что ассистент сообщил о чистке датчика по гарантии Zephyr QX-100?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "7",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retained": [
+            {
+              "text": "- **Reported by the assistant · Tentative:** The assistant suspects that the Zephyr QX-100 warranty includes sensor cleaning, but has no confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_5040cd27",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_5950e3adc17a2059d56d347d",
+                "source_role": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "The assistant tentatively reported that the Zephyr QX-100 warranty includes sensor cleaning, but had no confirmation. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "What did the assistant report about sensor cleaning under the Zephyr QX-100 warranty?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "Ассистент предварительно сообщил, что подозревает: гарантия Zephyr QX-100 включает очистку сенсора, но подтверждения этому нет. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What did the assistant report about sensor cleaning under the Zephyr QX-100 warranty?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "The assistant tentatively reported that the Zephyr QX-100 warranty includes sensor cleaning, but stated that this was unconfirmed. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "What did the assistant report about sensor cleaning under the Zephyr QX-100 warranty?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "Ассистент предположил, что гарантия Zephyr QX-100 включает очистку датчиков, но подтверждения этому нет; это предварительное сообщение ассистента, а не установленный факт. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What did the assistant report about sensor cleaning under the Zephyr QX-100 warranty?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "The assistant tentatively reported that the Zephyr QX-100 warranty may include sensor cleaning, but said this was unconfirmed. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Что ассистент сообщил о чистке датчика по гарантии Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "Ассистент предположил, что гарантия на Zephyr QX-100 включает чистку датчика, но подтверждения этому нет. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Что ассистент сообщил о чистке датчика по гарантии Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "7",
+              "value": {
+                "text": "The assistant tentatively reported that the Zephyr QX-100 warranty may include sensor cleaning, but this remains unconfirmed. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Что ассистент сообщил о чистке датчика по гарантии Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "8",
+              "value": {
+                "text": "Ассистент предположил, но не подтвердил, что гарантия Zephyr QX-100 включает чистку датчика. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Что ассистент сообщил о чистке датчика по гарантии Zephyr QX-100?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Reported by the assistant · Tentative:** The assistant suspects that the Zephyr QX-100 warranty includes sensor cleaning, but has no confirmation.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_5040cd27",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_5950e3adc17a2059d56d347d",
+                      "source_role": "assistant",
+                      "commitment": "tentative",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "source_report",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "What did the assistant report about sensor cleaning under the Zephyr QX-100 warranty?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Reported by the assistant · Tentative:** The assistant suspects that the Zephyr QX-100 warranty includes sensor cleaning, but has no confirmation.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_5040cd27",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_5950e3adc17a2059d56d347d",
+                      "source_role": "assistant",
+                      "commitment": "tentative",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "source_report",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Что ассистент сообщил о чистке датчика по гарантии Zephyr QX-100?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "7",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "8",
+              "retrieval": "2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v3-dev-alternatives",
+      "source": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Рассмотрим две несовместимые гипотезы о Zephyr QX-100: warranty service is annual, or warranty service is biennial. Neither hypothesis is established. Keep both alternatives for discussion."
+        }
+      ],
+      "queries": {
+        "en": "Which competing hypotheses were discussed about the Zephyr QX-100 warranty service interval?",
+        "ru": "Какие конкурирующие гипотезы обсуждались об интервале гарантийного обслуживания Zephyr QX-100?"
+      },
+      "admission": "writable",
+      "view": "discussion",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retained": [],
+          "admission": {
+            "status": "ok",
+            "outcome": "held",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "held",
+                "reason": "discourse_uncertain",
+                "holdStage": "verification",
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "Which competing hypotheses were discussed about the Zephyr QX-100 warranty service interval?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "Which competing hypotheses were discussed about the Zephyr QX-100 warranty service interval?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "Какие конкурирующие гипотезы обсуждались об интервале гарантийного обслуживания Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "Какие конкурирующие гипотезы обсуждались об интервале гарантийного обслуживания Zephyr QX-100?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [],
+                "query": "Which competing hypotheses were discussed about the Zephyr QX-100 warranty service interval?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [],
+                "query": "Какие конкурирующие гипотезы обсуждались об интервале гарантийного обслуживания Zephyr QX-100?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retained": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow considered two incompatible, unestablished hypotheses about Zephyr QX-100: warranty service is annual or warranty service is biennial; neither hypothesis is established, and both alternatives remain for discussion.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_bf71a7c0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_1e0b6e5356db5ab5f1e06566",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "Ada Marlow discussed two incompatible, unestablished hypotheses about the Zephyr QX-100 warranty service interval: that warranty service is annual, or that it is biennial. Neither hypothesis is established, and both alternatives remain for discussion. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Which competing hypotheses were discussed about the Zephyr QX-100 warranty service interval?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "В обсуждении Ada Marlow рассматривала две несовместимые, неустановленные гипотезы о периодичности гарантийного обслуживания Zephyr QX-100: обслуживание проводится ежегодно или раз в два года. Ни одна из гипотез не установлена; обе альтернативы остаются предметом обсуждения. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Which competing hypotheses were discussed about the Zephyr QX-100 warranty service interval?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "Ada Marlow discussed two incompatible, unestablished hypotheses about the Zephyr QX-100 warranty service interval: that it is annual, or that it is biennial. Neither hypothesis is established, and both remain under discussion. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Which competing hypotheses were discussed about the Zephyr QX-100 warranty service interval?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "Обсуждались две несовместимые, неустановленные гипотезы, приписанные Ada Marlow: гарантийное обслуживание Zephyr QX-100 проводится ежегодно или раз в два года. Ни одна из гипотез не установлена; обе остаются предметом обсуждения. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Which competing hypotheses were discussed about the Zephyr QX-100 warranty service interval?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "Ada Marlow discussed two incompatible, unestablished hypotheses about the Zephyr QX-100 warranty service interval: it could be annual, or it could be biennial. Neither hypothesis is established, and both alternatives remain under discussion. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какие конкурирующие гипотезы обсуждались об интервале гарантийного обслуживания Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "Ada Marlow обсуждала две несовместимые, неустановленные гипотезы об интервале гарантийного обслуживания Zephyr QX-100: обслуживание проводится ежегодно или обслуживание проводится раз в два года. Ни одна из гипотез не установлена; обе альтернативы остаются предметом обсуждения. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какие конкурирующие гипотезы обсуждались об интервале гарантийного обслуживания Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "7",
+              "value": {
+                "text": "Ada Marlow рассматривала две несовместимые, неустановленные гипотезы об интервале гарантийного обслуживания Zephyr QX-100: обслуживание проводится ежегодно или раз в два года. Ни одна из гипотез не установлена; обе альтернативы остаются предметом обсуждения. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какие конкурирующие гипотезы обсуждались об интервале гарантийного обслуживания Zephyr QX-100?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Hypothetical:** Ada Marlow considered two incompatible, unestablished hypotheses about Zephyr QX-100: warranty service is annual or warranty service is biennial; neither hypothesis is established, and both alternatives remain for discussion.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_bf71a7c0",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_1e0b6e5356db5ab5f1e06566",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Which competing hypotheses were discussed about the Zephyr QX-100 warranty service interval?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Hypothetical:** Ada Marlow considered two incompatible, unestablished hypotheses about Zephyr QX-100: warranty service is annual or warranty service is biennial; neither hypothesis is established, and both alternatives remain for discussion.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_bf71a7c0",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_1e0b6e5356db5ab5f1e06566",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Какие конкурирующие гипотезы обсуждались об интервале гарантийного обслуживания Zephyr QX-100?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "7",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retained": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow stated that an unestablished hypothesis is that Zephyr QX-100 warranty service is biennial.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_591fd1a8",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_65ef2bbe1f74e628023dcaf8",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Hypothetical:** Ada Marlow stated that an unestablished hypothesis is that Zephyr QX-100 warranty service is annual.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_7e8bb8bc",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_65ef2bbe1f74e628023dcaf8",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              },
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "Ada Marlow discussed two competing unestablished hypotheses about the Zephyr QX-100 warranty service interval: that it is biennial, and that it is annual. [memory/equipment:6] [memory/equipment:9]",
+                "requestedAnswerLanguage": "en",
+                "query": "Which competing hypotheses were discussed about the Zephyr QX-100 warranty service interval?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "Обсуждались две конкурирующие, неустановленные гипотезы, обе высказанные Ada Marlow: гипотеза о том, что гарантийное обслуживание Zephyr QX-100 проводится раз в два года, и гипотеза о том, что оно проводится ежегодно. [memory/equipment:6] [memory/equipment:9]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Which competing hypotheses were discussed about the Zephyr QX-100 warranty service interval?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "Ada Marlow discussed two competing unestablished hypotheses about the Zephyr QX-100 warranty service interval: that it is biennial, and that it is annual. Neither hypothesis is established as fact. [memory/equipment:6] [memory/equipment:9]",
+                "requestedAnswerLanguage": "en",
+                "query": "Which competing hypotheses were discussed about the Zephyr QX-100 warranty service interval?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "Обсуждались две конкурирующие, неустановленные гипотезы, обе высказанные Ada Marlow: что гарантийное обслуживание Zephyr QX-100 проводится раз в два года, и что оно проводится ежегодно. [memory/equipment:6] [memory/equipment:9]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Which competing hypotheses were discussed about the Zephyr QX-100 warranty service interval?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "Ada Marlow discussed two competing unestablished hypotheses about the Zephyr QX-100 warranty service interval: a biennial interval and an annual interval. [memory/equipment:6] [memory/equipment:9]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какие конкурирующие гипотезы обсуждались об интервале гарантийного обслуживания Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "Обсуждались две конкурирующие, неустановленные гипотезы, высказанные Ada Marlow: гарантийное обслуживание Zephyr QX-100 проводится раз в два года и проводится ежегодно. Ни одна из гипотез не подтверждена как фактический интервал. [memory/equipment:6] [memory/equipment:9]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какие конкурирующие гипотезы обсуждались об интервале гарантийного обслуживания Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "7",
+              "value": {
+                "text": "Обсуждались две конкурирующие неподтверждённые гипотезы, высказанные Ada Marlow: гарантийное обслуживание Zephyr QX-100 проводится раз в два года (biennial) и проводится ежегодно (annual). Ни одна из гипотез не установлена как факт. [memory/equipment:6] [memory/equipment:9]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какие конкурирующие гипотезы обсуждались об интервале гарантийного обслуживания Zephyr QX-100?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Hypothetical:** Ada Marlow stated that an unestablished hypothesis is that Zephyr QX-100 warranty service is biennial.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_591fd1a8",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_65ef2bbe1f74e628023dcaf8",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  },
+                  {
+                    "text": "- **Hypothetical:** Ada Marlow stated that an unestablished hypothesis is that Zephyr QX-100 warranty service is annual.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_7e8bb8bc",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_65ef2bbe1f74e628023dcaf8",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Which competing hypotheses were discussed about the Zephyr QX-100 warranty service interval?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Hypothetical:** Ada Marlow stated that an unestablished hypothesis is that Zephyr QX-100 warranty service is biennial.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_591fd1a8",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_65ef2bbe1f74e628023dcaf8",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  },
+                  {
+                    "text": "- **Hypothetical:** Ada Marlow stated that an unestablished hypothesis is that Zephyr QX-100 warranty service is annual.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_7e8bb8bc",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_65ef2bbe1f74e628023dcaf8",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Какие конкурирующие гипотезы обсуждались об интервале гарантийного обслуживания Zephyr QX-100?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "7",
+              "retrieval": "2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v3-dev-example",
+      "source": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Для обсуждения сохраним вымышленный пример: Bo Winters представляет гарантию Zephyr QX-100 на двадцать лет. Это не реальная гарантия."
+        }
+      ],
+      "queries": {
+        "en": "What fictional warranty example was discussed for Zephyr QX-100?",
+        "ru": "Какой вымышленный пример гарантии обсуждался для Zephyr QX-100?"
+      },
+      "admission": "writable",
+      "view": "discussion",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retained": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow's fictional example, Bo Winters presents a twenty-year warranty for Zephyr QX-100; this is not a real warranty.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_2c5f2417",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_decd681fc718b1d68201d853",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "**Hypothetical:** In Ada Marlow's fictional example, Bo Winters presents a twenty-year warranty for Zephyr QX-100; this is not a real warranty. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "What fictional warranty example was discussed for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "В вымышленном примере Ada Marlow Bo Winters представляет двадцатилетнюю гарантию на Zephyr QX-100; это не настоящая гарантия. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What fictional warranty example was discussed for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "**Гипотетический контекст:** В вымышленном примере Ada Marlow Bo Winters представляет двадцатилетнюю гарантию на Zephyr QX-100; это не реальная гарантия. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What fictional warranty example was discussed for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "**Hypothetical:** In Ada Marlow's fictional example, Bo Winters presents a twenty-year warranty for Zephyr QX-100; this is not a real warranty. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какой вымышленный пример гарантии обсуждался для Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "**Гипотетический контекст:** В вымышленном примере Ada Marlow Bo Winters представляет двадцатилетнюю гарантию на Zephyr QX-100; это не реальная гарантия. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какой вымышленный пример гарантии обсуждался для Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "**Гипотетический пример:** в вымышленном примере Ada Marlow Bo Winters представляет двадцатилетнюю гарантию на Zephyr QX-100; это не настоящая гарантия. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какой вымышленный пример гарантии обсуждался для Zephyr QX-100?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Hypothetical:** In Ada Marlow's fictional example, Bo Winters presents a twenty-year warranty for Zephyr QX-100; this is not a real warranty.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_2c5f2417",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_decd681fc718b1d68201d853",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "What fictional warranty example was discussed for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Hypothetical:** In Ada Marlow's fictional example, Bo Winters presents a twenty-year warranty for Zephyr QX-100; this is not a real warranty.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_2c5f2417",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_decd681fc718b1d68201d853",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Какой вымышленный пример гарантии обсуждался для Zephyr QX-100?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retained": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow's fictional example has Bo Winters presenting a twenty-year warranty for Zephyr QX-100; Ada Marlow explicitly says this is not a real warranty.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_f4b930c9",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a3ebc5699e8f213c49d10512",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "The fictional warranty example was Bo Winters presenting a twenty-year warranty for Zephyr QX-100. Ada Marlow explicitly described it as not a real warranty and therefore only a hypothetical example. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "What fictional warranty example was discussed for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "Обсуждался вымышленный пример, в котором Bo Winters якобы предлагает двадцатилетнюю гарантию на Zephyr QX-100. Ada Marlow явно уточняет, что это не настоящая гарантия. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What fictional warranty example was discussed for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "The fictional warranty example was Bo Winters presenting a twenty-year warranty for Zephyr QX-100. Ada Marlow explicitly said this was not a real warranty; it was a hypothetical example. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "What fictional warranty example was discussed for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "В обсуждении гипотетический вымышленный пример Ada Marlow заключался в том, что Bo Winters представляет двадцатилетнюю гарантию на Zephyr QX-100; Ada Marlow явно уточняет, что это не настоящая гарантия. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What fictional warranty example was discussed for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "The discussed fictional example was Bo Winters presenting a twenty-year warranty for Zephyr QX-100. Ada Marlow explicitly said this was not a real warranty. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какой вымышленный пример гарантии обсуждался для Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "Обсуждался вымышленный пример, в котором Bo Winters предлагает двадцатилетнюю гарантию на Zephyr QX-100. Ada Marlow явно уточняет, что это не настоящая гарантия. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какой вымышленный пример гарантии обсуждался для Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "7",
+              "value": {
+                "text": "The fictional example discussed was Bo Winters presenting a twenty-year warranty for Zephyr QX-100. Ada Marlow explicitly said that this was not a real warranty. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какой вымышленный пример гарантии обсуждался для Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "8",
+              "value": {
+                "text": "Обсуждался вымышленный пример, в котором Bo Winters представлял двадцатилетнюю гарантию на Zephyr QX-100. Ada Marlow явно указала, что это не настоящая гарантия. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какой вымышленный пример гарантии обсуждался для Zephyr QX-100?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Hypothetical:** Ada Marlow's fictional example has Bo Winters presenting a twenty-year warranty for Zephyr QX-100; Ada Marlow explicitly says this is not a real warranty.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_f4b930c9",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_a3ebc5699e8f213c49d10512",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "What fictional warranty example was discussed for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Hypothetical:** Ada Marlow's fictional example has Bo Winters presenting a twenty-year warranty for Zephyr QX-100; Ada Marlow explicitly says this is not a real warranty.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_f4b930c9",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_a3ebc5699e8f213c49d10512",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Какой вымышленный пример гарантии обсуждался для Zephyr QX-100?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "7",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "8",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retained": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow preserves, for discussion, a fictional example in which Bo Winters presents a twenty-year Zephyr QX-100 warranty; this is not a real warranty.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_01402b7e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_0b0dcc0387f67373964c2fc2",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "The fictional warranty example was that Bo Winters presents a twenty-year Zephyr QX-100 warranty. This was a hypothetical discussion example, not a real warranty, preserved by Ada Marlow. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "What fictional warranty example was discussed for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "Обсуждался вымышленный, гипотетический пример: Bo Winters предлагает двадцатилетнюю гарантию на Zephyr QX-100. Это не настоящая гарантия; пример сохранён Ada Marlow для обсуждения. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What fictional warranty example was discussed for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "The fictional, hypothetical example discussed was that Bo Winters presents a twenty-year Zephyr QX-100 warranty. It is explicitly not a real warranty, and Ada Marlow preserved it for discussion. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "What fictional warranty example was discussed for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "Обсуждался вымышленный гипотетический пример, в котором Bo Winters представляет двадцатилетнюю гарантию на Zephyr QX-100. Ada Marlow сохранила этот пример для обсуждения; это не настоящая гарантия. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What fictional warranty example was discussed for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "The discussion preserved a hypothetical, fictional example in which Bo Winters presents a twenty-year Zephyr QX-100 warranty. Ada Marlow preserved this example for discussion, and it is not a real warranty. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какой вымышленный пример гарантии обсуждался для Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "Обсуждался вымышленный, гипотетический пример, в котором Bo Winters предлагает двадцатилетнюю гарантию на Zephyr QX-100; это не настоящая гарантия. Пример сохраняет Ada Marlow для обсуждения. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какой вымышленный пример гарантии обсуждался для Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "7",
+              "value": {
+                "text": "Ada Marlow discussed a fictional, hypothetical example in which Bo Winters presents a twenty-year warranty for the Zephyr QX-100. It was explicitly not a real warranty. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какой вымышленный пример гарантии обсуждался для Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "8",
+              "value": {
+                "text": "Обсуждался вымышленный гипотетический пример: Bo Winters предлагает двадцатилетнюю гарантию на Zephyr QX-100. Это не реальная гарантия; пример сохранила для обсуждения Ada Marlow. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какой вымышленный пример гарантии обсуждался для Zephyr QX-100?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Hypothetical:** Ada Marlow preserves, for discussion, a fictional example in which Bo Winters presents a twenty-year Zephyr QX-100 warranty; this is not a real warranty.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_01402b7e",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_0b0dcc0387f67373964c2fc2",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "What fictional warranty example was discussed for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Hypothetical:** Ada Marlow preserves, for discussion, a fictional example in which Bo Winters presents a twenty-year Zephyr QX-100 warranty; this is not a real warranty.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_01402b7e",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_0b0dcc0387f67373964c2fc2",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Какой вымышленный пример гарантии обсуждался для Zephyr QX-100?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "7",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "8",
+              "retrieval": "2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v3-dev-undated",
+      "source": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "I propose reviewing the Zephyr QX-100 warranty tomorrow. This proposal has not been accepted; there is no scheduled review."
+        }
+      ],
+      "queries": {
+        "en": "What warranty review was proposed for Zephyr QX-100, and is its calendar date known?",
+        "ru": "Какую проверку гарантии предложили для Zephyr QX-100 и известна ли её календарная дата?"
+      },
+      "admission": "writable",
+      "view": "planning",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retained": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow, relative to the source entry; the reference date is unknown. The proposal has not been accepted, and no review is scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_c4a55db5",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_599f87f9e1e982c371d58c59",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "**Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow, relative to the source entry; the reference date is unknown. The proposal has not been accepted, and no review is scheduled. [memory/zephyr-qx-100:14]",
+                "requestedAnswerLanguage": "en",
+                "query": "What warranty review was proposed for Zephyr QX-100, and is its calendar date known?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "Ada Marlow предложила завтра, относительно исходной записи, проверить гарантию Zephyr QX-100. Предложение не принято, и проверка не запланирована. Интервал «завтра» отсчитывается от времени первоначальной записи без даты. Календарная дата исходной записи неизвестна. [memory/zephyr-qx-100:14]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What warranty review was proposed for Zephyr QX-100, and is its calendar date known?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "What warranty review was proposed for Zephyr QX-100, and is its calendar date known?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "**Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow, relative to the source entry; the reference date is unknown. The proposal has not been accepted, and no review is scheduled. [memory/zephyr-qx-100:14]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какую проверку гарантии предложили для Zephyr QX-100 и известна ли её календарная дата?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "Предложение · Предварительный срок: Ada Marlow предложила проверить гарантию Zephyr QX-100 завтра относительно записи-источника; предложение не принято, и проверка не запланирована. Интервал «завтра» отсчитывается от времени первоначальной записи без даты. Календарная дата, к которой относится это «завтра», неизвестна. [memory/zephyr-qx-100:14]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какую проверку гарантии предложили для Zephyr QX-100 и известна ли её календарная дата?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "**Предложение · Предварительный срок:** Ada Marlow предложила проверить гарантию Zephyr QX-100 завтра относительно записи-источника; дата-ориентир неизвестна. Предложение не принято, и проверка не запланирована. Интервал «завтра» отсчитывается от времени первоначальной записи без даты. Календарная дата первоначальной записи неизвестна. [memory/zephyr-qx-100:14]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какую проверку гарантии предложили для Zephyr QX-100 и известна ли её календарная дата?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow, relative to the source entry; the reference date is unknown. The proposal has not been accepted, and no review is scheduled.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_c4a55db5",
+                      "level": 1,
+                      "kind": "plan",
+                      "subject": "ent_599f87f9e1e982c371d58c59",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "proposed",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false,
+                      "temporal": {
+                        "time": {
+                          "relation": "scheduled",
+                          "status": "tentative",
+                          "precision": "unknown"
+                        },
+                        "clock_relation": "undated",
+                        "actionable": false
+                      }
+                    }
+                  }
+                ],
+                "query": "What warranty review was proposed for Zephyr QX-100, and is its calendar date known?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow, relative to the source entry; the reference date is unknown. The proposal has not been accepted, and no review is scheduled.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_c4a55db5",
+                      "level": 1,
+                      "kind": "plan",
+                      "subject": "ent_599f87f9e1e982c371d58c59",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "proposed",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false,
+                      "temporal": {
+                        "time": {
+                          "relation": "scheduled",
+                          "status": "tentative",
+                          "precision": "unknown"
+                        },
+                        "clock_relation": "undated",
+                        "actionable": false
+                      }
+                    }
+                  }
+                ],
+                "query": "Какую проверку гарантии предложили для Zephyr QX-100 и известна ли её календарная дата?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retained": [],
+          "admission": {
+            "status": "ok",
+            "outcome": "held",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "held",
+                "reason": "time_unresolved",
+                "holdStage": "validation",
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "What warranty review was proposed for Zephyr QX-100, and is its calendar date known?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "What warranty review was proposed for Zephyr QX-100, and is its calendar date known?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "Какую проверку гарантии предложили для Zephyr QX-100 и известна ли её календарная дата?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "Какую проверку гарантии предложили для Zephyr QX-100 и известна ли её календарная дата?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [],
+                "query": "What warranty review was proposed for Zephyr QX-100, and is its calendar date known?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [],
+                "query": "Какую проверку гарантии предложили для Zephyr QX-100 и известна ли её календарная дата?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retained": [
+            {
+              "text": "- **Tentative · Proposal:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow relative to the source, but the reference date is unknown; the proposal has not been accepted and no review is scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_f90d2328",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_ece832e7470291d5082a6e1c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "Ada Marlow tentatively proposed reviewing the Zephyr QX-100 warranty tomorrow relative to the undated source. The proposal has not been accepted, no review is scheduled, and its calendar date is unknown. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "What warranty review was proposed for Zephyr QX-100, and is its calendar date known?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "Ada Marlow предложила проверить гарантию Zephyr QX-100 завтра относительно источника. Это предварительное, ещё не принятое предложение; проверка не запланирована. Календарная дата неизвестна, поскольку опорная дата источника не указана. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What warranty review was proposed for Zephyr QX-100, and is its calendar date known?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "Ada Marlow tentatively proposed reviewing the Zephyr QX-100 warranty tomorrow relative to the undated source. The proposal has not been accepted, no review is scheduled, and the calendar date is unknown. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "What warranty review was proposed for Zephyr QX-100, and is its calendar date known?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "Ada Marlow предложила провести обзор гарантии Zephyr QX-100 «завтра» относительно источника. Это предварительное, ещё не принятое предложение; обзор не запланирован. Календарная дата неизвестна, поскольку дата источника не указана. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What warranty review was proposed for Zephyr QX-100, and is its calendar date known?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "Ada Marlow tentatively proposed reviewing the Zephyr QX-100 warranty tomorrow relative to the undated source. The proposal has not been accepted, no review is scheduled, and its calendar date is unknown. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какую проверку гарантии предложили для Zephyr QX-100 и известна ли её календарная дата?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "Ada Marlow предложила проверить гарантию Zephyr QX-100 «завтра» относительно источника. Это предварительное, не принятое предложение; проверка не запланирована. Календарная дата неизвестна, поскольку дата источника не указана. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какую проверку гарантии предложили для Zephyr QX-100 и известна ли её календарная дата?"
+              }
+            },
+            {
+              "id": "7",
+              "value": {
+                "text": "Ada Marlow tentatively proposed reviewing the Zephyr QX-100 warranty tomorrow relative to the undated source. The proposal has not been accepted, no review is scheduled, and the calendar date is unknown. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какую проверку гарантии предложили для Zephyr QX-100 и известна ли её календарная дата?"
+              }
+            },
+            {
+              "id": "8",
+              "value": {
+                "text": "Ada Marlow предложила проверить гарантию Zephyr QX-100 завтра относительно источника. Это предварительное, ещё не принятое предложение; проверка не запланирована. Календарная дата неизвестна, поскольку дата источника не указана. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какую проверку гарантии предложили для Zephyr QX-100 и известна ли её календарная дата?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Tentative · Proposal:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow relative to the source, but the reference date is unknown; the proposal has not been accepted and no review is scheduled.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_f90d2328",
+                      "level": 1,
+                      "kind": "plan",
+                      "subject": "ent_ece832e7470291d5082a6e1c",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "tentative",
+                      "disposition": "proposed",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false,
+                      "temporal": {
+                        "time": {
+                          "relation": "scheduled",
+                          "status": "tentative",
+                          "precision": "unknown"
+                        },
+                        "clock_relation": "undated",
+                        "actionable": false
+                      }
+                    }
+                  }
+                ],
+                "query": "What warranty review was proposed for Zephyr QX-100, and is its calendar date known?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Tentative · Proposal:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow relative to the source, but the reference date is unknown; the proposal has not been accepted and no review is scheduled.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_f90d2328",
+                      "level": 1,
+                      "kind": "plan",
+                      "subject": "ent_ece832e7470291d5082a6e1c",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "tentative",
+                      "disposition": "proposed",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false,
+                      "temporal": {
+                        "time": {
+                          "relation": "scheduled",
+                          "status": "tentative",
+                          "precision": "unknown"
+                        },
+                        "clock_relation": "undated",
+                        "actionable": false
+                      }
+                    }
+                  }
+                ],
+                "query": "Какую проверку гарантии предложили для Zephyr QX-100 и известна ли её календарная дата?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "7",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "8",
+              "retrieval": "2"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

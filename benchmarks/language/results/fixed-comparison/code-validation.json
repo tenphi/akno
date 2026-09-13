@@ -1,0 +1,65 @@
+{
+  "candidateCommit": "963bf68e3cd07c687007dceaadb4ebb0434613e6",
+  "node": "v22.22.0",
+  "gates": [
+    {
+      "gate": "suite",
+      "log": "tmp/akno-integration-unit-suite.log",
+      "sha256": "ef7dc95768fda34f74c991659bb90d345a73c92936ccc38fb284f904f5812475",
+      "result": "3942 tests in 154 files passed"
+    },
+    {
+      "gate": "typecheck",
+      "log": "tmp/akno-integration-unit-typecheck.log",
+      "sha256": "f9b92056ae1b6952a8cb262a62f7a491097e9086aa893c6b2cc5715fbbe45ac3",
+      "result": "passed"
+    },
+    {
+      "gate": "lint",
+      "log": "tmp/akno-integration-unit-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": "passed"
+    },
+    {
+      "gate": "knip",
+      "log": "tmp/akno-integration-unit-knip.log",
+      "sha256": "aeb2089b518b53445b029878c026192baac3701a8c78a8ce5548f5cdc45ca182",
+      "result": "passed"
+    },
+    {
+      "gate": "documentation-doctor",
+      "log": "tmp/akno-integration-unit-docs-doctor.log",
+      "sha256": "29f7445b374e7dd2c0623ae100ed93ae3f6d1314c654f67911f4b71cd2253311",
+      "result": "16 healthy pages"
+    },
+    {
+      "gate": "documentation-build",
+      "log": "tmp/akno-integration-unit-docs-build.log",
+      "sha256": "88ab27864ae3d1fb4b558a35e31258e7b22e1a0ec90b5203e9435349626bba90",
+      "result": "16 pages built"
+    },
+    {
+      "gate": "format",
+      "log": "tmp/akno-integration-final-format.log",
+      "sha256": "8f7d735ebe9a9299338fc7370690011be36b3959b4e782c6cda9985cf5c27150",
+      "result": "passed"
+    },
+    {
+      "gate": "smoke",
+      "log": "tmp/akno-integration-final-unit-smoke.log",
+      "sha256": "cc5b689c9aa6fe0a595f88a38d3a7ba926661d80a0d597a8dd0931b9841af50b",
+      "result": "26 CLI and 8 example checks passed"
+    },
+    {
+      "gate": "repository-safety",
+      "log": "tmp/akno-integration-final-check-repository.log",
+      "sha256": "3c866dcb101bc8dfadd7e5812a4404d81d305890c47df1fe1b3ed0a45f1e2895",
+      "result": "passed"
+    }
+  ],
+  "notes": [
+    "The full suite directly used Node 22 to match the native SQLite ABI. An earlier pnpm-spawned Node 26 suite failed native initialization; that original failure log remains local, followed by the complete passing Node 22 runs.",
+    "Smoke checks use built packages and no configured model endpoint.",
+    "Code-level tests and reviews do not establish live-model quality or service deployment."
+  ]
+}

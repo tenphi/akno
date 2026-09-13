@@ -1,0 +1,219 @@
+{
+  "schemaVersion": "akno-source-first-obligations-v1",
+  "corpusFingerprint": "27bbb05e7bc8089ba133e5723667190106d02e98b635e41328d683bd9700505a",
+  "status": "approved-with-explicit-ambiguities",
+  "gradingPrinciples": {
+    "retention": "A writable case must retain every proposition in the source, including independent neighboring propositions, with its role, attribution, polarity, modality, scope, time semantics, and property/event type intact.",
+    "focusedAnswer": "A useful answer must answer the query with all qualifications coupled to the requested proposition. Independent neighboring denials or introduction acts need not be repeated unless the query asks for them.",
+    "coverage": "Empty or null output is coverage loss. It is not qualification distortion.",
+    "time": "A positive, explicit source-relative anchor can semantically exclude processing-time anchoring without repeating the redundant negative formulation.",
+    "names": "Proper names must be exact: Ada Marlow, Bo Winters, Vulpine Mutual, and Zephyr QX-100.",
+    "language": "Generated retained knowledge must be English. Each answer must follow requestedAnswerLanguage regardless of the query language. Source entailment and language correctness are both required for usefulness.",
+    "readOnly": "A justified read-only case must preserve source bytes, produce a typed admission hold, and yield no retained answer; the hold must not be confused with empty knowledge or service failure."
+  },
+  "cases": [
+    {
+      "id": "v3-dev-denial",
+      "admission": "writable",
+      "retentionPropositions": ["The Zephyr QX-100 warranty does not include housing replacement."],
+      "queryRequestedPropositions": ["Housing replacement is not included in the Zephyr QX-100 warranty."],
+      "coupledQualifications": ["Direct user assertion; negative polarity; no wider coverage claim or external verification."],
+      "requirements": {"role": "user/Ada Marlow", "polarity": "negative", "time": "none", "property": "warranty coverage exclusion for housing replacement"},
+      "approval": "approved"
+    },
+    {
+      "id": "v3-dev-report",
+      "admission": "writable",
+      "retentionPropositions": ["The assistant suspects the Zephyr QX-100 warranty includes sensor cleaning.", "The assistant has no confirmation."],
+      "queryRequestedPropositions": ["The assistant reported a suspicion that sensor cleaning may be covered, without confirmation."],
+      "coupledQualifications": ["Assistant attribution and tentative, unconfirmed status must remain coupled to coverage."],
+      "requirements": {"role": "assistant", "polarity": "tentative positive possibility", "time": "none", "property": "reported possible warranty coverage"},
+      "approval": "approved"
+    },
+    {
+      "id": "v3-dev-alternatives",
+      "admission": "writable",
+      "retentionPropositions": ["Ada Marlow introduces two incompatible hypotheses: warranty service is annual or biennial.", "Neither hypothesis is established.", "Both alternatives are to be kept for discussion."],
+      "queryRequestedPropositions": ["The competing hypotheses are annual service and biennial service."],
+      "coupledQualifications": ["Both are hypotheses; neither may be selected or asserted as the actual interval."],
+      "requirements": {"role": "user/Ada Marlow", "polarity": "two unestablished alternatives", "time": "recurring annual versus biennial interval, not dates", "property": "service interval"},
+      "approval": "approved"
+    },
+    {
+      "id": "v3-dev-example",
+      "admission": "writable",
+      "retentionPropositions": ["Ada Marlow introduces a fictional example for discussion.", "In that example, Bo Winters presents a twenty-year Zephyr QX-100 warranty.", "It is not a real warranty."],
+      "queryRequestedPropositions": ["In the fictional example, Bo Winters presents a twenty-year Zephyr QX-100 warranty."],
+      "coupledQualifications": ["Fictional scope and Bo Winters's nested role must qualify the twenty-year warranty."],
+      "requirements": {"role": "Ada Marlow introduces; Bo Winters acts inside fiction", "polarity": "fictional positive", "time": "twenty-year duration", "property": "fictional warranty duration"},
+      "approval": "approved"
+    },
+    {
+      "id": "v3-dev-undated",
+      "admission": "writable",
+      "retentionPropositions": ["Ada Marlow proposes reviewing the Zephyr QX-100 warranty tomorrow relative to an undated source.", "The proposal has not been accepted.", "No review is scheduled.", "Its calendar date cannot be determined."],
+      "queryRequestedPropositions": ["A warranty review was proposed for the day after the undated source, and its calendar date is unknown."],
+      "coupledQualifications": ["It is an unaccepted, unscheduled proposal; 'tomorrow' must not be resolved from processing time."],
+      "requirements": {"role": "user/Ada Marlow as proposer", "polarity": "proposed, not accepted", "time": "source-relative tomorrow; calendar date unknown", "property": "proposed review event"},
+      "approval": "approved"
+    },
+    {
+      "id": "v9-held-report",
+      "admission": "writable",
+      "retentionPropositions": ["Bo Winters told Ada Marlow that the Zephyr QX-100 warranty includes thermal-sensor replacement.", "Ada Marlow records Bo Winters's report.", "Ada Marlow has not verified it."],
+      "queryRequestedPropositions": ["Ada Marlow recorded Bo Winters's report that thermal-sensor replacement is covered."],
+      "coupledQualifications": ["Nested attribution and Ada's non-verification must remain; actual coverage is not established."],
+      "requirements": {"role": "Ada Marlow outer recorder; Bo Winters inner source", "polarity": "reported positive, unverified", "time": "none", "property": "reported warranty coverage"},
+      "approval": "approved"
+    },
+    {
+      "id": "v9-held-hypothesis",
+      "admission": "writable",
+      "retentionPropositions": ["For discussion, Ada Marlow supposes the Zephyr QX-100 warranty requires seal inspection every three months.", "This is only a hypothesis.", "The actual requirement is unknown."],
+      "queryRequestedPropositions": ["Ada Marlow discussed a hypothetical seal inspection every three months."],
+      "coupledQualifications": ["The interval is hypothetical and not an actual obligation or scheduled inspection."],
+      "requirements": {"role": "user/Ada Marlow as hypothesizer", "polarity": "hypothetical positive", "time": "recurring three-month interval", "property": "hypothetical maintenance requirement"},
+      "approval": "approved"
+    },
+    {
+      "id": "v9-held-counterfactual",
+      "admission": "writable",
+      "retentionPropositions": ["Ada Marlow declined the optional Zephyr QX-100 warranty.", "Had she chosen it, cooling-fan repair in the third year would have been covered.", "The extra-warranty alternative is unrealized."],
+      "queryRequestedPropositions": ["Under the unchosen extra warranty, third-year cooling-fan repair would have been covered."],
+      "coupledQualifications": ["The coverage is counterfactual and depends on the declined choice."],
+      "requirements": {"role": "user/Ada Marlow", "polarity": "actual non-selection plus counterfactual positive", "time": "third year of coverage/use, not calendar date", "property": "counterfactual repair coverage"},
+      "approval": "approved"
+    },
+    {
+      "id": "v9-held-question",
+      "admission": "writable",
+      "retentionPropositions": ["Ada Marlow asks whether the Zephyr QX-100 warranty includes on-site repairs.", "There is no answer yet.", "The question is unresolved and is to be retained as such."],
+      "queryRequestedPropositions": ["The unresolved question is whether on-site repairs are included."],
+      "coupledQualifications": ["Do not answer the embedded question or assert either inclusion or exclusion."],
+      "requirements": {"role": "user/Ada Marlow as questioner", "polarity": "open/undetermined", "time": "currently unresolved", "property": "warranty coverage question"},
+      "approval": "approved"
+    },
+    {
+      "id": "v9-held-exclusion",
+      "admission": "writable",
+      "retentionPropositions": ["The Zephyr QX-100 warranty does not cover damage caused by an accidental liquid spill."],
+      "queryRequestedPropositions": ["Accidental liquid-spill damage is not covered."],
+      "coupledQualifications": ["Direct user assertion and exact exclusion scope; no wider exclusions or independent verification."],
+      "requirements": {"role": "user/Ada Marlow", "polarity": "negative", "time": "none", "property": "coverage exclusion for accidental liquid-spill damage"},
+      "approval": "approved"
+    },
+    {
+      "id": "v9-held-admission",
+      "admission": "read-only",
+      "retentionPropositions": ["Source proposition available for attempted retention: the Zephyr QX-100 warranty lasts twenty-two months."],
+      "queryRequestedPropositions": [],
+      "coupledQualifications": ["All destinations are read-only; there must be no retained answer despite understandable source content."],
+      "requirements": {"role": "user/Ada Marlow", "polarity": "asserted positive", "time": "twenty-two-month duration", "property": "warranty duration"},
+      "readOnlyHold": {"justified": true, "required": "typed admission hold; preserve all source bytes; no destination mutation; no retained answer", "distinguishFrom": ["missing source knowledge", "empty writable result", "service unavailable"]},
+      "approval": "approved"
+    },
+    {
+      "id": "v22-held-nested-report",
+      "admission": "writable",
+      "retentionPropositions": ["Ada Marlow relays Bo Winters's account of Vulpine Mutual rules for Zephyr QX-100.", "Ada Marlow has not seen those rules.", "Ada Marlow has not verified Bo Winters's report.", "According to Bo Winters, Vulpine Mutual permits bringing the device to a workshop to check grounding-contact resistance.", "Bo Winters referred to checking resistance, not replacing the contact.", "Separately, Ada Marlow has not packed her device for such a check."],
+      "queryRequestedPropositions": ["Ada Marlow relayed Bo Winters's report that Vulpine Mutual permits workshop delivery of Zephyr QX-100 to check grounding-contact resistance, specifically not to replace the contact."],
+      "coupledQualifications": ["Ada is the outer relayer, Bo the inner source; Ada did not see the rules and did not verify the report; permission and service are not independently confirmed."],
+      "requirements": {"role": "Ada Marlow outer relayer; Bo Winters inner source; Vulpine Mutual alleged rule-maker", "polarity": "reported permission for checking; explicit contrast against replacement", "time": "no completed or scheduled event", "property": "reported service permission and purpose"},
+      "ambiguity": "Ada's separate failure to pack the device is required in full retention but is not necessary in the focused answer because the query asks what report she relayed.",
+      "approval": "approved"
+    },
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "admission": "writable",
+      "retentionPropositions": ["For a hypothetical analysis, Ada Marlow assumes the drain channel is cleared every six weeks.", "Only under that assumption, leaving it uncleared for seven weeks breaches the assumed schedule.", "Ada Marlow does not know the real maintenance rule.", "Ada Marlow does not report an actual missed clearing."],
+      "queryRequestedPropositions": ["Under an assumed six-week clearing schedule, seven weeks without clearing would breach that assumed schedule."],
+      "coupledQualifications": ["The six-week rule and seven-week breach are inseparable and hypothetical; no real duty or actual omission is established."],
+      "requirements": {"role": "user/Ada Marlow as analyst", "polarity": "conditional hypothetical", "time": "recurring six-week interval and conditional seven-week lapse, not dates", "property": "assumed maintenance schedule and conditional breach"},
+      "approval": "approved"
+    },
+    {
+      "id": "v22-held-counterfactual",
+      "admission": "writable",
+      "retentionPropositions": ["Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan.", "Had she enrolled, internal-spring replacement after thirty-three months of use would have been free.", "The plan was not obtained and the benefit is unrealized."],
+      "queryRequestedPropositions": ["The unrealized benefit was free internal-spring replacement after thirty-three months of use under the unchosen corrosion plan."],
+      "coupledQualifications": ["Free replacement depends on the false enrollment antecedent and is not current coverage."],
+      "requirements": {"role": "user/Ada Marlow", "polarity": "actual non-enrollment plus counterfactual positive", "time": "after thirty-three months of use, not calendar date", "property": "counterfactual plan benefit"},
+      "approval": "approved"
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "admission": "writable",
+      "retentionPropositions": ["Ada Marlow records that the Zephyr QX-100 warranty excludes ceramic-spacer damage caused by sand.", "This exclusion alone does not determine whether intake-sleeve replacement is covered.", "It also does not establish that the agreement is silent about the intake sleeve."],
+      "queryRequestedPropositions": ["Sand damage to the ceramic spacer is excluded.", "The record settles neither inclusion nor exclusion of intake-sleeve replacement and does not establish agreement silence about it."],
+      "coupledQualifications": ["Negative polarity applies only to sand-caused ceramic-spacer damage; intake-sleeve coverage remains undetermined from this record."],
+      "requirements": {"role": "user/Ada Marlow as recorder", "polarity": "negative exclusion plus two non-entailment boundaries", "time": "none", "property": "coverage of distinct components and damage cause"},
+      "approval": "approved"
+    },
+    {
+      "id": "v22-held-assistant-speculation",
+      "admission": "writable",
+      "retentionPropositions": ["The assistant preliminarily speculates that Zephyr QX-100 servicing may include an optical-shutter check after every eleven operating cycles.", "The assistant has not read the agreement.", "The assistant has not verified the guess.", "It is a possible service condition, not an established obligation or device state."],
+      "queryRequestedPropositions": ["The assistant speculated that servicing may include an optical-shutter check after every eleven operating cycles."],
+      "coupledQualifications": ["Assistant attribution, possibility, unread agreement, and lack of verification must qualify the term; no duty, completed check, or device condition."],
+      "requirements": {"role": "assistant", "polarity": "tentative possibility", "time": "recurring every eleven operating cycles", "property": "possible servicing term, not event/state"},
+      "approval": "approved"
+    },
+    {
+      "id": "v22-held-fictional-example",
+      "admission": "writable",
+      "retentionPropositions": ["Ada Marlow actually introduces an invented example for discussion.", "The example describes no real agreement.", "Inside the story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair.", "The loan exists only in the story."],
+      "queryRequestedPropositions": ["In Ada Marlow's fictional example, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair."],
+      "coupledQualifications": ["Story scope must cover company, person, repair, loan, and duration; no real agreement or event is established."],
+      "requirements": {"role": "Ada Marlow actual introducer; Vulpine Mutual lender and Bo Winters borrower only inside fiction", "polarity": "fictional positive", "time": "first forty-four days after a fictional repair; no elapsed calendar period", "property": "fictional temporary loan"},
+      "ambiguity": "Ada's act of introducing the story is required in full retention; a focused answer may identify it as her example without separately stating the introduction act.",
+      "approval": "approved"
+    },
+    {
+      "id": "v22-held-relative-unknown-date",
+      "admission": "writable",
+      "retentionPropositions": ["Ada Marlow proposes comparing Zephyr QX-100 cleaning instructions two weeks after the source record.", "The source record is undated.", "The calendar date cannot be determined.", "The two weeks are anchored to the source record rather than processing time.", "The proposal is Ada's actual proposal, but no meeting is agreed."],
+      "queryRequestedPropositions": ["Ada Marlow proposed comparing cleaning instructions two weeks after the undated source record; the calendar date is unknown and no meeting is agreed."],
+      "coupledQualifications": ["Proposal status is certain; event occurrence and calendar date are not. A clear positive source-record anchor semantically suffices to exclude processing-time anchoring."],
+      "requirements": {"role": "user/Ada Marlow as proposer", "polarity": "actual proposal, unagreed event", "time": "two weeks after undated source; unknown calendar date", "property": "proposed comparison event"},
+      "approval": "approved"
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "admission": "writable",
+      "retentionPropositions": ["Ada Marlow considers two competing preliminary causes of a possible Zephyr QX-100 rattle: a deformed washer or a poorly secured filter cover.", "Ada Marlow selected neither cause.", "There is no supporting evidence yet for either.", "The record itself does not confirm that the rattle exists."],
+      "queryRequestedPropositions": ["The competing hypotheses are a deformed washer and a poorly secured filter cover."],
+      "coupledQualifications": ["Both remain tentative and unsupported; neither is selected, and the rattle itself is unconfirmed."],
+      "requirements": {"role": "user/Ada Marlow as hypothesizer", "polarity": "two tentative alternatives", "time": "none", "property": "possible causes of an unconfirmed symptom"},
+      "approval": "approved"
+    },
+    {
+      "id": "v22-held-open-question",
+      "admission": "writable",
+      "retentionPropositions": ["Ada Marlow has an open question whether the Zephyr QX-100 service plan includes annual alignment of the folding handle.", "Ada Marlow does not have the answer.", "The note establishes neither inclusion nor exclusion."],
+      "queryRequestedPropositions": ["Ada Marlow's open question is whether the service plan includes annual folding-handle alignment."],
+      "coupledQualifications": ["It remains unanswered for Ada and neither polarity is established; do not infer contract silence, performed alignment, or universal ignorance."],
+      "requirements": {"role": "user/Ada Marlow as questioner", "polarity": "open/undetermined", "time": "annual recurring property, not scheduled event", "property": "service-plan inclusion question"},
+      "approval": "approved"
+    },
+    {
+      "id": "v22-held-rejected-plan",
+      "admission": "writable",
+      "retentionPropositions": ["A proposal called for taking Zephyr QX-100 to a calibration room to measure its rotation-stop angle.", "Ada Marlow rejected the proposal.", "Ada Marlow does not intend to take the device there under it.", "No appointment has been reserved.", "No transport has been arranged.", "The proposed measurement remains rejected."],
+      "queryRequestedPropositions": ["Ada Marlow rejected taking Zephyr QX-100 to a calibration room to measure its rotation-stop angle."],
+      "coupledQualifications": ["The destination, exact measurement purpose, rejection, and lack of intent must remain; no acceptance, trip, or measurement is established."],
+      "requirements": {"role": "Ada Marlow as rejecter", "polarity": "rejected proposal", "time": "no appointment/event", "property": "proposed rotation-stop-angle measurement"},
+      "ambiguity": "The independent absence of appointment and transport is required in full retention but need not be repeated in a focused answer asking which proposal was rejected.",
+      "approval": "approved"
+    },
+    {
+      "id": "v22-held-read-only-admission",
+      "admission": "read-only",
+      "retentionPropositions": ["Source proposition available for attempted retention: Vulpine Mutual replaces the Zephyr QX-100 protective ring every fifty-five months."],
+      "queryRequestedPropositions": [],
+      "coupledQualifications": ["The user explicitly targets a no-write folder; understandable content does not override admission policy."],
+      "requirements": {"role": "user/Ada Marlow request; Vulpine Mutual maintenance actor", "polarity": "asserted positive", "time": "recurring fifty-five-month interval", "property": "maintenance replacement interval"},
+      "readOnlyHold": {"justified": true, "required": "typed admission hold; preserve all source bytes; no destination mutation; no retained answer", "distinguishFrom": ["missing source knowledge", "empty writable result", "service unavailable"]},
+      "approval": "approved"
+    }
+  ]
+}

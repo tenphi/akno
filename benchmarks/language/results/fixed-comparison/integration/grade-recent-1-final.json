@@ -1,0 +1,998 @@
+{
+  "block": "recent",
+  "run": 1,
+  "assembly": "Exact concatenation of final grades where a preserved correction exists, otherwise initial grades.",
+  "parts": [
+    {
+      "file": "grade-recent-1-first-initial.json",
+      "sha256": "8ef0ebf791e0e6e0fe7fc38a258856d21215714bd41e0a7791bfae31394f34b4"
+    },
+    {
+      "file": "grade-recent-1-rest-initial.json",
+      "sha256": "28b2c865c15e8fdb4de3efef5448e33ba9a498713779e7d72bc68694f65d443e"
+    }
+  ],
+  "cases": [
+    {
+      "id": "v22-held-nested-report",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": false,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains the complete nested grounding-contact report and its controlling qualifications, but omits the independent fact that Ada Marlow had not packed her device."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested nested grounding-contact report."
+            },
+            {
+              "id": "5",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested nested grounding-contact report."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains the assumed six-week schedule, conditional seven-week breach, unknown real rule, and no actual missed clearing."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-counterfactual",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains non-enrollment and counterfactual free internal-spring replacement after thirty-three months as unrealized."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested unrealized internal-spring benefit."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested unrealized internal-spring benefit."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested unrealized internal-spring benefit."
+            },
+            {
+              "id": "6",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested unrealized internal-spring benefit."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "8",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": false,
+              "reason": "Retrieves only actual non-enrollment and omits the query-requested counterfactual internal-spring benefit."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            },
+            {
+              "id": "3",
+              "useful": false,
+              "reason": "Retrieves only actual non-enrollment and omits the query-requested counterfactual internal-spring benefit."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains the ceramic-spacer sand-damage exclusion and both intake-sleeve non-entailment boundaries."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": false,
+              "sourceEntailed": true,
+              "qualificationsPreserved": false,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "States only the ceramic-spacer exclusion and omits both query-requested intake-sleeve non-entailment boundaries."
+            },
+            {
+              "id": "4",
+              "useful": false,
+              "sourceEntailed": false,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Changes the intake sleeve/впускная втулка into an intake hose/впускной рукав, altering the source component."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "8",
+              "useful": false,
+              "sourceEntailed": true,
+              "qualificationsPreserved": false,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "States only the ceramic-spacer exclusion and omits both query-requested intake-sleeve non-entailment boundaries."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-assistant-speculation",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains assistant attribution, tentative eleven-cycle possibility, unread and unverified limits, and no established duty or state."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested assistant speculation."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested assistant speculation."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested assistant speculation."
+            },
+            {
+              "id": "6",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested assistant speculation."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "8",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-fictional-example",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains the fictional scenario, all story entities, the spare control-dial loan, forty-four-day source-relative duration, fictional repair, story-only status, and absence of a real agreement."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested fictional control-dial loan."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested fictional control-dial loan."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": false,
+              "sourceEntailed": false,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Russian answer changes the spare control dial into a control panel/remote (пульт управления), altering the source component."
+            },
+            {
+              "id": "5",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested fictional control-dial loan."
+            },
+            {
+              "id": "6",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested fictional control-dial loan."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "8",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-relative-unknown-date",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains Ada Marlow’s proposal, cleaning-instructions comparison, two-week record-relative timing, undated calendar limit, non-processing clock, and absence of an agreed meeting."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": false,
+            "sourceEntailed": null,
+            "qualificationsPreserved": null,
+            "correctLanguage": null,
+            "unsafePromotion": false,
+            "reason": "No record was retained for the two competing tentative causes, lack of selection and evidence, or unconfirmed rattle."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested competing rattle hypotheses."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested competing rattle hypotheses."
+            },
+            {
+              "id": "3",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested competing rattle hypotheses."
+            },
+            {
+              "id": "4",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested competing rattle hypotheses."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": false,
+              "reason": "Empty retrieval loses the requested competing rattle hypotheses."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "reason": "Empty retrieval loses the requested competing rattle hypotheses."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-open-question",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains Ada Marlow’s annual folding-handle alignment question, her lack of an answer, and that neither inclusion nor exclusion is established by the note."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-rejected-plan",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": false,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains the rejected calibration-room rotation-stop measurement proposal and Ada Marlow’s lack of intent, but omits the independent facts that no appointment was reserved and no transport was arranged."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-read-only-admission",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": false,
+            "sourceEntailed": null,
+            "qualificationsPreserved": null,
+            "correctLanguage": null,
+            "unsafePromotion": false,
+            "reason": "No record was retained because the only matching destination was read-only."
+          },
+          "justifiedReadOnlyHold": true,
+          "answers": [
+            {
+              "id": "1",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Required abstention under the justified read-only hold; the requested maintenance interval is unavailable."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Required abstention under the justified read-only hold; the requested maintenance interval is unavailable."
+            },
+            {
+              "id": "3",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Required abstention under the justified read-only hold; the requested maintenance interval is unavailable."
+            },
+            {
+              "id": "4",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Required abstention under the justified read-only hold; the requested maintenance interval is unavailable."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": false,
+              "reason": "Required empty retrieval under the justified read-only hold."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "reason": "Required empty retrieval under the justified read-only hold."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

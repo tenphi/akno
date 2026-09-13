@@ -214,17 +214,28 @@ All three revisions preserve bytes and replay and justify all 32 read-only nulls
 Markdown admission mismatches. Case-level availability failures are zero; the finer answer diagnostics
 record four failed calls for V31 and one for V17.
 
-One reviewed integration is now undergoing the same fixed comparison procedure. It removes unnecessary
-report rewriting before semantic verification, shares a complete retrieval-unit instruction between
-extraction and verification, preserves selected source-name spelling, and corrects report/hypothesis
-category headings with derived-projection migration. Its model-dependent improvements remain unproved
-until that run and independent grading finish. The 80% target still applies to retention, retrieval and
-useful answers in every block/run; accepted semantic, qualification, language and promotion errors must
-remain zero. The 90% answer target is reported separately. Pooled totals cannot rescue a failing block.
+The measured integration at `963bf68` scores **249/320 useful answers (77.8%)**, compared with V77's **211/320 (65.9%)** under the same sources, model policy, budgets and rubric. Original-scenario coverage recovers to **142/160 (88.8%)**, against V77's 122/160 (76.3%) and V17's 139/160 (86.9%). Newer-scenario coverage is **107/160 (66.9%)**. The original block's two runs remain visibly different; this is a bounded recovery, not proof of repeatable general reliability.
 
-The [historical V77 evidence](../benchmarks/language/results/v77/README.md) retains its original results and
-a dated correction to the target terminology. The final fixed-comparison report will preserve the new
-comparison, the one integration result, initial grades and any explicit source-based corrections.
+| Block / run | Useful answers | Complete retained sets | Useful retrievals |
+| ----------- | -------------: | ---------------------: | ----------------: |
+| legacy / 1  |          76/80 |                  10/10 |             40/40 |
+| legacy / 2  |          66/80 |                   9/10 |             36/40 |
+| recent / 1  |          53/80 |                   7/10 |             34/40 |
+| recent / 2  |          54/80 |                   8/10 |             33/40 |
+
+By requested answer language, the integration scores **131/160 English answers** and **118/160 Russian answers**, with 4 and 5 accepted errors respectively. These are descriptive slices; they do not replace the fixed block/run gate.
+
+There are **9 accepted answer errors**, down from V77's 11, and **34/40 complete retained sets**. The integration has 1 unsupported retained set (V77 had none), 0 retained-set qualification errors, 0 retained-language violations, 0 answer-language violations and 0 unsafe factual promotions. Correct output language does not imply correct translated meaning. The newly unsupported retained set changes a rattle into vibration; this regression must be weighed alongside the coverage gain. All 32 read-only nulls are justified; source bytes and replay pass in all 44 case-runs. Ordinary Markdown admission mismatches fall from six to **0**. Case-level availability failures are 4; the separate answer-level diagnostic counts 5 failures.
+
+The **80% per-block/run quality gate remains unmet**, as does the later 90% answer target. The gate requires complete retention, qualified retrieval and useful answers in every block/run, plus zero accepted source, qualification, language and promotion errors. The newer scenarios still have missing independent facts, protective holds of defective candidates, missed view selection, and accepted qualification or component-translation errors. Pooled scores do not rescue a failing block.
+
+The integration removes the forced report rewrite before source verification, joins source-coupled qualifications into one retrieval unit, preserves selected source-name spelling, and corrects report/hypothesis heading projections. Independent forensics confirm the report path and complete open-question record were exercised. Their improved outcomes do not prove that every stochastic change was caused by the new instructions.
+
+A final deterministic consistency fix at `9045eda` recognizes the exact Russian source-clock sentence already prescribed by generation, including day references. It passes the local language/discourse/semantic controls, but is outside this frozen live score: no coordinate was rerun or credited for it.
+
+This closes the bounded PR work within seven of the ten allowed iterations. The opt-in language policy and bounded Markdown protections are implemented; reliability acceptance remains unmet and issues #61/#62 remain open.
+
+The [fixed-comparison evidence](../benchmarks/language/results/fixed-comparison/README.md) includes initial/final grades, exact correction ledgers, public outputs, integrity checks and separate-model reviews. The [historical V77 evidence](../benchmarks/language/results/v77/README.md) retains its original result and a dated terminology correction.
 
 ## Evaluation
 

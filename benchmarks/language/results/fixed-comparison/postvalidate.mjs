@@ -1,0 +1,66 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { candidateProof } from './freeze.mjs';
+import { validatePublic } from './validate-public.mjs';
+
+const base = path.resolve('tmp/akno-comparison');
+const read = file => JSON.parse(fs.readFileSync(path.join(base, file), 'utf8'));
+const hash = file => createHash('sha256').update(fs.readFileSync(path.join(base, file))).digest('hex');
+const mode = process.argv[2];
+assert(['comparison', 'integration'].includes(mode));
+const corpus = read('corpus.json');
+const declaration = read(mode === 'comparison' ? 'declaration.json' : 'integration/declaration.json');
+const root = mode === 'comparison' ? 'live' : 'integration/live';
+const completed = read(root + '/completed.json');
+const candidates = mode === 'comparison' ? read('candidates.json') : [read('integration/candidate.json')];
+assert.equal(completed.corpusFingerprint, corpus.corpusFingerprint);
+assert.deepEqual(completed.modelPolicy, declaration.modelPolicy);
+assert.equal(hash('corpus.json'), declaration.corpusFileSha256);
+assert.equal(hash('source-first-obligations.json'), declaration.sourceObligationsSha256);
+const output = { mode, validatedAt: new Date().toISOString(), declarationSha256: hash(mode === 'comparison' ? 'declaration.json' : 'integration/declaration.json'), postvalidatorSha256: hash('postvalidate.mjs'), publicValidatorSha256: hash('validate-public.mjs'), completedSha256: hash(root + '/completed.json'), corpusFingerprint: corpus.corpusFingerprint, arms: [] };
+for (const candidate of candidates) {
+  const proof = candidateProof(candidate);
+  assert.deepEqual(proof, mode === 'comparison' ? declaration.candidates.find(c => c.label === candidate.label) : declaration.candidate);
+  const casesFile = root + '/' + candidate.label + '/cases.jsonl';
+  const traceFile = root + '/' + candidate.label + '/trace.jsonl';
+  const parseLines = file => fs.readFileSync(path.join(base, file), 'utf8').trim().split('\n').map(JSON.parse);
+  const receipts = parseLines(casesFile), traces = parseLines(traceFile);
+  assert.deepEqual(receipts, mode === 'comparison' ? completed.results[candidate.label] : completed.results);
+  assert.equal(receipts.length, corpus.cases.length * 2);
+  const expectedCoordinates = ['en', 'ru'].flatMap(queryLanguage => [false, true].flatMap(explicitView => ['en', 'ru'].map(requestedAnswerLanguage => JSON.stringify([queryLanguage, explicitView, requestedAnswerLanguage])))).sort();
+  const summary = { label: candidate.label, candidate: proof, caseRuns: receipts.length, coordinates: 0, modelCalls: 0, modelThrows: 0, operationErrors: 0, byteFailures: 0, replayFailures: 0, caseAvailabilityFailures: 0, ordinaryMismatches: 0, casesSha256: hash(casesFile), traceSha256: hash(traceFile) };
+  for (const entry of corpus.cases) for (const run of [1, 2]) {
+    const rows = receipts.filter(r => r.caseId === entry.source.id && r.run === run);
+    assert.equal(rows.length, 1);
+    const receipt = rows[0], result = receipt.result;
+    assert.equal(receipt.block, entry.block);
+    assert.equal(result.id, entry.source.id);
+    assert.equal(result.run, run);
+    assert.deepEqual(result.queries.map(q => JSON.stringify([q.queryLanguage, q.explicitView, q.requestedAnswerLanguage])).sort(), expectedCoordinates);
+    summary.coordinates += result.queries.length;
+    summary.operationErrors += Number(Boolean(result.error));
+    summary.byteFailures += Number(result.bytesStable !== true);
+    summary.replayFailures += Number(result.replayOutcome !== 'replayed');
+    summary.caseAvailabilityFailures += Number(result.availabilityFailure === true);
+    summary.ordinaryMismatches += Number(result.ordinaryCorrect !== true);
+    const events = traces.filter(t => t.caseId === entry.source.id && t.run === run);
+    validatePublic(receipt, events, entry);
+    assert.equal(events.filter(t => t.event === 'case-start').length, 1);
+    assert.equal(events.filter(t => t.event === 'case-finish').length, 1);
+    assert.equal(events.find(t => t.event === 'case-finish').observedQueries, 8);
+    const starts = events.filter(t => t.event === 'model-start');
+    const ends = events.filter(t => ['model-result', 'model-throw'].includes(t.event));
+    assert.equal(new Set(starts.map(t => t.id)).size, starts.length);
+    assert.deepEqual(starts.map(t => t.id).sort((a,b) => a-b), ends.map(t => t.id).sort((a,b) => a-b));
+    summary.modelCalls += starts.length;
+    summary.modelThrows += ends.filter(t => t.event === 'model-throw').length;
+  }
+  assert.equal(summary.coordinates, 352);
+  assert.equal(traces.filter(t => t.event === 'case-start').length, receipts.length);
+  assert.equal(traces.filter(t => t.event === 'case-finish').length, receipts.length);
+  output.arms.push(summary);
+}
+fs.writeFileSync(path.join(base, mode + '-postvalidation.json'), JSON.stringify(output, null, 2) + '\n', { flag: 'wx' });
+console.log(JSON.stringify(output, null, 2));

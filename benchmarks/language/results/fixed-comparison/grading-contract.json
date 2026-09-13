@@ -1,0 +1,30 @@
+{
+  "version": "fixed-source-grade-v1",
+  "instructions": [
+    "Use the preapproved source-first obligations and actual source/public outputs only.",
+    "Grade every anonymous candidate for every supplied case. No runtime version, historic percentage, private verifier verdict or implementation preference is admissible evidence.",
+    "Answer and retrieval IDs are local to each case/candidate. Grade each distinct value once; query coordinates reference these exact values and remain individually counted.",
+    "An empty retained set has complete:false and sourceEntailed:null. A writable null answer has useful:false and sourceEntailed/qualificationsPreserved/correctLanguage:null, unsafePromotion:false.",
+    "Nonempty retention completeness requires every required source proposition with correct qualifications and English generated prose. Source entailment is assessed separately from completeness.",
+    "A nonnull focused answer is useful only if source-entailed, responsive, correctly qualified and in requestedAnswerLanguage, independently of query language.",
+    "A qualified actual event or denial may remain factual even when another proposition is counterfactual. Do not infer unsafe promotion from a runtime eligibility flag.",
+    "Distinguish omitted independent neighbors from distortion of qualifications coupled to the requested claim.",
+    "Read-only nulls are justified only when the public admission result is a policy hold and retained knowledge is empty. Root will separately assert bytes and all coordinates.",
+    "Explain every failing nonnull judgment with the exact omitted, unsupported, altered or wrong-language proposition. Do not echo generic runtime reasons as semantic proof.",
+    "Write initial grades once; preserve them. Subsequent corrections need explicit coordinate, original value, corrected value and source/rubric reason. Do not rewrite the initial grade."
+  ],
+  "outputShape": {
+    "block": "legacy or recent",
+    "run": 1,
+    "cases": [{
+      "id": "source case ID",
+      "observations": [{
+        "candidate": "anonymous candidate",
+        "retention": {"complete": false, "sourceEntailed": null, "qualificationsPreserved": null, "correctLanguage": null, "unsafePromotion": false, "reason": "source-grounded reasoning"},
+        "justifiedReadOnlyHold": null,
+        "answers": [{"id": "packet-local answer ID", "useful": false, "sourceEntailed": null, "qualificationsPreserved": null, "correctLanguage": null, "unsafePromotion": false, "reason": "source-grounded reasoning"}],
+        "retrievals": [{"id": "packet-local retrieval ID", "useful": false, "reason": "source-grounded reasoning"}]
+      }]
+    }]
+  }
+}

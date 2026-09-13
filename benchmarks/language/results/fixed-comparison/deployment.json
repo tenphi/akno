@@ -1,0 +1,36 @@
+{
+  "commit": "9045edad81acbd693d06c27b6bd444efc9072d52",
+  "codeValidatedCommit": "9045edad81acbd693d06c27b6bd444efc9072d52",
+  "measuredIntegrationCommit": "963bf68e3cd07c687007dceaadb4ebb0434613e6",
+  "startedAt": "2026-09-13T12:07:55.678Z",
+  "finishedAt": "2026-09-13T12:08:05.690Z",
+  "command": "pnpm akno redeploy",
+  "result": "build, service restart, and socket readiness succeeded",
+  "before": {
+    "state": "running",
+    "pid": 43915,
+    "startedAt": "Sat Sep 12 20:48:57 2026"
+  },
+  "after": {
+    "state": "running",
+    "pid": 88801,
+    "startedAt": "Sun Sep 13 14:08:01 2026"
+  },
+  "builtProof": {
+    "label": "Deployed PR code",
+    "commit": "9045edad81acbd693d06c27b6bd444efc9072d52",
+    "packageTreeSha256": "b17627a92fb6320d246a42b692fed049cc7b6c9e8161dc8f403c5adc48aa7385",
+    "protocol": "packages/protocol/dist/index.js",
+    "node": "v22.22.0",
+    "execPath": "<node-v22.22.0>",
+    "abi": "127",
+    "lockSha256": "5601a0ad49140516bd4c0afb4f346073d68105b86a74472c4f49102854700b22"
+  },
+  "log": "tmp/akno-final-redeploy.log",
+  "logSha256": "27cda789f23b4b0d14a5cdb0e44c92b6d1ad2efb2d9cfee2dcbea20b2883c09b",
+  "modelFreeServiceSmoke": "deployed-prose-after.json",
+  "notes": [
+    "The service readiness is checked by redeploy. The public read smoke uses the same built packages in an isolated production Unix-socket service with invented sources and models disabled.",
+    "The final deterministic clock correction remains outside the frozen live-model score."
+  ]
+}

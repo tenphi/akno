@@ -1,0 +1,72 @@
+{
+  "recordedAt": "2026-09-13T11:30:46.471Z",
+  "candidateCommit": "9045edad81acbd693d06c27b6bd444efc9072d52",
+  "measuredIntegrationCommit": "963bf68e3cd07c687007dceaadb4ebb0434613e6",
+  "builtProof": {
+    "label": "Final deterministic correction",
+    "commit": "9045edad81acbd693d06c27b6bd444efc9072d52",
+    "packageTreeSha256": "b17627a92fb6320d246a42b692fed049cc7b6c9e8161dc8f403c5adc48aa7385",
+    "protocol": "packages/protocol/dist/index.js",
+    "node": "v22.22.0",
+    "execPath": "<node-v22.22.0>",
+    "abi": "127",
+    "lockSha256": "5601a0ad49140516bd4c0afb4f346073d68105b86a74472c4f49102854700b22"
+  },
+  "scope": "Exact prescribed Russian source-clock phrase; no prompt/model/cap/retry change. Frozen live evaluation remains on the measured integration and is not rescored.",
+  "checks": [
+    {
+      "gate": "before",
+      "file": "tmp/akno-clock-contract-before.log",
+      "sha256": "fa8b2c5062fcaa370924b24cf87569b58aa93787705de758e1edc27c13ce8558",
+      "result": "8 meaningful failures reproduced"
+    },
+    {
+      "gate": "focused",
+      "file": "tmp/akno-clock-contract-focused.log",
+      "sha256": "fcedb1e262e9aa2574707bfb63510a020ef3ed82213e51b3ce2a88cf103a4613",
+      "result": "967 tests passed"
+    },
+    {
+      "gate": "suite",
+      "file": "tmp/akno-clock-contract-suite.log",
+      "sha256": "fcc3cdbffa794fa849d006e0f6d31f180b181e142587e1d03c4d3d9831bfb6f6",
+      "result": "3986 tests in154 files passed"
+    },
+    {
+      "gate": "typecheck",
+      "file": "tmp/akno-clock-contract-typecheck.log",
+      "sha256": "3656fc065690d67f2f36fe2e4463d2bc4a902e2bf009a229c331a752896ab84b",
+      "result": "passed; packages built"
+    },
+    {
+      "gate": "lint",
+      "file": "tmp/akno-clock-contract-lint.log",
+      "sha256": "a62418b11ee0c7286f31a4ab9ebe68919faec2459c19d8491710e326a335e58d",
+      "result": "passed"
+    },
+    {
+      "gate": "knip",
+      "file": "tmp/akno-clock-contract-knip.log",
+      "sha256": "8ee60b9d1f23f040ca1252d8f0788d9ae00723a353f46cdc4faa0d15f261b1cc",
+      "result": "passed"
+    },
+    {
+      "gate": "smoke",
+      "file": "tmp/akno-clock-contract-smoke.log",
+      "sha256": "a2bf3fb45ea23a7e2afb41dbc318b42a1f02eaf1858060720be1a4eeceddcd1f",
+      "result": "26 CLI and8 example checks passed"
+    },
+    {
+      "gate": "repository",
+      "file": "tmp/akno-clock-contract-repository.log",
+      "sha256": "c6f74a8522139b5d788c6a1bf50f16dbbcf152161a303990b0f62ba2cc69ccfe",
+      "result": "passed"
+    },
+    {
+      "gate": "format",
+      "file": "tmp/akno-clock-contract-format-final.log",
+      "sha256": "55bdeb8e964d359a1cc38a7171a8f19861e8a595a1090e0295489efff8aaf18a",
+      "result": "passed"
+    }
+  ]
+}

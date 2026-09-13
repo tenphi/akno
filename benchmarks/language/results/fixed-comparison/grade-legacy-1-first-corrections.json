@@ -1,0 +1,33 @@
+{
+  "block": "legacy",
+  "run": 1,
+  "part": "first",
+  "packetVersion": 2,
+  "corrections": [
+    {
+      "case": "v3-dev-alternatives",
+      "candidate": "Candidate C",
+      "field": "retention.complete",
+      "originalValue": false,
+      "correctedValue": true,
+      "reason": "The complete public stored record contains both unestablished hypothetical interval records and the annual record's managed marker links=contradicts:memory%3Amem_591fd1a8, which targets the retained biennial record. This explicitly preserves their competing/incompatible relationship. Under the clarified rubric, retaining both qualified alternatives fulfills the keep-for-discussion instruction without restating it."
+    },
+    {
+      "case": "v3-dev-alternatives",
+      "candidate": "Candidate C",
+      "field": "retention.reason",
+      "originalValue": "Both annual and biennial hypotheses are retained as unestablished, but the separate source instruction to keep both alternatives for discussion is omitted.",
+      "correctedValue": "Complete public record retains annual and biennial as unestablished hypothetical service intervals and explicitly links the annual record as contradicting the retained biennial record; this preserves both alternatives and their incompatible relationship for discussion.",
+      "reason": "The v1 packet omitted the existing stored relation marker, and the prior rationale incorrectly treated the retention instruction as requiring separate prose."
+    },
+    {
+      "case": "v3-dev-alternatives",
+      "candidate": "Candidate C",
+      "field": "answers[id=1].reason",
+      "originalValue": "Answers the focused query with both unestablished hypotheses; the omitted keep-for-discussion act is an independent retention obligation.",
+      "correctedValue": "Answers the focused query with both competing unestablished hypotheses; the keep-for-discussion instruction is fulfilled by preserving both with their qualified relation.",
+      "reason": "The usefulness judgment stays true, but its explanatory clause must follow the clarified interpretation and complete public relation metadata."
+    }
+  ],
+  "forwardInterpretation": "Full stored relation metadata counts as semantic content when its target is present and qualified. It does not establish truth independently of the source. Retaining all alternatives with explicit hypothetical/unestablished scope and their competing relation fulfills a keep-both-for-discussion instruction without a separate prose restatement."
+}
