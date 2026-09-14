@@ -1,5 +1,7 @@
 # Akno documentation
 
+![Akno logo](../public/akno.svg)
+
 The root [README](../README.md) is the short introduction. These guides explain the workflows and design in
 more depth without making every reader carry the complete implementation history.
 

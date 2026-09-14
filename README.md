@@ -1,5 +1,7 @@
 # Akno
 
+![Akno logo](public/akno.svg)
+
 Akno is a memory layer for agents built on a Markdown knowledge base you own.
 
 An agent can search, answer from, and deliberately update the same files you edit in Obsidian, vim, or any

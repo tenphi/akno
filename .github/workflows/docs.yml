@@ -6,6 +6,7 @@ on:
     paths:
       - 'README.md'
       - 'docs/**'
+      - 'public/**'
       - 'astro.config.ts'
       - 'docs.config.ts'
       - 'package.json'
@@ -17,6 +18,7 @@ on:
     paths:
       - 'README.md'
       - 'docs/**'
+      - 'public/**'
       - 'astro.config.ts'
       - 'docs.config.ts'
       - 'package.json'
