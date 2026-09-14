@@ -9,6 +9,7 @@ export default defineDocsConfig({
     description: 'A two-way memory layer for agents over a Markdown knowledge base you own.',
     url: 'https://akno.tenphi.me',
     repository: 'https://github.com/tenphi/akno',
+    favicon: 'public/akno.svg',
   },
   head: [
     {
@@ -57,6 +58,22 @@ export default defineDocsConfig({
   },
   theme: {
     brand: { from: '#6554c0' },
+    styles: {
+      StarlightHeader: {
+        // The custom site title includes our mark in the home link.
+        Logo: { hide: true },
+      },
+      Hero: {
+        Visual: {
+          inlineSize: { '': 'min(100%, 11rem)', '@mobile': '8rem' },
+        },
+      },
+    },
+  },
+  components: {
+    overrides: {
+      SiteTitle: './docs/components/SiteTitle.astro',
+    },
   },
   build: {
     strict: true,
