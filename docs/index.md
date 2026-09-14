@@ -6,7 +6,7 @@ hero:
   title: Memory your agent can cite, and you can edit.
   tagline: Akno gives an agent continuity across conversations without turning memory into an opaque chat-provider feature—the Markdown files you already own stay the source of truth.
   image:
-    html: '<img src="/akno.svg" width="176" height="176" alt="Akno logo" style="width:100%;height:auto" />'
+    html: '<img src="/akno.svg" width="176" height="176" alt="Akno logo" />'
   actions:
     - text: Get started
       link: /getting-started/

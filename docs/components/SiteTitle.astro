@@ -1,33 +1,11 @@
 ---
 import AknoLogo from '../../public/akno.svg';
+import { SiteTitleRoot } from './site-title.js';
 
 const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute;
 ---
 
-<a href={siteTitleHref} class="site-title sl-flex">
-  <AknoLogo class="akno-logo" aria-hidden="true" focusable="false" />
+<SiteTitleRoot href={siteTitleHref}>
+  <AknoLogo aria-hidden="true" focusable="false" />
   <span translate="no">{siteTitle}</span>
-</a>
-
-<style>
-  .site-title {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .akno-logo {
-    display: block;
-    flex-shrink: 0;
-    width: 2rem;
-    height: 2rem;
-    color: var(--sl-color-text-accent);
-  }
-
-  @media (max-width: 50rem) {
-    .akno-logo {
-      width: 1.75rem;
-      height: 1.75rem;
-    }
-  }
-</style>
+</SiteTitleRoot>
