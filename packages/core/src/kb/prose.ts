@@ -2,7 +2,7 @@ import type { Line, MemoryView, ProseQualification } from '@tenphi/akno-protocol
 import { parseFrontmatter } from './frontmatter.ts';
 import { sha256 } from '../store/ids.ts';
 
-export const PROSE_PROJECTION_VERSION = 'prose-v2';
+export const PROSE_PROJECTION_VERSION = 'prose-v3';
 type Meaning = Pick<ProseQualification, 'view' | 'reason'>;
 const FACTUAL: Meaning = { view: 'factual', reason: 'asserted' };
 const CONDITIONAL =
@@ -17,6 +17,9 @@ const PLANNED =
   /\b(?:plan(?:s|ned|ning)? to|propos(?:e|ed|al)|intend(?:s)? to)\b|(?:планиру\p{L}*|намерева\p{L}*|предлага\p{L}*)/iu;
 const SPEAKER =
   /^\s*(?:[-*]\s*)?(?:\*\*)?(?:user|assistant|system|external|пользователь|ассистент|система)(?:\*\*)?\s*:/iu;
+// The paragraph boundary and heading reader must agree, including empty sibling headings.
+// Otherwise a recognized boundary can be skipped without opening or closing its scope.
+const ATX_HEADING = /^ {0,3}(#{1,6})(?:[ \t]+(.*)|[ \t]*)\r?$/;
 
 function categoryHeading(text: string): Meaning | null {
   const title = text
@@ -47,6 +50,7 @@ function categoryHeading(text: string): Meaning | null {
 }
 
 function meaning(text: string, heading = false): Meaning {
+  if (heading) text = text.replace(/\s+#+\s*$/, '').trim();
   const category = heading ? categoryHeading(text) : null;
   if (category) return category;
   if (CONDITIONAL.test(text)) return { view: 'discussion', reason: 'conditional' };
@@ -170,10 +174,10 @@ export function proseQualifications(fileLines: string[]): Map<number, ProseQuali
     }
     const setext = /^\s{0,3}(=+|-+)\s*$/.exec(fileLines[i + 1] ?? '');
     const heading =
-      /^(#{1,6})\s+(.+)$/.exec(text) ?? (setext ? ['', setext[1]![0] === '=' ? '#' : '##', text] : null);
+      ATX_HEADING.exec(text) ?? (setext ? ['', setext[1]![0] === '=' ? '#' : '##', text] : null);
     if (heading) {
       while (headings.length && headings.at(-1)!.depth >= heading[1]!.length) headings.pop();
-      headings.push({ depth: heading[1]!.length, index: i, meaning: meaning(heading[2]!, true) });
+      headings.push({ depth: heading[1]!.length, index: i, meaning: meaning(heading[2] ?? '', true) });
       carried = null;
       previousParagraph = [];
       // Headings supply context; by themselves they establish no proposition.
@@ -185,7 +189,8 @@ export function proseQualifications(fileLines: string[]): Map<number, ProseQuali
     while (
       i < fileLines.length &&
       fileLines[i]!.trim() &&
-      !/^\s*(?:#{1,6}\s|<!--|`{3,}|~{3,})/.test(fileLines[i]!)
+      !ATX_HEADING.test(fileLines[i]!) &&
+      !/^\s*(?:<!--|`{3,}|~{3,})/.test(fileLines[i]!)
     )
       i++;
     if (i === start) {

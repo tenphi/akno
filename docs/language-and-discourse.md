@@ -16,6 +16,11 @@ English is the initial supported knowledge target. `answer({ answer_language: "r
 language applies; if both are unset, no explicit answer-language policy is added. Hosts discover the effective
 policy in `context.knowledge_language` and remain responsible for their own final conversation responses.
 
+English and Russian query cues use the same precedence, including when both languages occur in one query:
+reports, open questions, discussion, history, then planning. For example, an English request for a report
+about a Russian-named plan selects reports. A caller's explicit `memory_view` still takes precedence over
+inference; the query language and selected view do not change the knowledge or requested answer language.
+
 For an automatically extracted record with one intact source support, answering also receives its bounded
 original quotation as internal context. The visible retained record determines what can be answered; the
 quotation constrains its meaning and qualifications. The same verifier call must separately confirm that
@@ -137,6 +142,12 @@ headings, block quotations, speaker turns and role headings, plans, questions, r
 source fences, and an explicit following qualification referring back across a paragraph break. Conditional
 and speaker scope continues across blank lines until the next heading. Sibling headings end their enclosing
 scope; nested headings retain it.
+
+ATX headings retain their scope with up to three leading spaces, tab separators, and optional closing
+hashes. Empty sibling headings also end the preceding scope. The same heading recognition is used when
+finding paragraph boundaries, so an indented qualifier cannot be dropped while admitting its paragraph as
+factual evidence. Frames keep the exact original heading bytes. Reindexing upgrades the derived projection
+and invalidates affected facts and summaries without rewriting source files.
 
 Category headings such as `Assistant report`, `Пересказ`, `Preliminary versions` and
 `Предварительные версии` also qualify their otherwise assertion-shaped paragraphs. Category matching is

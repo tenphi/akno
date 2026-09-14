@@ -4,6 +4,44 @@ import { sha256 } from '../store/ids.ts';
 
 describe('ordinary Markdown discourse', () => {
   it.each([
+    [' ## Hypothesis', 'discussion'],
+    ['  ## Гипотеза', 'discussion'],
+    ['   ## Assistant report', 'reports'],
+    ['  ## Assistant ###', 'reports'],
+    ['##\tAssistant\t###', 'reports'],
+    ['  ## Гипотеза\r', 'discussion'],
+  ])('keeps qualifying scope for Markdown heading whitespace: %s', (heading, view) => {
+    const lines = ['# Equipment', '', heading, '', 'The case is silver.'];
+    const q = proseQualifications(lines).get(5)!;
+    expect(q).toMatchObject({ view, answer_eligible: false });
+    expect(q.frame).toContainEqual({ n: 3, text: heading });
+  });
+
+  it.each(['##', '  ##   ', '   ## Recorded details ###'])(
+    'ends a preceding scope at an empty or indented sibling heading: %s',
+    (heading) => {
+      const q = proseQualifications(['## Hypothesis', 'The case is silver.', heading, 'The case is blue.']);
+      expect(q.get(2)?.answer_eligible).toBe(false);
+      expect(q.get(3)).toMatchObject({ reason: 'heading', answer_eligible: false });
+      expect(q.get(4)?.answer_eligible).toBe(true);
+    },
+  );
+
+  it.each(['##Recorded details', '####### Recorded details'])(
+    'does not close a qualifying scope for invalid heading syntax: %s',
+    (text) => {
+      const q = proseQualifications(['## Hypothesis', 'The case is silver.', text, '', 'The case is blue.']);
+      expect(q.get(5)).toMatchObject({ view: 'discussion', answer_eligible: false });
+    },
+  );
+
+  it('keeps headings inside a fenced example from opening scope outside it', () => {
+    const q = proseQualifications(['```md', '  ## Hypothesis', '```', '', 'The case is silver.']);
+    expect(q.get(2)).toMatchObject({ reason: 'example', answer_eligible: false });
+    expect(q.get(5)?.answer_eligible).toBe(true);
+  });
+
+  it.each([
     ['## Hypothetical warranty scenario', 'The replacement would be covered.', 'discussion'],
     ['## Предположения о гарантии', 'Замена покрывается гарантией.', 'discussion'],
     ['## Questions', 'Which warranty applies?', 'questions'],

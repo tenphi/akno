@@ -1,7 +1,7 @@
 import type { MemoryQualification, MemoryView, RecallMode } from '@tenphi/akno-protocol';
 
 export type QualifiedMemory = Extract<MemoryQualification, { status: 'qualified' }>;
-export const MEMORY_VIEW_VERSION = 'memory-view-v7';
+export const MEMORY_VIEW_VERSION = 'memory-view-v8';
 
 /** The subset shared by protocol qualifications and the rebuildable SQL projection. */
 export interface MemorySemantics {
@@ -20,12 +20,14 @@ export interface MemorySemantics {
  */
 export function inferMemoryView(query: string, mode: RecallMode = 'lookup'): MemoryView {
   const russian = russianMemoryView(query);
-  if (russian) return russian;
-  if (ENGLISH_TENTATIVE_ASSISTANT_REPORT.test(query)) return 'reports';
+  // Apply the same precedence to both languages. Resolving Russian first lets a lower-priority
+  // topic cue (such as a plan) hide an explicit English request for a report about that topic.
+  if (russian === 'reports' || ENGLISH_TENTATIVE_ASSISTANT_REPORT.test(query)) return 'reports';
   if (/\b(report|reported|reports|said|says|according to|told|claimed|claims)\b/i.test(query)) {
     return 'reports';
   }
   if (
+    russian === 'questions' ||
     /\b((?:open|unresolved|unanswered) (?:[a-z-]+ ){0,3}questions?|what remains (?:open|unanswered)|questions? remain)\b/i.test(
       query,
     )
@@ -33,6 +35,7 @@ export function inferMemoryView(query: string, mode: RecallMode = 'lookup'): Mem
     return 'questions';
   }
   if (
+    russian === 'discussion' ||
     ENGLISH_FICTION_CONTENT.test(query) ||
     /\b(hypothetical|hypotheses|hypothesis|counterfactual|what if|suppose|scenario|scenarios|alternative|alternatives|competing (?:[a-z-]+ ){0,3}explanations?|ideas? considered|discussed options?|tentative beliefs?|unconfirmed hypotheses)\b/i.test(
       query,
@@ -42,6 +45,7 @@ export function inferMemoryView(query: string, mode: RecallMode = 'lookup'): Mem
   }
   if (declinedOffer(query)) return 'history';
   if (
+    russian === 'history' ||
     /\b(history|historical|previously|formerly|reject(?:s|ed|ing)?|cancel(?:led|ed)?|completed|superseded|resolved|what was decided|decision history)\b/i.test(
       query,
     )
@@ -49,6 +53,7 @@ export function inferMemoryView(query: string, mode: RecallMode = 'lookup'): Mem
     return 'history';
   }
   if (
+    russian === 'planning' ||
     /\b(plan|plans|planned|planning|proposal|proposed|schedule|scheduled|upcoming|due|overdue|deadline|next action|next actions)\b/i.test(
       query,
     )

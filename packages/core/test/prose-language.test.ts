@@ -80,7 +80,7 @@ function request(language?: 'en' | 'ru') {
 describe('language and ordinary prose through production operations', () => {
   it('rebuilds stale heading qualifications on an ordinary index pass without editing source files', async () => {
     const content =
-      '# Zephyr QX-100\n\n## Assistant report\nThe case is silver.\n\n## Recorded details\nThe handle is blue.\n';
+      '# Zephyr QX-100\n\n  ## Assistant report\nThe case is silver.\n\n## Recorded details\nThe handle is blue.\n';
     const target = path.join(root, 'memory/equipment.md');
     fs.writeFileSync(target, content);
     const initialStat = fs.statSync(target);
@@ -91,8 +91,11 @@ describe('language and ordinary prose through production operations', () => {
     // Simulate a derived index from the older classifier while keeping file hashes and mtimes current.
     const stale = new Database(path.join(state, 'akno.db'));
     try {
-      stale.prepare("UPDATE meta SET value = 'prose-v1' WHERE key = 'prose_projection_version'").run();
+      stale.prepare("UPDATE meta SET value = 'prose-v2' WHERE key = 'prose_projection_version'").run();
       stale.prepare("UPDATE prose_entries SET view = 'factual', eligible = 1 WHERE line = 4").run();
+      stale
+        .prepare("UPDATE pages SET summary = ? WHERE slug = 'memory/equipment'")
+        .run('The case is silver.');
     } finally {
       stale.close();
     }
@@ -101,7 +104,7 @@ describe('language and ordinary prose through production operations', () => {
     await memory.index({ structuralOnly: true });
     const read = await memory.read({ slug: 'memory/equipment', from_line: 4, to_line: 4 });
     expect(read.page?.lines[0]?.prose).toMatchObject({ view: 'reports', answer_eligible: false });
-    expect(read.page?.lines[0]?.prose?.frame).toContainEqual({ n: 3, text: '## Assistant report' });
+    expect(read.page?.lines[0]?.prose?.frame).toContainEqual({ n: 3, text: '  ## Assistant report' });
     const db = new Database(path.join(state, 'akno.db'), { readonly: true });
     try {
       expect(db.prepare("SELECT value FROM meta WHERE key = 'prose_projection_version'").get()).toEqual({
@@ -116,11 +119,99 @@ describe('language and ordinary prose through production operations', () => {
         view: 'factual',
         eligible: 1,
       });
+      expect(db.prepare("SELECT summary FROM pages WHERE slug = 'memory/equipment'").get()).toEqual({
+        summary: null,
+      });
     } finally {
       db.close();
     }
     expect(fs.readFileSync(target, 'utf8')).toBe(content);
     expect(fs.statSync(target).mtimeMs).toBe(initialStat.mtimeMs);
+    expect(fs.readdirSync(path.join(root, 'memory'))).toEqual(['equipment.md']);
+  });
+
+  it('retrieves qualified English prose for a mixed-language report query and honors explicit factual view', async () => {
+    const content = `# Zephyr QX-100\n\n  ## Assistant ###\n${claim}\n`;
+    const target = path.join(root, 'memory/equipment.md');
+    fs.writeFileSync(target, content);
+    memory = await start();
+    await memory.index({ structuralOnly: true });
+    const query = 'What did the assistant report about план Zephyr QX-100 warranty?';
+    const recalled = await memory.recall({ query, expand: false, rerank: false, graph: false });
+    expect(recalled.memory_view).toBe('reports');
+    const reportLines = recalled.results.flatMap((result) => (result.type === 'page' ? result.lines : []));
+    expect(reportLines).toContainEqual(
+      expect.objectContaining({
+        text: claim,
+        prose: expect.objectContaining({ view: 'reports', answer_eligible: false }),
+      }),
+    );
+    expect(reportLines.find((line) => line.text === claim)?.prose?.frame).toContainEqual({
+      n: 3,
+      text: '  ## Assistant ###',
+    });
+    const context = await memory.context({ query, structure: false, timeline_days: 0 });
+    expect(context.knowledge_language).toBe('en');
+    expect(context.memory_view).toBe('reports');
+    expect(
+      context.results.some(
+        (result) => result.type === 'page' && result.lines.some((line) => line.text === claim),
+      ),
+    ).toBe(true);
+    // Automatic injection additionally needs exact field support or a relevance model.
+    const automatic = await memory.context({
+      profile: 'auto_recall',
+      query: 'Zephyr QX-100 warranty',
+      memory_view: 'reports',
+    });
+    expect(
+      automatic.results.some(
+        (result) => result.type === 'page' && result.lines.some((line) => line.text === claim),
+      ),
+    ).toBe(true);
+    for (const answerLanguage of ['en', 'ru'] as const) {
+      const answer = await memory.answer({
+        question: query,
+        answer_language: answerLanguage,
+        expand: false,
+        graph: false,
+        include_context: true,
+      });
+      expect(answer.memory_view).toBe('reports');
+      expect(answer.answer_language).toBe(answerLanguage);
+      // No model is configured: distinguish available qualified evidence from an empty selection.
+      expect(answer.reason_code).toBe('generation_unavailable');
+      expect(answer.context?.length).toBeGreaterThan(0);
+      const factual = await memory.answer({
+        question: query,
+        answer_language: answerLanguage,
+        memory_view: 'factual',
+        expand: false,
+        graph: false,
+      });
+      expect(factual.memory_view).toBe('factual');
+      expect(factual.reason_code).toBe('no_eligible_evidence');
+      expect(factual.answer).toBeNull();
+    }
+    const factualContext = await memory.context({
+      profile: 'auto_recall',
+      query: 'Zephyr QX-100 warranty',
+      memory_view: 'factual',
+    });
+    expect(
+      factualContext.results.every(
+        (result) => result.type !== 'page' || result.lines.every((line) => line.text !== claim),
+      ),
+    ).toBe(true);
+    await memory.close();
+    memory = await start();
+    await memory.index({ rebuild: true, structuralOnly: true });
+    const read = await memory.read({ slug: 'memory/equipment', from_line: 4, to_line: 4 });
+    expect(read.page?.lines[0]).toMatchObject({
+      text: claim,
+      prose: { view: 'reports', answer_eligible: false },
+    });
+    expect(fs.readFileSync(target, 'utf8')).toBe(content);
     expect(fs.readdirSync(path.join(root, 'memory'))).toEqual(['equipment.md']);
   });
 
@@ -206,7 +297,8 @@ describe('language and ordinary prose through production operations', () => {
     ).toBeDefined();
     const beforeGraph = await memory.graph({ query: 'Zephyr QX-100', max_hops: 2 });
     expect(beforeGraph.edges.some((edge) => edge.evidence.kind === 'fact_line')).toBe(true);
-    fs.writeFileSync(target, `# Hypothetical warranty\n\n${claim}\n`);
+    const edited = `   # Гипотеза о гарантии\n\n${claim}\n`;
+    fs.writeFileSync(target, edited);
     const live = await memory.read({ slug: 'memory/equipment' });
     expect(live.page?.lines.find((line) => line.n === 3)).toMatchObject({
       prose: { answer_eligible: false },
@@ -227,6 +319,7 @@ describe('language and ordinary prose through production operations', () => {
     } finally {
       db.close();
     }
+    expect(fs.readFileSync(target, 'utf8')).toBe(edited);
   });
 
   it('reports unresolved oversized discourse as degradation while retaining the original text', async () => {

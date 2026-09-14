@@ -11,6 +11,20 @@ const factual: MemorySemantics = {
 
 describe('memory-view inference', () => {
   it.each([
+    ['What did Ada Marlow report about план осмотра?', 'reports'],
+    ['What did Ada Marlow report about гипотезу?', 'reports'],
+    ['Which open questions remain about план осмотра?', 'questions'],
+    ['What hypothetical alternative concerns отменённый осмотр?', 'discussion'],
+    ['Which rejected proposal concerns план осмотра?', 'history'],
+    ['Что сообщил Bo Winters about the inspection plan?', 'reports'],
+    ['Какие открытые вопросы concern the inspection plan?', 'questions'],
+    ['Какая гипотеза concerns the rejected proposal?', 'discussion'],
+    ['Какие отклонённые варианты concern the inspection plan?', 'history'],
+  ] as const)('uses the same cue precedence across query languages: %s', (query, view) => {
+    expect(inferMemoryView(query)).toBe(view);
+  });
+
+  it.each([
     ['What did Bo Winters report about the warranty?', 'reports'],
     ['Which open questions remain about calibration?', 'questions'],
     ['What hypothetical scenario was discussed?', 'discussion'],
