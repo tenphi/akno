@@ -1,0 +1,54 @@
+{
+  "runtimeCommit": "ee9cc859bb53c09490cf0865b5116380ebce8c22",
+  "tests": 2463,
+  "testFiles": 139,
+  "checks": {
+    "build/typecheck": "passed",
+    "lint": "passed",
+    "knip": "passed",
+    "suite": "passed",
+    "formatting": "passed",
+    "docs:doctor": "passed",
+    "docs:build": "passed",
+    "smoke": "passed",
+    "smoke:packages": "passed",
+    "check:repository": "passed",
+    "redeploy:build/restart/socket": "passed"
+  },
+  "compiledChecks": {
+    "compiledSourceClock": true,
+    "compiledFramedAnswers": true,
+    "immutableOwnTextReferences": true,
+    "staleAndForeignBlockReferencesRejected": true,
+    "mandatorySemantics": true,
+    "mandatorySelection": true,
+    "strictVerdictJson": true,
+    "readingsPrivate": true,
+    "sourceBytesUnchanged": true,
+    "extraModelPasses": 0
+  },
+  "ci": {
+    "run": 34303306449,
+    "conclusion": "success"
+  },
+  "documentationCI": {
+    "run": 34303306447,
+    "conclusion": "success"
+  },
+  "qualificationChecks": {
+    "compiledContinuedReportUncertainty": true,
+    "compiledProposerFloor": true,
+    "compiledHypotheticalVersions": true,
+    "mandatorySemantics": true,
+    "unrelatedInstallationHeld": true,
+    "sourceBytesUnchanged": true,
+    "extraModelPasses": 0
+  },
+  "budgetControls": {
+    "invalidBudgetInputsRejected": true,
+    "answerOnlyOverride": true,
+    "configuredLimit": 1024,
+    "trialLimit": 2400,
+    "inheritedFromRuntime": "9fd704d90faa3d2cf137bc9c6a161c32dabd4def"
+  }
+}

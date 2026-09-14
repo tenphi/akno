@@ -1,0 +1,38 @@
+{
+  "runtimeCommit": "bf73549dd0a721b61b3c05bb3e75d89e79a7621e",
+  "startedAt": "2026-09-09T16:06:20.884Z",
+  "plan": "benchmarks/language/v69-trial-plan.md",
+  "selected": {
+    "corpus": "v21",
+    "split": "development",
+    "runs": 1,
+    "cases": [
+      "v20-held-report",
+      "v20-held-hypothesis",
+      "v20-held-counterfactual",
+      "v20-held-exclusion",
+      "v20-held-assistant",
+      "v20-held-fiction",
+      "v20-held-undated",
+      "v20-held-alternatives"
+    ],
+    "observations": 64
+  },
+  "built": {
+    "corpus": "v20",
+    "split": "development",
+    "runs": 1,
+    "cases": [
+      "v19-held-report",
+      "v19-held-question",
+      "v19-held-rejected",
+      "v19-held-alternatives"
+    ],
+    "observations": 32
+  },
+  "runtimeModel": "gpt-5.6-luna",
+  "reviewModel": "gpt-5.6-sol",
+  "answerOutputTokens": 2400,
+  "freshHeldOutExecuted": false,
+  "replacementRerunsAllowed": false
+}

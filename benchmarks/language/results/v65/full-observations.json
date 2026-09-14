@@ -1,0 +1,64 @@
+{
+  "runtimeCommit": "b26c5b8b0386aff8be171593b51299f9c703d64b",
+  "independentGrading": "Stored separately in output-review.json and gate.json.",
+  "groups": [
+    {
+      "split": "development",
+      "run": 1,
+      "produced": 71,
+      "writableQueries": 80,
+      "writableNulls": 9,
+      "readOnlyNulls": 8,
+      "availabilityCases": [],
+      "languageRejectedCases": [
+        "v19-held-fiction"
+      ],
+      "sourceByteFailures": 0,
+      "errorCases": []
+    },
+    {
+      "split": "development",
+      "run": 2,
+      "produced": 56,
+      "writableQueries": 80,
+      "writableNulls": 24,
+      "readOnlyNulls": 8,
+      "availabilityCases": [
+        "v19-held-counterfactual"
+      ],
+      "languageRejectedCases": [],
+      "sourceByteFailures": 0,
+      "errorCases": []
+    },
+    {
+      "split": "held-out",
+      "run": 1,
+      "produced": 66,
+      "writableQueries": 80,
+      "writableNulls": 14,
+      "readOnlyNulls": 8,
+      "availabilityCases": [],
+      "languageRejectedCases": [
+        "v20-held-fiction"
+      ],
+      "sourceByteFailures": 0,
+      "errorCases": []
+    },
+    {
+      "split": "held-out",
+      "run": 2,
+      "produced": 62,
+      "writableQueries": 80,
+      "writableNulls": 18,
+      "readOnlyNulls": 8,
+      "availabilityCases": [
+        "v20-held-hypothesis"
+      ],
+      "languageRejectedCases": [
+        "v20-held-fiction"
+      ],
+      "sourceByteFailures": 0,
+      "errorCases": []
+    }
+  ]
+}

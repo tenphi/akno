@@ -1,0 +1,446 @@
+{
+  "completedAt": "2026-09-13T09:55:39.792Z",
+  "candidate": {
+    "label": "Integration",
+    "commit": "963bf68e3cd07c687007dceaadb4ebb0434613e6",
+    "packageTreeSha256": "51a4e04a1a62e36ef2a99d1e66de91da9ddad04eaefed486f96b620db0c565d2",
+    "protocol": "packages/protocol/dist/index.js",
+    "node": "v22.22.0",
+    "execPath": "<node-v22.22.0>",
+    "abi": "127",
+    "lockSha256": "5601a0ad49140516bd4c0afb4f346073d68105b86a74472c4f49102854700b22"
+  },
+  "corpusFingerprint": "27bbb05e7bc8089ba133e5723667190106d02e98b635e41328d683bd9700505a",
+  "modelPolicy": {
+    "derive": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "maxOutputTokens": 2400,
+      "timeoutMs": 300000,
+      "reasoningEffort": null
+    },
+    "answer": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "maxOutputTokens": 1024,
+      "timeoutMs": 60000,
+      "reasoningEffort": "low"
+    },
+    "embedding": {
+      "id": "text-embedding-qwen3-embedding-0.6b",
+      "enabled": true,
+      "maxOutputTokens": null,
+      "timeoutMs": 60000,
+      "reasoningEffort": null
+    },
+    "expansion": {
+      "id": "llama-3.2-3b-instruct",
+      "enabled": true,
+      "maxOutputTokens": 1024,
+      "timeoutMs": 30000,
+      "reasoningEffort": null
+    }
+  },
+  "results": [
+    {
+      "caseId": "v3-dev-denial",
+      "run": 1,
+      "block": "legacy",
+      "elapsedMs": 183,
+      "networkAttempts": 0,
+      "result": {
+        "id": "v3-dev-denial",
+        "run": 1,
+        "admission": "writable",
+        "reviewExpectation": "The recorded user assertion excludes housing replacement. Preserve the negation; do not infer other coverage or external verification.",
+        "language": "ru",
+        "scenario": "factual-negation",
+        "expectedHold": false,
+        "nonfactualExpected": false,
+        "retentionAvailabilityFailure": true,
+        "availabilityFailure": true,
+        "languageRejected": false,
+        "retention": {
+          "status": "degraded",
+          "outcome": "held",
+          "reason": "apply_failed",
+          "candidates": [],
+          "usage": {
+            "extraction": null,
+            "verification": null,
+            "placement": []
+          },
+          "degraded": [
+            "no_derive_model"
+          ]
+        },
+        "retainedItems": 0,
+        "noncanonicalEligibilityFlag": false,
+        "semanticsMatch": false,
+        "ordinaryCorrect": true,
+        "ordinaryInspection": {
+          "status": "degraded",
+          "results": 1
+        },
+        "bytesStable": true,
+        "replayOutcome": "replayed",
+        "queries": [
+          {
+            "queryLanguage": "en",
+            "explicitView": false,
+            "requestedAnswerLanguage": "en",
+            "inferredView": "factual",
+            "recallStatus": "degraded",
+            "recallDegraded": [
+              "no_expansion_model",
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "retainedEvidence": 0,
+            "reviewRetrieval": [],
+            "contextStatus": "degraded",
+            "contextDegraded": [
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "contextActivated": false,
+            "contextActivation": {
+              "activated": false,
+              "basis": "none",
+              "candidates": 1,
+              "selected": 0,
+              "qualification_run": false,
+              "reference_resolution": "not_needed"
+            },
+            "answerOutcome": "not_answered",
+            "answerReason": "no_eligible_evidence",
+            "answerValidation": null,
+            "answerDegraded": [
+              "no_expansion_model",
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "answerModelUsage": {
+              "generation": null,
+              "verification": null
+            },
+            "reviewAnswer": null
+          },
+          {
+            "queryLanguage": "en",
+            "explicitView": false,
+            "requestedAnswerLanguage": "ru",
+            "inferredView": "factual",
+            "recallStatus": "degraded",
+            "recallDegraded": [
+              "no_expansion_model",
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "retainedEvidence": 0,
+            "reviewRetrieval": [],
+            "contextStatus": "degraded",
+            "contextDegraded": [
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "contextActivated": false,
+            "contextActivation": {
+              "activated": false,
+              "basis": "none",
+              "candidates": 1,
+              "selected": 0,
+              "qualification_run": false,
+              "reference_resolution": "not_needed"
+            },
+            "answerOutcome": "not_answered",
+            "answerReason": "no_eligible_evidence",
+            "answerValidation": null,
+            "answerDegraded": [
+              "no_expansion_model",
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "answerModelUsage": {
+              "generation": null,
+              "verification": null
+            },
+            "reviewAnswer": null
+          },
+          {
+            "queryLanguage": "en",
+            "explicitView": true,
+            "requestedAnswerLanguage": "en",
+            "inferredView": "factual",
+            "recallStatus": "degraded",
+            "recallDegraded": [
+              "no_expansion_model",
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "retainedEvidence": 0,
+            "reviewRetrieval": [],
+            "contextStatus": "degraded",
+            "contextDegraded": [
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "contextActivated": false,
+            "contextActivation": {
+              "activated": false,
+              "basis": "none",
+              "candidates": 1,
+              "selected": 0,
+              "qualification_run": false,
+              "reference_resolution": "not_needed"
+            },
+            "answerOutcome": "not_answered",
+            "answerReason": "no_eligible_evidence",
+            "answerValidation": null,
+            "answerDegraded": [
+              "no_expansion_model",
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "answerModelUsage": {
+              "generation": null,
+              "verification": null
+            },
+            "reviewAnswer": null
+          },
+          {
+            "queryLanguage": "en",
+            "explicitView": true,
+            "requestedAnswerLanguage": "ru",
+            "inferredView": "factual",
+            "recallStatus": "degraded",
+            "recallDegraded": [
+              "no_expansion_model",
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "retainedEvidence": 0,
+            "reviewRetrieval": [],
+            "contextStatus": "degraded",
+            "contextDegraded": [
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "contextActivated": false,
+            "contextActivation": {
+              "activated": false,
+              "basis": "none",
+              "candidates": 1,
+              "selected": 0,
+              "qualification_run": false,
+              "reference_resolution": "not_needed"
+            },
+            "answerOutcome": "not_answered",
+            "answerReason": "no_eligible_evidence",
+            "answerValidation": null,
+            "answerDegraded": [
+              "no_expansion_model",
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "answerModelUsage": {
+              "generation": null,
+              "verification": null
+            },
+            "reviewAnswer": null
+          },
+          {
+            "queryLanguage": "ru",
+            "explicitView": false,
+            "requestedAnswerLanguage": "en",
+            "inferredView": "factual",
+            "recallStatus": "degraded",
+            "recallDegraded": [
+              "no_expansion_model",
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "retainedEvidence": 0,
+            "reviewRetrieval": [],
+            "contextStatus": "degraded",
+            "contextDegraded": [
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "contextActivated": false,
+            "contextActivation": {
+              "activated": false,
+              "basis": "none",
+              "candidates": 1,
+              "selected": 0,
+              "qualification_run": false,
+              "reference_resolution": "unresolved"
+            },
+            "answerOutcome": "not_answered",
+            "answerReason": "no_eligible_evidence",
+            "answerValidation": null,
+            "answerDegraded": [
+              "no_expansion_model",
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "answerModelUsage": {
+              "generation": null,
+              "verification": null
+            },
+            "reviewAnswer": null
+          },
+          {
+            "queryLanguage": "ru",
+            "explicitView": false,
+            "requestedAnswerLanguage": "ru",
+            "inferredView": "factual",
+            "recallStatus": "degraded",
+            "recallDegraded": [
+              "no_expansion_model",
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "retainedEvidence": 0,
+            "reviewRetrieval": [],
+            "contextStatus": "degraded",
+            "contextDegraded": [
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "contextActivated": false,
+            "contextActivation": {
+              "activated": false,
+              "basis": "none",
+              "candidates": 1,
+              "selected": 0,
+              "qualification_run": false,
+              "reference_resolution": "unresolved"
+            },
+            "answerOutcome": "not_answered",
+            "answerReason": "no_eligible_evidence",
+            "answerValidation": null,
+            "answerDegraded": [
+              "no_expansion_model",
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "answerModelUsage": {
+              "generation": null,
+              "verification": null
+            },
+            "reviewAnswer": null
+          },
+          {
+            "queryLanguage": "ru",
+            "explicitView": true,
+            "requestedAnswerLanguage": "en",
+            "inferredView": "factual",
+            "recallStatus": "degraded",
+            "recallDegraded": [
+              "no_expansion_model",
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "retainedEvidence": 0,
+            "reviewRetrieval": [],
+            "contextStatus": "degraded",
+            "contextDegraded": [
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "contextActivated": false,
+            "contextActivation": {
+              "activated": false,
+              "basis": "none",
+              "candidates": 1,
+              "selected": 0,
+              "qualification_run": false,
+              "reference_resolution": "unresolved"
+            },
+            "answerOutcome": "not_answered",
+            "answerReason": "no_eligible_evidence",
+            "answerValidation": null,
+            "answerDegraded": [
+              "no_expansion_model",
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "answerModelUsage": {
+              "generation": null,
+              "verification": null
+            },
+            "reviewAnswer": null
+          },
+          {
+            "queryLanguage": "ru",
+            "explicitView": true,
+            "requestedAnswerLanguage": "ru",
+            "inferredView": "factual",
+            "recallStatus": "degraded",
+            "recallDegraded": [
+              "no_expansion_model",
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "retainedEvidence": 0,
+            "reviewRetrieval": [],
+            "contextStatus": "degraded",
+            "contextDegraded": [
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "contextActivated": false,
+            "contextActivation": {
+              "activated": false,
+              "basis": "none",
+              "candidates": 1,
+              "selected": 0,
+              "qualification_run": false,
+              "reference_resolution": "unresolved"
+            },
+            "answerOutcome": "not_answered",
+            "answerReason": "no_eligible_evidence",
+            "answerValidation": null,
+            "answerDegraded": [
+              "no_expansion_model",
+              "no_embedding_model",
+              "partial_index",
+              "no_vector_index"
+            ],
+            "answerModelUsage": {
+              "generation": null,
+              "verification": null
+            },
+            "reviewAnswer": null
+          }
+        ],
+        "reviewKnowledge": [],
+        "error": null
+      }
+    }
+  ]
+}

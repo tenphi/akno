@@ -1,0 +1,56 @@
+import assert from 'node:assert/strict';
+export function validateTrace(rows){
+ assert(Array.isArray(rows)&&rows.length>0);
+ const operations=['placement','ownership','retention','answer','answer-verifier','retain-verifier'];
+ const errorClasses=[null,'regex_unsupported','schema_invalid','schema_unsupported','other_provider_failure'];
+ const resultFields=['source','value','ok','reason','errorClass','endpointRequests','usage'];
+ const fields={
+  'model-call-start':['call_id','operation','modelId'],
+  'model-call-finish':['call_id','ok','reason','endpointRequests','usage'],
+  'model-call-throw':['call_id','errorClass'],
+  'transport-start':['transport_id','language','callerMaxTokens'],
+  'transport-result':['transport_id',...resultFields],
+  'language-check':['transport_id',...resultFields],
+  'transport-throw':['transport_id','errorClass'],
+  'rendering-choice':['call_id','source','schemaValid','blocks','additionalLanguageProse'],
+  ...Object.fromEntries(operations.map(kind=>[kind,['call_id','source','value','ok','reason','errorClass','schemaError','schemaKeywords']])),
+ };
+ const calls=new Map(),transports=new Map(),ids=new Set();let modelThrows=0,transportThrows=0;
+ for(const [index,row] of rows.entries()){
+  assert(row&&typeof row==='object'&&!Array.isArray(row));
+  const allowed=fields[row.kind];assert(allowed,`Unknown trace kind at row${index+1}`);
+  assert(Object.keys(row).every(k=>k==='kind'||allowed.includes(k)),`Unexpected field at row${index+1}`);
+  if('errorClass' in row)assert(errorClasses.includes(row.errorClass));
+  if('schemaError' in row)assert.equal(typeof row.schemaError,'boolean');
+  if('schemaKeywords' in row){assert(Array.isArray(row.schemaKeywords));assert(new Set(row.schemaKeywords).size===row.schemaKeywords.length);assert(row.schemaKeywords.every(k=>['oneOf','anyOf','const','span_audit','pattern'].includes(k)));}
+  if('ok' in row)assert.equal(typeof row.ok,'boolean');
+  const transport='transport_id' in row;
+  const id=transport?row.transport_id:row.call_id;assert(Number.isSafeInteger(id)&&id>0);
+  const map=transport?transports:calls;
+  if(row.kind==='model-call-start'||row.kind==='transport-start'){
+   assert(!ids.has(id),'Duplicate lifecycle start');ids.add(id);
+   if(transport){assert.equal(typeof row.language,'boolean');if(row.language)assert.equal(row.callerMaxTokens,1024,'Language transport ceiling changed');}else assert(row.operation===null||operations.includes(row.operation));
+   if(!transport){assert(['gpt-5.6-luna','llama-3.2-3b-instruct'].includes(row.modelId),'Undeclared chat model');assert.equal(row.modelId,row.operation===null?'llama-3.2-3b-instruct':'gpt-5.6-luna');}
+   map.set(id,{start:row,terminal:null,decision:false});
+  }else{
+   const state=map.get(id);assert(state,'Terminal/detail without start');assert.equal(state.terminal,null,'Duplicate terminal or detail after terminal');
+   if(transport){
+    assert(['transport-result','language-check','transport-throw'].includes(row.kind));
+    if(row.kind!=='transport-throw')assert.equal(row.kind==='language-check',state.start.language);
+    else transportThrows++;
+    state.terminal=row.kind;
+   }else if(['model-call-finish','model-call-throw'].includes(row.kind)){
+    if(row.kind==='model-call-finish'&&state.start.operation!==null)assert(state.decision,'Missing model result record');
+    if(row.kind==='model-call-throw')modelThrows++;
+    state.terminal=row.kind;
+   }else if(row.kind==='rendering-choice'){
+    assert.equal(typeof row.schemaValid,'boolean');assert(Array.isArray(row.additionalLanguageProse));
+   }else{
+    assert.equal(row.kind,state.start.operation);assert.equal(state.decision,false,'Duplicate model result');state.decision=true;
+   }
+  }
+ }
+ assert(calls.size>0&&transports.size>0);
+ for(const state of [...calls.values(),...transports.values()])assert.notEqual(state.terminal,null,'Unfinished lifecycle');
+ return {modelCalls:calls.size,transports:transports.size,modelThrows,transportThrows,balanced:true};
+}

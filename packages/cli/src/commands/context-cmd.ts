@@ -1,5 +1,5 @@
 import { openOptionsFrom, parse } from '../args.ts';
-import { heading, json, line, statusLabel, style, truncate } from '../output.ts';
+import { proseLabel, heading, json, line, statusLabel, style, truncate } from '../output.ts';
 import { resolveOps } from '../ops-handle.ts';
 import type { MemoryView } from '@tenphi/akno-protocol';
 
@@ -124,7 +124,9 @@ export async function contextCommand(argv: string[]): Promise<number> {
         line(`  ${style.bold(card.slug)} ${style.grey(`(${card.role})`)}`);
         if (card.summary) line(`    ${truncate(card.summary, 100)}`);
         for (const bodyLine of card.lines.slice(0, 6)) {
-          line(`    ${style.grey(`${card.slug}:${bodyLine.n}`)}  ${truncate(bodyLine.text, 96)}`);
+          line(
+            `    ${style.grey(`${card.slug}:${bodyLine.n}`)}  ${truncate(bodyLine.text, 96)}${proseLabel(bodyLine)}`,
+          );
         }
       }
     }
@@ -143,7 +145,9 @@ export async function contextCommand(argv: string[]): Promise<number> {
         line(`  ${style.bold(entry.slug)} ${style.grey(`(${entry.role})`)}`);
         if (entry.summary) line(`    ${truncate(entry.summary, 100)}`);
         for (const bodyLine of entry.lines.slice(0, 6)) {
-          line(`    ${style.grey(`${entry.slug}:${bodyLine.n}`)}  ${truncate(bodyLine.text, 96)}`);
+          line(
+            `    ${style.grey(`${entry.slug}:${bodyLine.n}`)}  ${truncate(bodyLine.text, 96)}${proseLabel(bodyLine)}`,
+          );
         }
       }
     }

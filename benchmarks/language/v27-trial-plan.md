@@ -1,0 +1,11 @@
+# V27 validation plan
+
+The exposed v15 built-package probe at V26 retained a minor no-arrangement statement while structurally rejecting the principal nested report. Because another candidate survived, structural repair never ran. Its exclusion answers also added verification disclaimers absent from the source. The independent probe review found 1/2 useful retained sets and 4/16 useful answers; all nonnull answers were source-entailing. Preserve this failed probe alongside V26's separate 8/8 selected diagnostic.
+
+V27 permits one position-bound structural repair for partial and all-held batches before semantic verification. Already admitted records, relations and order must remain identical. Invalid repair responses preserve admitted candidates and report typed degradation. Answer generation omits only the internal self_attested basis label; verification and public evidence retain complete metadata. There is no retry after semantic rejection.
+
+V26's full v16 execution completed while V27 was being prepared. Neither its fresh held-out outputs nor its scores have been opened or independently graded. Freeze and commit V27 before opening them. V27 can therefore reuse the unchanged, independently preapproved v16 inputs: fingerprint `95905fa8b8fb21d2ab5ed48d3261a850fbbad79369bd4c43e155bf3674fd7165`. Preserve and independently grade both full trials after that freeze; never select the better trial or omit a failure.
+
+First run one exposed v15 report/exclusion diagnostic on changed V27 and a separate built-package probe after rebuild and service restart. Then run both v16 splits twice, with ten writable and one read-only case each and all eight English/Russian query/answer and explicit/inferred-view combinations. Runtime remains GPT-5.6 Luna, with independent GPT-5.6 Sol semantic grading and separate Sol code review.
+
+The unchanged gate requires at least 90% independently useful answers in every split/run, at least 80% useful retention/retrieval, zero accepted language/qualification/source-entailment/promotion/source-byte errors and at most 5% case availability failures. Preserve all failures. Further changes based on fresh v16 outputs require fresh held-out inputs for the next release-quality trial.

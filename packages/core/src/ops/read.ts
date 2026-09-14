@@ -1,9 +1,10 @@
+import { hasNonfactualProse } from '../kb/prose.ts';
 import fs from 'node:fs';
 import path from 'node:path';
 import { annotateLines, LINE_FACT_COLUMNS, type LineFact } from '../kb/line-facts.ts';
 import { qualifyManagedMemoryLines } from '../kb/managed-lines.ts';
 import { qualifyObservationLines } from '../observations/projection.ts';
-import { AknoError, ReadInput, type PageRole, type ReadOutput } from '@tenphi/akno-protocol';
+import { AknoError, ReadInput, type PageRole, type ReadOutput, type Line } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { documentAvailability, type AvailabilityPart } from '../ingest/availability.ts';
 import {
@@ -80,7 +81,7 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
   const allLines = content.split('\n');
   const from = input.from_line ?? 1;
   const to = input.to_line ?? allLines.length;
-  const lines = allLines
+  const lines: Line[] = allLines
     .slice(from - 1, to)
     .map((text, index) => ({ n: from + index, text }))
     .filter((line) => line.text.length > 0 || line.n === from);
@@ -134,8 +135,10 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
     .filter((fact) => fact.valid_to !== null)
     .map((fact) => ({ claim: fact.claim, valid_to: fact.valid_to! }));
 
+  const unresolved = withConfidence.some((line) => line.prose?.status === 'unresolved');
   return {
-    status: 'ok',
+    status: unresolved ? 'degraded' : 'ok',
+    ...(unresolved ? { degraded: ['prose_discourse_unresolved' as const] } : {}),
     page: {
       id: row.id,
       slug: row.slug,
@@ -151,7 +154,7 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
       about: JSON.parse(row.about) as string[],
       aliases: JSON.parse(row.aliases) as string[],
       frontmatter: JSON.parse(row.frontmatter) as Record<string, unknown>,
-      summary: row.summary,
+      summary: hasNonfactualProse(content) ? null : row.summary,
       ...(row.keywords ? { keywords: JSON.parse(row.keywords) as string[] } : {}),
       lines: withConfidence,
       source_fence_line: row.source_fence_line,

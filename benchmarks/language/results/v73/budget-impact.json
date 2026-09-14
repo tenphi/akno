@@ -1,0 +1,55 @@
+{
+  "note": "Descriptive V73 observations only: the declared probe matrix matches V68, but this is a single descriptive run rather than a causal estimate. Usage receipts are per query and may aggregate several block-verification calls. Receipt count is not provider call count, and observed costs do not establish model quality.",
+  "probes": [
+    {
+      "probe": "selected",
+      "current": {
+        "queries": 64,
+        "producedAnswers": 51,
+        "declaredOutputTokenLimits": {
+          "answer": 2400,
+          "retention": 2400
+        },
+        "generation": {
+          "queriesWithUsageReceipt": 56,
+          "knownOutputTokenReceipts": 56,
+          "outputTokens": 19499,
+          "medianLatencyMs": 5114,
+          "p95LatencyMs": 6804
+        },
+        "verification": {
+          "queriesWithUsageReceipt": 51,
+          "knownOutputTokenReceipts": 51,
+          "outputTokens": 38168,
+          "medianLatencyMs": 7275,
+          "p95LatencyMs": 10210
+        }
+      }
+    },
+    {
+      "probe": "built-reliability",
+      "current": {
+        "queries": 32,
+        "producedAnswers": 24,
+        "declaredOutputTokenLimits": {
+          "answer": 2400,
+          "retention": 2400
+        },
+        "generation": {
+          "queriesWithUsageReceipt": 24,
+          "knownOutputTokenReceipts": 24,
+          "outputTokens": 6816,
+          "medianLatencyMs": 4382,
+          "p95LatencyMs": 5481
+        },
+        "verification": {
+          "queriesWithUsageReceipt": 24,
+          "knownOutputTokenReceipts": 24,
+          "outputTokens": 16540,
+          "medianLatencyMs": 6231,
+          "p95LatencyMs": 9777
+        }
+      }
+    }
+  ]
+}

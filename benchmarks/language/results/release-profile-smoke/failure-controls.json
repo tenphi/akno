@@ -1,0 +1,118 @@
+{
+  "kind": "zero-egress-generic-answer-verification-controls",
+  "testedAt": "2026-09-13T14:38:14.608Z",
+  "runnerSha256": "fa3d9bc614df678af5b6cea898909ffe3d42df8a9bdd5edc7c76dbf7270ab89c",
+  "controlRunnerSha256": "58db509ac748b0f6f93a42d8425d01740c17fc00b57077b9dc658a4b734353f0",
+  "injectedRequests": 2,
+  "externalRequests": 0,
+  "blockedForeignAttempts": 0,
+  "profiles": [
+    {
+      "language": null,
+      "stages": [
+        "generation",
+        "language",
+        "answer-verification"
+      ],
+      "wireTokens": [
+        2224
+      ],
+      "result": {
+        "status": "degraded",
+        "outcome": "not_answered",
+        "answer": null,
+        "reason": "verification_unavailable",
+        "validation": {
+          "generated_blocks": 1,
+          "passed_guards": 1,
+          "verified_blocks": null,
+          "rejection_counts": {}
+        },
+        "degraded": [
+          "no_embedding_model",
+          "partial_index",
+          "no_vector_index",
+          "answer_verification_failed"
+        ]
+      },
+      "answerRole": {
+        "maxOutputTokens": 2400,
+        "timeoutMs": 60000
+      }
+    },
+    {
+      "language": "en",
+      "stages": [
+        "generation",
+        "language",
+        "answer-verification",
+        "language"
+      ],
+      "wireTokens": [
+        2224
+      ],
+      "result": {
+        "status": "degraded",
+        "outcome": "not_answered",
+        "answer": null,
+        "reason": "verification_unavailable",
+        "validation": {
+          "generated_blocks": 1,
+          "passed_guards": 1,
+          "verified_blocks": null,
+          "rejection_counts": {}
+        },
+        "degraded": [
+          "no_embedding_model",
+          "partial_index",
+          "no_vector_index",
+          "answer_verification_failed"
+        ]
+      },
+      "answerRole": {
+        "maxOutputTokens": 2400,
+        "timeoutMs": 60000
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "prepended language policy preserves extraction stage",
+      "ok": true
+    },
+    {
+      "name": "prepended language policy preserves generation stage",
+      "ok": true
+    },
+    {
+      "name": "prepended language policy preserves answer-verification stage",
+      "ok": true
+    },
+    {
+      "name": "prepended language policy preserves retention-verification stage",
+      "ok": true
+    },
+    {
+      "name": "null: malformed generic answer audit withheld",
+      "ok": true
+    },
+    {
+      "name": "null: source bytes and file set unchanged",
+      "ok": true
+    },
+    {
+      "name": "en: malformed generic answer audit withheld",
+      "ok": true
+    },
+    {
+      "name": "en: source bytes and file set unchanged",
+      "ok": true
+    },
+    {
+      "name": "two injected requests and zero external requests",
+      "ok": true
+    }
+  ],
+  "passed": true,
+  "scope": "Scripted generation and language-check prefixes; real built answer verifier parses incomplete injected JSON. Ordinary factual evidence, not a retained-report-specific injection or live-model quality measurement."
+}

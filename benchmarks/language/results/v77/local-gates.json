@@ -1,0 +1,43 @@
+{
+  "tests": 3910,
+  "testFiles": 152,
+  "allExitCodes": 0,
+  "logs": {
+    "suite": "tmp/v77-full-suite-artifact-final.log",
+    "typecheck": "tmp/v77-typecheck-final.log",
+    "lint": "tmp/v77-lint-artifact-final.log",
+    "format": "tmp/v77-format-check-artifact-final.log",
+    "knip": "tmp/v77-knip-final.log",
+    "repository": "tmp/v77-repository-final.log",
+    "smoke": "tmp/v77-smoke-final.log",
+    "packages": "tmp/v77-smoke-packages-final.log",
+    "docsDoctor": "tmp/v77-docs-doctor-initial.log",
+    "docsBuild": "tmp/v77-docs-build-initial.log"
+  },
+  "logSha256": {
+    "suite": "881d0d4d9a5b73a4b65c0267a8ebd4157db06c5e202f8a8668b709b145688411",
+    "typecheck": "3656fc065690d67f2f36fe2e4463d2bc4a902e2bf009a229c331a752896ab84b",
+    "lint": "a62418b11ee0c7286f31a4ab9ebe68919faec2459c19d8491710e326a335e58d",
+    "format": "55bdeb8e964d359a1cc38a7171a8f19861e8a595a1090e0295489efff8aaf18a",
+    "knip": "8ee60b9d1f23f040ca1252d8f0788d9ae00723a353f46cdc4faa0d15f261b1cc",
+    "repository": "c6f74a8522139b5d788c6a1bf50f16dbbcf152161a303990b0f62ba2cc69ccfe",
+    "smoke": "a2bf3fb45ea23a7e2afb41dbc318b42a1f02eaf1858060720be1a4eeceddcd1f",
+    "packages": "37c84ef53ae84a79885c85c0f2b800236aba7f5911a4b0d5d0dcebf58fc631f8",
+    "docsDoctor": "d674d4a4a73fe5bae8a86a5bc3b496da628884bee912b66056e1edbf4f2e8331",
+    "docsBuild": "a878f0026a16e850d1b444807f91f4670b4afea87e4054e331f01dc496e04f47"
+  },
+  "notes": "All final checks completed with exit0. Documentation checks were not repeated because only benchmark/runtime/test internals changed afterward; exact-revision remote docs CI remains required. Initial1000-control failures, two review/fix rounds, the unsupported scenario-label equality, malformed approval artifact and all corrected runs are preserved. The final82 registry/artifact controls consume the real fresh independent input review. V22 inputs remain unexecuted and unseen by root; V21full is quarantined after source exposure.",
+  "preservedInitialLogs": [
+    "tmp/v77-focused-initial.log",
+    "tmp/v77-focused-corrected.log",
+    "tmp/v77-full-suite-initial.log",
+    "tmp/v77-round2-focused.log",
+    "tmp/v77-round2-bounded-focused.log",
+    "tmp/v77-v22-registry-tests.log",
+    "tmp/v77-v22-registry-tests-corrected.log",
+    "tmp/v77-v22-registry-tests-reviewed.log",
+    "tmp/v77-v22-artifact-contract-initial.log",
+    "tmp/v77-v22-artifact-contract-final.log",
+    "tmp/v77-full-suite-final.log"
+  ]
+}

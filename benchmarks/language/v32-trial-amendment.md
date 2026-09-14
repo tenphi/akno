@@ -1,0 +1,5 @@
+# V32 pre-execution amendment
+
+The original V32 plan is preserved. Its exposed selected diagnostic and built-package probe both completed and were independently graded before any full v18 trial began. The built probe accepted a Russian answer with the generic role “assistant” untranslated, violating the unchanged zero-language-error gate. It also exposed five false semantic rejections of faithful descriptions of an attributed open question. The selected probe yielded 31/32 useful answers but omitted one separate no-shipment assertion from retention.
+
+Do not begin the full V32 trial after this known accepted language defect. Preserve both complete probe reports and their independent receipts as failures. Address the exposed defects in V33 under separate code review and a committed plan, then evaluate the new frozen runtime. The v18 held-out source inputs have never been executed; the development probes used only exposed v17 sources. Their existing independent approval and exact fingerprint therefore remain usable for the first fresh trial. No score, expectation, model or acceptance threshold changes, and no started full trial is discarded.

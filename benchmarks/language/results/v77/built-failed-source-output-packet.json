@@ -1,0 +1,146 @@
+{
+  "schemaVersion": "language-diagnostic-packet-v2",
+  "instructions": "Review these generated outputs against the previously approved original sources. Use the agreed source-entailment contract: every saved proposition must follow from original source in content and scope; sourceEntailed for a nonnull answer is judged against the original source even if retained text is flawed. Focused supported subsets are allowed; do not remove coupled qualifications. Score qualification and language separately; unverified asserted source reports need not use tentative metadata. Null is not useful. This is a selected diagnostic, not the complete release gate.",
+  "cases": [
+    {
+      "id": "v19-held-report",
+      "run": 1,
+      "source": {
+        "id": "v19-held-report",
+        "language": "mixed",
+        "scenario": "nested-report",
+        "split": "development",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "I, Ada Marlow, have not read the service terms and have no independent confirmation of the report below. No collection of my device has been booked."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Bo Winters told me that the Zephyr QX-100 terms permit sending the device to a service bench to measure the tension of its return spring."
+          },
+          {
+            "item_id": "turn-3333",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Уточняю только смысл пересказа: речь об измерении натяжения возвратной пружины, а не о замене этой пружины. Это слова Bo Winters в моём пересказе, а не проверенное мной условие."
+          }
+        ],
+        "view": "reports",
+        "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+        "ordinaryFactual": false,
+        "admission": "writable",
+        "queries": {
+          "en": "What unverified return-spring service report did Ada Marlow relay for Zephyr QX-100?",
+          "ru": "Какое неподтверждённое сообщение об обслуживании возвратной пружины Zephyr QX-100 пересказала Ada Marlow?"
+        },
+        "reviewExpectation": "Preserve outer Ada and inner Bo, permission to send the device to a service bench for return-spring tension measurement rather than spring replacement, and the unread/unconfirmed status. Keep the separate no-collection-booking assertion. The contrast clarifies the same relayed report; permission is not a booking or completed measurement."
+      },
+      "reviewKnowledge": [],
+      "answers": []
+    },
+    {
+      "id": "v19-held-question",
+      "run": 1,
+      "source": {
+        "id": "v19-held-question",
+        "language": "ru",
+        "scenario": "open-question",
+        "split": "development",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "У меня, Ada Marlow, остаётся открытый вопрос: входит ли профилактическая доливка охлаждающей жидкости Zephyr QX-100 в договор обслуживания? Ответа у меня нет: ни включение этой услуги, ни её исключение не установлены."
+          }
+        ],
+        "view": "questions",
+        "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+        "ordinaryFactual": false,
+        "admission": "writable",
+        "queries": {
+          "en": "What unresolved coolant-refill question does Ada Marlow have about Zephyr QX-100?",
+          "ru": "Какой нерешённый вопрос о доливке охлаждающей жидкости Zephyr QX-100 остаётся у Ada Marlow?"
+        },
+        "reviewExpectation": "Retain an unresolved question attributed to Ada about preventive coolant refill, with neither inclusion nor exclusion established. Do not answer the embedded coverage question or invent an external asking/writing action."
+      },
+      "reviewKnowledge": [],
+      "answers": []
+    },
+    {
+      "id": "v19-held-rejected",
+      "run": 1,
+      "source": {
+        "id": "v19-held-rejected",
+        "language": "en",
+        "scenario": "rejected-plan",
+        "split": "development",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "An offer concerned sending Zephyr QX-100 to a laboratory for a rotor-balance measurement. I, Ada Marlow, declined that offer; I have no plan to send the device under it."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "No pickup of the device has been booked. The offered shipment was rejected rather than accepted."
+          }
+        ],
+        "view": "history",
+        "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+        "ordinaryFactual": false,
+        "admission": "writable",
+        "queries": {
+          "en": "Which rotor-measurement offer did Ada Marlow reject for Zephyr QX-100?",
+          "ru": "Какое предложение об измерении баланса ротора Zephyr QX-100 отклонила Ada Marlow?"
+        },
+        "reviewExpectation": "Retain Ada’s rejection of sending the device to a laboratory for rotor-balance measurement, her lack of a plan under that offer, and the separate unbooked pickup. The rejected course of action remains kind plan/disposition rejected; that schema does not assert personal intent. No causation or actual measurement/booking may be invented."
+      },
+      "reviewKnowledge": [],
+      "answers": []
+    },
+    {
+      "id": "v19-held-alternatives",
+      "run": 1,
+      "source": {
+        "id": "v19-held-alternatives",
+        "language": "mixed",
+        "scenario": "competing-hypotheses",
+        "split": "development",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Я, Ada Marlow, обсуждаю две конкурирующие гипотезы о неисправности Zephyr QX-100: проскальзывающий приводной ремень или заклинивший охлаждающий вентилятор. Обе версии предварительные."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Neither hypothesis has supporting evidence. I, Ada Marlow, have not selected a cause."
+          }
+        ],
+        "view": "discussion",
+        "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+        "ordinaryFactual": false,
+        "admission": "writable",
+        "queries": {
+          "en": "Which competing malfunction hypotheses did Ada Marlow discuss for Zephyr QX-100?",
+          "ru": "Какие конкурирующие гипотезы о неисправности Zephyr QX-100 обсуждала Ada Marlow?"
+        },
+        "reviewExpectation": "Retain the slipping drive belt and jammed cooling fan as competing tentative hypotheses discussed by Ada. Neither has supporting evidence and Ada has not selected a cause. Preserve the actual discussion activity and personal nonselection; neither alternative becomes an established cause."
+      },
+      "reviewKnowledge": [],
+      "answers": []
+    }
+  ]
+}

@@ -1,0 +1,1106 @@
+{
+  "schemaVersion": "language-diagnostic-packet-v2",
+  "instructions": "Review these generated outputs against the previously approved original sources. Use the agreed source-entailment contract: every saved proposition must follow from original source in content and scope; sourceEntailed for a nonnull answer is judged against the original source even if retained text is flawed. Focused supported subsets are allowed; do not remove coupled qualifications. Score qualification and language separately; unverified asserted source reports need not use tentative metadata. Null is not useful. This is a selected diagnostic, not the complete release gate.",
+  "cases": [
+    {
+      "id": "v18-held-report",
+      "run": 1,
+      "source": {
+        "id": "v18-held-report",
+        "language": "mixed",
+        "scenario": "nested-report",
+        "split": "development",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Bo Winters says that the Zephyr QX-100 service terms permit sending the device to a technician for dial calibration. I, Ada Marlow, have given no instruction to collect it."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Я передаю только слова Bo Winters: разрешена калибровка регулятора, а не замена регулятора. Самих условий я не видела и подтверждения этому сообщению не получила."
+          }
+        ],
+        "view": "reports",
+        "ordinary": "## Report\nAccording to Bo Winters, Zephyr QX-100 inspection is included; this report is unverified.",
+        "ordinaryFactual": false,
+        "admission": "writable",
+        "queries": {
+          "en": "What unverified dial-calibration service report did Ada Marlow record for Zephyr QX-100?",
+          "ru": "Какое неподтверждённое сообщение о калибровке регулятора Zephyr QX-100 записала Ada Marlow?"
+        },
+        "reviewExpectation": "Preserve Ada Marlow as recorder, Bo Winters as inner reporter, the permitted sending of the device to a technician for dial calibration rather than dial replacement, and Ada’s lack of inspected terms or confirmation. Retain the separate assertion that Ada gave no instruction to collect the device. Permission is not an arranged shipment. Keep the calibration/replacement contrast with the reported permission."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Reported by Ada Marlow:** According to Bo Winters, the Zephyr QX-100 service terms permit sending the device to a technician for regulator calibration, not regulator replacement, but Ada Marlow has not seen the terms herself and has not received confirmation of this message.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_836e47ad",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_ae207207ca23d087a4345c9f",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "text": "- Ada Marlow has given no instruction to collect the Zephyr QX-100.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_9aa810f3",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_ae207207ca23d087a4345c9f",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, the Zephyr QX-100 service terms permit sending the device to a technician for regulator calibration, not regulator replacement, but Ada Marlow has not seen the terms herself and has not received confirmation of this message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_836e47ad",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ae207207ca23d087a4345c9f",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by Ada Marlow:** According to Bo Winters, the Zephyr QX-100 service terms permit sending the device to a technician for regulator calibration, not regulator replacement, but Ada Marlow has not seen the terms herself and has not received confirmation of this message. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, the Zephyr QX-100 service terms permit sending the device to a technician for regulator calibration, not regulator replacement, but Ada Marlow has not seen the terms herself and has not received confirmation of this message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_836e47ad",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ae207207ca23d087a4345c9f",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": null
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, the Zephyr QX-100 service terms permit sending the device to a technician for regulator calibration, not regulator replacement, but Ada Marlow has not seen the terms herself and has not received confirmation of this message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_836e47ad",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ae207207ca23d087a4345c9f",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by Ada Marlow:** According to Bo Winters, the Zephyr QX-100 service terms permit sending the device to a technician for regulator calibration, not regulator replacement, but Ada Marlow has not seen the terms herself and has not received confirmation of this message. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, the Zephyr QX-100 service terms permit sending the device to a technician for regulator calibration, not regulator replacement, but Ada Marlow has not seen the terms herself and has not received confirmation of this message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_836e47ad",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ae207207ca23d087a4345c9f",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, the Zephyr QX-100 service terms permit sending the device to a technician for regulator calibration, not regulator replacement, but Ada Marlow has not seen the terms herself and has not received confirmation of this message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_836e47ad",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ae207207ca23d087a4345c9f",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by Ada Marlow:** According to Bo Winters, the Zephyr QX-100 service terms permit sending the device to a technician for regulator calibration, not regulator replacement, but Ada Marlow has not seen the terms herself and has not received confirmation of this message. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, the Zephyr QX-100 service terms permit sending the device to a technician for regulator calibration, not regulator replacement, but Ada Marlow has not seen the terms herself and has not received confirmation of this message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_836e47ad",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ae207207ca23d087a4345c9f",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, the Zephyr QX-100 service terms permit sending the device to a technician for regulator calibration, not regulator replacement, but Ada Marlow has not seen the terms herself and has not received confirmation of this message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_836e47ad",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ae207207ca23d087a4345c9f",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by Ada Marlow:** According to Bo Winters, the Zephyr QX-100 service terms permit sending the device to a technician for regulator calibration, not regulator replacement, but Ada Marlow has not seen the terms herself and has not received confirmation of this message. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, the Zephyr QX-100 service terms permit sending the device to a technician for regulator calibration, not regulator replacement, but Ada Marlow has not seen the terms herself and has not received confirmation of this message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_836e47ad",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ae207207ca23d087a4345c9f",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": null
+        }
+      ]
+    },
+    {
+      "id": "v18-held-question",
+      "run": 1,
+      "source": {
+        "id": "v18-held-question",
+        "language": "en",
+        "scenario": "open-question",
+        "split": "development",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "My unresolved question, recorded by me, Ada Marlow, is whether the Zephyr QX-100 service agreement includes preventive cleaning of the filter."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "I still have no answer. This note establishes neither inclusion nor exclusion of that cleaning."
+          }
+        ],
+        "view": "questions",
+        "ordinary": "## Open question\nDoes Zephyr QX-100 require a seal check?",
+        "ordinaryFactual": false,
+        "admission": "writable",
+        "queries": {
+          "en": "Which open preventive-cleaning question did Ada Marlow record for Zephyr QX-100?",
+          "ru": "Какой открытый вопрос о профилактической чистке фильтра Zephyr QX-100 записала Ada Marlow?"
+        },
+        "reviewExpectation": "Preserve Ada Marlow’s unanswered question about preventive filter cleaning under the service agreement. The question remains open; do not infer cleaning coverage, an exclusion, or a booked cleaning. A faithful description of the recorded question is useful."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Open question:** Ada Marlow's unresolved question is whether the Zephyr QX-100 service agreement includes preventive cleaning of the filter.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_700afac5",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_001a50673cba66f7806aff4d",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "text": "- Ada Marlow still has no answer, and this note establishes neither inclusion nor exclusion of preventive cleaning of the filter in the Zephyr QX-100 service agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_8499b27f",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_001a50673cba66f7806aff4d",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Open question:** Ada Marlow's unresolved question is whether the Zephyr QX-100 service agreement includes preventive cleaning of the filter.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_700afac5",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_001a50673cba66f7806aff4d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Open question:** Ada Marlow's unresolved question is whether the Zephyr QX-100 service agreement includes preventive cleaning of the filter. [memory/zephyr-qx-100:13]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Open question:** Ada Marlow's unresolved question is whether the Zephyr QX-100 service agreement includes preventive cleaning of the filter.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_700afac5",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_001a50673cba66f7806aff4d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Открытый вопрос:** неразрешённый вопрос Ada Marlow состоит в том, включает ли сервисное соглашение Zephyr QX-100 профилактическую очистку фильтра. [memory/zephyr-qx-100:13]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Open question:** Ada Marlow's unresolved question is whether the Zephyr QX-100 service agreement includes preventive cleaning of the filter.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_700afac5",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_001a50673cba66f7806aff4d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Open question:** Ada Marlow's unresolved question is whether the Zephyr QX-100 service agreement includes preventive cleaning of the filter. [memory/zephyr-qx-100:13]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Open question:** Ada Marlow's unresolved question is whether the Zephyr QX-100 service agreement includes preventive cleaning of the filter.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_700afac5",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_001a50673cba66f7806aff4d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Открытый вопрос:** Нерешённый вопрос Ada Marlow заключается в том, включает ли сервисное соглашение Zephyr QX-100 профилактическую очистку фильтра. [memory/zephyr-qx-100:13]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Open question:** Ada Marlow's unresolved question is whether the Zephyr QX-100 service agreement includes preventive cleaning of the filter.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_700afac5",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_001a50673cba66f7806aff4d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Open question:** Ada Marlow's unresolved question is whether the Zephyr QX-100 service agreement includes preventive cleaning of the filter. [memory/zephyr-qx-100:13]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Open question:** Ada Marlow's unresolved question is whether the Zephyr QX-100 service agreement includes preventive cleaning of the filter.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_700afac5",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_001a50673cba66f7806aff4d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Открытый вопрос:** Нерешённый вопрос Ada Marlow заключается в том, включает ли сервисное соглашение Zephyr QX-100 профилактическую чистку фильтра. [memory/zephyr-qx-100:13]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Open question:** Ada Marlow's unresolved question is whether the Zephyr QX-100 service agreement includes preventive cleaning of the filter.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_700afac5",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_001a50673cba66f7806aff4d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Open question:** Ada Marlow's unresolved question is whether the Zephyr QX-100 service agreement includes preventive cleaning of the filter. [memory/zephyr-qx-100:13]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Open question:** Ada Marlow's unresolved question is whether the Zephyr QX-100 service agreement includes preventive cleaning of the filter.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_700afac5",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_001a50673cba66f7806aff4d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Открытый вопрос:** Неразрешённый вопрос Ada Marlow заключается в том, включает ли сервисное соглашение Zephyr QX-100 профилактическую чистку фильтра. [memory/zephyr-qx-100:13]"
+        }
+      ]
+    },
+    {
+      "id": "v18-held-rejected",
+      "run": 1,
+      "source": {
+        "id": "v18-held-rejected",
+        "language": "en",
+        "scenario": "rejected-plan",
+        "split": "development",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "I, Ada Marlow, declined an offer to send Zephyr QX-100 to the service centre for a thermostat measurement. I have no plan to send it under that offer."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "No handover of the device has been booked. The offered shipment was rejected, not accepted."
+          }
+        ],
+        "view": "history",
+        "ordinary": "## Rejected\nAda Marlow rejected a Zephyr QX-100 inspection proposal.",
+        "ordinaryFactual": false,
+        "admission": "writable",
+        "queries": {
+          "en": "Which thermostat-measurement offer did Ada Marlow decline for Zephyr QX-100?",
+          "ru": "Какое предложение об измерении параметров термостата Zephyr QX-100 отклонила Ada Marlow?"
+        },
+        "reviewExpectation": "Preserve the rejected offer to send the device to the service centre for thermostat measurement, the absence of a plan to send it under that offer and the separate absence of a booked handover. Do not infer an accepted plan, completed measurement or arranged collection. A focused answer may state rejection without redundantly restating no plan."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Rejected:** Ada Marlow declined an offer to send Zephyr QX-100 to the service centre for a thermostat measurement; the offered shipment was rejected, not accepted, and she has no plan to send it under that offer.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_b689fd37",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_631379fcbd5477263ea00d4a",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "text": "- No handover of Zephyr QX-100 has been booked.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_dd702247",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_631379fcbd5477263ea00d4a",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined an offer to send Zephyr QX-100 to the service centre for a thermostat measurement; the offered shipment was rejected, not accepted, and she has no plan to send it under that offer.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b689fd37",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_631379fcbd5477263ea00d4a",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Rejected:** Ada Marlow declined an offer to send Zephyr QX-100 to the service centre for a thermostat measurement; the offered shipment was rejected, not accepted, and she has no plan to send it under that offer. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined an offer to send Zephyr QX-100 to the service centre for a thermostat measurement; the offered shipment was rejected, not accepted, and she has no plan to send it under that offer.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b689fd37",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_631379fcbd5477263ea00d4a",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Отклонено:** Ada Marlow отклонила предложение отправить Zephyr QX-100 в сервисный центр для измерения термостата; предложенная отправка была отклонена, а не принята, и у неё нет плана отправлять устройство в рамках этого предложения. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined an offer to send Zephyr QX-100 to the service centre for a thermostat measurement; the offered shipment was rejected, not accepted, and she has no plan to send it under that offer.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b689fd37",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_631379fcbd5477263ea00d4a",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Rejected:** Ada Marlow declined an offer to send Zephyr QX-100 to the service centre for a thermostat measurement; the offered shipment was rejected, not accepted, and she has no plan to send it under that offer. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined an offer to send Zephyr QX-100 to the service centre for a thermostat measurement; the offered shipment was rejected, not accepted, and she has no plan to send it under that offer.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b689fd37",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_631379fcbd5477263ea00d4a",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Отклонено:** Ada Marlow отклонила предложение отправить Zephyr QX-100 в сервисный центр для измерения термостата; предложенная отправка была отклонена, а не принята, и у неё нет плана отправлять устройство в рамках этого предложения. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined an offer to send Zephyr QX-100 to the service centre for a thermostat measurement; the offered shipment was rejected, not accepted, and she has no plan to send it under that offer.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b689fd37",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_631379fcbd5477263ea00d4a",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Rejected:** Ada Marlow declined an offer to send Zephyr QX-100 to the service centre for a thermostat measurement; the offered shipment was rejected, not accepted, and she has no plan to send it under that offer. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined an offer to send Zephyr QX-100 to the service centre for a thermostat measurement; the offered shipment was rejected, not accepted, and she has no plan to send it under that offer.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b689fd37",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_631379fcbd5477263ea00d4a",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Отклонено:** Ada Marlow отклонила предложение отправить Zephyr QX-100 в сервисный центр для измерения параметров термостата; предложенная отправка была отклонена, а не принята, и у неё нет плана отправлять его по этому предложению. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined an offer to send Zephyr QX-100 to the service centre for a thermostat measurement; the offered shipment was rejected, not accepted, and she has no plan to send it under that offer.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b689fd37",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_631379fcbd5477263ea00d4a",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Rejected:** Ada Marlow declined an offer to send Zephyr QX-100 to the service centre for a thermostat measurement; the offered shipment was rejected, not accepted, and she has no plan to send it under that offer. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined an offer to send Zephyr QX-100 to the service centre for a thermostat measurement; the offered shipment was rejected, not accepted, and she has no plan to send it under that offer.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b689fd37",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_631379fcbd5477263ea00d4a",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Отклонено:** Ada Marlow отклонила предложение отправить Zephyr QX-100 в сервисный центр для измерения параметров термостата; предложенная отправка была отклонена, а не принята, и по этому предложению у неё нет плана отправлять устройство. [memory/equipment:6]"
+        }
+      ]
+    },
+    {
+      "id": "v18-held-alternatives",
+      "run": 1,
+      "source": {
+        "id": "v18-held-alternatives",
+        "language": "ru",
+        "scenario": "competing-hypotheses",
+        "split": "development",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Я, Ada Marlow, рассматриваю две конкурирующие версии сбоев Zephyr QX-100: неплотно вставленный внутренний разъём либо неисправный температурный зонд. Обе версии остаются предположениями; доказательств нет ни для первой, ни для второй, и ни одну причину я не выбрала."
+          }
+        ],
+        "view": "discussion",
+        "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+        "ordinaryFactual": false,
+        "admission": "writable",
+        "queries": {
+          "en": "Which competing fault hypotheses did Ada Marlow discuss for Zephyr QX-100?",
+          "ru": "Какие конкурирующие гипотезы о неполадках Zephyr QX-100 обсуждала Ada Marlow?"
+        },
+        "reviewExpectation": "Preserve the competing hypotheses of a loosely inserted internal connector and a faulty temperature probe, Ada Marlow attribution, lack of evidence for either and no selected cause. Tentative or hypothetical commitment can preserve this discussion; neither cause is established. Keep both alternatives and their common lack of evidence."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Tentative:** Ada Marlow is considering two competing hypotheses for Zephyr QX-100 failures—an internal connector that was loosely inserted or a faulty temperature probe; both remain assumptions, there is no evidence for either hypothesis, and she has selected neither cause.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_fdf1f084",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_263e8cbe4c9ffe7025297f71",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing hypotheses for Zephyr QX-100 failures—an internal connector that was loosely inserted or a faulty temperature probe; both remain assumptions, there is no evidence for either hypothesis, and she has selected neither cause.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_fdf1f084",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_263e8cbe4c9ffe7025297f71",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Tentative:** Ada Marlow is considering two competing hypotheses for Zephyr QX-100 failures—an internal connector that was loosely inserted or a faulty temperature probe; both remain assumptions, there is no evidence for either hypothesis, and she has selected neither cause. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing hypotheses for Zephyr QX-100 failures—an internal connector that was loosely inserted or a faulty temperature probe; both remain assumptions, there is no evidence for either hypothesis, and she has selected neither cause.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_fdf1f084",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_263e8cbe4c9ffe7025297f71",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Предварительный статус:** Ada Marlow рассматривает две конкурирующие гипотезы относительно сбоев Zephyr QX-100 — внутренний разъём был вставлен неплотно либо неисправен температурный зонд; обе остаются предположениями, доказательств ни одной из них нет, и она не выбрала ни одну причину. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing hypotheses for Zephyr QX-100 failures—an internal connector that was loosely inserted or a faulty temperature probe; both remain assumptions, there is no evidence for either hypothesis, and she has selected neither cause.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_fdf1f084",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_263e8cbe4c9ffe7025297f71",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Tentative:** Ada Marlow is considering two competing hypotheses for Zephyr QX-100 failures—an internal connector that was loosely inserted or a faulty temperature probe; both remain assumptions, there is no evidence for either hypothesis, and she has selected neither cause. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing hypotheses for Zephyr QX-100 failures—an internal connector that was loosely inserted or a faulty temperature probe; both remain assumptions, there is no evidence for either hypothesis, and she has selected neither cause.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_fdf1f084",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_263e8cbe4c9ffe7025297f71",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Предварительный статус:** Ada Marlow рассматривает две конкурирующие гипотезы причин сбоев Zephyr QX-100 — неплотно вставленный внутренний разъём или неисправный температурный зонд; обе остаются предположениями, доказательств ни одной из них нет, и она не выбрала ни одну причину. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing hypotheses for Zephyr QX-100 failures—an internal connector that was loosely inserted or a faulty temperature probe; both remain assumptions, there is no evidence for either hypothesis, and she has selected neither cause.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_fdf1f084",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_263e8cbe4c9ffe7025297f71",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Tentative:** Ada Marlow is considering two competing hypotheses for Zephyr QX-100 failures—an internal connector that was loosely inserted or a faulty temperature probe; both remain assumptions, there is no evidence for either hypothesis, and she has selected neither cause. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing hypotheses for Zephyr QX-100 failures—an internal connector that was loosely inserted or a faulty temperature probe; both remain assumptions, there is no evidence for either hypothesis, and she has selected neither cause.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_fdf1f084",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_263e8cbe4c9ffe7025297f71",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Предварительно:** Ada Marlow рассматривает две конкурирующие гипотезы сбоев Zephyr QX-100 — неплотно вставленный внутренний разъём или неисправный температурный зонд; обе остаются предположениями, доказательств ни для одной нет, и она не выбрала ни одну причину. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing hypotheses for Zephyr QX-100 failures—an internal connector that was loosely inserted or a faulty temperature probe; both remain assumptions, there is no evidence for either hypothesis, and she has selected neither cause.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_fdf1f084",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_263e8cbe4c9ffe7025297f71",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Tentative:** Ada Marlow is considering two competing hypotheses for Zephyr QX-100 failures—an internal connector that was loosely inserted or a faulty temperature probe; both remain assumptions, there is no evidence for either hypothesis, and she has selected neither cause. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing hypotheses for Zephyr QX-100 failures—an internal connector that was loosely inserted or a faulty temperature probe; both remain assumptions, there is no evidence for either hypothesis, and she has selected neither cause.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_fdf1f084",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_263e8cbe4c9ffe7025297f71",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Предварительно:** Ada Marlow рассматривает две конкурирующие гипотезы о сбоях Zephyr QX-100 — неплотно вставленный внутренний разъём или неисправный температурный зонд; обе остаются предположениями, доказательств нет ни для одной из них, и она не выбрала ни одну причину. [memory/equipment:7]"
+        }
+      ]
+    }
+  ]
+}

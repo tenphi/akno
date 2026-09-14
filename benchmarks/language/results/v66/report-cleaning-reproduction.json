@@ -1,0 +1,161 @@
+{
+  "runtimeCommit": "13a7569f54634627c0eae91eb8f55d159c064176",
+  "purpose": "Exact frozen V66 extraction/repair cleaning replay. No model call, substitute output, or source-semantic judgment.",
+  "source": {
+    "kind": "structured",
+    "items": [
+      {
+        "item_id": "turn-1111",
+        "text": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account. I have not arranged delivery of my Zephyr QX-100.",
+        "role": "user",
+        "speaker": "Ada Marlow"
+      },
+      {
+        "item_id": "turn-2222",
+        "text": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+        "role": "user",
+        "speaker": "Ada Marlow"
+      },
+      {
+        "item_id": "turn-3333",
+        "text": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+        "role": "user",
+        "speaker": "Ada Marlow"
+      }
+    ]
+  },
+  "initial": {
+    "row": 2,
+    "candidate": {
+      "kind": "claim",
+      "attribution": {
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "chain": [
+          {
+            "speaker": "Bo Winters",
+            "role": "user"
+          }
+        ]
+      },
+      "discourse": {
+        "commitment": "asserted",
+        "disposition": "active"
+      },
+      "epistemic": {
+        "basis": "source_report"
+      },
+      "polarity": "affirmed",
+      "support": [
+        {
+          "quote": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+          "item_id": "turn-2222"
+        },
+        {
+          "quote": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+          "item_id": "turn-3333"
+        },
+        {
+          "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account.",
+          "item_id": "turn-1111"
+        }
+      ],
+      "discourse_frame": [
+        {
+          "quote": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+          "item_id": "turn-2222"
+        },
+        {
+          "quote": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+          "item_id": "turn-3333"
+        },
+        {
+          "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account.",
+          "item_id": "turn-1111"
+        }
+      ],
+      "relations": [],
+      "time": null,
+      "text": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch, not replace the latch; Ada Marlow has not read the agreement or independently checked this account.",
+      "subject": "Zephyr QX-100",
+      "page": "memory/zephyr-qx-100"
+    },
+    "result": {
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_5f125698f8fb6e68b7c28e6c",
+          "reason_code": "discourse_uncertain",
+          "reason": "the source report explicitly lacks confirmation or verification; preserve that uncertainty in readable prose, independently of attribution"
+        }
+      ]
+    }
+  },
+  "repaired": {
+    "row": 4,
+    "candidate": {
+      "kind": "claim",
+      "attribution": {
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "chain": [
+          {
+            "speaker": "Bo Winters",
+            "role": "user"
+          }
+        ]
+      },
+      "discourse": {
+        "commitment": "asserted",
+        "disposition": "active"
+      },
+      "epistemic": {
+        "basis": "source_report"
+      },
+      "polarity": "affirmed",
+      "support": [
+        {
+          "quote": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+          "item_id": "turn-2222"
+        },
+        {
+          "quote": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+          "item_id": "turn-3333"
+        },
+        {
+          "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account.",
+          "item_id": "turn-1111"
+        }
+      ],
+      "discourse_frame": [
+        {
+          "quote": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+          "item_id": "turn-2222"
+        },
+        {
+          "quote": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+          "item_id": "turn-3333"
+        },
+        {
+          "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account.",
+          "item_id": "turn-1111"
+        }
+      ],
+      "relations": [],
+      "time": null,
+      "text": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch, not change the latch; Ada Marlow is only passing on this meaning, has not read the agreement, and has not independently checked Bo Winters’s account.",
+      "subject": "Zephyr QX-100",
+      "page": "memory/zephyr-qx-100"
+    },
+    "result": {
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_e4aaf4f1077958d07ea08ff1",
+          "reason_code": "discourse_uncertain",
+          "reason": "the source report explicitly lacks confirmation or verification; preserve that uncertainty in readable prose, independently of attribution"
+        }
+      ]
+    }
+  }
+}

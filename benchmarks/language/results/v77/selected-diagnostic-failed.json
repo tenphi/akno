@@ -1,0 +1,358 @@
+{
+  "schemaVersion": "language-benchmark-v2",
+  "createdAt": "2026-09-12T17:33:54.631Z",
+  "corpusVersion": "language-discourse-v21",
+  "corpusFingerprint": "208d2ea60ef5f5bcf2158ef56a35e57e1ee6b5c36069ac2fbb606abe1ab1cf44",
+  "selectedCaseIds": [
+    "v20-held-report",
+    "v20-held-hypothesis",
+    "v20-held-counterfactual",
+    "v20-held-exclusion",
+    "v20-held-assistant",
+    "v20-held-fiction",
+    "v20-held-undated",
+    "v20-held-alternatives"
+  ],
+  "runs": 1,
+  "setup": "separate-writable-fidelity-and-read-only-admission",
+  "queryMatrix": [
+    "query_language",
+    "answer_language",
+    "explicit_view"
+  ],
+  "split": "development",
+  "knowledgeLanguage": "en",
+  "proseProjectionVersion": "prose-v1",
+  "memoryViewVersion": "memory-view-v7",
+  "answerPromptVersion": "answer-generation-v68",
+  "answerVerifierVersion": "answer-verifier-v48",
+  "retentionPromptVersion": "retain-extraction-language-v56",
+  "retentionVerifierVersion": "retain-verifier-language-v40",
+  "models": {
+    "retention": "gpt-5.6-luna",
+    "answer": "gpt-5.6-luna",
+    "embedding": "text-embedding-qwen3-embedding-0.6b",
+    "expansion": "llama-3.2-3b-instruct"
+  },
+  "modelOutputTokenLimits": {
+    "answer": 2400,
+    "retention": 2400
+  },
+  "indexModelDerivation": false,
+  "independentlyReviewed": false,
+  "releaseEligible": false,
+  "adjudication": "pending: inspect review material; verifier agreement and typed expectations are not independent truth labels",
+  "thresholds": {
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "usefulQualifiedAnswerCoverage": 0.9,
+    "availabilityFailureRate": 0.05,
+    "unsupportedRetainedOutputs": 0,
+    "unsupportedNonnullAnswers": 0
+  },
+  "metrics": {
+    "availabilityFailures": {
+      "numerator": 8,
+      "denominator": 8,
+      "rate": 1
+    },
+    "answerOperationFailures": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "producedAnswers": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "producedAnswersOverRetained": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "answerReasons": {},
+    "routingReasons": {},
+    "holdStages": {},
+    "independentlyJudgedQualifiedAnswers": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "independentlyJustifiedAbstentions": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "languagePolicyRejections": {
+      "numerator": 0,
+      "denominator": 8,
+      "rate": 0
+    },
+    "acceptedLanguageViolations": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "translationQualificationErrors": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "unsafeFactualPromotion": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "noncanonicalEligibilityFlags": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "usefulRetentionCoverage": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "expectedRetentionMisses": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "falseHolds": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "expectedSafeHolds": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "typedSemanticsMatch": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "qualifiedRetrievalCoverage": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "ordinaryProseQualification": {
+      "numerator": 0,
+      "denominator": 8,
+      "rate": 0
+    },
+    "sourceByteChanges": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    }
+  },
+  "byLanguage": {
+    "en": 1,
+    "ru": 2,
+    "mixed": 5
+  },
+  "byScenario": {
+    "nested-report": 1,
+    "hypothetical-maintenance": 1,
+    "counterfactual": 1,
+    "factual-negation": 1,
+    "tentative-assistant-report": 1,
+    "fictional-example": 1,
+    "undated-proposal": 1,
+    "competing-hypotheses": 1
+  },
+  "cases": [
+    {
+      "id": "v20-held-report",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Preserve Ada as outer reporter and Bo as inner reporter, permission to send the device to the workshop to measure latch gap, and the explicit not-latch-replacement clarification. Ada personally has not read or verified the agreement/account and has not arranged delivery. Keep the independent personal delivery denial; no completed work or universal nonverification is established.",
+      "language": "mixed",
+      "scenario": "nested-report",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": true,
+      "availabilityFailure": true,
+      "languageRejected": false,
+      "retention": null,
+      "retainedItems": 0,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": false,
+      "ordinaryCorrect": false,
+      "bytesStable": null,
+      "replayOutcome": null,
+      "queries": [],
+      "reviewKnowledge": [],
+      "error": "evaluation_operation_failed"
+    },
+    {
+      "id": "v20-held-hypothesis",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Keep the hypothetical three-month mesh-screen inspection premise together with its stated conditional missed-inspection consequence. Ada lacks knowledge of real requirements; no actual missed inspection is asserted. Preserve her introducing act and treat frequency as a property, not a calendar event.",
+      "language": "ru",
+      "scenario": "hypothetical-maintenance",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": true,
+      "availabilityFailure": true,
+      "languageRejected": false,
+      "retention": null,
+      "retainedItems": 0,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": false,
+      "ordinaryCorrect": false,
+      "bytesStable": null,
+      "replayOutcome": null,
+      "queries": [],
+      "reviewKnowledge": [],
+      "error": "evaluation_operation_failed"
+    },
+    {
+      "id": "v20-held-counterfactual",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "The complete retained set includes Ada’s actual refusal/nonpurchase and the unrealized fifth-year wheel-hub repair coverage. A focused counterfactual answer preserves the false purchase antecedent and no-actual-coverage scope; do not turn ordinal duration into an event date.",
+      "language": "mixed",
+      "scenario": "counterfactual",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": true,
+      "availabilityFailure": true,
+      "languageRejected": false,
+      "retention": null,
+      "retainedItems": 0,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": false,
+      "ordinaryCorrect": false,
+      "bytesStable": null,
+      "replayOutcome": null,
+      "queries": [],
+      "reviewKnowledge": [],
+      "error": "evaluation_operation_failed"
+    },
+    {
+      "id": "v20-held-exclusion",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Keep the asserted cracked-base-plate exclusion with negated polarity, and distinguish this record’s inability to settle drive-shaft-repair coverage from a claim about the whole contract’s silence. Warranty covers a repair, not repair covering the warranty or shaft.",
+      "language": "ru",
+      "scenario": "factual-negation",
+      "expectedHold": false,
+      "nonfactualExpected": false,
+      "retentionAvailabilityFailure": true,
+      "availabilityFailure": true,
+      "languageRejected": false,
+      "retention": null,
+      "retainedItems": 0,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": false,
+      "ordinaryCorrect": false,
+      "bytesStable": null,
+      "replayOutcome": null,
+      "queries": [],
+      "reviewKnowledge": [],
+      "error": "evaluation_operation_failed"
+    },
+    {
+      "id": "v20-held-assistant",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Keep assistant attribution, tentative possibility of monthly connector-continuity testing, and both personal lack-of-reading and lack-of-verification limits. A contractual term must not become a device state or established requirement. Do not broaden the assistant’s personal limits into global absence of examination or evidence.",
+      "language": "en",
+      "scenario": "tentative-assistant-report",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": true,
+      "availabilityFailure": true,
+      "languageRejected": false,
+      "retention": null,
+      "retainedItems": 0,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": false,
+      "ordinaryCorrect": false,
+      "bytesStable": null,
+      "replayOutcome": null,
+      "queries": [],
+      "reviewKnowledge": [],
+      "error": "evaluation_operation_failed"
+    },
+    {
+      "id": "v20-held-fiction",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Keep the actual proposal to discuss and the complete scoped fictional promise: Vulpine promising fictional Bo free hinge-pin replacements for the first eleven days of ownership. No actual agreement, performed discussion or real promise follows. The duration is not a dated event; fictional content is present, not unspecified.",
+      "language": "mixed",
+      "scenario": "fictional-example",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": true,
+      "availabilityFailure": true,
+      "languageRejected": false,
+      "retention": null,
+      "retainedItems": 0,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": false,
+      "ordinaryCorrect": false,
+      "bytesStable": null,
+      "replayOutcome": null,
+      "queries": [],
+      "reviewKnowledge": [],
+      "error": "evaluation_operation_failed"
+    },
+    {
+      "id": "v20-held-undated",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Keep Ada as actual proposer, a review of repair terms next month relative to the undated original record, unknown calendar month, no accepted plan and no arranged meeting. Preserve the unknown temporal envelope and distinguish tentative time from an uncertain claim that a proposal occurred.",
+      "language": "mixed",
+      "scenario": "undated-proposal",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": true,
+      "availabilityFailure": true,
+      "languageRejected": false,
+      "retention": null,
+      "retainedItems": 0,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": false,
+      "ordinaryCorrect": false,
+      "bytesStable": null,
+      "replayOutcome": null,
+      "queries": [],
+      "reviewKnowledge": [],
+      "error": "evaluation_operation_failed"
+    },
+    {
+      "id": "v20-held-alternatives",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Keep Ada’s consideration of a bent guide rail versus a loose belt fastener as tentative competing hypotheses, the explicit absence of evidence for both, and her personal nonselection. Do not turn consideration into actual discussion, looseness into unspecified installation error, or either option into an established cause.",
+      "language": "mixed",
+      "scenario": "competing-hypotheses",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": true,
+      "availabilityFailure": true,
+      "languageRejected": false,
+      "retention": null,
+      "retainedItems": 0,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": false,
+      "ordinaryCorrect": false,
+      "bytesStable": null,
+      "replayOutcome": null,
+      "queries": [],
+      "reviewKnowledge": [],
+      "error": "evaluation_operation_failed"
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "runtimeCommit": "44e6e714f1758948f306ec90cdae9b0d453e3604",
+  "probes": [
+    {
+      "probe": "selected",
+      "cases": 8,
+      "completeUsefulRetention": 7,
+      "observations": 64,
+      "producedAnswers": 49,
+      "usefulAnswers": 48,
+      "usefulCompliantAnswers": 48,
+      "usefulRetrieval": 56,
+      "nullAnswers": 15,
+      "gradeErrors": {
+        "source": 0,
+        "qualification": 0,
+        "language": 0,
+        "promotion": 0
+      },
+      "retainedErrors": [],
+      "emptyRetainedSets": [],
+      "caseAvailabilityFailures": 1,
+      "sourceByteChanges": 0,
+      "perCase": [
+        {
+          "id": "v20-held-report",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v20-held-hypothesis",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v20-held-counterfactual",
+          "retention": true,
+          "usefulAnswers": 7,
+          "producedAnswers": 7
+        },
+        {
+          "id": "v20-held-exclusion",
+          "retention": true,
+          "usefulAnswers": 5,
+          "producedAnswers": 5
+        },
+        {
+          "id": "v20-held-assistant",
+          "retention": true,
+          "usefulAnswers": 5,
+          "producedAnswers": 5
+        },
+        {
+          "id": "v20-held-fiction",
+          "retention": false,
+          "usefulAnswers": 0,
+          "producedAnswers": 1
+        },
+        {
+          "id": "v20-held-undated",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v20-held-alternatives",
+          "retention": true,
+          "usefulAnswers": 7,
+          "producedAnswers": 7
+        }
+      ],
+      "problematicProduced": [
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "languageCompliant": true,
+          "sourceEntailed": true,
+          "reason": "The response is source-entailed Russian and faithfully preserves Ada’s proposal and no-real-contract limit, but it does not answer the requested fictional hinge-pin promise. The retrieved evidence itself omits that promise, so neither answer nor retrieval is useful for this query.",
+          "id": "v20-held-fiction",
+          "run": 1,
+          "produced": true
+        }
+      ]
+    },
+    {
+      "probe": "built",
+      "cases": 4,
+      "completeUsefulRetention": 4,
+      "observations": 32,
+      "producedAnswers": 32,
+      "usefulAnswers": 32,
+      "usefulCompliantAnswers": 32,
+      "usefulRetrieval": 32,
+      "nullAnswers": 0,
+      "gradeErrors": {
+        "source": 0,
+        "qualification": 0,
+        "language": 0,
+        "promotion": 0
+      },
+      "retainedErrors": [],
+      "emptyRetainedSets": [],
+      "caseAvailabilityFailures": 0,
+      "sourceByteChanges": 0,
+      "perCase": [
+        {
+          "id": "v19-held-report",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-question",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-rejected",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-alternatives",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        }
+      ],
+      "problematicProduced": []
+    }
+  ]
+}

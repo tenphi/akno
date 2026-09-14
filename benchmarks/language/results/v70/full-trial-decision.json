@@ -1,0 +1,169 @@
+{
+  "runtimeCommit": "1ceb557224602d132bb3c5944c2ac81ac7d2a696",
+  "probes": [
+    {
+      "probe": "selected",
+      "cases": 8,
+      "completeUsefulRetention": 8,
+      "observations": 64,
+      "producedAnswers": 54,
+      "usefulAnswers": 54,
+      "usefulRetrieval": 64,
+      "nullAnswers": 10,
+      "gradeErrors": {
+        "source": 0,
+        "qualification": 0,
+        "language": 0,
+        "promotion": 0
+      },
+      "retainedErrors": [
+        "v20-held-report"
+      ],
+      "caseAvailabilityFailures": 0,
+      "sourceByteChanges": 0,
+      "perCase": [
+        {
+          "id": "v20-held-report",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v20-held-hypothesis",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v20-held-counterfactual",
+          "retention": true,
+          "usefulAnswers": 5,
+          "producedAnswers": 5
+        },
+        {
+          "id": "v20-held-exclusion",
+          "retention": true,
+          "usefulAnswers": 7,
+          "producedAnswers": 7
+        },
+        {
+          "id": "v20-held-assistant",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v20-held-fiction",
+          "retention": true,
+          "usefulAnswers": 6,
+          "producedAnswers": 6
+        },
+        {
+          "id": "v20-held-undated",
+          "retention": true,
+          "usefulAnswers": 4,
+          "producedAnswers": 4
+        },
+        {
+          "id": "v20-held-alternatives",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        }
+      ],
+      "problematicProduced": []
+    },
+    {
+      "probe": "built",
+      "cases": 4,
+      "completeUsefulRetention": 4,
+      "observations": 32,
+      "producedAnswers": 32,
+      "usefulAnswers": 32,
+      "usefulRetrieval": 32,
+      "nullAnswers": 0,
+      "gradeErrors": {
+        "source": 0,
+        "qualification": 0,
+        "language": 0,
+        "promotion": 0
+      },
+      "retainedErrors": [],
+      "caseAvailabilityFailures": 0,
+      "sourceByteChanges": 0,
+      "perCase": [
+        {
+          "id": "v19-held-report",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-question",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-rejected",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-alternatives",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        }
+      ],
+      "problematicProduced": []
+    }
+  ],
+  "decidedAt": "2026-09-09T17:43:25.480Z",
+  "decision": "defer full V21 trial",
+  "executeFullTrial": false,
+  "rationale": "One retained denial has incorrect polarity metadata and selected useful answers are 54/64. The zero-error gate and useful-answer target remain unmet. Preserve these once-only runs; do not expose fresh held-out sources yet.",
+  "adoptedUsefulAnswers": 86,
+  "producedAnswers": 86,
+  "nullAnswers": 10,
+  "completeUsefulRetention": "12/12",
+  "fullyQualifiedRetention": "11/12",
+  "usefulRetrieval": "96/96",
+  "retainedMetadataErrors": [
+    {
+      "case": "v20-held-report",
+      "kind": "polarity",
+      "description": "The separately retained no-delivery-arrangement denial is typed affirmed instead of negated."
+    }
+  ],
+  "publishedAnswerErrors": 0,
+  "adjudication": "Source-only review and focused-question adjudication retain 54/64 selected useful answers. Full forensics applies a stricter completeness requirement to fiction q0/q2/q4 and gives 51/64. The adopted answers supply the requested promise and cite every asserted clause; they need not repeat the proposal relation supplied in the question. Both interpretations are preserved.",
+  "falseLocalHolds": {
+    "counterfactual": 2,
+    "unknownClockUnambiguous": 3
+  },
+  "correctBadDraftHolds": {
+    "counterfactualRejectionDisposition": 1,
+    "coverageRole": 1,
+    "fictionLanguage": 1,
+    "fictionQualification": 1
+  },
+  "caseAvailabilityFailures": 0,
+  "sourceByteChanges": 0,
+  "freshHeldOutExecuted": false,
+  "unchangedRuntimeSemanticRerun": false,
+  "fullRunsPerSplit": 2,
+  "fullSplits": [
+    "development",
+    "held-out"
+  ],
+  "answerOutputTokenLimit": 2400,
+  "thresholdsChanged": false,
+  "heldClockHeadingAmbiguity": {
+    "case": "v20-held-undated",
+    "query": 3,
+    "description": "False source-anchor floor on the body; tentative heading has disputed attachment."
+  },
+  "followupStageCorrection": "Counterfactual q3 selects an additional rejected-decision record while omitting explicit rejection; q5/q7 select only the counterfactual record. Public scores and deferral remain unchanged."
+}

@@ -1,0 +1,1263 @@
+{
+  "schemaVersion": "language-benchmark-v2",
+  "createdAt": "2026-09-08T10:31:56.374Z",
+  "corpusVersion": "language-discourse-v15",
+  "corpusFingerprint": "4d03a9fde500f2c415f13add30b5db1d3bc843892bb052b3f207be47f9be1746",
+  "selectedCaseIds": ["v14-held-report", "v14-held-counterfactual"],
+  "runs": 1,
+  "setup": "separate-writable-fidelity-and-read-only-admission",
+  "queryMatrix": ["query_language", "answer_language", "explicit_view"],
+  "split": "development",
+  "knowledgeLanguage": "en",
+  "proseProjectionVersion": "prose-v1",
+  "memoryViewVersion": "memory-view-v6",
+  "answerPromptVersion": "answer-generation-v24",
+  "answerVerifierVersion": "answer-verifier-v14",
+  "retentionPromptVersion": "retain-extraction-language-v16",
+  "retentionVerifierVersion": "retain-verifier-language-v9",
+  "models": {
+    "retention": "gpt-5.6-luna",
+    "answer": "gpt-5.6-luna",
+    "embedding": "text-embedding-qwen3-embedding-0.6b",
+    "expansion": "llama-3.2-3b-instruct"
+  },
+  "indexModelDerivation": false,
+  "independentlyReviewed": false,
+  "releaseEligible": false,
+  "adjudication": "pending: inspect review material; verifier agreement and typed expectations are not independent truth labels",
+  "thresholds": {
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "usefulQualifiedAnswerCoverage": 0.9,
+    "availabilityFailureRate": 0.05,
+    "unsupportedRetainedOutputs": 0,
+    "unsupportedNonnullAnswers": 0
+  },
+  "metrics": {
+    "availabilityFailures": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "answerOperationFailures": {
+      "numerator": 0,
+      "denominator": 16,
+      "rate": 0
+    },
+    "producedAnswers": {
+      "numerator": 8,
+      "denominator": 16,
+      "rate": 0.5
+    },
+    "producedAnswersOverRetained": {
+      "numerator": 8,
+      "denominator": 8,
+      "rate": 1
+    },
+    "answerReasons": {
+      "no_eligible_evidence": 8,
+      "answered": 8
+    },
+    "routingReasons": {},
+    "holdStages": {
+      "validation": 2
+    },
+    "independentlyJudgedQualifiedAnswers": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "independentlyJustifiedAbstentions": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "languagePolicyRejections": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "acceptedLanguageViolations": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "translationQualificationErrors": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "unsafeFactualPromotion": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "noncanonicalEligibilityFlags": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "usefulRetentionCoverage": {
+      "numerator": 1,
+      "denominator": 2,
+      "rate": 0.5
+    },
+    "expectedRetentionMisses": {
+      "numerator": 1,
+      "denominator": 2,
+      "rate": 0.5
+    },
+    "falseHolds": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "expectedSafeHolds": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "typedSemanticsMatch": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "qualifiedRetrievalCoverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "ordinaryProseQualification": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "sourceByteChanges": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    }
+  },
+  "byLanguage": {
+    "en": 0,
+    "ru": 0,
+    "mixed": 2
+  },
+  "byScenario": {
+    "nested-report": 1,
+    "counterfactual": 1
+  },
+  "cases": [
+    {
+      "id": "v14-held-report",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Retain Ada Marlow as recorder, Bo Winters as speaker, no confirmation and no contract inspection. The reported terms allow collection for control-panel diagnostics, not whole-panel replacement; no collection is booked. Preserve the coupled scope contrast and do not turn provision into a booking.",
+      "language": "mixed",
+      "scenario": "nested-report",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "held",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "held",
+            "reason": "discourse_uncertain",
+            "holdStage": "validation",
+            "routingReason": null
+          },
+          {
+            "outcome": "held",
+            "reason": "discourse_uncertain",
+            "holdStage": "validation",
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 35365,
+            "input_tokens": 3158,
+            "output_tokens": 2287,
+            "total_tokens": 5445
+          },
+          "repair": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 8753,
+            "input_tokens": 3831,
+            "output_tokens": 706,
+            "total_tokens": 4537
+          },
+          "verification": null,
+          "placement": []
+        },
+        "degraded": []
+      },
+      "retainedItems": 0,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": false,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 0,
+          "reviewRetrieval": [],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "no_eligible_evidence",
+          "answerValidation": null,
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": null,
+            "verification": null
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 0,
+          "reviewRetrieval": [],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "no_eligible_evidence",
+          "answerValidation": null,
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": null,
+            "verification": null
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 0,
+          "reviewRetrieval": [],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "no_eligible_evidence",
+          "answerValidation": null,
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": null,
+            "verification": null
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 0,
+          "reviewRetrieval": [],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "no_eligible_evidence",
+          "answerValidation": null,
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": null,
+            "verification": null
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 0,
+          "reviewRetrieval": [],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "no_eligible_evidence",
+          "answerValidation": null,
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": null,
+            "verification": null
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 0,
+          "reviewRetrieval": [],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "no_eligible_evidence",
+          "answerValidation": null,
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": null,
+            "verification": null
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 0,
+          "reviewRetrieval": [],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "no_eligible_evidence",
+          "answerValidation": null,
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": null,
+            "verification": null
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 0,
+          "reviewRetrieval": [],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "no_eligible_evidence",
+          "answerValidation": null,
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": null,
+            "verification": null
+          },
+          "reviewAnswer": null
+        }
+      ],
+      "reviewKnowledge": [],
+      "error": null
+    },
+    {
+      "id": "v14-held-counterfactual",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Retain the actual rejected plan and counterfactual third-year control-button replacement coverage, together or in separate qualified records. A focused answer must preserve the unrealized alternative and actual nonacceptance, without asserting current coverage or enrollment.",
+      "language": "mixed",
+      "scenario": "counterfactual",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          },
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 11561,
+            "input_tokens": 3170,
+            "output_tokens": 858,
+            "total_tokens": 4028
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 4143,
+            "input_tokens": 2151,
+            "output_tokens": 315,
+            "total_tokens": 2466
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 864,
+              "input_tokens": 470,
+              "output_tokens": 22,
+              "total_tokens": 492
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1496,
+              "input_tokens": 503,
+              "output_tokens": 40,
+              "total_tokens": 543
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1681,
+              "input_tokens": 311,
+              "output_tokens": 64,
+              "total_tokens": 375
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1499,
+              "input_tokens": 496,
+              "output_tokens": 53,
+              "total_tokens": 549
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 2,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- **Counterfactual:** Ada Marlow said that, if she had agreed to the unchosen extra Zephyr QX-100 service plan, replacement of the control button in the third year would have been included; she explicitly described this as counterfactual reasoning about the unchosen option, not her current service.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3185d9e4",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_83556b942dcff9e59a10196c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Rejected:** Ada Marlow declined the extra Zephyr QX-100 service plan, considers that decision final, and did not enroll.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4adee97a",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_83556b942dcff9e59a10196c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3037,
+              "input_tokens": 1663,
+              "output_tokens": 122,
+              "total_tokens": 1785
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3141,
+              "input_tokens": 1850,
+              "output_tokens": 165,
+              "total_tokens": 2015
+            }
+          },
+          "reviewAnswer": "Ada Marlow described a counterfactual, unrealized alternative in which an extra Zephyr QX-100 service plan would have included replacement of the control button in the third year. She said this was not her current service, and the extra plan was rejected and never enrolled in. [memory/equipment:9] [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- **Counterfactual:** Ada Marlow said that, if she had agreed to the unchosen extra Zephyr QX-100 service plan, replacement of the control button in the third year would have been included; she explicitly described this as counterfactual reasoning about the unchosen option, not her current service.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3185d9e4",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_83556b942dcff9e59a10196c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Rejected:** Ada Marlow declined the extra Zephyr QX-100 service plan, considers that decision final, and did not enroll.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4adee97a",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_83556b942dcff9e59a10196c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3072,
+              "input_tokens": 1678,
+              "output_tokens": 141,
+              "total_tokens": 1819
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2538,
+              "input_tokens": 1865,
+              "output_tokens": 140,
+              "total_tokens": 2005
+            }
+          },
+          "reviewAnswer": "Ada Marlow описала как контрфактическую нереализованную альтернативу дополнительный сервисный план Zephyr QX-100, по которому на третий год была бы предусмотрена замена кнопки управления. Она уточнила, что это не её текущий сервис; от этого плана она отказалась и не подключала его. [memory/equipment:9] [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- **Counterfactual:** Ada Marlow said that, if she had agreed to the unchosen extra Zephyr QX-100 service plan, replacement of the control button in the third year would have been included; she explicitly described this as counterfactual reasoning about the unchosen option, not her current service.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3185d9e4",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_83556b942dcff9e59a10196c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Rejected:** Ada Marlow declined the extra Zephyr QX-100 service plan, considers that decision final, and did not enroll.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4adee97a",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_83556b942dcff9e59a10196c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2695,
+              "input_tokens": 1658,
+              "output_tokens": 99,
+              "total_tokens": 1757
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2174,
+              "input_tokens": 1845,
+              "output_tokens": 149,
+              "total_tokens": 1994
+            }
+          },
+          "reviewAnswer": "Ada Marlow described a counterfactual, unchosen extra Zephyr QX-100 service plan that would have included replacement of the control button in the third year. She said this was not her current service; she declined the plan and did not enroll. [memory/equipment:9] [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- **Counterfactual:** Ada Marlow said that, if she had agreed to the unchosen extra Zephyr QX-100 service plan, replacement of the control button in the third year would have been included; she explicitly described this as counterfactual reasoning about the unchosen option, not her current service.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3185d9e4",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_83556b942dcff9e59a10196c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Rejected:** Ada Marlow declined the extra Zephyr QX-100 service plan, considers that decision final, and did not enroll.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4adee97a",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_83556b942dcff9e59a10196c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3871,
+              "input_tokens": 1674,
+              "output_tokens": 145,
+              "total_tokens": 1819
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2596,
+              "input_tokens": 1861,
+              "output_tokens": 148,
+              "total_tokens": 2009
+            }
+          },
+          "reviewAnswer": "Ада Marlow описала как контрфактическую, нереализованную альтернативу дополнительный сервисный план Zephyr QX-100: при его выборе замена кнопки управления на третьем году входила бы в обслуживание. Этот вариант был отклонён, и Ada Marlow не подключалась к нему. [memory/equipment:9] [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined the extra Zephyr QX-100 service plan, considers that decision final, and did not enroll.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4adee97a",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_83556b942dcff9e59a10196c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Counterfactual:** Ada Marlow said that, if she had agreed to the unchosen extra Zephyr QX-100 service plan, replacement of the control button in the third year would have been included; she explicitly described this as counterfactual reasoning about the unchosen option, not her current service.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3185d9e4",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_83556b942dcff9e59a10196c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2814,
+              "input_tokens": 1654,
+              "output_tokens": 90,
+              "total_tokens": 1744
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1605,
+              "input_tokens": 1694,
+              "output_tokens": 90,
+              "total_tokens": 1784
+            }
+          },
+          "reviewAnswer": "Ada Marlow described a counterfactual, unchosen extra Zephyr QX-100 service plan under which replacement of the control button in the third year would have been included. She explicitly said this was not her current service. [memory/equipment:9]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined the extra Zephyr QX-100 service plan, considers that decision final, and did not enroll.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4adee97a",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_83556b942dcff9e59a10196c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Counterfactual:** Ada Marlow said that, if she had agreed to the unchosen extra Zephyr QX-100 service plan, replacement of the control button in the third year would have been included; she explicitly described this as counterfactual reasoning about the unchosen option, not her current service.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3185d9e4",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_83556b942dcff9e59a10196c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3356,
+              "input_tokens": 1671,
+              "output_tokens": 130,
+              "total_tokens": 1801
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2131,
+              "input_tokens": 1711,
+              "output_tokens": 119,
+              "total_tokens": 1830
+            }
+          },
+          "reviewAnswer": "Ada Marlow описала как нереализованный вариант дополнительный план обслуживания Zephyr QX-100: при его выборе замена кнопки управления на третьем году входила бы в план. Это контрфактическое описание неиспользованного варианта, а не её текущего обслуживания. [memory/equipment:9]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined the extra Zephyr QX-100 service plan, considers that decision final, and did not enroll.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4adee97a",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_83556b942dcff9e59a10196c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Counterfactual:** Ada Marlow said that, if she had agreed to the unchosen extra Zephyr QX-100 service plan, replacement of the control button in the third year would have been included; she explicitly described this as counterfactual reasoning about the unchosen option, not her current service.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3185d9e4",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_83556b942dcff9e59a10196c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3912,
+              "input_tokens": 1657,
+              "output_tokens": 165,
+              "total_tokens": 1822
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2286,
+              "input_tokens": 1844,
+              "output_tokens": 124,
+              "total_tokens": 1968
+            }
+          },
+          "reviewAnswer": "Ada Marlow described an unchosen extra Zephyr QX-100 service plan that would have included replacement of the control button in the third year. She described this as counterfactual, and she rejected the plan rather than enrolling in it. [memory/equipment:6] [memory/equipment:9]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined the extra Zephyr QX-100 service plan, considers that decision final, and did not enroll.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4adee97a",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_83556b942dcff9e59a10196c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Counterfactual:** Ada Marlow said that, if she had agreed to the unchosen extra Zephyr QX-100 service plan, replacement of the control button in the third year would have been included; she explicitly described this as counterfactual reasoning about the unchosen option, not her current service.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3185d9e4",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_83556b942dcff9e59a10196c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3131,
+              "input_tokens": 1671,
+              "output_tokens": 130,
+              "total_tokens": 1801
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2402,
+              "input_tokens": 1711,
+              "output_tokens": 132,
+              "total_tokens": 1843
+            }
+          },
+          "reviewAnswer": "Ada Marlow описала нереализованный вариант дополнительного сервисного плана Zephyr QX-100: при его выборе замена кнопки управления на третьем году входила бы в обслуживание. Это контрфактическое описание невыбранного варианта, а не её текущего обслуживания. [memory/equipment:9]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Rejected:** Ada Marlow declined the extra Zephyr QX-100 service plan, considers that decision final, and did not enroll.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_4adee97a",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_83556b942dcff9e59a10196c",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "text": "- **Counterfactual:** Ada Marlow said that, if she had agreed to the unchosen extra Zephyr QX-100 service plan, replacement of the control button in the third year would have been included; she explicitly described this as counterfactual reasoning about the unchosen option, not her current service.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_3185d9e4",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_83556b942dcff9e59a10196c",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "counterfactual",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "error": null
+    }
+  ]
+}

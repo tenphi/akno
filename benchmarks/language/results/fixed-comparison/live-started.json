@@ -1,0 +1,35 @@
+{
+  "startedAt": "2026-09-13T08:05:35.628Z",
+  "corpusFingerprint": "27bbb05e7bc8089ba133e5723667190106d02e98b635e41328d683bd9700505a",
+  "modelPolicy": {
+    "derive": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "maxOutputTokens": 2400,
+      "timeoutMs": 300000,
+      "reasoningEffort": null
+    },
+    "answer": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "maxOutputTokens": 1024,
+      "timeoutMs": 60000,
+      "reasoningEffort": "low"
+    },
+    "embedding": {
+      "id": "text-embedding-qwen3-embedding-0.6b",
+      "enabled": true,
+      "maxOutputTokens": null,
+      "timeoutMs": 60000,
+      "reasoningEffort": null
+    },
+    "expansion": {
+      "id": "llama-3.2-3b-instruct",
+      "enabled": true,
+      "maxOutputTokens": 1024,
+      "timeoutMs": 30000,
+      "reasoningEffort": null
+    }
+  },
+  "approvalSha256": "d6e8ae913b9dc368269541537d15e944d79be704799dec7ccf05c3aa53f5bd45"
+}

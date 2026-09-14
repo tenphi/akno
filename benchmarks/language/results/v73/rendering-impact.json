@@ -1,0 +1,64 @@
+{
+  "note": "Descriptive generated branch counts from the declared one-pass exposed traces; modes are model choices, not independent language or semantic judgments.",
+  "results": [
+    {
+      "probe": "selected",
+      "generatedBlocks": {
+        "copy": 19,
+        "translate": 21,
+        "legacy": 15,
+        "empty": 0,
+        "failed": 1,
+        "invalid": 0
+      },
+      "preLanguageChoices": {
+        "calls": 40,
+        "copy": 19,
+        "translate": 21,
+        "empty": 0,
+        "invalid": 0
+      },
+      "sourceClockRendering": {
+        "structuredBlocks": 0,
+        "joinedLanguageProseMatches": 0
+      },
+      "reportRepairLanguage": {
+        "calls": 1,
+        "materializedProse": [
+          {
+            "schemaValid": true,
+            "additionalLanguageProse": [
+              "Bo Winters says that the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch. Ada Marlow relays Bo Winters’s meaning: measure the gap, not change the latch. Ada Marlow has not read the agreement, independently checked Bo Winters’s account, or personally checked this meaning."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "probe": "built-reliability",
+      "generatedBlocks": {
+        "copy": 12,
+        "translate": 12,
+        "legacy": 0,
+        "empty": 0,
+        "failed": 0,
+        "invalid": 0
+      },
+      "preLanguageChoices": {
+        "calls": 24,
+        "copy": 12,
+        "translate": 12,
+        "empty": 0,
+        "invalid": 0
+      },
+      "sourceClockRendering": {
+        "structuredBlocks": 0,
+        "joinedLanguageProseMatches": 0
+      },
+      "reportRepairLanguage": {
+        "calls": 0,
+        "materializedProse": []
+      }
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import { openOptionsFrom, parse } from '../args.ts';
-import { heading, json, kv, line, style, truncate } from '../output.ts';
+import { proseLabel, heading, json, kv, line, style, truncate } from '../output.ts';
 import { resolveOps } from '../ops-handle.ts';
 
 const READ_HELP = `akno read <slug | --id <id> | --document <id | path>> [options]
@@ -88,7 +88,9 @@ export async function readCommand(argv: string[]): Promise<number> {
     line();
     for (const bodyLine of page.lines) {
       const confidence = bodyLine.confidence !== undefined ? style.grey(` ~${bodyLine.confidence}`) : '';
-      line(`${style.grey(String(bodyLine.n).padStart(5))}  ${bodyLine.text}${confidence}`);
+      line(
+        `${style.grey(String(bodyLine.n).padStart(5))}  ${bodyLine.text}${confidence}${proseLabel(bodyLine)}`,
+      );
     }
     return 0;
   } finally {

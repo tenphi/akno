@@ -1,0 +1,124 @@
+{
+  "schemaVersion": "language-input-review-v1",
+  "corpusFingerprint": "208d2ea60ef5f5bcf2158ef56a35e57e1ee6b5c36069ac2fbb606abe1ab1cf44",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-5.6-sol",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutOutputs": true
+  },
+  "cases": [
+    {
+      "id": "v20-held-report",
+      "approved": true,
+      "reason": "The source clearly supports the nested Ada/Bo attribution, permitted service action, exact measurement-versus-replacement contrast, Ada’s personal unread/unverified limits, and the independent no-arrangement assertion. Both queries target the qualified report."
+    },
+    {
+      "id": "v20-held-hypothesis",
+      "approved": true,
+      "reason": "The source explicitly supplies the hypothetical recurring inspection premise, its coupled conditional consequence, the stated experiencer of unknown real requirements, and no reported actual miss. The bilingual questions are equivalent and answerable."
+    },
+    {
+      "id": "v20-held-counterfactual",
+      "approved": true,
+      "reason": "The source supports both actual rejection/nonpurchase and the false purchase antecedent with its ordinal-year repair consequence and no-current-coverage limit. Both queries correctly ask for the unrealized alternative."
+    },
+    {
+      "id": "v20-held-question",
+      "approved": true,
+      "reason": "The source clearly presents Ada’s personal unresolved service-coverage question and keeps inclusion and exclusion unestablished. Both questions ask for that record without presupposing an answer."
+    },
+    {
+      "id": "v20-held-exclusion",
+      "approved": true,
+      "reason": "The source supports the asserted component exclusion and the separate narrow nonresolution of the repair-coverage issue, while explicitly rejecting contract-wide silence. Both parts are present in the bilingual queries."
+    },
+    {
+      "id": "v20-held-assistant",
+      "approved": true,
+      "reason": "The assistant source explicitly supports a tentative recurring test as a possible contractual term, the generic assistant attribution, and personal non-examination/nonverification limits. The bilingual questions preserve that modality."
+    },
+    {
+      "id": "v20-held-fiction",
+      "approved": true,
+      "reason": "The source clearly separates Ada’s actual proposal to discuss from the fully specified fictional promise, its actors, benefit, duration, and absence of a real agreement. Both queries ask for the fictional promise within the proposal frame."
+    },
+    {
+      "id": "v20-held-rejected",
+      "approved": true,
+      "reason": "The source supports Ada’s rejection, the offered destination and inspection purpose, her personal lack of intent, and the independent unarranged collection. The focused question is answerable from the source."
+    },
+    {
+      "id": "v20-held-undated",
+      "approved": true,
+      "reason": "The source explicitly supports Ada’s proposal, source-relative undated time, unrecoverable calendar value, exclusion of current/processing anchors, and separate non-adoption/non-arrangement. Both questions target the undated proposal."
+    },
+    {
+      "id": "v20-held-alternatives",
+      "approved": true,
+      "reason": "The source clearly supplies two tentative competing causes, the exact mechanisms, absence of evidence, and Ada’s personal nonselection. Both queries target those alternatives without establishing either as true."
+    },
+    {
+      "id": "v20-held-admission",
+      "approved": true,
+      "reason": "The invented source and bilingual questions are clear; the expectation fairly requires a typed read-only admission hold, byte preservation, and no unsupported answer."
+    },
+    {
+      "id": "v21-held-report",
+      "approved": true,
+      "reason": "The source clearly supports the nested Ada/Bo attribution, permitted service action, exact measurement-versus-replacement contrast, Ada’s personal unread/unverified limits, and the independent no-arrangement assertion. Both queries target the qualified report."
+    },
+    {
+      "id": "v21-held-hypothesis",
+      "approved": true,
+      "reason": "The source explicitly supplies the hypothetical recurring inspection premise, its coupled conditional consequence, the stated experiencer of unknown real requirements, and no reported actual miss. The bilingual questions are equivalent and answerable."
+    },
+    {
+      "id": "v21-held-counterfactual",
+      "approved": true,
+      "reason": "The source supports both actual rejection/nonpurchase and the false purchase antecedent with its ordinal-year repair consequence and no-current-coverage limit. Both queries correctly ask for the unrealized alternative."
+    },
+    {
+      "id": "v21-held-question",
+      "approved": true,
+      "reason": "The source clearly presents Ada’s personal unresolved service-coverage question and keeps inclusion and exclusion unestablished. Both questions ask for that record without presupposing an answer."
+    },
+    {
+      "id": "v21-held-exclusion",
+      "approved": true,
+      "reason": "The source supports the asserted component exclusion and the separate narrow nonresolution of the repair-coverage issue, while explicitly rejecting contract-wide silence. Both parts are present in the bilingual queries."
+    },
+    {
+      "id": "v21-held-assistant",
+      "approved": true,
+      "reason": "The assistant source explicitly supports a tentative recurring test as a possible contractual term, the generic assistant attribution, and personal non-examination/nonverification limits. The bilingual questions preserve that modality."
+    },
+    {
+      "id": "v21-held-fiction",
+      "approved": true,
+      "reason": "The source clearly separates Ada’s actual proposal to discuss from the fully specified fictional promise, its actors, benefit, duration, and absence of a real agreement. Both queries ask for the fictional promise within the proposal frame."
+    },
+    {
+      "id": "v21-held-rejected",
+      "approved": true,
+      "reason": "The corrected Russian question now asks which proposal Ada rejected, matching the English question and avoiding any presupposition that an agreement was reached. The source supports Ada’s rejection, exact inspection-room/cable-tension purpose, personal lack of intent, independent unbooked pickup, and no accepted or performed shipment."
+    },
+    {
+      "id": "v21-held-undated",
+      "approved": true,
+      "reason": "The source explicitly supports Ada’s proposal, source-relative undated time, unrecoverable calendar value, exclusion of current/processing anchors, and separate non-adoption/non-arrangement. Both questions target the undated proposal."
+    },
+    {
+      "id": "v21-held-alternatives",
+      "approved": true,
+      "reason": "The source clearly supplies two tentative competing causes, the exact mechanisms, absence of evidence, and Ada’s personal nonselection. Both queries target those alternatives without establishing either as true."
+    },
+    {
+      "id": "v21-held-admission",
+      "approved": true,
+      "reason": "The invented source and bilingual questions are clear; the expectation fairly requires a typed read-only admission hold, byte preservation, and no unsupported answer."
+    }
+  ]
+}

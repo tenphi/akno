@@ -1,0 +1,94 @@
+{
+  "runtimeCommit": "1eb002b84c05927b1ac1c5f69e974908de36c224",
+  "purpose": "protocol-only",
+  "answerOutputTokenLimit": 2400,
+  "results": [
+    {
+      "kind": "generation",
+      "status": "completed",
+      "expected": {
+        "record_readings": [
+          {
+            "evidence_id": "E1",
+            "selected_meaning": "Private invented reading of the open return-delivery question.",
+            "clarification_or_ambiguity": null
+          }
+        ],
+        "blocks": [
+          {
+            "text": "The open silverpine question is whether the warranty covers return delivery; its answer remains unknown.",
+            "evidence_ids": [
+              "E1"
+            ]
+          }
+        ],
+        "missing_concepts": []
+      },
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "reason": null
+    },
+    {
+      "kind": "verification",
+      "status": "completed",
+      "expected": {
+        "verdicts": [
+          {
+            "block_id": "B1",
+            "source_alignments": [
+              {
+                "evidence_id": "E1",
+                "source_context": "The selected original question concerns return delivery and remains unanswered; an unrelated phrase is unselected.",
+                "actor": {
+                  "source_anchor": null,
+                  "answer_anchor": null,
+                  "relation": "not_selected",
+                  "detail": "No named action actor."
+                },
+                "object_and_operation": {
+                  "source_anchor": "E1_4e08a4be6280_1",
+                  "answer_anchor": "B1_0d044826471a_1",
+                  "source_specifics": "The same coverage question.",
+                  "answer_specifics": "The same coverage question.",
+                  "relation": "preserved"
+                },
+                "qualification": {
+                  "source_anchor": "E1_4e08a4be6280_2",
+                  "answer_anchor": "B1_0d044826471a_2",
+                  "relation": "preserved",
+                  "detail": "Unknown answer remains unknown."
+                },
+                "tested_property": {
+                  "source_anchor": null,
+                  "answer_anchor": null,
+                  "source_property": null,
+                  "answer_property": null,
+                  "relation": "absent_from_both"
+                }
+              }
+            ],
+            "comparison": {
+              "source_meaning": "An unanswered return-delivery question.",
+              "candidate_meaning": "An unanswered return-delivery question.",
+              "action_arguments": "The warranty coverage question concerns return delivery.",
+              "qualification_scope": "The question remains open."
+            },
+            "mismatches": [],
+            "proposition_supported": true,
+            "action_arguments_preserved": true,
+            "qualification_scope_preserved": true,
+            "excerpt_selection": {
+              "selected_by_retained_excerpt": true,
+              "unselected_content": null
+            }
+          }
+        ]
+      },
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "reason": null
+    }
+  ]
+}

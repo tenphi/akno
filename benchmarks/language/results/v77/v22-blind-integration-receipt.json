@@ -1,0 +1,17 @@
+{
+  "corpusFingerprint": "b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a",
+  "cases": 22,
+  "development": 11,
+  "heldOut": 11,
+  "approved": 22,
+  "sourceContentsDisplayedToImplementationAgent": false,
+  "sourceFile": "packages/core/src/bench/language-corpus-v22.ts",
+  "generatedSourceFileSha256": "36dda31989cedc4841e25b1e0da400396fc387681468f1c03484ea4dec025f45",
+  "formattedSourceFileSha256": "d4dd09f8a8616cf5e26d34df8270e60bcb86686b844b094795d230a996ec311d",
+  "proposalSha256": "be3be90774b9464bba8198eb674bb32d3fd55214d63579e9d67dcb82e8353870",
+  "initialReviewSha256": "4dce3533b4c0816596b56488daedda3315568928a3a57b2e588a8d4c22b7e4ba",
+  "currentReviewSha256": "43cf93d1c76858cdb9421fb013fc3a74497ce185d9ebc7b00359980c529669fb",
+  "initialReceiptSha256": "3ef76174a31e89585f1bcb1f4ee8026266c25e207dac385477746b14d2f783de",
+  "reviewCorrection": "Preserve initial malformed approval; use a fresh source-only reviewer with valid independent attestations. No corpus changes.",
+  "sourceFormatting": "Generated and formatted TS byte hashes are separately labeled; imported corpus fingerprint is unchanged."
+}

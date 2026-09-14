@@ -1019,6 +1019,12 @@ function insertFact(
 ): void {
   const page = db.prepare('SELECT id FROM pages WHERE slug = ?').get(input.slug) as { id: string };
   db.prepare('UPDATE pages SET derived_hash = body_hash WHERE id = ?').run(page.id);
+  // The fixture supplies the reading projection together with its injected fact.
+  db.prepare(
+    `INSERT OR IGNORE INTO prose_entries(source_page, line, view, eligible, source_hash)
+    SELECT ?, ?, 'factual', 1, sha256 FROM files WHERE page_id = ? AND kind = 'page' LIMIT 1`,
+  ).run(page.id, input.line, page.id);
+
   db.prepare(
     `INSERT INTO facts(
        id, page_id, claim, subject, attribute, value, line_start, line_end,

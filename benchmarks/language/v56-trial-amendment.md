@@ -1,0 +1,5 @@
+# V56 disposition after the declared exposed probes
+
+Both probes completed on frozen affce0d. Independent source-only grading found **52/80 useful answers** (25/48 selected, 27/32 built), 23 writable nulls and five accepted meaning errors: three component translations, one nested-attribution reversal and one coverage-role reversal. Complete useful retention is 8/10 and useful retrieval is 64/80. One built question has a verification availability failure. Source bytes are unchanged; no unsafe factual promotion or separate language-policy error was found.
+
+Full repeated execution is deferred. Fresh approved V20 held-out remains unexecuted. All [reports and reviews](results/v56/README.md), including source-first analysis of held candidates and independent scope judgments, are preserved. Continue with bounded fixes and the same independent review/fix, complete local checks, freeze, redeploy, provider controls and declared exposed evaluation. No semantic retry, model/pass change, threshold weakening or issue edit; PR #70 remains open.

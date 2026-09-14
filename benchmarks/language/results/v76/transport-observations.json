@@ -1,0 +1,63 @@
+{
+  "note": "Descriptive completed transport receipts only. Sum transport terminal usage once, without also adding enclosing model or query receipts. Unknown usage and endpoint counts are not zero costs. These observations do not grade meaning or estimate causal improvement.",
+  "probes": [
+    {
+      "probe": "selected",
+      "coordinates": 64,
+      "publicNonNullAnswers": 49,
+      "lifecycle": {
+        "modelCalls": 259,
+        "transports": 327,
+        "modelThrows": 0,
+        "transportThrows": 0,
+        "balanced": true
+      },
+      "modelCallsByOperation": {
+        "retention": 11,
+        "retain-verifier": 8,
+        "ownership": 11,
+        "unclassified": 112,
+        "answer": 64,
+        "answer-verifier": 53
+      },
+      "languageAuditTransports": 68,
+      "knownEndpointReceipts": 327,
+      "knownEndpointRequests": 327,
+      "unknownEndpointReceipts": 0,
+      "transportUsageReceipts": 327,
+      "knownInputTokens": 1177627,
+      "knownOutputTokens": 87479,
+      "knownReasoningOutputTokens": 31388,
+      "unsuccessfulTransports": 0
+    },
+    {
+      "probe": "built-reliability",
+      "coordinates": 32,
+      "publicNonNullAnswers": 32,
+      "lifecycle": {
+        "modelCalls": 133,
+        "transports": 170,
+        "modelThrows": 0,
+        "transportThrows": 0,
+        "balanced": true
+      },
+      "modelCallsByOperation": {
+        "retention": 5,
+        "retain-verifier": 4,
+        "ownership": 6,
+        "unclassified": 54,
+        "answer": 32,
+        "answer-verifier": 32
+      },
+      "languageAuditTransports": 37,
+      "knownEndpointReceipts": 170,
+      "knownEndpointRequests": 170,
+      "unknownEndpointReceipts": 0,
+      "transportUsageReceipts": 170,
+      "knownInputTokens": 645634,
+      "knownOutputTokens": 48189,
+      "knownReasoningOutputTokens": 17686,
+      "unsuccessfulTransports": 0
+    }
+  ]
+}

@@ -6,7 +6,11 @@
     "suspicious": "error",
     "perf": "warn"
   },
-  "ignorePatterns": ["**/dist/**", "**/*.tsbuildinfo"],
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/*.tsbuildinfo",
+    "benchmarks/language/results/fixed-comparison/**/*.mjs"
+  ],
   "rules": {
     "typescript/consistent-type-imports": [
       "error",

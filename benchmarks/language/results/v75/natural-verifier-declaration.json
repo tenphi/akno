@@ -1,0 +1,1724 @@
+{
+  "purpose": "One independently reviewed natural-sentence maximum-field two-record verifier echo; original repetitive-padding failure remains preserved. No semantic quality claim.",
+  "runtimeCommit": "c699916e8f0f8f6537dcb66558ded4f998cf8cfd",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "verdicts": {
+        "minItems": 1,
+        "maxItems": 1,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "block_id": {
+              "type": "string",
+              "enum": [
+                "B1"
+              ]
+            },
+            "excerpt_selection": {
+              "type": "object",
+              "properties": {
+                "selected_by_retained_excerpt": {
+                  "type": "boolean"
+                },
+                "unselected_content": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 240
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "selected_by_retained_excerpt",
+                "unselected_content"
+              ],
+              "additionalProperties": false
+            },
+            "source_alignments": {
+              "minItems": 2,
+              "maxItems": 2,
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "evidence_id": {
+                        "type": "string",
+                        "enum": [
+                          "E1",
+                          "E2"
+                        ]
+                      },
+                      "source_context": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 240
+                      },
+                      "actor": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "B1_bf777a9014ca_1",
+                                  "B1_bf777a9014ca_2",
+                                  "B1_bf777a9014ca_3",
+                                  "B1_bf777a9014ca_4"
+                                ]
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "preserved",
+                                  "generalized",
+                                  "changed"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "omitted"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "E1_bf777a9014ca_1",
+                                      "E1_bf777a9014ca_2",
+                                      "E1_bf777a9014ca_3",
+                                      "E1_bf777a9014ca_4",
+                                      "E2_bf777a9014ca_1",
+                                      "E2_bf777a9014ca_2",
+                                      "E2_bf777a9014ca_3",
+                                      "E2_bf777a9014ca_4"
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "not_selected"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "object_and_operation": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "source_specifics": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "answer_specifics": {
+                                "type": "null"
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "not_selected"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "source_specifics",
+                              "answer_specifics",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "null"
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "source_specifics": {
+                                "type": "null"
+                              },
+                              "answer_specifics": {
+                                "type": "null"
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "not_selected"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "source_specifics",
+                              "answer_specifics",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "tested_property": {
+                        "type": "object",
+                        "properties": {
+                          "source_anchor": {
+                            "type": "null"
+                          },
+                          "answer_anchor": {
+                            "type": "null"
+                          },
+                          "source_property": {
+                            "type": "null"
+                          },
+                          "answer_property": {
+                            "type": "null"
+                          },
+                          "relation": {
+                            "type": "string",
+                            "enum": [
+                              "not_selected"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "source_anchor",
+                          "answer_anchor",
+                          "source_property",
+                          "answer_property",
+                          "relation"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "qualification": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "B1_bf777a9014ca_1",
+                                  "B1_bf777a9014ca_2",
+                                  "B1_bf777a9014ca_3",
+                                  "B1_bf777a9014ca_4"
+                                ]
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "preserved",
+                                  "generalized",
+                                  "changed"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "omitted"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "E1_bf777a9014ca_1",
+                                      "E1_bf777a9014ca_2",
+                                      "E1_bf777a9014ca_3",
+                                      "E1_bf777a9014ca_4",
+                                      "E2_bf777a9014ca_1",
+                                      "E2_bf777a9014ca_2",
+                                      "E2_bf777a9014ca_3",
+                                      "E2_bf777a9014ca_4"
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "not_selected"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "evidence_id",
+                      "source_context",
+                      "actor",
+                      "object_and_operation",
+                      "tested_property",
+                      "qualification"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "evidence_id": {
+                        "type": "string",
+                        "enum": [
+                          "E1",
+                          "E2"
+                        ]
+                      },
+                      "source_context": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 240
+                      },
+                      "actor": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "B1_bf777a9014ca_1",
+                                  "B1_bf777a9014ca_2",
+                                  "B1_bf777a9014ca_3",
+                                  "B1_bf777a9014ca_4"
+                                ]
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "preserved",
+                                  "generalized",
+                                  "changed"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "omitted"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "E1_bf777a9014ca_1",
+                                      "E1_bf777a9014ca_2",
+                                      "E1_bf777a9014ca_3",
+                                      "E1_bf777a9014ca_4",
+                                      "E2_bf777a9014ca_1",
+                                      "E2_bf777a9014ca_2",
+                                      "E2_bf777a9014ca_3",
+                                      "E2_bf777a9014ca_4"
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "not_selected"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "object_and_operation": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "B1_bf777a9014ca_1",
+                                  "B1_bf777a9014ca_2",
+                                  "B1_bf777a9014ca_3",
+                                  "B1_bf777a9014ca_4"
+                                ]
+                              },
+                              "source_specifics": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 50
+                              },
+                              "answer_specifics": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 50
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "preserved",
+                                  "generalized",
+                                  "changed"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "source_specifics",
+                              "answer_specifics",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "source_specifics": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 50
+                              },
+                              "answer_specifics": {
+                                "type": "null"
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "omitted"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "source_specifics",
+                              "answer_specifics",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "tested_property": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "B1_bf777a9014ca_1",
+                                  "B1_bf777a9014ca_2",
+                                  "B1_bf777a9014ca_3",
+                                  "B1_bf777a9014ca_4"
+                                ]
+                              },
+                              "source_property": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 30
+                              },
+                              "answer_property": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 30
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "preserved",
+                                  "generalized",
+                                  "changed"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "source_property",
+                              "answer_property",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "source_property": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 30
+                              },
+                              "answer_property": {
+                                "type": "null"
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "omitted"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "source_property",
+                              "answer_property",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "null"
+                              },
+                              "answer_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "B1_bf777a9014ca_1",
+                                  "B1_bf777a9014ca_2",
+                                  "B1_bf777a9014ca_3",
+                                  "B1_bf777a9014ca_4"
+                                ]
+                              },
+                              "source_property": {
+                                "type": "null"
+                              },
+                              "answer_property": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 30
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "changed"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "source_property",
+                              "answer_property",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "qualification": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "B1_bf777a9014ca_1",
+                                  "B1_bf777a9014ca_2",
+                                  "B1_bf777a9014ca_3",
+                                  "B1_bf777a9014ca_4"
+                                ]
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "preserved",
+                                  "generalized",
+                                  "changed"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "omitted"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "E1_bf777a9014ca_1",
+                                      "E1_bf777a9014ca_2",
+                                      "E1_bf777a9014ca_3",
+                                      "E1_bf777a9014ca_4",
+                                      "E2_bf777a9014ca_1",
+                                      "E2_bf777a9014ca_2",
+                                      "E2_bf777a9014ca_3",
+                                      "E2_bf777a9014ca_4"
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "not_selected"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "evidence_id",
+                      "source_context",
+                      "actor",
+                      "object_and_operation",
+                      "tested_property",
+                      "qualification"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "evidence_id": {
+                        "type": "string",
+                        "enum": [
+                          "E1",
+                          "E2"
+                        ]
+                      },
+                      "source_context": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 240
+                      },
+                      "actor": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "B1_bf777a9014ca_1",
+                                  "B1_bf777a9014ca_2",
+                                  "B1_bf777a9014ca_3",
+                                  "B1_bf777a9014ca_4"
+                                ]
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "preserved",
+                                  "generalized",
+                                  "changed"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "omitted"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "E1_bf777a9014ca_1",
+                                      "E1_bf777a9014ca_2",
+                                      "E1_bf777a9014ca_3",
+                                      "E1_bf777a9014ca_4",
+                                      "E2_bf777a9014ca_1",
+                                      "E2_bf777a9014ca_2",
+                                      "E2_bf777a9014ca_3",
+                                      "E2_bf777a9014ca_4"
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "not_selected"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "object_and_operation": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "B1_bf777a9014ca_1",
+                                  "B1_bf777a9014ca_2",
+                                  "B1_bf777a9014ca_3",
+                                  "B1_bf777a9014ca_4"
+                                ]
+                              },
+                              "source_specifics": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "answer_specifics": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "preserved",
+                                  "generalized",
+                                  "changed"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "source_specifics",
+                              "answer_specifics",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "source_specifics": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "answer_specifics": {
+                                "type": "null"
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "omitted"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "source_specifics",
+                              "answer_specifics",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "tested_property": {
+                        "type": "object",
+                        "properties": {
+                          "source_anchor": {
+                            "type": "null"
+                          },
+                          "answer_anchor": {
+                            "type": "null"
+                          },
+                          "source_property": {
+                            "type": "null"
+                          },
+                          "answer_property": {
+                            "type": "null"
+                          },
+                          "relation": {
+                            "type": "string",
+                            "enum": [
+                              "absent_from_both"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "source_anchor",
+                          "answer_anchor",
+                          "source_property",
+                          "answer_property",
+                          "relation"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "qualification": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "B1_bf777a9014ca_1",
+                                  "B1_bf777a9014ca_2",
+                                  "B1_bf777a9014ca_3",
+                                  "B1_bf777a9014ca_4"
+                                ]
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "preserved",
+                                  "generalized",
+                                  "changed"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "type": "string",
+                                "enum": [
+                                  "E1_bf777a9014ca_1",
+                                  "E1_bf777a9014ca_2",
+                                  "E1_bf777a9014ca_3",
+                                  "E1_bf777a9014ca_4",
+                                  "E2_bf777a9014ca_1",
+                                  "E2_bf777a9014ca_2",
+                                  "E2_bf777a9014ca_3",
+                                  "E2_bf777a9014ca_4"
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "omitted"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "source_anchor": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "E1_bf777a9014ca_1",
+                                      "E1_bf777a9014ca_2",
+                                      "E1_bf777a9014ca_3",
+                                      "E1_bf777a9014ca_4",
+                                      "E2_bf777a9014ca_1",
+                                      "E2_bf777a9014ca_2",
+                                      "E2_bf777a9014ca_3",
+                                      "E2_bf777a9014ca_4"
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "answer_anchor": {
+                                "type": "null"
+                              },
+                              "detail": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "not_selected"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "source_anchor",
+                              "answer_anchor",
+                              "detail",
+                              "relation"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "evidence_id",
+                      "source_context",
+                      "actor",
+                      "object_and_operation",
+                      "tested_property",
+                      "qualification"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "comparison": {
+              "type": "object",
+              "properties": {
+                "source_meaning": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 320
+                },
+                "candidate_meaning": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 320
+                },
+                "action_arguments": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 320
+                },
+                "qualification_scope": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 320
+                }
+              },
+              "required": [
+                "source_meaning",
+                "candidate_meaning",
+                "action_arguments",
+                "qualification_scope"
+              ],
+              "additionalProperties": false
+            },
+            "mismatches": {
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "dimension": {
+                    "type": "string",
+                    "enum": [
+                      "proposition_supported",
+                      "action_arguments_preserved",
+                      "qualification_scope_preserved"
+                    ]
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "unsupported_content",
+                      "changed_value",
+                      "changed_action_or_role",
+                      "changed_qualification",
+                      "omitted_scope",
+                      "changed_repair_proposition"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 240
+                  }
+                },
+                "required": [
+                  "dimension",
+                  "kind",
+                  "detail"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "proposition_supported": {
+              "type": "boolean"
+            },
+            "action_arguments_preserved": {
+              "type": "boolean"
+            },
+            "qualification_scope_preserved": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "block_id",
+            "excerpt_selection",
+            "source_alignments",
+            "comparison",
+            "mismatches",
+            "proposition_supported",
+            "action_arguments_preserved",
+            "qualification_scope_preserved"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": [
+      "verdicts"
+    ],
+    "additionalProperties": false
+  },
+  "expected": {
+    "verdicts": [
+      {
+        "block_id": "B1",
+        "excerpt_selection": {
+          "selected_by_retained_excerpt": false,
+          "unselected_content": "The latch question does not establish coverage within the stated scope. This invented record remains open. The source account is unresolved. The proposed check requires review. The comparison preserves the original uncertainty in this note."
+        },
+        "source_alignments": [
+          {
+            "evidence_id": "E1",
+            "source_context": "The latch question does not select another question in the invented record. This invented record has no recorded answer. The source account requires review. The proposed check remains open. The retained question does not establish coverage.",
+            "actor": {
+              "source_anchor": null,
+              "answer_anchor": null,
+              "detail": "The connector test does not assert a completed test. The spring inspection remains open. The latch question is unresolved. This invented record requires review.",
+              "relation": "not_selected"
+            },
+            "object_and_operation": {
+              "source_anchor": "E1_bf777a9014ca_1",
+              "answer_anchor": "B1_bf777a9014ca_1",
+              "source_specifics": "The spring inspection has no recorded answer here.",
+              "answer_specifics": "The spring inspection does not establish coverage.",
+              "relation": "preserved"
+            },
+            "qualification": {
+              "source_anchor": "E1_bf777a9014ca_1",
+              "answer_anchor": null,
+              "detail": "The spring inspection requires review here. The latch question remains open. This invented record is unresolved. The source account has no recorded answer here.",
+              "relation": "omitted"
+            },
+            "tested_property": {
+              "source_anchor": "E1_bf777a9014ca_1",
+              "answer_anchor": "B1_bf777a9014ca_1",
+              "source_property": "The review is unresolved here.",
+              "answer_property": "The result is unresolved here.",
+              "relation": "preserved"
+            }
+          },
+          {
+            "evidence_id": "E2",
+            "source_context": "The latch question does not assert a completed test. This invented record does not establish coverage. The source account is separate from completed work. The proposed check is unresolved. The comparison has no recorded answer in this note.",
+            "actor": {
+              "source_anchor": null,
+              "answer_anchor": null,
+              "detail": "The spring inspection does not select another question in this note. The latch question requires review. The source account remains open in the invented record.",
+              "relation": "not_selected"
+            },
+            "object_and_operation": {
+              "source_anchor": "E2_bf777a9014ca_1",
+              "answer_anchor": "B1_bf777a9014ca_1",
+              "source_specifics": "The connector test is separate from completed work. The comparison remains open.",
+              "answer_specifics": "The connector test adds no independent confirmation. The result requires review.",
+              "relation": "preserved"
+            },
+            "qualification": {
+              "source_anchor": "E2_bf777a9014ca_1",
+              "answer_anchor": "B1_bf777a9014ca_1",
+              "detail": "The spring inspection adds no independent confirmation for this example. The latch question has no recorded answer. The comparison requires review in this note.",
+              "relation": "preserved"
+            },
+            "tested_property": {
+              "source_anchor": null,
+              "answer_anchor": null,
+              "source_property": null,
+              "answer_property": null,
+              "relation": "absent_from_both"
+            }
+          }
+        ],
+        "comparison": {
+          "source_meaning": "Ada Marlow records two unanswered questions about separate proposed component checks. The source account preserves the original uncertainty for this example. The proposed check is separate from completed work. The comparison does not establish coverage. The selected passage remains open. The draft requires review here.",
+          "candidate_meaning": "The candidate presents the two selected questions without supplying their missing answers. The source account does not assert a completed test within the stated scope. The proposed check does not select another question. The comparison adds no independent confirmation. The selected passage requires review in this note.",
+          "action_arguments": "The connector and the spring remain separate objects of their respective proposed tests. The proposed check adds no independent confirmation in the invented record. The comparison does not select another question. The selected passage is unresolved. The retained question remains open. The separate note requires review.",
+          "qualification_scope": "The invented verdict compares unresolved questions and preserves their lack of a settled result. The selected passage has no recorded answer. The retained question is unresolved. This protocol example remains open. The draft does not establish coverage. The separate note preserves the original uncertainty in this note."
+        },
+        "mismatches": [
+          {
+            "dimension": "action_arguments_preserved",
+            "kind": "changed_action_or_role",
+            "detail": "This invented record does not select another question here. The source account does not establish coverage. The proposed check has no recorded answer. The comparison is unresolved. The selected passage adds no independent confirmation here."
+          },
+          {
+            "dimension": "qualification_scope_preserved",
+            "kind": "changed_qualification",
+            "detail": "This invented record adds no independent confirmation in this note. The source account does not select another question. The proposed check does not establish coverage. The comparison is separate from completed work. The draft remains open."
+          }
+        ],
+        "proposition_supported": true,
+        "action_arguments_preserved": false,
+        "qualification_scope_preserved": false
+      }
+    ]
+  },
+  "fields": [
+    {
+      "path": "$.verdicts.0.excerpt_selection.unselected_content",
+      "utf16": 240,
+      "text": "The latch question does not establish coverage within the stated scope. This invented record remains open. The source account is unresolved. The proposed check requires review. The comparison preserves the original uncertainty in this note."
+    },
+    {
+      "path": "$.verdicts.0.source_alignments.0.source_context",
+      "utf16": 240,
+      "text": "The latch question does not select another question in the invented record. This invented record has no recorded answer. The source account requires review. The proposed check remains open. The retained question does not establish coverage."
+    },
+    {
+      "path": "$.verdicts.0.source_alignments.0.actor.detail",
+      "utf16": 160,
+      "text": "The connector test does not assert a completed test. The spring inspection remains open. The latch question is unresolved. This invented record requires review."
+    },
+    {
+      "path": "$.verdicts.0.source_alignments.0.object_and_operation.source_specifics",
+      "utf16": 50,
+      "text": "The spring inspection has no recorded answer here."
+    },
+    {
+      "path": "$.verdicts.0.source_alignments.0.object_and_operation.answer_specifics",
+      "utf16": 50,
+      "text": "The spring inspection does not establish coverage."
+    },
+    {
+      "path": "$.verdicts.0.source_alignments.0.qualification.detail",
+      "utf16": 160,
+      "text": "The spring inspection requires review here. The latch question remains open. This invented record is unresolved. The source account has no recorded answer here."
+    },
+    {
+      "path": "$.verdicts.0.source_alignments.0.tested_property.source_property",
+      "utf16": 30,
+      "text": "The review is unresolved here."
+    },
+    {
+      "path": "$.verdicts.0.source_alignments.0.tested_property.answer_property",
+      "utf16": 30,
+      "text": "The result is unresolved here."
+    },
+    {
+      "path": "$.verdicts.0.source_alignments.1.source_context",
+      "utf16": 240,
+      "text": "The latch question does not assert a completed test. This invented record does not establish coverage. The source account is separate from completed work. The proposed check is unresolved. The comparison has no recorded answer in this note."
+    },
+    {
+      "path": "$.verdicts.0.source_alignments.1.actor.detail",
+      "utf16": 160,
+      "text": "The spring inspection does not select another question in this note. The latch question requires review. The source account remains open in the invented record."
+    },
+    {
+      "path": "$.verdicts.0.source_alignments.1.object_and_operation.source_specifics",
+      "utf16": 80,
+      "text": "The connector test is separate from completed work. The comparison remains open."
+    },
+    {
+      "path": "$.verdicts.0.source_alignments.1.object_and_operation.answer_specifics",
+      "utf16": 80,
+      "text": "The connector test adds no independent confirmation. The result requires review."
+    },
+    {
+      "path": "$.verdicts.0.source_alignments.1.qualification.detail",
+      "utf16": 160,
+      "text": "The spring inspection adds no independent confirmation for this example. The latch question has no recorded answer. The comparison requires review in this note."
+    },
+    {
+      "path": "$.verdicts.0.comparison.source_meaning",
+      "utf16": 320,
+      "text": "Ada Marlow records two unanswered questions about separate proposed component checks. The source account preserves the original uncertainty for this example. The proposed check is separate from completed work. The comparison does not establish coverage. The selected passage remains open. The draft requires review here."
+    },
+    {
+      "path": "$.verdicts.0.comparison.candidate_meaning",
+      "utf16": 320,
+      "text": "The candidate presents the two selected questions without supplying their missing answers. The source account does not assert a completed test within the stated scope. The proposed check does not select another question. The comparison adds no independent confirmation. The selected passage requires review in this note."
+    },
+    {
+      "path": "$.verdicts.0.comparison.action_arguments",
+      "utf16": 320,
+      "text": "The connector and the spring remain separate objects of their respective proposed tests. The proposed check adds no independent confirmation in the invented record. The comparison does not select another question. The selected passage is unresolved. The retained question remains open. The separate note requires review."
+    },
+    {
+      "path": "$.verdicts.0.comparison.qualification_scope",
+      "utf16": 320,
+      "text": "The invented verdict compares unresolved questions and preserves their lack of a settled result. The selected passage has no recorded answer. The retained question is unresolved. This protocol example remains open. The draft does not establish coverage. The separate note preserves the original uncertainty in this note."
+    },
+    {
+      "path": "$.verdicts.0.mismatches.0.detail",
+      "utf16": 240,
+      "text": "This invented record does not select another question here. The source account does not establish coverage. The proposed check has no recorded answer. The comparison is unresolved. The selected passage adds no independent confirmation here."
+    },
+    {
+      "path": "$.verdicts.0.mismatches.1.detail",
+      "utf16": 240,
+      "text": "This invented record adds no independent confirmation in this note. The source account does not select another question. The proposed check does not establish coverage. The comparison is separate from completed work. The draft remains open."
+    }
+  ],
+  "callerCap": 2222,
+  "roleCap": 2400,
+  "effectiveCap": 2222,
+  "modelId": "gpt-5.6-luna",
+  "api": "responses",
+  "acceptance": "One call; ok, strict local schema validity and deep exact expected output are all required. No unchanged retry."
+}

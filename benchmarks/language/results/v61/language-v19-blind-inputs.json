@@ -1,0 +1,604 @@
+{
+  "schemaVersion": "language-input-review-packet-v1",
+  "corpusFingerprint": "2b1913d73efee8c14007feb2a4745711e27518a47e20ca5df52bf1cc1f3e8372",
+  "instructions": "Review the exact invented inputs and expectations before execution, without runtime outputs. Ten exposed writable development sources, ten fresh writable held-out sources, and one read-only case per split. English knowledge, independent English/Russian query and answer languages, explicit/inferred views. Commitments concern embedded propositions, not certainty that discussion occurred. self_attested is direct user provenance, not proof or an extra wording obligation. Preserve coupled contrasts, source attribution, uncertainty, fiction, conditional and lifecycle scope. Full retention preserves relevant source propositions; a focused answer may select an entailed subset without losing a material qualification. Explicit rejected-offer wording does not require redundant no-plan phrasing. Service provision does not establish booking. Source entailment is scored separately from qualification and language; each saved proposition and nonnull answer must follow from original source in content and scope. All-null or empty outcomes cannot count useful; unsupported accepted sets/answers must be zero. The useful-answer gate remains 90% in every split/run with two runs and eight combinations per case.",
+  "cases": [
+    {
+      "id": "v18-held-report",
+      "language": "mixed",
+      "scenario": "nested-report",
+      "split": "development",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Bo Winters says that the Zephyr QX-100 service terms permit sending the device to a technician for dial calibration. I, Ada Marlow, have given no instruction to collect it."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я передаю только слова Bo Winters: разрешена калибровка регулятора, а не замена регулятора. Самих условий я не видела и подтверждения этому сообщению не получила."
+        }
+      ],
+      "view": "reports",
+      "ordinary": "## Report\nAccording to Bo Winters, Zephyr QX-100 inspection is included; this report is unverified.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "What unverified dial-calibration service report did Ada Marlow record for Zephyr QX-100?",
+        "ru": "Какое неподтверждённое сообщение о калибровке регулятора Zephyr QX-100 записала Ada Marlow?"
+      },
+      "reviewExpectation": "Preserve Ada Marlow as recorder, Bo Winters as inner reporter, the permitted sending of the device to a technician for dial calibration rather than dial replacement, and Ada’s lack of inspected terms or confirmation. Retain the separate assertion that Ada gave no instruction to collect the device. Permission is not an arranged shipment. Keep the calibration/replacement contrast with the reported permission."
+    },
+    {
+      "id": "v18-held-hypothesis",
+      "language": "ru",
+      "scenario": "hypothetical-maintenance",
+      "split": "development",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, предлагаю для рассуждения такое допущение: клапан давления Zephyr QX-100 требуется проверять каждую неделю. При этом допущении пропуск проверки означал бы нарушение предполагаемого требования."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Мы не знаем настоящих требований. Это только условие гипотетического рассуждения; о случившемся пропуске проверки здесь не говорится."
+        }
+      ],
+      "view": "discussion",
+      "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "What hypothetical pressure-valve check rule did Ada Marlow discuss for Zephyr QX-100?",
+        "ru": "Какое гипотетическое правило проверки клапана давления Zephyr QX-100 обсуждала Ada Marlow?"
+      },
+      "reviewExpectation": "Preserve Ada Marlow’s hypothetical weekly pressure-valve check rule and the expressly conditional consequence that a missed check would violate that assumed rule. Actual requirements are unknown and no actual missed check is reported. Keep the premise and consequence together; weekly frequency is not a resolved calendar event."
+    },
+    {
+      "id": "v18-held-counterfactual",
+      "language": "mixed",
+      "scenario": "counterfactual",
+      "split": "development",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "I, Ada Marlow, turned down the optional extended warranty for Zephyr QX-100. I did not purchase that extension."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Если бы я всё же купила продление, ремонт разъёма зарядки в седьмом году входил бы в покрытие. Я описываю несостоявшийся вариант, а не действующую гарантию."
+        }
+      ],
+      "view": "discussion",
+      "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "What counterfactual charging-port repair alternative did Ada Marlow describe for Zephyr QX-100?",
+        "ru": "Какой контрфактический вариант ремонта разъёма зарядки Zephyr QX-100 описала Ada Marlow?"
+      },
+      "reviewExpectation": "Preserve actual rejection/nonpurchase of the extension and the unrealized seventh-year charging-port repair coverage. The latter is an active counterfactual, never actual coverage. The complete retained set must preserve both sides; a focused discussion answer preserves the alternative and nonacceptance."
+    },
+    {
+      "id": "v18-held-question",
+      "language": "en",
+      "scenario": "open-question",
+      "split": "development",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "My unresolved question, recorded by me, Ada Marlow, is whether the Zephyr QX-100 service agreement includes preventive cleaning of the filter."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "I still have no answer. This note establishes neither inclusion nor exclusion of that cleaning."
+        }
+      ],
+      "view": "questions",
+      "ordinary": "## Open question\nDoes Zephyr QX-100 require a seal check?",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "Which open preventive-cleaning question did Ada Marlow record for Zephyr QX-100?",
+        "ru": "Какой открытый вопрос о профилактической чистке фильтра Zephyr QX-100 записала Ada Marlow?"
+      },
+      "reviewExpectation": "Preserve Ada Marlow’s unanswered question about preventive filter cleaning under the service agreement. The question remains open; do not infer cleaning coverage, an exclusion, or a booked cleaning. A faithful description of the recorded question is useful."
+    },
+    {
+      "id": "v18-held-exclusion",
+      "language": "mixed",
+      "scenario": "factual-negation",
+      "split": "development",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, прямо утверждаю, что договор обслуживания Zephyr QX-100 не покрывает замену треснувших опорных ножек. This particular exclusion does not settle whether repairing the motor housing is covered."
+        }
+      ],
+      "view": "factual",
+      "ordinary": "The Zephyr QX-100 service agreement excludes paint fading.",
+      "ordinaryFactual": true,
+      "admission": "writable",
+      "queries": {
+        "en": "Does the Zephyr QX-100 service agreement cover replacement of cracked support feet?",
+        "ru": "Покрывает ли договор обслуживания Zephyr QX-100 замену треснувших опорных ножек?"
+      },
+      "reviewExpectation": "Preserve the directly asserted exclusion of replacing cracked support feet. This exclusion alone does not settle motor-housing repair; do not turn that limited scope into whole-contract silence or broaden the exclusion to the motor housing. A source-attributed denial answers the factual question without claiming independent verification."
+    },
+    {
+      "id": "v18-held-assistant",
+      "language": "ru",
+      "scenario": "tentative-assistant-report",
+      "split": "development",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "assistant",
+          "text": "Моё предварительное предположение как ассистента: обслуживание Zephyr QX-100, возможно, предусматривает ежемесячную смазку шарнира. Это непроверенная версия; договор я не открывал и оснований считать её подтверждённой у меня нет."
+        }
+      ],
+      "view": "reports",
+      "ordinary": "## Report\nAccording to Bo Winters, Zephyr QX-100 inspection is included; this report is unverified.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "What tentative hinge-lubrication report did the assistant give for Zephyr QX-100?",
+        "ru": "Какое предварительное сообщение о смазке шарнира Zephyr QX-100 дал ассистент?"
+      },
+      "reviewExpectation": "Preserve assistant attribution, tentative monthly hinge-lubrication interpretation, no contract inspection and no confirmation. Remember this as an unverified tentative assistant report, not as a factual service requirement or a fictional stipulation."
+    },
+    {
+      "id": "v18-held-fiction",
+      "language": "mixed",
+      "scenario": "fictional-example",
+      "split": "development",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "В истории, которую я, Ada Marlow, целиком выдумала для обсуждения, Vulpine Mutual обещает персонажу Bo Winters бесплатно заменить кабель Zephyr QX-100 в первые шесть недель владения."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "This promise belongs entirely to the invented story. Its Bo Winters is fictional, and I am not reporting a real agreement."
+        }
+      ],
+      "view": "discussion",
+      "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "What fictional cable-replacement example did Ada Marlow discuss for Zephyr QX-100?",
+        "ru": "Какой вымышленный пример с заменой кабеля Zephyr QX-100 обсуждала Ada Marlow?"
+      },
+      "reviewExpectation": "Preserve Ada Marlow as the author/recorder of fiction, Vulpine Mutual’s fictional promise to fictional character Bo Winters of free cable replacement during the first six ownership weeks, and the absence of a reported real agreement. The embedded promise is hypothetical, not an asserted promise. Fictional Bo is not another reporter; duration does not establish a dated event."
+    },
+    {
+      "id": "v18-held-rejected",
+      "language": "en",
+      "scenario": "rejected-plan",
+      "split": "development",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "I, Ada Marlow, declined an offer to send Zephyr QX-100 to the service centre for a thermostat measurement. I have no plan to send it under that offer."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "No handover of the device has been booked. The offered shipment was rejected, not accepted."
+        }
+      ],
+      "view": "history",
+      "ordinary": "## Rejected\nAda Marlow rejected a Zephyr QX-100 inspection proposal.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "Which thermostat-measurement offer did Ada Marlow decline for Zephyr QX-100?",
+        "ru": "Какое предложение об измерении параметров термостата Zephyr QX-100 отклонила Ada Marlow?"
+      },
+      "reviewExpectation": "Preserve the rejected offer to send the device to the service centre for thermostat measurement, the absence of a plan to send it under that offer and the separate absence of a booked handover. Do not infer an accepted plan, completed measurement or arranged collection. A focused answer may state rejection without redundantly restating no plan."
+    },
+    {
+      "id": "v18-held-undated",
+      "language": "mixed",
+      "scenario": "undated-proposal",
+      "split": "development",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "I, Ada Marlow, put forward a proposal to review the Zephyr QX-100 warranty exceptions next week. It remains an unaccepted proposal; no meeting has been arranged."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Дата исходной записи неизвестна. Следующая неделя означает неделю после этой исходной записи; от даты обработки отсчитывать её нельзя, и календарную неделю установить невозможно."
+        }
+      ],
+      "view": "planning",
+      "ordinary": "## Proposal\nAda Marlow proposed a Zephyr QX-100 inspection.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "What undated warranty-exceptions proposal did Ada Marlow record for Zephyr QX-100?",
+        "ru": "Какое предложение о проверке исключений из гарантии Zephyr QX-100 записала Ada Marlow без известной исходной даты?"
+      },
+      "reviewExpectation": "Preserve the unaccepted proposal to review warranty exceptions with no arranged meeting. Next week is relative to the original source record, whose date is unknown, so the calendar week is unresolved. Retention and any timing-bearing answer must preserve both source-relative anchor and unknown calendar date. No processing-time resolution is allowed."
+    },
+    {
+      "id": "v18-held-alternatives",
+      "language": "ru",
+      "scenario": "competing-hypotheses",
+      "split": "development",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, рассматриваю две конкурирующие версии сбоев Zephyr QX-100: неплотно вставленный внутренний разъём либо неисправный температурный зонд. Обе версии остаются предположениями; доказательств нет ни для первой, ни для второй, и ни одну причину я не выбрала."
+        }
+      ],
+      "view": "discussion",
+      "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "Which competing fault hypotheses did Ada Marlow discuss for Zephyr QX-100?",
+        "ru": "Какие конкурирующие гипотезы о неполадках Zephyr QX-100 обсуждала Ada Marlow?"
+      },
+      "reviewExpectation": "Preserve the competing hypotheses of a loosely inserted internal connector and a faulty temperature probe, Ada Marlow attribution, lack of evidence for either and no selected cause. Tentative or hypothetical commitment can preserve this discussion; neither cause is established. Keep both alternatives and their common lack of evidence."
+    },
+    {
+      "id": "v18-held-admission",
+      "language": "en",
+      "scenario": "read-only-admission",
+      "split": "development",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "I, Ada Marlow, record that the Zephyr QX-100 warranty duration is eighty-eight months."
+        }
+      ],
+      "view": "factual",
+      "ordinary": "The Zephyr QX-100 service agreement excludes paint fading.",
+      "ordinaryFactual": true,
+      "admission": "read-only",
+      "queries": {
+        "en": "What warranty duration is recorded for Zephyr QX-100?",
+        "ru": "Какой срок гарантии записан для Zephyr QX-100?"
+      },
+      "reviewExpectation": "The invented assertion is useful, but the only configured destination is read-only. Retain must hold without changing source bytes. With no saved evidence, answer abstention is justified.",
+      "hold": true,
+      "commitment": "asserted"
+    },
+    {
+      "id": "v19-held-report",
+      "language": "mixed",
+      "scenario": "nested-report",
+      "split": "held-out",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "I, Ada Marlow, have not read the service terms and have no independent confirmation of the report below. No collection of my device has been booked."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Bo Winters told me that the Zephyr QX-100 terms permit sending the device to a service bench to measure the tension of its return spring."
+        },
+        {
+          "item_id": "turn-3333",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Уточняю только смысл пересказа: речь об измерении натяжения возвратной пружины, а не о замене этой пружины. Это слова Bo Winters в моём пересказе, а не проверенное мной условие."
+        }
+      ],
+      "view": "reports",
+      "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "What unverified return-spring service report did Ada Marlow relay for Zephyr QX-100?",
+        "ru": "Какое неподтверждённое сообщение об обслуживании возвратной пружины Zephyr QX-100 пересказала Ada Marlow?"
+      },
+      "reviewExpectation": "Preserve outer Ada and inner Bo, permission to send the device to a service bench for return-spring tension measurement rather than spring replacement, and the unread/unconfirmed status. Keep the separate no-collection-booking assertion. The contrast clarifies the same relayed report; permission is not a booking or completed measurement."
+    },
+    {
+      "id": "v19-held-hypothesis",
+      "language": "ru",
+      "scenario": "hypothetical-maintenance",
+      "split": "held-out",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Для мысленного разбора я, Ada Marlow, допускаю правило: поролоновый фильтр Zephyr QX-100 нужно проверять каждые два месяца. Если принять это правило, пропущенная проверка нарушала бы именно это предполагаемое требование."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Настоящие требования нам неизвестны. Правило введено только для гипотезы; о реальном пропуске проверки я не сообщаю."
+        }
+      ],
+      "view": "discussion",
+      "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "What hypothetical foam-filter check rule did Ada Marlow introduce for Zephyr QX-100?",
+        "ru": "Какое гипотетическое правило проверки поролонового фильтра Zephyr QX-100 ввела Ada Marlow?"
+      },
+      "reviewExpectation": "Retain the hypothetical two-month foam-filter check rule and its explicit conditional missed-check consequence together. Actual requirements remain unknown and no actual missed check is reported. Keep Ada attribution and the frequency as a property rather than a calendar event."
+    },
+    {
+      "id": "v19-held-counterfactual",
+      "language": "mixed",
+      "scenario": "counterfactual",
+      "split": "held-out",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "I, Ada Marlow, rejected the optional service extension for Zephyr QX-100 and did not buy it."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "В несостоявшемся варианте, если бы я купила это продление, ремонт поворотной ручки в девятом году был бы покрыт. Это не та услуга, которую я приобрела, и не действующее покрытие."
+        }
+      ],
+      "view": "discussion",
+      "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "What unrealized rotary-knob repair alternative did Ada Marlow describe for Zephyr QX-100?",
+        "ru": "Какой несостоявшийся вариант ремонта поворотной ручки Zephyr QX-100 описала Ada Marlow?"
+      },
+      "reviewExpectation": "The complete retained set preserves actual rejection/nonpurchase and counterfactual ninth-year rotary-knob repair coverage. The imagined purchase is explicitly false; no actual coverage is established. A focused discussion answer may describe the alternative with its unrealized/nonpurchase qualification."
+    },
+    {
+      "id": "v19-held-question",
+      "language": "ru",
+      "scenario": "open-question",
+      "split": "held-out",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "У меня, Ada Marlow, остаётся открытый вопрос: входит ли профилактическая доливка охлаждающей жидкости Zephyr QX-100 в договор обслуживания? Ответа у меня нет: ни включение этой услуги, ни её исключение не установлены."
+        }
+      ],
+      "view": "questions",
+      "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "What unresolved coolant-refill question does Ada Marlow have about Zephyr QX-100?",
+        "ru": "Какой нерешённый вопрос о доливке охлаждающей жидкости Zephyr QX-100 остаётся у Ada Marlow?"
+      },
+      "reviewExpectation": "Retain an unresolved question attributed to Ada about preventive coolant refill, with neither inclusion nor exclusion established. Do not answer the embedded coverage question or invent an external asking/writing action."
+    },
+    {
+      "id": "v19-held-exclusion",
+      "language": "ru",
+      "scenario": "factual-negation",
+      "split": "held-out",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, утверждаю: повреждённый опорный кронштейн Zephyr QX-100 не покрывается гарантией. Эта запись об исключении не позволяет решить, покрыт ли ремонт двигателя вентилятора; она не утверждает, что договор вообще молчит об этом ремонте."
+        }
+      ],
+      "view": "factual",
+      "ordinary": "## Warranty\nThe Zephyr QX-100 warranty excludes damage to the support bracket.",
+      "ordinaryFactual": true,
+      "admission": "writable",
+      "queries": {
+        "en": "What does Ada Marlow’s exclusion say about the Zephyr QX-100 support bracket and fan-motor repair?",
+        "ru": "Что говорится в исключении Ada Marlow об опорном кронштейне Zephyr QX-100 и ремонте двигателя вентилятора?"
+      },
+      "reviewExpectation": "Preserve the asserted support-bracket exclusion with negated polarity and the narrow statement that this exclusion does not resolve fan-motor repair coverage. Do not claim that the entire contract omits the answer."
+    },
+    {
+      "id": "v19-held-assistant",
+      "language": "en",
+      "scenario": "tentative-assistant-report",
+      "split": "held-out",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "assistant",
+          "text": "My preliminary reading is that Zephyr QX-100 servicing may include a functional check of the status display every quarter. I have not examined the contract or confirmed this assumption. This is a possible contract condition, not an established requirement."
+        }
+      ],
+      "view": "reports",
+      "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "What tentative status-display check did the assistant suggest may be included for Zephyr QX-100?",
+        "ru": "Какую предварительную версию о проверке дисплея состояния Zephyr QX-100 предложил ассистент?"
+      },
+      "reviewExpectation": "Preserve generic assistant attribution, tentative modal possibility, quarterly functional status-display checks, and lack of contract examination or confirmation. The condition is a contractual term, not a claim about the device’s physical state. Do not promote the report to an established servicing requirement."
+    },
+    {
+      "id": "v19-held-fiction",
+      "language": "mixed",
+      "scenario": "fictional-example",
+      "split": "held-out",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, предлагаю обсудить вымышленный пример про Zephyr QX-100. Само обсуждение я только предлагаю; реального соглашения здесь нет."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "In that invented example, Vulpine Mutual promises Bo Winters free axle-cap replacements during the first ten weeks of ownership. Bo Winters is a character in the example, and the promise belongs only to the fiction."
+        }
+      ],
+      "view": "discussion",
+      "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "What fictional axle-cap promise did Ada Marlow propose discussing for Zephyr QX-100?",
+        "ru": "Какое вымышленное обещание о колпачке оси Zephyr QX-100 предложила обсудить Ada Marlow?"
+      },
+      "reviewExpectation": "Retain the actual proposal to discuss separately from, or fully scoped together with, the fictional promise of free axle-cap replacements in the first ten weeks. The complete fictional content keeps Vulpine as promising party and Bo as character/recipient. No real agreement, promise or completed discussion is established."
+    },
+    {
+      "id": "v19-held-rejected",
+      "language": "en",
+      "scenario": "rejected-plan",
+      "split": "held-out",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "An offer concerned sending Zephyr QX-100 to a laboratory for a rotor-balance measurement. I, Ada Marlow, declined that offer; I have no plan to send the device under it."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "No pickup of the device has been booked. The offered shipment was rejected rather than accepted."
+        }
+      ],
+      "view": "history",
+      "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "Which rotor-measurement offer did Ada Marlow reject for Zephyr QX-100?",
+        "ru": "Какое предложение об измерении баланса ротора Zephyr QX-100 отклонила Ada Marlow?"
+      },
+      "reviewExpectation": "Retain Ada’s rejection of sending the device to a laboratory for rotor-balance measurement, her lack of a plan under that offer, and the separate unbooked pickup. The rejected course of action remains kind plan/disposition rejected; that schema does not assert personal intent. No causation or actual measurement/booking may be invented."
+    },
+    {
+      "id": "v19-held-undated",
+      "language": "mixed",
+      "scenario": "undated-proposal",
+      "split": "held-out",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "My proposal is to review the Zephyr QX-100 warranty exclusions next year. I, Ada Marlow, have not adopted a plan or arranged a meeting; this remains my proposal."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "У исходной записи нет даты. Следующий год считается от момента этой записи, а не от сегодняшнего дня или обработки. Какой именно это календарный год, восстановить нельзя."
+        }
+      ],
+      "view": "planning",
+      "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "What undated warranty-exclusion proposal did Ada Marlow make for Zephyr QX-100?",
+        "ru": "Какое недатированное предложение об исключениях гарантии Zephyr QX-100 сделала Ada Marlow?"
+      },
+      "reviewExpectation": "Retain Ada’s explicit proposal to review warranty exclusions next year relative to the original undated record, with an unknown calendar/reference year and no adopted plan or arranged meeting. Proposed disposition and tentative timing do not themselves make the stated proposal’s commitment tentative. Preserve an unknown temporal envelope and no processing-date substitution."
+    },
+    {
+      "id": "v19-held-alternatives",
+      "language": "mixed",
+      "scenario": "competing-hypotheses",
+      "split": "held-out",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, обсуждаю две конкурирующие гипотезы о неисправности Zephyr QX-100: проскальзывающий приводной ремень или заклинивший охлаждающий вентилятор. Обе версии предварительные."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Neither hypothesis has supporting evidence. I, Ada Marlow, have not selected a cause."
+        }
+      ],
+      "view": "discussion",
+      "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+      "ordinaryFactual": false,
+      "admission": "writable",
+      "queries": {
+        "en": "Which competing malfunction hypotheses did Ada Marlow discuss for Zephyr QX-100?",
+        "ru": "Какие конкурирующие гипотезы о неисправности Zephyr QX-100 обсуждала Ada Marlow?"
+      },
+      "reviewExpectation": "Retain the slipping drive belt and jammed cooling fan as competing tentative hypotheses discussed by Ada. Neither has supporting evidence and Ada has not selected a cause. Preserve the actual discussion activity and personal nonselection; neither alternative becomes an established cause."
+    },
+    {
+      "id": "v19-held-admission",
+      "language": "en",
+      "scenario": "read-only-admission",
+      "split": "held-out",
+      "items": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "I, Ada Marlow, recorded that the Zephyr QX-100 warranty lasts ninety-nine months."
+        }
+      ],
+      "view": "factual",
+      "ordinary": "## Warranty\nThe Zephyr QX-100 warranty lasts ninety-nine months.",
+      "ordinaryFactual": true,
+      "admission": "read-only",
+      "queries": {
+        "en": "How long is the Zephyr QX-100 warranty in Ada Marlow’s record?",
+        "ru": "Каков срок гарантии Zephyr QX-100 в записи Ada Marlow?"
+      },
+      "reviewExpectation": "The source is invented and understandable, but this isolated knowledge base is read-only. No retained write or unsupported answer is allowed; report an admission hold distinctly from unavailable service or absent source material.",
+      "hold": true
+    }
+  ]
+}

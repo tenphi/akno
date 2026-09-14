@@ -1,0 +1,1223 @@
+{
+  "schemaVersion": "language-quality-gate-v1",
+  "independentlyReviewed": true,
+  "adjudicationKind": "model",
+  "reviewer": "gpt-5.6-sol",
+  "releaseEligible": false,
+  "scope": "Frozen invented English/Russian corpus; independent model adjudication is fallible and is not human validation or a general reliability guarantee.",
+  "packetFingerprint": "09660e75fb96a7529763dc25756d83c0b47da71fa1984fa78d0d4d21f2439f82",
+  "inputReviewFingerprint": "7b75f9f01b334a47735133f4adb65c9b4878f8b292bec031e77ddeab345a9b22",
+  "outputReviewFingerprint": "3063d2c55f042bfe8cde113e1e95300713f4f85bbb5222c18b03b5f6b21948ed",
+  "thresholds": {
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "usefulQualifiedAnswerCoverage": 0.9,
+    "availabilityFailureRate": 0.05
+  },
+  "failures": [
+    "held-out/run-1:usefulQualifiedAnswerCoverage",
+    "held-out/run-2:usefulQualifiedAnswerCoverage"
+  ],
+  "groups": [
+    {
+      "split": "development",
+      "run": 1,
+      "metrics": {
+        "usefulRetentionCoverage": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1
+        },
+        "qualifiedRetrievalCoverage": {
+          "numerator": 40,
+          "denominator": 40,
+          "rate": 1
+        },
+        "usefulQualifiedAnswerCoverage": {
+          "numerator": 72,
+          "denominator": 80,
+          "rate": 0.9
+        },
+        "justifiedAbstentions": 8,
+        "expectedSafeHolds": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 0,
+        "sourceByteChanges": 0,
+        "availabilityFailureRate": {
+          "numerator": 0,
+          "denominator": 11,
+          "rate": 0
+        },
+        "ordinaryProseFailures": 0
+      },
+      "breakdowns": {
+        "bySourceLanguage": {
+          "ru": {
+            "usefulRetentionCoverage": {
+              "numerator": 3,
+              "denominator": 3,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 24,
+              "denominator": 24,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "en": {
+            "usefulRetentionCoverage": {
+              "numerator": 4,
+              "denominator": 4,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 24,
+              "denominator": 32,
+              "rate": 0.75
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "mixed": {
+            "usefulRetentionCoverage": {
+              "numerator": 3,
+              "denominator": 3,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 24,
+              "denominator": 24,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          }
+        },
+        "byScenario": {
+          "nested-report": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "hypothetical-maintenance": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "counterfactual": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "open-question": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "factual-negation": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "tentative-assistant-report": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "fictional-example": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "rejected-plan": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "undated-proposal": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "competing-hypotheses": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 0,
+              "denominator": 8,
+              "rate": 0
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          }
+        },
+        "byQueryLanguage": {
+          "en": {
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 36,
+              "denominator": 40,
+              "rate": 0.9
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "ru": {
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 36,
+              "denominator": 40,
+              "rate": 0.9
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          }
+        },
+        "byAnswerLanguage": {
+          "en": {
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 36,
+              "denominator": 40,
+              "rate": 0.9
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "ru": {
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 36,
+              "denominator": 40,
+              "rate": 0.9
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          }
+        }
+      }
+    },
+    {
+      "split": "development",
+      "run": 2,
+      "metrics": {
+        "usefulRetentionCoverage": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1
+        },
+        "qualifiedRetrievalCoverage": {
+          "numerator": 40,
+          "denominator": 40,
+          "rate": 1
+        },
+        "usefulQualifiedAnswerCoverage": {
+          "numerator": 74,
+          "denominator": 80,
+          "rate": 0.925
+        },
+        "justifiedAbstentions": 8,
+        "expectedSafeHolds": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 0,
+        "sourceByteChanges": 0,
+        "availabilityFailureRate": {
+          "numerator": 0,
+          "denominator": 11,
+          "rate": 0
+        },
+        "ordinaryProseFailures": 0
+      },
+      "breakdowns": {
+        "bySourceLanguage": {
+          "ru": {
+            "usefulRetentionCoverage": {
+              "numerator": 3,
+              "denominator": 3,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 24,
+              "denominator": 24,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "en": {
+            "usefulRetentionCoverage": {
+              "numerator": 4,
+              "denominator": 4,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 26,
+              "denominator": 32,
+              "rate": 0.8125
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "mixed": {
+            "usefulRetentionCoverage": {
+              "numerator": 3,
+              "denominator": 3,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 24,
+              "denominator": 24,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          }
+        },
+        "byScenario": {
+          "nested-report": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "hypothetical-maintenance": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "counterfactual": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "open-question": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "factual-negation": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "tentative-assistant-report": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "fictional-example": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "rejected-plan": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "undated-proposal": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "competing-hypotheses": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 2,
+              "denominator": 8,
+              "rate": 0.25
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          }
+        },
+        "byQueryLanguage": {
+          "en": {
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 37,
+              "denominator": 40,
+              "rate": 0.925
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "ru": {
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 37,
+              "denominator": 40,
+              "rate": 0.925
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          }
+        },
+        "byAnswerLanguage": {
+          "en": {
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 38,
+              "denominator": 40,
+              "rate": 0.95
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "ru": {
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 36,
+              "denominator": 40,
+              "rate": 0.9
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          }
+        }
+      }
+    },
+    {
+      "split": "held-out",
+      "run": 1,
+      "metrics": {
+        "usefulRetentionCoverage": {
+          "numerator": 10,
+          "denominator": 10,
+          "rate": 1
+        },
+        "qualifiedRetrievalCoverage": {
+          "numerator": 40,
+          "denominator": 40,
+          "rate": 1
+        },
+        "usefulQualifiedAnswerCoverage": {
+          "numerator": 71,
+          "denominator": 80,
+          "rate": 0.8875
+        },
+        "justifiedAbstentions": 8,
+        "expectedSafeHolds": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 0,
+        "sourceByteChanges": 0,
+        "availabilityFailureRate": {
+          "numerator": 0,
+          "denominator": 11,
+          "rate": 0
+        },
+        "ordinaryProseFailures": 0
+      },
+      "breakdowns": {
+        "bySourceLanguage": {
+          "ru": {
+            "usefulRetentionCoverage": {
+              "numerator": 3,
+              "denominator": 3,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 24,
+              "denominator": 24,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "mixed": {
+            "usefulRetentionCoverage": {
+              "numerator": 3,
+              "denominator": 3,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 16,
+              "denominator": 24,
+              "rate": 0.6666666666666666
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "en": {
+            "usefulRetentionCoverage": {
+              "numerator": 4,
+              "denominator": 4,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 31,
+              "denominator": 32,
+              "rate": 0.96875
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          }
+        },
+        "byScenario": {
+          "nested-report": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "hypothetical-maintenance": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 7,
+              "denominator": 8,
+              "rate": 0.875
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "counterfactual": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "open-question": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "factual-negation": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "tentative-assistant-report": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "fictional-example": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "rejected-plan": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 7,
+              "denominator": 8,
+              "rate": 0.875
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "undated-proposal": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "competing-hypotheses": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 1,
+              "denominator": 8,
+              "rate": 0.125
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          }
+        },
+        "byQueryLanguage": {
+          "en": {
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 35,
+              "denominator": 40,
+              "rate": 0.875
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "ru": {
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 36,
+              "denominator": 40,
+              "rate": 0.9
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          }
+        },
+        "byAnswerLanguage": {
+          "en": {
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 35,
+              "denominator": 40,
+              "rate": 0.875
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "ru": {
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 36,
+              "denominator": 40,
+              "rate": 0.9
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          }
+        }
+      }
+    },
+    {
+      "split": "held-out",
+      "run": 2,
+      "metrics": {
+        "usefulRetentionCoverage": {
+          "numerator": 9,
+          "denominator": 10,
+          "rate": 0.9
+        },
+        "qualifiedRetrievalCoverage": {
+          "numerator": 36,
+          "denominator": 40,
+          "rate": 0.9
+        },
+        "usefulQualifiedAnswerCoverage": {
+          "numerator": 62,
+          "denominator": 80,
+          "rate": 0.775
+        },
+        "justifiedAbstentions": 8,
+        "expectedSafeHolds": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 0,
+        "sourceByteChanges": 0,
+        "availabilityFailureRate": {
+          "numerator": 0,
+          "denominator": 11,
+          "rate": 0
+        },
+        "ordinaryProseFailures": 0
+      },
+      "breakdowns": {
+        "bySourceLanguage": {
+          "ru": {
+            "usefulRetentionCoverage": {
+              "numerator": 2,
+              "denominator": 3,
+              "rate": 0.6666666666666666
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 16,
+              "denominator": 24,
+              "rate": 0.6666666666666666
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "mixed": {
+            "usefulRetentionCoverage": {
+              "numerator": 3,
+              "denominator": 3,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 17,
+              "denominator": 24,
+              "rate": 0.7083333333333334
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "en": {
+            "usefulRetentionCoverage": {
+              "numerator": 4,
+              "denominator": 4,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 29,
+              "denominator": 32,
+              "rate": 0.90625
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          }
+        },
+        "byScenario": {
+          "nested-report": {
+            "usefulRetentionCoverage": {
+              "numerator": 0,
+              "denominator": 1,
+              "rate": 0
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 0,
+              "denominator": 8,
+              "rate": 0
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "hypothetical-maintenance": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "counterfactual": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "open-question": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "factual-negation": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "tentative-assistant-report": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "fictional-example": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "rejected-plan": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 5,
+              "denominator": 8,
+              "rate": 0.625
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "undated-proposal": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 8,
+              "denominator": 8,
+              "rate": 1
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "competing-hypotheses": {
+            "usefulRetentionCoverage": {
+              "numerator": 1,
+              "denominator": 1,
+              "rate": 1
+            },
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 1,
+              "denominator": 8,
+              "rate": 0.125
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          }
+        },
+        "byQueryLanguage": {
+          "en": {
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 31,
+              "denominator": 40,
+              "rate": 0.775
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "ru": {
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 31,
+              "denominator": 40,
+              "rate": 0.775
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          }
+        },
+        "byAnswerLanguage": {
+          "en": {
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 29,
+              "denominator": 40,
+              "rate": 0.725
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          },
+          "ru": {
+            "usefulQualifiedAnswerCoverage": {
+              "numerator": 33,
+              "denominator": 40,
+              "rate": 0.825
+            },
+            "justifiedAbstentions": 0,
+            "acceptedLanguageViolations": 0,
+            "translationQualificationErrors": 0,
+            "unsafeFactualPromotion": 0
+          }
+        }
+      }
+    }
+  ]
+}

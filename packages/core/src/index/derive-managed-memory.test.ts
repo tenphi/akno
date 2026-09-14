@@ -115,5 +115,6 @@ it('does not give marker semantics to an authored fenced example', async () => {
 
   const derived = await derivePage(page, model, { summaries: true, facts: true });
 
-  expect(derived.facts.map((fact) => fact.line)).toEqual([7, 5]);
+  expect(derived.facts).toEqual([]);
+  expect(derived.summary).toBeNull();
 });

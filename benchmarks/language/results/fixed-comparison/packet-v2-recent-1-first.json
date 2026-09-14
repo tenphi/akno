@@ -1,0 +1,4301 @@
+{
+  "packetVersion": 2,
+  "corpusFingerprint": "27bbb05e7bc8089ba133e5723667190106d02e98b635e41328d683bd9700505a",
+  "block": "recent",
+  "run": 1,
+  "part": "first",
+  "instructions": "Grade only supplied source and public outputs under source-first-obligations.json. Answer IDs/retrieval IDs are scoped to each case/candidate. Repeated coordinates reference exactly equal values. Null writable output loses usefulness but has no accepted content error. Report retention completeness separately from source entailment and language. Stored pages include original public read lines and managed markers, so typed relations are not hidden by prose-only selection. Read relation targets against the qualified retained IDs. No candidate runtime or private judgments are supplied.",
+  "cases": [
+    {
+      "id": "v22-held-nested-report",
+      "source": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+        },
+        {
+          "item_id": "turn-3333",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+        }
+      ],
+      "queries": {
+        "en": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?",
+        "ru": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+      },
+      "admission": "writable",
+      "view": "reports",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retained": [],
+          "storedPages": [],
+          "admission": {
+            "status": "ok",
+            "outcome": "held",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "held",
+                "reason": "discourse_uncertain",
+                "holdStage": "validation",
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [],
+                "query": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [],
+                "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retained": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports Bo Winters's statement that Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to test the resistance of its grounding contact, specifically testing the contact rather than replacing it; Ada Marlow has not seen Vulpine Mutual's rules and has not verified Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_cf7a9fc2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_96a5182909975248879f68b5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "storedPages": [
+            {
+              "slug": "memory/equipment",
+              "lines": [
+                {
+                  "n": 1,
+                  "text": "# Zephyr QX-100",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "3be3bab883a057e5c6bbf3fabb29cd96ee6b6cd754a679c3c404111e55781c3c",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 4,
+                  "text": "## Grounding Contact Testing",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "3be3bab883a057e5c6bbf3fabb29cd96ee6b6cd754a679c3c404111e55781c3c",
+                    "frame": [
+                      {
+                        "n": 4,
+                        "text": "## Grounding Contact Testing"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "<!-- akno:item mem_cf7a9fc2 v=2 supports=dbe02b6509aa15c6b3f30d35@e791be5e60d1556d741d0622@783084a07715fec899742a17@extracted level=1 kind=claim subject=ent_96a5182909975248879f68b5 source-role=user speaker=Ada%20Marlow reports=1 reporters=external:Bo%20Winters commitment=asserted disposition=active polarity=affirmed basis=source_report -->"
+                },
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** Ada Marlow reports Bo Winters's statement that Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to test the resistance of its grounding contact, specifically testing the contact rather than replacing it; Ada Marlow has not seen Vulpine Mutual's rules and has not verified Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_cf7a9fc2",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_96a5182909975248879f68b5",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ]
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "Ada Marlow передала сообщение Bo Winters о том, что Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую, чтобы проверить сопротивление его заземляющего контакта — именно проверить контакт, а не заменить его. Ada Marlow не видела правил Vulpine Mutual и не проверяла сообщение Bo Winters; это непроверенный отчёт, переданный Ada Marlow со слов Bo Winters. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "Ada Marlow передала сообщение Bo Winters о том, что Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую, чтобы проверить сопротивление его заземляющего контакта; речь шла именно о проверке контакта, а не о его замене. Ada Marlow не видела правил Vulpine Mutual и не проверяла сообщение Bo Winters. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "Ada Marlow reported that Bo Winters said Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to test the resistance of its grounding contact, specifically testing the contact rather than replacing it. Ada Marlow had not seen Vulpine Mutual’s rules and had not verified Bo Winters’s message. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Reported by Ada Marlow:** Ada Marlow reports Bo Winters's statement that Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to test the resistance of its grounding contact, specifically testing the contact rather than replacing it; Ada Marlow has not seen Vulpine Mutual's rules and has not verified Bo Winters's message.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_cf7a9fc2",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_96a5182909975248879f68b5",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "source_report",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Reported by Ada Marlow:** Ada Marlow reports Bo Winters's statement that Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to test the resistance of its grounding contact, specifically testing the contact rather than replacing it; Ada Marlow has not seen Vulpine Mutual's rules and has not verified Bo Winters's message.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_cf7a9fc2",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_96a5182909975248879f68b5",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "source_report",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "6",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "5",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retained": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports, without having seen or verified the rules herself, that Bo Winters said Vulpine Mutual permits bringing a Zephyr QX-100 to a workshop to test the grounding-contact resistance, specifically not to replace the contact.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_dc7f2669",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad07b5c7bff3d306851e54a2",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "storedPages": [
+            {
+              "slug": "memory/equipment",
+              "lines": [
+                {
+                  "n": 1,
+                  "text": "# Zephyr QX-100",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "1d0a4ea1167a548d5cb7e77a53bea93319936c16fcfa38c39c314bfb9d14ebbc",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 4,
+                  "text": "## Grounding-contact resistance testing",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "1d0a4ea1167a548d5cb7e77a53bea93319936c16fcfa38c39c314bfb9d14ebbc",
+                    "frame": [
+                      {
+                        "n": 4,
+                        "text": "## Grounding-contact resistance testing"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "<!-- akno:item mem_dc7f2669 v=2 supports=dbe02b6509aa15c6b3f30d35@30debfe5d2d5761529ab230d@783084a07715fec899742a17@extracted level=1 kind=claim subject=ent_ad07b5c7bff3d306851e54a2 source-role=user speaker=Ada%20Marlow reports=1 reporters=unknown:Bo%20Winters commitment=asserted disposition=active polarity=affirmed basis=source_report -->"
+                },
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** Ada Marlow reports, without having seen or verified the rules herself, that Bo Winters said Vulpine Mutual permits bringing a Zephyr QX-100 to a workshop to test the grounding-contact resistance, specifically not to replace the contact.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_dc7f2669",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad07b5c7bff3d306851e54a2",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ]
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "Ada Marlow relayed an unverified report that Bo Winters said Vulpine Mutual permits bringing a Zephyr QX-100 to a workshop to test the grounding-contact resistance, specifically not to replace the contact. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "Ada Marlow передала непроверенный отчёт о том, что Bo Winters сказал: Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, а не для замены этого контакта. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "Ada Marlow сообщила — без собственной проверки или подтверждения правил — что Bo Winters сказал: Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, а не для замены контакта. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "Ada Marlow reported, without having seen or verified the rules herself, that Bo Winters said Vulpine Mutual permits bringing a Zephyr QX-100 to a workshop to test the grounding-contact resistance, specifically not to replace the contact. This remains an unverified report attributed to Ada Marlow about Bo Winters’ statement. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              }
+            },
+            {
+              "id": "7",
+              "value": {
+                "text": "Ada Marlow пересказала непроверенное сообщение о том, что Bo Winters сказал: Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, а не для его замены. Ada Marlow сама не видела и не проверяла эти правила. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Reported by Ada Marlow:** Ada Marlow reports, without having seen or verified the rules herself, that Bo Winters said Vulpine Mutual permits bringing a Zephyr QX-100 to a workshop to test the grounding-contact resistance, specifically not to replace the contact.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_dc7f2669",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_ad07b5c7bff3d306851e54a2",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "source_report",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Reported by Ada Marlow:** Ada Marlow reports, without having seen or verified the rules herself, that Bo Winters said Vulpine Mutual permits bringing a Zephyr QX-100 to a workshop to test the grounding-contact resistance, specifically not to replace the contact.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_dc7f2669",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_ad07b5c7bff3d306851e54a2",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "source_report",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "6",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "7",
+              "retrieval": "2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "source": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "For this hypothetical analysis, assume the Zephyr QX-100 drain channel is cleared every six weeks."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Only under that assumption, leaving the channel uncleared for seven weeks would breach the assumed schedule. I do not know the real maintenance rule, and I am not reporting an actual missed clearing."
+        }
+      ],
+      "queries": {
+        "en": "What conditional drain-channel maintenance scenario did Ada Marlow set out for Zephyr QX-100?",
+        "ru": "Какой условный сценарий обслуживания дренажного канала Zephyr QX-100 описала Ada Marlow?"
+      },
+      "admission": "writable",
+      "view": "discussion",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retained": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow's hypothetical assumption is that the Zephyr QX-100 drain channel is cleared every six weeks; under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1e1c86b5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4015cf496fa867e2f2165066",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "storedPages": [
+            {
+              "slug": "memory/equipment",
+              "lines": [
+                {
+                  "n": 1,
+                  "text": "# Zephyr QX-100",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "a58bd7258a88e6466061bae608b4c3fda6dcd63e679a2271f99777262282468f",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 4,
+                  "text": "## Maintenance Schedule Assumption",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "a58bd7258a88e6466061bae608b4c3fda6dcd63e679a2271f99777262282468f",
+                    "frame": [
+                      {
+                        "n": 4,
+                        "text": "## Maintenance Schedule Assumption"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "<!-- akno:item mem_1e1c86b5 v=2 supports=5b38aca5cebff61a22a817ec@5987aaa7543d106d7f63f745@3556ad48576fa56b6b1495c7@extracted level=1 kind=claim subject=ent_4015cf496fa867e2f2165066 source-role=user speaker=Ada%20Marlow reports=0 commitment=hypothetical disposition=active polarity=affirmed basis=self_attested -->"
+                },
+                {
+                  "n": 7,
+                  "text": "- **Hypothetical:** Ada Marlow's hypothetical assumption is that the Zephyr QX-100 drain channel is cleared every six weeks; under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_1e1c86b5",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_4015cf496fa867e2f2165066",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ]
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "**Hypothetical:** Ada Marlow's hypothetical assumption is that the Zephyr QX-100 drain channel is cleared every six weeks; under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "What conditional drain-channel maintenance scenario did Ada Marlow set out for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "**Гипотетический контекст:** гипотетическое допущение Ada Marlow состоит в том, что дренажный канал Zephyr QX-100 очищают каждые шесть недель; при этом допущении, если оставить его неочищенным на семь недель, это нарушило бы предполагаемый график. Ada Marlow не знает фактическое правило технического обслуживания и не сообщает о реально пропущенной очистке. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What conditional drain-channel maintenance scenario did Ada Marlow set out for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "**Гипотетический контекст:** Гипотетическое предположение Ada Marlow состоит в том, что дренажный канал Zephyr QX-100 очищается каждые шесть недель; при этом предположении оставление его неочищенным в течение семи недель нарушило бы предполагаемый график. Ada Marlow не знает фактического правила технического обслуживания и не сообщает о реально пропущенной очистке. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What conditional drain-channel maintenance scenario did Ada Marlow set out for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "**Hypothetical:** Ada Marlow's hypothetical assumption is that the Zephyr QX-100 drain channel is cleared every six weeks; under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какой условный сценарий обслуживания дренажного канала Zephyr QX-100 описала Ada Marlow?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "**Гипотетическое:** гипотетическое предположение Ada Marlow состоит в том, что дренажный канал Zephyr QX-100 очищают каждые шесть недель; если бы при этом предположении канал оставался неочищенным семь недель, это нарушало бы предполагаемый график. Ada Marlow не знает реальное правило обслуживания и не сообщает о фактическом пропуске очистки. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какой условный сценарий обслуживания дренажного канала Zephyr QX-100 описала Ada Marlow?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "**Гипотетический контекст:** гипотетическое допущение Ada Marlow состоит в том, что дренажный канал Zephyr QX-100 очищают каждые шесть недель; согласно этому допущению, если оставить его неочищенным на семь недель, это нарушит предполагаемый график. Ada Marlow не знает реального правила обслуживания и не сообщает о фактически пропущенной очистке. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какой условный сценарий обслуживания дренажного канала Zephyr QX-100 описала Ada Marlow?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Hypothetical:** Ada Marlow's hypothetical assumption is that the Zephyr QX-100 drain channel is cleared every six weeks; under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_1e1c86b5",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_4015cf496fa867e2f2165066",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "What conditional drain-channel maintenance scenario did Ada Marlow set out for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Hypothetical:** Ada Marlow's hypothetical assumption is that the Zephyr QX-100 drain channel is cleared every six weeks; under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_1e1c86b5",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_4015cf496fa867e2f2165066",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Какой условный сценарий обслуживания дренажного канала Zephyr QX-100 описала Ada Marlow?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retained": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow's hypothetical analysis assumes that the Zephyr QX-100 drain channel is cleared every six weeks and, only under that assumption, that leaving the channel uncleared for seven weeks would breach the assumed schedule.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_82f5a746",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9f6632c42833de53dbe7998d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- Ada Marlow says she does not know the real maintenance rule for the Zephyr QX-100 drain channel.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_5ff98255",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9f6632c42833de53dbe7998d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "text": "- Ada Marlow is not reporting an actual missed clearing of the Zephyr QX-100 drain channel.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_5a0acb35",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9f6632c42833de53dbe7998d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "storedPages": [
+            {
+              "slug": "memory/equipment",
+              "lines": [
+                {
+                  "n": 1,
+                  "text": "# Zephyr QX-100",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "a3bb26f34728a1069ceb8ef9768e81e2a7dd2aacb7e1556e3734e9f92f0cd408",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 3,
+                  "text": "## Hypothetical Analysis",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "a3bb26f34728a1069ceb8ef9768e81e2a7dd2aacb7e1556e3734e9f92f0cd408",
+                    "frame": [
+                      {
+                        "n": 3,
+                        "text": "## Hypothetical Analysis"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "<!-- akno:item mem_82f5a746 v=2 supports=5b38aca5cebff61a22a817ec@a8cc73560e7c717d08197983@3556ad48576fa56b6b1495c7@extracted level=1 kind=claim subject=ent_9f6632c42833de53dbe7998d source-role=user speaker=Ada%20Marlow reports=0 commitment=hypothetical disposition=active polarity=affirmed basis=self_attested -->"
+                },
+                {
+                  "n": 6,
+                  "text": "- **Hypothetical:** Ada Marlow's hypothetical analysis assumes that the Zephyr QX-100 drain channel is cleared every six weeks and, only under that assumption, that leaving the channel uncleared for seven weeks would breach the assumed schedule.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_82f5a746",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9f6632c42833de53dbe7998d",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                },
+                {
+                  "n": 8,
+                  "text": "<!-- akno:item mem_5ff98255 v=2 supports=5b38aca5cebff61a22a817ec@c860c86e43901719ca0d2fb8@3556ad48576fa56b6b1495c7@extracted level=1 kind=claim subject=ent_9f6632c42833de53dbe7998d source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+                },
+                {
+                  "n": 9,
+                  "text": "- Ada Marlow says she does not know the real maintenance rule for the Zephyr QX-100 drain channel.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_5ff98255",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9f6632c42833de53dbe7998d",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                },
+                {
+                  "n": 11,
+                  "text": "<!-- akno:item mem_5a0acb35 v=2 supports=5b38aca5cebff61a22a817ec@14b2f7c6c77c79371cd7807b@3556ad48576fa56b6b1495c7@extracted level=1 kind=claim subject=ent_9f6632c42833de53dbe7998d source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+                },
+                {
+                  "n": 12,
+                  "text": "- Ada Marlow is not reporting an actual missed clearing of the Zephyr QX-100 drain channel.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_5a0acb35",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9f6632c42833de53dbe7998d",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ]
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              },
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              },
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "Ada Marlow set out a hypothetical scenario in which the Zephyr QX-100 drain channel is cleared every six weeks; under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. [memory/equipment:6]",
+                "requestedAnswerLanguage": "en",
+                "query": "What conditional drain-channel maintenance scenario did Ada Marlow set out for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "Гипотетический сценарий Ada Marlow предполагает, что дренажный канал Zephyr QX-100 очищают каждые шесть недель; только при этом допущении его неочистка в течение семи недель означала бы нарушение предполагаемого графика. [memory/equipment:6]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What conditional drain-channel maintenance scenario did Ada Marlow set out for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "Ada Marlow set out a hypothetical scenario in which the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. [memory/equipment:6]",
+                "requestedAnswerLanguage": "en",
+                "query": "What conditional drain-channel maintenance scenario did Ada Marlow set out for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "Ada Marlow выдвинула гипотетический сценарий: если дренажный канал Zephyr QX-100 очищают каждые шесть недель, то оставление канала неочищенным на семь недель нарушило бы предполагаемый график. [memory/equipment:6]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What conditional drain-channel maintenance scenario did Ada Marlow set out for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "Ada Marlow described a hypothetical maintenance scenario in which the Zephyr QX-100 drain channel is cleared every six weeks; under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. [memory/equipment:6]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какой условный сценарий обслуживания дренажного канала Zephyr QX-100 описала Ada Marlow?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "Ada Marlow описала гипотетический сценарий: при условии, что дренажный канал Zephyr QX-100 очищают каждые шесть недель, его неочистка в течение семи недель нарушила бы предполагаемый график обслуживания. [memory/equipment:6]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какой условный сценарий обслуживания дренажного канала Zephyr QX-100 описала Ada Marlow?"
+              }
+            },
+            {
+              "id": "7",
+              "value": {
+                "text": "Ada Marlow описала гипотетический сценарий: предполагается, что дренажный канал Zephyr QX-100 очищают каждые шесть недель; только при этом условии его неочистка в течение семи недель означала бы нарушение предполагаемого графика. [memory/equipment:6]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какой условный сценарий обслуживания дренажного канала Zephyr QX-100 описала Ada Marlow?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Hypothetical:** Ada Marlow's hypothetical analysis assumes that the Zephyr QX-100 drain channel is cleared every six weeks and, only under that assumption, that leaving the channel uncleared for seven weeks would breach the assumed schedule.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_82f5a746",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_9f6632c42833de53dbe7998d",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "What conditional drain-channel maintenance scenario did Ada Marlow set out for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Hypothetical:** Ada Marlow's hypothetical analysis assumes that the Zephyr QX-100 drain channel is cleared every six weeks and, only under that assumption, that leaving the channel uncleared for seven weeks would breach the assumed schedule.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_82f5a746",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_9f6632c42833de53dbe7998d",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Какой условный сценарий обслуживания дренажного канала Zephyr QX-100 описала Ada Marlow?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "7",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retained": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow's hypothetical analysis assumes that the Zephyr QX-100 drain channel is cleared every six weeks, without establishing the real maintenance rule.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_c80c4707",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_8126a29caa1c5ccdb3115381",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "storedPages": [
+            {
+              "slug": "memory/equipment",
+              "lines": [
+                {
+                  "n": 1,
+                  "text": "# Zephyr QX-100",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "bec02c74a559e98b5b5a3436bdd7eb1d54fa32861a099da52454849d81e3383f",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 4,
+                  "text": "## Drain Channel Maintenance",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "bec02c74a559e98b5b5a3436bdd7eb1d54fa32861a099da52454849d81e3383f",
+                    "frame": [
+                      {
+                        "n": 4,
+                        "text": "## Drain Channel Maintenance"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "<!-- akno:item mem_c80c4707 v=2 supports=5b38aca5cebff61a22a817ec@6fd337955d078d372025b765@3556ad48576fa56b6b1495c7@extracted level=1 kind=claim subject=ent_8126a29caa1c5ccdb3115381 source-role=user speaker=Ada%20Marlow reports=0 commitment=hypothetical disposition=active polarity=affirmed basis=self_attested -->"
+                },
+                {
+                  "n": 7,
+                  "text": "- **Hypothetical:** Ada Marlow's hypothetical analysis assumes that the Zephyr QX-100 drain channel is cleared every six weeks, without establishing the real maintenance rule.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_c80c4707",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_8126a29caa1c5ccdb3115381",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ]
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "held",
+                "reason": "discourse_uncertain",
+                "holdStage": "verification",
+                "routingReason": null
+              },
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "Ada Marlow set out a hypothetical scenario in which the Zephyr QX-100 drain channel is cleared every six weeks; this does not establish the actual maintenance rule. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "What conditional drain-channel maintenance scenario did Ada Marlow set out for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "Ada Marlow выдвинула гипотетический сценарий, согласно которому дренажный канал Zephyr QX-100 очищают каждые шесть недель; это не устанавливает фактическое правило технического обслуживания. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What conditional drain-channel maintenance scenario did Ada Marlow set out for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "Ada Marlow выдвинула гипотетический сценарий, в котором дренажный канал Zephyr QX-100 очищают каждые шесть недель; это не устанавливает реальное правило технического обслуживания. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What conditional drain-channel maintenance scenario did Ada Marlow set out for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "Ada Marlow described a hypothetical maintenance scenario in which the Zephyr QX-100 drain channel is cleared every six weeks. This does not establish the actual maintenance rule. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какой условный сценарий обслуживания дренажного канала Zephyr QX-100 описала Ada Marlow?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "Ada Marlow описала гипотетический, не устанавливающий фактическое правило обслуживания сценарий: дренажный канал Zephyr QX-100 очищают каждые шесть недель. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какой условный сценарий обслуживания дренажного канала Zephyr QX-100 описала Ada Marlow?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "Ada Marlow описала гипотетический сценарий, в котором дренажный канал Zephyr QX-100 очищают каждые шесть недель; это не устанавливает фактический регламент обслуживания. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какой условный сценарий обслуживания дренажного канала Zephyr QX-100 описала Ada Marlow?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Hypothetical:** Ada Marlow's hypothetical analysis assumes that the Zephyr QX-100 drain channel is cleared every six weeks, without establishing the real maintenance rule.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_c80c4707",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_8126a29caa1c5ccdb3115381",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "What conditional drain-channel maintenance scenario did Ada Marlow set out for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Hypothetical:** Ada Marlow's hypothetical analysis assumes that the Zephyr QX-100 drain channel is cleared every six weeks, without establishing the real maintenance rule.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_c80c4707",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_8126a29caa1c5ccdb3115381",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "hypothetical",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Какой условный сценарий обслуживания дренажного канала Zephyr QX-100 описала Ada Marlow?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-counterfactual",
+      "source": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "I, Ada Marlow, did not enroll my Zephyr QX-100 in the optional corrosion plan."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Если бы я оформила этот план, замена внутренней пружины после тридцати трёх месяцев использования была бы бесплатной. План не оформлен, поэтому это только нереализованное следствие."
+        }
+      ],
+      "queries": {
+        "en": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?",
+        "ru": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+      },
+      "admission": "writable",
+      "view": "discussion",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retained": [
+            {
+              "text": "- Ada Marlow states that she did not enroll her Zephyr QX-100 in the optional corrosion plan.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_f40d5317",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_bdfa6d56dd8ebd929d74454f",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "storedPages": [
+            {
+              "slug": "memory/equipment",
+              "lines": [
+                {
+                  "n": 1,
+                  "text": "# Zephyr QX-100",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "1c671d03d9cfc424377074e81d736bf2761723cab7522252669746680992994a",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 4,
+                  "text": "## Optional Corrosion Plan",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "1c671d03d9cfc424377074e81d736bf2761723cab7522252669746680992994a",
+                    "frame": [
+                      {
+                        "n": 4,
+                        "text": "## Optional Corrosion Plan"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "<!-- akno:item mem_f40d5317 v=2 supports=abaa09ef20585c9b90f535f3@162151ecdb3bbc647eddfadc@72057ce2fac294c0732bb064@extracted level=1 kind=claim subject=ent_bdfa6d56dd8ebd929d74454f source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+                },
+                {
+                  "n": 7,
+                  "text": "- Ada Marlow states that she did not enroll her Zephyr QX-100 in the optional corrosion plan.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_f40d5317",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_bdfa6d56dd8ebd929d74454f",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ]
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "held",
+                "reason": "discourse_uncertain",
+                "holdStage": "verification",
+                "routingReason": null
+              },
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- Ada Marlow states that she did not enroll her Zephyr QX-100 in the optional corrosion plan.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_f40d5317",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_bdfa6d56dd8ebd929d74454f",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- Ada Marlow states that she did not enroll her Zephyr QX-100 in the optional corrosion plan.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_f40d5317",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_bdfa6d56dd8ebd929d74454f",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retained": [
+            {
+              "text": "- Ada Marlow states that she did not enroll her Zephyr QX-100 in the optional corrosion plan.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_907455c2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9047bb207f87a05c178de359",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "text": "- **Counterfactual:** Ada Marlow states that if she had enrolled her Zephyr QX-100 in the optional corrosion plan, replacement of its internal spring after thirty-three months of use would have been free, but the plan was not enrolled, so this is only an unrealized consequence.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b16fba06",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9047bb207f87a05c178de359",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "storedPages": [
+            {
+              "slug": "memory/equipment",
+              "lines": [
+                {
+                  "n": 1,
+                  "text": "# Zephyr QX-100",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "4c91754eac5d8a8b16ea875e6c76204837df4b9a65338ea9fbfedd6169199bf5",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 3,
+                  "text": "## Optional corrosion plan",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "4c91754eac5d8a8b16ea875e6c76204837df4b9a65338ea9fbfedd6169199bf5",
+                    "frame": [
+                      {
+                        "n": 3,
+                        "text": "## Optional corrosion plan"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "<!-- akno:item mem_907455c2 v=2 supports=abaa09ef20585c9b90f535f3@7ec394db3865a6d8b8d42a47@72057ce2fac294c0732bb064@extracted level=1 kind=claim subject=ent_9047bb207f87a05c178de359 source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+                },
+                {
+                  "n": 6,
+                  "text": "- Ada Marlow states that she did not enroll her Zephyr QX-100 in the optional corrosion plan.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_907455c2",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9047bb207f87a05c178de359",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                },
+                {
+                  "n": 8,
+                  "text": "<!-- akno:item mem_b16fba06 v=2 supports=abaa09ef20585c9b90f535f3@44887c393558a26b25902d33@72057ce2fac294c0732bb064@extracted level=1 kind=claim subject=ent_9047bb207f87a05c178de359 source-role=user speaker=Ada%20Marlow reports=0 commitment=counterfactual disposition=active polarity=affirmed basis=self_attested -->"
+                },
+                {
+                  "n": 9,
+                  "text": "- **Counterfactual:** Ada Marlow states that if she had enrolled her Zephyr QX-100 in the optional corrosion plan, replacement of its internal spring after thirty-three months of use would have been free, but the plan was not enrolled, so this is only an unrealized consequence.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_b16fba06",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9047bb207f87a05c178de359",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "counterfactual",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ]
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              },
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "Ada Marlow described a counterfactual, unrealized benefit: if she had enrolled her Zephyr QX-100 in the optional corrosion plan, replacement of its internal spring after thirty-three months of use would have been free. The plan was not enrolled. [memory/equipment:9]",
+                "requestedAnswerLanguage": "en",
+                "query": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "Ada Marlow described a counterfactual, unrealized benefit: replacing the Zephyr QX-100’s internal spring after thirty-three months of use would have been free if she had enrolled it in the optional corrosion plan. The plan was not enrolled. [memory/equipment:9]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+              }
+            },
+            {
+              "id": "7",
+              "value": {
+                "text": "Ada Marlow описала контрфактическую, нереализованную льготу: если бы она подключила свой Zephyr QX-100 к опционному плану защиты от коррозии, замена его внутренней пружины после тридцати трёх месяцев эксплуатации была бы бесплатной. План подключён не был, поэтому это осталось лишь нереализованным последствием. [memory/equipment:9]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- Ada Marlow states that she did not enroll her Zephyr QX-100 in the optional corrosion plan.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_907455c2",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_9047bb207f87a05c178de359",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Counterfactual:** Ada Marlow states that if she had enrolled her Zephyr QX-100 in the optional corrosion plan, replacement of its internal spring after thirty-three months of use would have been free, but the plan was not enrolled, so this is only an unrealized consequence.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_b16fba06",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_9047bb207f87a05c178de359",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "counterfactual",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "items": [
+                  {
+                    "text": "- Ada Marlow states that she did not enroll her Zephyr QX-100 in the optional corrosion plan.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_907455c2",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_9047bb207f87a05c178de359",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Counterfactual:** Ada Marlow states that if she had enrolled her Zephyr QX-100 in the optional corrosion plan, replacement of its internal spring after thirty-three months of use would have been free, but the plan was not enrolled, so this is only an unrealized consequence.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_b16fba06",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_9047bb207f87a05c178de359",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "counterfactual",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "3"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "5",
+              "retrieval": "3"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "6",
+              "retrieval": "4"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "7",
+              "retrieval": "4"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retained": [
+            {
+              "text": "- Ada Marlow asserted that she did not enroll her Zephyr QX-100 in the optional corrosion plan.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_484aa4a4",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_820cff01f576d44823da5e0a",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "text": "- **Counterfactual:** Ada Marlow described a counterfactual in which, if she had enrolled her Zephyr QX-100 in the optional corrosion plan, replacement of the internal spring after thirty-three months of use would have been free; she stated that the plan was not enrolled, so this consequence was unrealized.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_9ba321cc",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_820cff01f576d44823da5e0a",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "storedPages": [
+            {
+              "slug": "memory/equipment",
+              "lines": [
+                {
+                  "n": 1,
+                  "text": "# Zephyr QX-100",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "67da8a335cd8f4c601b9f0ced6ff128830ac476ffa9e7d9bd4420b2e64cbbf1e",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 3,
+                  "text": "## Optional Corrosion Plan",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "67da8a335cd8f4c601b9f0ced6ff128830ac476ffa9e7d9bd4420b2e64cbbf1e",
+                    "frame": [
+                      {
+                        "n": 3,
+                        "text": "## Optional Corrosion Plan"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "<!-- akno:item mem_484aa4a4 v=2 supports=abaa09ef20585c9b90f535f3@a3c9b741bca2e8d1949c492b@72057ce2fac294c0732bb064@extracted level=1 kind=claim subject=ent_820cff01f576d44823da5e0a source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+                },
+                {
+                  "n": 6,
+                  "text": "- Ada Marlow asserted that she did not enroll her Zephyr QX-100 in the optional corrosion plan.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_484aa4a4",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_820cff01f576d44823da5e0a",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                },
+                {
+                  "n": 8,
+                  "text": "<!-- akno:item mem_9ba321cc v=2 supports=abaa09ef20585c9b90f535f3@0c892ee8b79e90ab574b61ee@72057ce2fac294c0732bb064@extracted level=1 kind=claim subject=ent_820cff01f576d44823da5e0a source-role=user speaker=Ada%20Marlow reports=0 commitment=counterfactual disposition=active polarity=affirmed basis=self_attested -->"
+                },
+                {
+                  "n": 9,
+                  "text": "- **Counterfactual:** Ada Marlow described a counterfactual in which, if she had enrolled her Zephyr QX-100 in the optional corrosion plan, replacement of the internal spring after thirty-three months of use would have been free; she stated that the plan was not enrolled, so this consequence was unrealized.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_9ba321cc",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_820cff01f576d44823da5e0a",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "counterfactual",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ]
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              },
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "Ada Marlow described a counterfactual unrealized benefit: if she had enrolled her Zephyr QX-100 in the optional corrosion plan, replacing the internal spring after thirty-three months of use would have been free. She stated that the plan was not enrolled. [memory/equipment:9]",
+                "requestedAnswerLanguage": "en",
+                "query": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "Ada Marlow описала контрфактическую, нереализованную выгоду: при подключении дополнительного плана защиты от коррозии замена внутренней пружины после тридцати трёх месяцев эксплуатации Zephyr QX-100 была бы бесплатной. Она уточнила, что план не был подключён. [memory/equipment:9]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+              }
+            },
+            {
+              "id": "7",
+              "value": {
+                "text": "Ada Marlow described a counterfactual, unrealized benefit: if she had enrolled her Zephyr QX-100 in the optional corrosion plan, replacement of the internal spring after thirty-three months of use would have been free. She stated that the plan was not enrolled. [memory/equipment:9]",
+                "requestedAnswerLanguage": "en",
+                "query": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+              }
+            },
+            {
+              "id": "8",
+              "value": {
+                "text": "Ada Marlow описала нереализованный контрфактический вариант: при подключении дополнительного плана защиты от коррозии замена внутренней пружины после тридцати трёх месяцев эксплуатации была бы бесплатной. Она указала, что план не был подключён. [memory/equipment:9]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- Ada Marlow asserted that she did not enroll her Zephyr QX-100 in the optional corrosion plan.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_484aa4a4",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_820cff01f576d44823da5e0a",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Counterfactual:** Ada Marlow described a counterfactual in which, if she had enrolled her Zephyr QX-100 in the optional corrosion plan, replacement of the internal spring after thirty-three months of use would have been free; she stated that the plan was not enrolled, so this consequence was unrealized.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_9ba321cc",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_820cff01f576d44823da5e0a",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "counterfactual",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "items": [
+                  {
+                    "text": "- Ada Marlow asserted that she did not enroll her Zephyr QX-100 in the optional corrosion plan.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_484aa4a4",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_820cff01f576d44823da5e0a",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Counterfactual:** Ada Marlow described a counterfactual in which, if she had enrolled her Zephyr QX-100 in the optional corrosion plan, replacement of the internal spring after thirty-three months of use would have been free; she stated that the plan was not enrolled, so this consequence was unrealized.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_9ba321cc",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_820cff01f576d44823da5e0a",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "counterfactual",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "self_attested",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "5",
+              "retrieval": "3"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "3"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "7",
+              "retrieval": "4"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "8",
+              "retrieval": "4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "source": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "I, Ada Marlow, record that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "This exclusion alone does not answer whether replacement of the intake sleeve is covered. It also does not say that the agreement is silent about that sleeve."
+        }
+      ],
+      "queries": {
+        "en": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?",
+        "ru": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+      },
+      "admission": "writable",
+      "view": "factual",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retained": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. This exclusion alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_9911d3d7",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_7f3f69aca1880cbc60ed2754",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "storedPages": [
+            {
+              "slug": "memory/equipment",
+              "lines": [
+                {
+                  "n": 1,
+                  "text": "# Zephyr QX-100",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "70af3adbb8d4abfd4892fc4d3cf9bfb519c02657058269a5762f5c3666349b6e",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 4,
+                  "text": "## Warranty Coverage",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "70af3adbb8d4abfd4892fc4d3cf9bfb519c02657058269a5762f5c3666349b6e",
+                    "frame": [
+                      {
+                        "n": 4,
+                        "text": "## Warranty Coverage"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "<!-- akno:item mem_9911d3d7 v=2 supports=afba4cd883cec217cb5c4976@efcebe47746791813a259aea@f627b707c413783e88c1c93c@extracted level=1 kind=claim subject=ent_7f3f69aca1880cbc60ed2754 source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+                },
+                {
+                  "n": 7,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. This exclusion alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_9911d3d7",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_7f3f69aca1880cbc60ed2754",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ]
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. This exclusion alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "Ада Марлоу фиксирует, что гарантия Zephyr QX-100 исключает повреждение керамической распорки, вызванное песком. Одно лишь это исключение не отвечает на вопрос, покрывается ли гарантией замена впускной втулки, и не говорит, что в соглашении ничего не сказано об этой втулке. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "Ада Марлоу фиксирует, что гарантия Zephyr QX-100 исключает повреждение керамической распорки, вызванное песком. Одно лишь это исключение не отвечает на вопрос, покрывается ли гарантией замена впускной втулки, и не утверждает, что соглашение ничего не говорит об этой втулке. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. This exclusion alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "Ada Marlow фиксирует, что гарантия Zephyr QX-100 исключает повреждение керамической проставки, вызванное песком. Одно лишь это исключение не отвечает на вопрос о том, покрывается ли гарантией замена впускной втулки, и не утверждает, что соглашение умалчивает об этой втулке. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "Ada Marlow записывает, что гарантия Zephyr QX-100 исключает повреждение керамической проставки, вызванное песком. Одно лишь это исключение не отвечает на вопрос, покрывается ли гарантией замена впускной втулки, и не означает, что соглашение ничего не говорит об этой втулке. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. This exclusion alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_9911d3d7",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_7f3f69aca1880cbc60ed2754",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. This exclusion alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_9911d3d7",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_7f3f69aca1880cbc60ed2754",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retained": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_f6ede6c9",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3ab3324464cf86b1618b727",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty's exclusion of damage to the ceramic spacer caused by sand alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about the intake sleeve.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e87ebe38",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3ab3324464cf86b1618b727",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "storedPages": [
+            {
+              "slug": "memory/equipment",
+              "lines": [
+                {
+                  "n": 1,
+                  "text": "# Zephyr QX-100",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "ce1478c90bd6bef144ae52cfc0243640a1918ef1ec9f2616f936264495266f29",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 3,
+                  "text": "## Warranty",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "ce1478c90bd6bef144ae52cfc0243640a1918ef1ec9f2616f936264495266f29",
+                    "frame": [
+                      {
+                        "n": 3,
+                        "text": "## Warranty"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "<!-- akno:item mem_f6ede6c9 v=2 supports=afba4cd883cec217cb5c4976@ef035d5d95bed1405a527714@f627b707c413783e88c1c93c@extracted level=1 kind=claim subject=ent_e3ab3324464cf86b1618b727 source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+                },
+                {
+                  "n": 6,
+                  "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_f6ede6c9",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_e3ab3324464cf86b1618b727",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                },
+                {
+                  "n": 8,
+                  "text": "<!-- akno:item mem_e87ebe38 v=2 supports=afba4cd883cec217cb5c4976@c037704552e35ffd0e1e52fb@f627b707c413783e88c1c93c@extracted level=1 kind=claim subject=ent_e3ab3324464cf86b1618b727 source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+                },
+                {
+                  "n": 9,
+                  "text": "- Ada Marlow states that the Zephyr QX-100 warranty's exclusion of damage to the ceramic spacer caused by sand alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about the intake sleeve.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e87ebe38",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_e3ab3324464cf86b1618b727",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ]
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              },
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "Ada Marlow’s coverage record states that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. It does not establish whether replacement of the intake sleeve is covered, and it does not establish that the agreement is silent about the intake sleeve. [memory/equipment:9] [memory/equipment:6]",
+                "requestedAnswerLanguage": "en",
+                "query": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "По утверждению Ada Marlow, гарантия Zephyr QX-100 исключает повреждение керамической проставки, вызванное только песком. [memory/equipment:6]\n\nЗапись не устанавливает, покрывается ли заменa входной втулки; Ada Marlow уточняет, что исключение для керамической проставки не отвечает на этот вопрос и не означает, что соглашение ничего не говорит о входной втулке. [memory/equipment:9]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "Ada Marlow’s record states that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. It does not establish whether replacement of the intake sleeve is covered, and it does not state that the agreement is silent about the intake sleeve. [memory/equipment:9] [memory/equipment:6]",
+                "requestedAnswerLanguage": "en",
+                "query": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. The record does not determine whether replacement of the intake sleeve is covered, and it does not establish that the agreement is silent about the intake sleeve. [memory/equipment:6] [memory/equipment:9]",
+                "requestedAnswerLanguage": "en",
+                "query": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "Ada Marlow утверждает, что гарантия Zephyr QX-100 исключает повреждение керамической проставки, вызванное песком. [memory/equipment:6]\n\nЭто исключение само по себе не устанавливает, покрывает ли гарантия замену впускной втулки. Также запись не утверждает, что соглашение умалчивает о впускной втулке. [memory/equipment:9]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "7",
+              "value": {
+                "text": "Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. This record does not establish whether replacement of the intake sleeve is covered, and it does not state that the agreement is silent about the intake sleeve. [memory/equipment:6] [memory/equipment:9]",
+                "requestedAnswerLanguage": "en",
+                "query": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "8",
+              "value": {
+                "text": "По утверждению Ada Marlow, гарантия Zephyr QX-100 исключает повреждение керамической проставки, вызванное песком. [memory/equipment:6]\n\nЭто утверждение само по себе не отвечает на вопрос, покрывается ли заменa впускной втулки, и не утверждает, что соглашение умалчивает о впускной втулке. [memory/equipment:9]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- Ada Marlow states that the Zephyr QX-100 warranty's exclusion of damage to the ceramic spacer caused by sand alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about the intake sleeve.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_e87ebe38",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_e3ab3324464cf86b1618b727",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  },
+                  {
+                    "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_f6ede6c9",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_e3ab3324464cf86b1618b727",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_f6ede6c9",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_e3ab3324464cf86b1618b727",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  },
+                  {
+                    "text": "- Ada Marlow states that the Zephyr QX-100 warranty's exclusion of damage to the ceramic spacer caused by sand alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about the intake sleeve.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_e87ebe38",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_e3ab3324464cf86b1618b727",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "7",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "8",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retained": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_81e51ab2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a972ca4c76cc4cc4224383a1",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "text": "- **Open question:** Ada Marlow records that the Zephyr QX-100 warranty's exclusion of sand-caused damage to the ceramic spacer does not answer whether replacement of the intake sleeve is covered, and does not establish that the agreement is silent about the sleeve.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_962132d0",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_a972ca4c76cc4cc4224383a1",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "storedPages": [
+            {
+              "slug": "memory/equipment",
+              "lines": [
+                {
+                  "n": 1,
+                  "text": "# Zephyr QX-100",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "d8cab321c7c20fc45227eb2056a18c6f6a7567114da3da5bd3ded1a77fbfb4d6",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 3,
+                  "text": "## Warranty",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "d8cab321c7c20fc45227eb2056a18c6f6a7567114da3da5bd3ded1a77fbfb4d6",
+                    "frame": [
+                      {
+                        "n": 3,
+                        "text": "## Warranty"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "<!-- akno:item mem_81e51ab2 v=2 supports=afba4cd883cec217cb5c4976@992f25a6d4224d75f3610d03@f627b707c413783e88c1c93c@extracted level=1 kind=claim subject=ent_a972ca4c76cc4cc4224383a1 source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+                },
+                {
+                  "n": 6,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_81e51ab2",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_a972ca4c76cc4cc4224383a1",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                },
+                {
+                  "n": 8,
+                  "text": "<!-- akno:item mem_962132d0 v=2 supports=afba4cd883cec217cb5c4976@f1de8e525420c1ccddae38b5@f627b707c413783e88c1c93c@extracted level=1 kind=question subject=ent_a972ca4c76cc4cc4224383a1 source-role=user speaker=Ada%20Marlow reports=0 commitment=none disposition=active polarity=affirmed basis=self_attested -->"
+                },
+                {
+                  "n": 9,
+                  "text": "- **Open question:** Ada Marlow records that the Zephyr QX-100 warranty's exclusion of sand-caused damage to the ceramic spacer does not answer whether replacement of the intake sleeve is covered, and does not establish that the agreement is silent about the sleeve.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_962132d0",
+                    "level": 1,
+                    "kind": "question",
+                    "subject": "ent_a972ca4c76cc4cc4224383a1",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "none",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ]
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              },
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": "Ada Marlow’s coverage record establishes that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. [memory/equipment:6]",
+                "requestedAnswerLanguage": "en",
+                "query": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": "Запись Ada Marlow устанавливает, что гарантия Zephyr QX-100 не распространяется на повреждение керамической распорки, вызванное песком. [memory/equipment:6]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": "Ada Marlow’s record asserts that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. [memory/equipment:6]",
+                "requestedAnswerLanguage": "en",
+                "query": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "Ada Marlow утверждает, что гарантия Zephyr QX-100 исключает повреждение керамической проставки, вызванное песком. [memory/equipment:6]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "7",
+              "value": {
+                "text": "Ada Marlow records that the Zephyr QX-100 warranty excludes coverage for damage to the ceramic spacer caused by sand. [memory/equipment:6]",
+                "requestedAnswerLanguage": "en",
+                "query": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "8",
+              "value": {
+                "text": "Ada Marlow утверждает, что гарантия Zephyr QX-100 не распространяется на повреждение керамической проставки, вызванное песком. [memory/equipment:6]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_81e51ab2",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_a972ca4c76cc4cc4224383a1",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_81e51ab2",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_a972ca4c76cc4cc4224383a1",
+                      "source_role": "user",
+                      "source_speaker": "Ada Marlow",
+                      "commitment": "asserted",
+                      "disposition": "active",
+                      "polarity": "negated",
+                      "basis": "self_attested",
+                      "answer_eligible": true,
+                      "current_eligible": true
+                    }
+                  }
+                ],
+                "query": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "7",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "8",
+              "retrieval": "2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-assistant-speculation",
+      "source": [
+        {
+          "item_id": "turn-1111",
+          "role": "assistant",
+          "text": "Моя предварительная догадка: обслуживание Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. Я не читал договор и не проверял эту догадку. Это возможное условие обслуживания, а не установленная обязанность или состояние устройства."
+        }
+      ],
+      "queries": {
+        "en": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?",
+        "ru": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?"
+      },
+      "admission": "writable",
+      "view": "reports",
+      "observations": [
+        {
+          "candidate": "Candidate A",
+          "retained": [],
+          "storedPages": [],
+          "admission": {
+            "status": "ok",
+            "outcome": "held",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "held",
+                "reason": "discourse_uncertain",
+                "holdStage": "validation",
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [],
+                "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [],
+                "query": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate B",
+          "retained": [
+            {
+              "text": "- **Reported by the assistant · Tentative:** The assistant's preliminary, unverified guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles; the assistant has not read the contract or verified this guess, and this is a possible service condition rather than an established obligation or device state.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_a677a2d7",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_b9f1be06d039f2a91ffc162c",
+                "source_role": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "storedPages": [
+            {
+              "slug": "memory/equipment",
+              "lines": [
+                {
+                  "n": 1,
+                  "text": "# Zephyr QX-100",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "820517da89d26c643afc5620f699efb03a5d1b756ef2b8673e32a4310857764a",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 4,
+                  "text": "## Maintenance and Servicing",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "820517da89d26c643afc5620f699efb03a5d1b756ef2b8673e32a4310857764a",
+                    "frame": [
+                      {
+                        "n": 4,
+                        "text": "## Maintenance and Servicing"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "<!-- akno:item mem_a677a2d7 v=2 supports=228203b8611a3c912f2cfe6b@5dcea7d8afffb3756a57e943@9439bdb7485948b050983912@extracted level=1 kind=claim subject=ent_b9f1be06d039f2a91ffc162c source-role=assistant reports=0 commitment=tentative disposition=active polarity=affirmed basis=source_report -->"
+                },
+                {
+                  "n": 7,
+                  "text": "- **Reported by the assistant · Tentative:** The assistant's preliminary, unverified guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles; the assistant has not read the contract or verified this guess, and this is a possible service condition rather than an established obligation or device state.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_a677a2d7",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_b9f1be06d039f2a91ffc162c",
+                    "source_role": "assistant",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ]
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "The assistant tentatively and speculatively reported—without verification—that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. This was presented as a possible service condition, not an established obligation or device state. [memory/equipment:7]",
+                "requestedAnswerLanguage": "en",
+                "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": "Ассистент предварительно и предположительно сообщил, что обслуживание Zephyr QX-100 может включать проверку оптического затвора после каждых одиннадцати рабочих циклов. Это была предварительная, непроверенная догадка, а не установленное обязательство или подтверждённое состояние устройства; ассистент не читал договор и не проверял эту догадку. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?"
+              }
+            },
+            {
+              "id": "7",
+              "value": {
+                "text": "Ассистент предварительно и непроверенно предположил, что обслуживание Zephyr QX-100 может включать проверку оптической шторки после каждых одиннадцати рабочих циклов. Это возможное условие обслуживания, а не установленная обязанность или подтверждённое состояние устройства. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Reported by the assistant · Tentative:** The assistant's preliminary, unverified guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles; the assistant has not read the contract or verified this guess, and this is a possible service condition rather than an established obligation or device state.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_a677a2d7",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_b9f1be06d039f2a91ffc162c",
+                      "source_role": "assistant",
+                      "commitment": "tentative",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "source_report",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Reported by the assistant · Tentative:** The assistant's preliminary, unverified guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles; the assistant has not read the contract or verified this guess, and this is a possible service condition rather than an established obligation or device state.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_a677a2d7",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_b9f1be06d039f2a91ffc162c",
+                      "source_role": "assistant",
+                      "commitment": "tentative",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "source_report",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "4",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "7",
+              "retrieval": "2"
+            }
+          ]
+        },
+        {
+          "candidate": "Candidate C",
+          "retained": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant tentatively guessed that servicing the Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles, while explicitly stating that this was not verified, not an established maintenance obligation, and not an established device state.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_22d5463c",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_bef54555249e3386538b7708",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "storedPages": [
+            {
+              "slug": "memory/equipment",
+              "lines": [
+                {
+                  "n": 1,
+                  "text": "# Zephyr QX-100",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "f08cbff849e26a01a6d617303165cc43a5b15bdc37455bd9934920e61c6f34d3",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 4,
+                  "text": "## Maintenance and Servicing",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "heading",
+                    "answer_eligible": false,
+                    "source_hash": "f08cbff849e26a01a6d617303165cc43a5b15bdc37455bd9934920e61c6f34d3",
+                    "frame": [
+                      {
+                        "n": 4,
+                        "text": "## Maintenance and Servicing"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "<!-- akno:item mem_22d5463c v=2 supports=228203b8611a3c912f2cfe6b@e944245df0b3d9aa277df052@9439bdb7485948b050983912@extracted level=1 kind=claim subject=ent_bef54555249e3386538b7708 source-role=assistant speaker=assistant reports=0 commitment=tentative disposition=active polarity=affirmed basis=source_report -->"
+                },
+                {
+                  "n": 7,
+                  "text": "- **Reported by assistant · Tentative:** The assistant tentatively guessed that servicing the Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles, while explicitly stating that this was not verified, not an established maintenance obligation, and not an established device state.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_22d5463c",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_bef54555249e3386538b7708",
+                    "source_role": "assistant",
+                    "source_speaker": "assistant",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ]
+            }
+          ],
+          "admission": {
+            "status": "ok",
+            "outcome": "ok",
+            "reason": null,
+            "candidates": [
+              {
+                "outcome": "written",
+                "reason": null,
+                "holdStage": null,
+                "routingReason": null
+              }
+            ],
+            "degraded": []
+          },
+          "answers": [
+            {
+              "id": "1",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "3",
+              "value": {
+                "text": "Ассистент предположил — предварительно и непроверенно, — что обслуживание Zephyr QX-100 может включать проверку оптического затвора после каждых одиннадцати рабочих циклов. Это не было подтверждено и не устанавливает ни обязательство по обслуживанию, ни фактическое состояние устройства. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "4",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "en",
+                "query": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?"
+              }
+            },
+            {
+              "id": "5",
+              "value": {
+                "text": null,
+                "requestedAnswerLanguage": "ru",
+                "query": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?"
+              }
+            },
+            {
+              "id": "6",
+              "value": {
+                "text": "Ассистент предположил, что техническое обслуживание Zephyr QX-100 может включать проверку оптической шторки после каждых одиннадцати рабочих циклов. Это был предварительный, непроверенный отчёт ассистента, а не установленное обязательство по обслуживанию или подтверждённое состояние устройства. [memory/equipment:7]",
+                "requestedAnswerLanguage": "ru",
+                "query": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?"
+              }
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Reported by assistant · Tentative:** The assistant tentatively guessed that servicing the Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles, while explicitly stating that this was not verified, not an established maintenance obligation, and not an established device state.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_22d5463c",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_bef54555249e3386538b7708",
+                      "source_role": "assistant",
+                      "source_speaker": "assistant",
+                      "commitment": "tentative",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "source_report",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+              }
+            },
+            {
+              "id": "2",
+              "value": {
+                "items": [
+                  {
+                    "text": "- **Reported by assistant · Tentative:** The assistant tentatively guessed that servicing the Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles, while explicitly stating that this was not verified, not an established maintenance obligation, and not an established device state.",
+                    "qualification": {
+                      "status": "qualified",
+                      "id": "mem_22d5463c",
+                      "level": 1,
+                      "kind": "claim",
+                      "subject": "ent_bef54555249e3386538b7708",
+                      "source_role": "assistant",
+                      "source_speaker": "assistant",
+                      "commitment": "tentative",
+                      "disposition": "active",
+                      "polarity": "affirmed",
+                      "basis": "source_report",
+                      "answer_eligible": false,
+                      "current_eligible": false
+                    }
+                  }
+                ],
+                "query": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?"
+              }
+            }
+          ],
+          "queries": [
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "2",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "1",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "en",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "3",
+              "retrieval": "1"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": false,
+              "requestedAnswerLanguage": "ru",
+              "answer": "5",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "en",
+              "answer": "4",
+              "retrieval": "2"
+            },
+            {
+              "queryLanguage": "ru",
+              "explicitView": true,
+              "requestedAnswerLanguage": "ru",
+              "answer": "6",
+              "retrieval": "2"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

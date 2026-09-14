@@ -1,3 +1,4 @@
+import { retentionAudit } from './semantic-audit.ts';
 import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
@@ -20,6 +21,7 @@ interface StubCandidate {
   text: string;
   subject: string;
   kind: string;
+  polarity?: 'affirmed' | 'negated';
   page?: string;
   origin?: 'user' | 'assistant';
   evidence?: string | null;
@@ -44,6 +46,7 @@ interface StubServer {
 }
 
 interface StubOwnershipInput {
+  allowed_selections: string[];
   memory: { text: string; subject: string; kind: string; time: Record<string, unknown> | null };
   existing_pages: { id: string; title: string; headings: string[]; excerpt: string }[];
   proposed_page: { slug: string; title: string } | null;
@@ -91,10 +94,10 @@ async function startStubChat(): Promise<typeof server> {
     const selected =
       exactFixtureOwner ?? (memoryText.includes('meal box') ? undefined : payload.existing_pages[0]);
     return selected
-      ? { outcome: 'existing', target_id: selected.id }
+      ? { selection: selected.id }
       : payload.proposed_page
-        ? { outcome: 'proposed', target_id: null }
-        : { outcome: 'uncertain', target_id: null };
+        ? { selection: 'proposed' }
+        : { selection: 'uncertain' };
   };
   const instance = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
@@ -119,7 +122,9 @@ async function startStubChat(): Promise<typeof server> {
       const requestSystem = body.messages?.find((message) => message.role === 'system')?.content ?? '';
       const sourceText = body.messages?.find((message) => message.role === 'user')?.content ?? '';
       if (requestSystem.includes('independently verify proposed retained memories')) {
-        const payload = JSON.parse(sourceText) as { candidates?: { candidate_id?: string }[] };
+        const payload = JSON.parse(sourceText) as {
+          candidates?: { candidate_id?: string; polarity: 'affirmed' | 'negated' }[];
+        };
         response.end(
           JSON.stringify({
             choices: [
@@ -128,7 +133,11 @@ async function startStubChat(): Promise<typeof server> {
                   content: JSON.stringify({
                     verdicts: (payload.candidates ?? []).map((candidate) => ({
                       candidate_id: candidate.candidate_id,
-                      supported: true,
+                      source_selected_polarity: candidate.polarity,
+                      ...retentionAudit(candidate, true, true, true),
+                      proposition_supported: true,
+                      action_arguments_preserved: true,
+                      qualification_scope_preserved: true,
                       reason_code: null,
                     })),
                   }),
@@ -612,7 +621,7 @@ describe('the title on a page remember creates', () => {
     // page after that first fact would make every later recall misdescribe the broader subject.
     server.respondWith([
       {
-        text: 'The Zephyr QX-100 is scheduled for calibration at dawn.',
+        text: 'The Zephyr QX-100 uses a brass calibration dial.',
         subject: 'Zephyr calibration',
         page: 'home/blackwater-expedition',
         kind: 'claim',
@@ -620,7 +629,7 @@ describe('the title on a page remember creates', () => {
     ]);
     const mem = await openMem();
     try {
-      await mem.remember({ text: 'The Zephyr QX-100 is scheduled for calibration at dawn.' });
+      await mem.remember({ text: 'The Zephyr QX-100 uses a brass calibration dial.' });
       const content = created('home/blackwater-expedition');
       expect(content).toContain('title: "Blackwater Expedition"');
       expect(content).not.toContain('Zephyr calibration');
@@ -820,6 +829,57 @@ describe('routing when the best-ranked page is not the best-judged one', () => {
 });
 
 describe('canonical destination qualification', () => {
+  it.each([
+    ['proposed', 'people/ada-marlow', true],
+    ['uncertain', 'people/ada-marlow', false],
+    ['proposed', undefined, false],
+  ] as const)(
+    'keeps a personal passive denial subject to ownership: %s with suggestion %s',
+    async (selection, page, written) => {
+      fs.mkdirSync(path.join(root, 'people'), { recursive: true });
+      fs.mkdirSync(path.join(root, 'equipment'), { recursive: true });
+      const productPath = path.join(root, 'equipment/zephyr-qx-100.md');
+      const productBefore = '# Zephyr QX-100\n\nEquipment service records.\n';
+      fs.writeFileSync(productPath, productBefore);
+      const text = "No collection of Ada Marlow's device has been booked.";
+      server.respondWith([
+        { text, subject: 'Ada Marlow', kind: 'claim', polarity: 'negated', ...(page ? { page } : {}) },
+      ]);
+      let calls = 0;
+      server.decideOwnershipWith((input) => {
+        calls += 1;
+        expect(input.memory).toMatchObject({ text, subject: 'Ada Marlow' });
+        expect(input.memory.text).not.toContain('Zephyr');
+        expect(input.proposed_page).toEqual(page ? { slug: page, title: 'Ada Marlow' } : null);
+        expect(input.allowed_selections.includes('proposed')).toBe(!!page);
+        return { selection };
+      });
+      const mem = await openMem({
+        models: {
+          embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
+          reranker: { id: null, enabled: false },
+          derive: { provider: 'stub', id: 'stub-derive' },
+          expansion: { provider: 'stub', id: 'stub-derive' },
+        },
+      });
+      try {
+        await mem.index({});
+        const result = await mem.remember({ text });
+        expect(calls, JSON.stringify(result)).toBe(1);
+        if (written) {
+          expect(result.wrote?.[0]).toMatchObject({ slug: page, action: 'created' });
+          expect(fs.readFileSync(path.join(root, `${page}.md`), 'utf8')).toContain(text);
+        } else {
+          expect(result.wrote).toBeUndefined();
+          expect(fs.existsSync(path.join(root, 'people/ada-marlow.md'))).toBe(false);
+        }
+        expect(fs.readFileSync(productPath, 'utf8')).toBe(productBefore);
+      } finally {
+        await mem.close();
+      }
+    },
+  );
+
   it('can select the owning page outside the extractor-suggested folder', async () => {
     fs.mkdirSync(path.join(root, 'people'), { recursive: true });
     fs.mkdirSync(path.join(root, 'equipment'), { recursive: true });
@@ -843,9 +903,7 @@ describe('canonical destination qualification', () => {
     ]);
     server.decideOwnershipWith((input) => {
       const target = input.existing_pages.find((page) => page.title === 'Zephyr QX-100');
-      return target
-        ? { outcome: 'existing', target_id: target.id }
-        : { outcome: 'uncertain', target_id: null };
+      return target ? { selection: target.id } : { selection: 'uncertain' };
     });
     const mem = await openMem({
       models: {
@@ -883,7 +941,7 @@ describe('canonical destination qualification', () => {
         kind: 'claim',
       },
     ]);
-    server.decideOwnershipWith(() => ({ outcome: 'proposed', target_id: null }));
+    server.decideOwnershipWith(() => ({ selection: 'proposed' }));
     const mem = await openMem({
       models: {
         embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
@@ -896,6 +954,52 @@ describe('canonical destination qualification', () => {
       await mem.index({});
       const result = await mem.remember({ text: 'The Zephyr QX-100 warranty lasts five years.' });
       expect(result.wrote?.[0]).toMatchObject({ slug: 'equipment/zephyr-qx-100', action: 'created' });
+      expect(fs.readFileSync(existingPath, 'utf8')).toBe(before);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it.each([
+    ['unknown page token', { selection: 'P999' }],
+    ['unoffered new page', { selection: 'proposed' }],
+    ['missing selection', { outcome: 'existing', target_id: null }],
+    ['null selection', { selection: null }],
+  ])('holds an invalid ownership choice without retrying: %s', async (_name, reply) => {
+    fs.mkdirSync(path.join(root, 'equipment'), { recursive: true });
+    const existingPath = path.join(root, 'equipment/zephyr-qx-100.md');
+    const before = '# Zephyr QX-100\n\nEquipment warranty notes.\n';
+    fs.writeFileSync(existingPath, before);
+    server.respondWith([
+      {
+        text: 'The Zephyr QX-100 warranty lasts five years.',
+        subject: 'Zephyr QX-100 warranty',
+        page: 'equipment/zephyr-qx-100',
+        kind: 'claim',
+      },
+    ]);
+    let calls = 0;
+    server.decideOwnershipWith((input) => {
+      calls += 1;
+      expect(input.proposed_page).toBeNull();
+      expect(input.existing_pages.length).toBeGreaterThan(0);
+      expect(input.allowed_selections).toEqual(['uncertain', ...input.existing_pages.map((page) => page.id)]);
+      return reply;
+    });
+    const mem = await openMem({
+      models: {
+        embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
+        reranker: { id: null, enabled: false },
+        derive: { provider: 'stub', id: 'stub-derive' },
+        expansion: { provider: 'stub', id: 'stub-derive' },
+      },
+    });
+    try {
+      await mem.index({});
+      const result = await mem.remember({ text: 'The Zephyr QX-100 warranty lasts five years.' });
+      expect(result.wrote).toBeUndefined();
+      expect(calls).toBe(1);
+      expect(result.considered?.[0]?.kept).toBe(false);
       expect(fs.readFileSync(existingPath, 'utf8')).toBe(before);
     } finally {
       await mem.close();
@@ -931,7 +1035,7 @@ describe('canonical destination qualification', () => {
     server.decideOwnershipWith((input) => {
       classifierCalls += 1;
       expect(input.existing_pages.map((page) => page.title)).not.toContain('April 2031');
-      return { outcome: 'proposed', target_id: null };
+      return { selection: 'proposed' };
     });
     const mem = await openMem({
       models: {
@@ -975,7 +1079,7 @@ describe('canonical destination qualification', () => {
     let classifierCalls = 0;
     server.decideOwnershipWith(() => {
       classifierCalls += 1;
-      return { outcome: 'proposed', target_id: null };
+      return { selection: 'proposed' };
     });
     const mem = await openMem();
     try {

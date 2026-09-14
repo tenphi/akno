@@ -1,0 +1,72 @@
+{
+  "runtimeCommit": "a67faa3fd3a6f59450a35c4af1d66baa96fee4e8",
+  "publicationOnly": true,
+  "completedAt": "2026-09-12T18:50:11.102Z",
+  "checks": [
+    {
+      "name": "diff-check",
+      "exitCode": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "repository",
+      "exitCode": 0,
+      "logSha256": "c6f74a8522139b5d788c6a1bf50f16dbbcf152161a303990b0f62ba2cc69ccfe"
+    },
+    {
+      "name": "lint",
+      "exitCode": 0,
+      "logSha256": "a62418b11ee0c7286f31a4ab9ebe68919faec2459c19d8491710e326a335e58d"
+    },
+    {
+      "name": "format",
+      "exitCode": 0,
+      "logSha256": "55bdeb8e964d359a1cc38a7171a8f19861e8a595a1090e0295489efff8aaf18a"
+    },
+    {
+      "name": "docs-doctor",
+      "exitCode": 0,
+      "logSha256": "d674d4a4a73fe5bae8a86a5bc3b496da628884bee912b66056e1edbf4f2e8331"
+    },
+    {
+      "name": "docs-build",
+      "exitCode": 0,
+      "logSha256": "340f88a7a821f1b8d7acf363f4ee704d12d3186b50a63c72ebcede7dee6fcb8f"
+    }
+  ],
+  "deployment": {
+    "command": "pnpm akno redeploy",
+    "exitCode": 0,
+    "result": "build/restart/socket successful",
+    "logSha256": "27cda789f23b4b0d14a5cdb0e44c92b6d1ad2efb2d9cfee2dcbea20b2883c09b"
+  },
+  "sourceDigest": "57e9a780ea0e9c10976d66aa021193961761e6fcdb03515c82a8821c1cf4982c",
+  "distDigest": "2d73b3df3bdc5445913fffcb4e27abba59999e6da99fb1609c64785e2d76ac11",
+  "sourceAndDistUnchangedAfterRedeploy": true,
+  "builtOrdinaryDefectsReproduced": [
+    {
+      "id": "v22-held-nested-report",
+      "expected": false,
+      "actual": true,
+      "reproduced": true
+    },
+    {
+      "id": "v22-held-assistant-speculation",
+      "expected": false,
+      "actual": true,
+      "reproduced": true
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "expected": false,
+      "actual": true,
+      "reproduced": true
+    }
+  ],
+  "providerCallsForPostdeployReproduction": 0,
+  "fullSuite": {
+    "tests": 3910,
+    "files": 152,
+    "scope": "Previously verified identical frozen runtime; not rerun for publication-only changes."
+  }
+}

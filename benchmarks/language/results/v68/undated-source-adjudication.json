@@ -1,0 +1,69 @@
+{
+  "original": {
+    "id": "v20-held-undated",
+    "language": "mixed",
+    "scenario": "undated-proposal",
+    "split": "development",
+    "items": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "I, Ada Marlow, propose reviewing the Zephyr QX-100 repair terms next month. I have not accepted a plan or organized a meeting; this is my proposal only."
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Дата первоначальной записи неизвестна. «Следующий месяц» означает месяц после этой записи, а не после обработки. Какой это календарный месяц, установить невозможно."
+      }
+    ],
+    "view": "planning",
+    "ordinary": "## Hypothetical\nSuppose Zephyr QX-100 requires an annual inspection.",
+    "ordinaryFactual": false,
+    "admission": "writable",
+    "queries": {
+      "en": "What undated repair-terms proposal did Ada Marlow make for Zephyr QX-100?",
+      "ru": "Какое недатированное предложение об условиях ремонта Zephyr QX-100 сделала Ada Marlow?"
+    },
+    "reviewExpectation": "Keep Ada as actual proposer, a review of repair terms next month relative to the undated original record, unknown calendar month, no accepted plan and no arranged meeting. Preserve the unknown temporal envelope and distinguish tentative time from an uncertain claim that a proposal occurred."
+  },
+  "candidates": [
+    {
+      "traceRow": 168,
+      "text": "Ada Marlow proposes reviewing the Zephyr QX-100 repair terms in the month after the initial recording, not after processing, but the calendar month is undetermined because the recording date is unknown; she has not accepted a plan or organized a meeting, and this is only her proposal.",
+      "discourse": {
+        "commitment": "asserted",
+        "disposition": "proposed"
+      },
+      "time": {
+        "start": null,
+        "until": null,
+        "precision": "unknown",
+        "relation": "scheduled",
+        "status": "tentative",
+        "timezone": null,
+        "mentioned_at": null,
+        "recurrence": null
+      }
+    },
+    {
+      "traceRow": 170,
+      "text": "Ada Marlow proposes reviewing the Zephyr QX-100 repair terms next month relative to the initial recording, not processing; the recording date and calendar month are unknown, and she has not accepted a plan or organized a meeting because this is only her proposal.",
+      "discourse": {
+        "commitment": "asserted",
+        "disposition": "proposed"
+      },
+      "time": {
+        "start": null,
+        "until": null,
+        "precision": "unknown",
+        "relation": "scheduled",
+        "status": "tentative",
+        "timezone": null,
+        "mentioned_at": null,
+        "recurrence": null
+      }
+    }
+  ]
+}

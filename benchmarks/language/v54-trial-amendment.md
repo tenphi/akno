@@ -1,0 +1,9 @@
+# V54 post-probe disposition
+
+Both declared probes completed once on `9fd704d`, using the explicit isolated 2,400-token answer ceiling. Preserve all reports, source-only judgments, separate reviews, protocol/deployment controls and descriptive budget observations under `results/v54`. Final independent usefulness is **46/80**: 25/48 selected and 21/32 built-package. Thirty-three writable answers are null; one accepted undated answer loses the source-named proposer. Useful retention is 9/10 complete sets and retrieval 72/80 rows. One selected case has a verifier availability failure; no source bytes changed.
+
+The copied-quote audit introduces false holds when the verifier emits faithful retained paraphrases instead of exact original substrings. It also reopens source-resolved bilingual clarification. A faithful assistant candidate is lost at the readable uncertainty floor, before semantic verification. The new comparison fields do not prevent every actor loss. These are implementation and semantic failures to preserve, not a reason to retry the same runtime or adjust grades.
+
+Median verifier latency rises from roughly 3.5–3.8 seconds in V53 to 5.9–6.4 seconds. The descriptive comparison changes runtime, token ceiling, retained content and call coverage together; it does not isolate a causal effect. The higher budget does not establish reliability, particularly under the service's unchanged explicit 1,024-token overlay.
+
+Accepted qualification loss, substantial coverage loss and case availability defer the full repeated trial. Fresh approved V20 held-out remains unexecuted. Any next revision must preserve original source authority, separate retained-excerpt selection, mandatory semantic dimensions and no semantic retries, then complete separate reviews, the full local gate, freeze, redeploy and exposed validation. Model roles and acceptance thresholds remain unchanged. PR #70 remains open and unmerged.

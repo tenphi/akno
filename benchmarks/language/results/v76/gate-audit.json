@@ -1,0 +1,52 @@
+{
+  "runtimeCommit": "44e6e714f1758948f306ec90cdae9b0d453e3604",
+  "purpose": "Mechanical declared diagnostic gate audit only. Source-first forensic reconciliation and separately reviewed full-trial decision remain required; these diagnostics never satisfy the repeated release gate.",
+  "thresholds": {
+    "usefulQualifiedAnswer": 0.9,
+    "completeUsefulRetention": 0.8,
+    "usefulQualifiedRetrieval": 0.8,
+    "maximumCaseAvailabilityFailure": 0.05,
+    "maximumAcceptedErrors": 0,
+    "maximumSourceByteChanges": 0
+  },
+  "probes": [
+    {
+      "probe": "selected",
+      "checks": {
+        "usefulAnswers": false,
+        "completeRetention": true,
+        "usefulRetrieval": true,
+        "noAcceptedErrors": true,
+        "availability": false,
+        "sourceBytes": true
+      },
+      "passed": false,
+      "usefulCompliantAnswers": 48,
+      "observations": 64
+    },
+    {
+      "probe": "built",
+      "checks": {
+        "usefulAnswers": true,
+        "completeRetention": true,
+        "usefulRetrieval": true,
+        "noAcceptedErrors": true,
+        "availability": true,
+        "sourceBytes": true
+      },
+      "passed": true,
+      "usefulCompliantAnswers": 32,
+      "observations": 32
+    }
+  ],
+  "diagnosticGradeGatesPass": false,
+  "artifacts": {
+    "tmp/v76-output-summary.json": "5433bf09964b254aad79171c4335cf415d749590096d832fd4021f87f942e103",
+    "tmp/v76-completed-probe-provenance.json": "8ce9aa03639034f84bc08376fe991eb4f72ef0fc244c58f2674c6f567096c540",
+    "tmp/v76-grade-structure-audit.json": "438a3024e539b41bbb612d44373391ae998d751bce941f914e6f0752a5a41e60",
+    "tmp/language-selected-output-review-v76-initial.json": "132fa7e4d113ce7f3eeb21a6e810307b79a2f3d838d45f5161659ef89d740cec",
+    "tmp/language-selected-output-review-v76.json": "fb920e8f2af365cae59b4b50fa2256b1d6f9d700a2348396a6774d44b873a831",
+    "tmp/language-built-output-review-v76-initial.json": "5fd5e5dee80ed0acfcadbb4c24314a66044f667ce3cacc58820eeb7342da0ec7",
+    "tmp/language-built-output-review-v76.json": "0901051bef418cc9189424a4e00deb7c243e99215d687c4e5d419fbc9d9892b0"
+  }
+}

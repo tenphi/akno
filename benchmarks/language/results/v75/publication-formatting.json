@@ -1,0 +1,53 @@
+{
+  "purpose": "Whitespace-only publication formatting; all original initial and final review bytes remain local and hashed in the manifest.",
+  "changes": [
+    {
+      "file": "selected-output-review-initial.json",
+      "sourceSha256": "63745ccc60c9d1df61e29195850d0fd745e9ba6db3e42cfd3a4b0f8b1c4e416d",
+      "publishedSha256": "15682ad1a9b2a9bb9e0e76c66ee8563044a533b51ec969e231ba4f373d362fa1",
+      "transformation": "Removed extra blank lines at end of published copy only; original local artifact unchanged."
+    },
+    {
+      "file": "selected-output-review.json",
+      "sourceSha256": "63745ccc60c9d1df61e29195850d0fd745e9ba6db3e42cfd3a4b0f8b1c4e416d",
+      "publishedSha256": "15682ad1a9b2a9bb9e0e76c66ee8563044a533b51ec969e231ba4f373d362fa1",
+      "transformation": "Removed extra blank lines at end of published copy only; original local artifact unchanged."
+    },
+    {
+      "file": "selected-source-review-initial.md",
+      "sourceSha256": "17ade01513108592acfdcc65e47712327981ef3862f5fdea946719ef856252da",
+      "publishedSha256": "6801f58cd11e3731c42fa3e337afadfd5a97f4e86e27da7383a343d27604b009",
+      "transformation": "Removed extra blank lines at end of published copy only; original local artifact unchanged."
+    },
+    {
+      "file": "selected-source-review.md",
+      "sourceSha256": "17ade01513108592acfdcc65e47712327981ef3862f5fdea946719ef856252da",
+      "publishedSha256": "6801f58cd11e3731c42fa3e337afadfd5a97f4e86e27da7383a343d27604b009",
+      "transformation": "Removed extra blank lines at end of published copy only; original local artifact unchanged."
+    },
+    {
+      "file": "built-output-review-initial.json",
+      "sourceSha256": "807bb13432878daf0961dfa327c519226d31a7c51b8da9e263e79fd50019390a",
+      "publishedSha256": "4fe5608183580bd8f0dac1c5ba26ce3a165e98fcf8aefd361848c88a21b9fb3f",
+      "transformation": "Removed extra blank lines at end of published copy only; original local artifact unchanged."
+    },
+    {
+      "file": "built-output-review.json",
+      "sourceSha256": "807bb13432878daf0961dfa327c519226d31a7c51b8da9e263e79fd50019390a",
+      "publishedSha256": "4fe5608183580bd8f0dac1c5ba26ce3a165e98fcf8aefd361848c88a21b9fb3f",
+      "transformation": "Removed extra blank lines at end of published copy only; original local artifact unchanged."
+    },
+    {
+      "file": "built-source-review-initial.md",
+      "sourceSha256": "d543d2273400d6aceba757e8be4c3800be32ffd644044a9c74955beb238d1b09",
+      "publishedSha256": "61e6822139e9b1ac3a9d3767ed2f22260877ce9c581a800dccc62d6928c3125c",
+      "transformation": "Removed extra blank lines at end of published copy only; original local artifact unchanged."
+    },
+    {
+      "file": "built-source-review.md",
+      "sourceSha256": "d543d2273400d6aceba757e8be4c3800be32ffd644044a9c74955beb238d1b09",
+      "publishedSha256": "61e6822139e9b1ac3a9d3767ed2f22260877ce9c581a800dccc62d6928c3125c",
+      "transformation": "Removed extra blank lines at end of published copy only; original local artifact unchanged."
+    }
+  ]
+}

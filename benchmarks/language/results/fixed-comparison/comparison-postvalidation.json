@@ -1,0 +1,83 @@
+{
+  "mode": "comparison",
+  "validatedAt": "2026-09-13T10:40:23.151Z",
+  "declarationSha256": "e388b1504364312b8534246fa686fff4f53e36e2118ed77ab4a732a80fd00dd6",
+  "postvalidatorSha256": "6384cf1ef90bc4b302a975b4f5be433e93cd7e05c5c14b51e9871e6a35189d5c",
+  "publicValidatorSha256": "6be15fb668440cec1901648eb81d6412944b40343624202b64a1ba8edfc6cd82",
+  "completedSha256": "cadad3a903370e18968b8b243304c8978be48254b7ea47c62fbade27083d5323",
+  "corpusFingerprint": "27bbb05e7bc8089ba133e5723667190106d02e98b635e41328d683bd9700505a",
+  "arms": [
+    {
+      "label": "V17",
+      "candidate": {
+        "label": "V17",
+        "commit": "bb78edf72a29f0b3e8d80e36fad40697a0b3bb63",
+        "packageTreeSha256": "f242f85053909ee10fa072e6c5abee533949e97bd082af38ec0f8b8bcf3ced78",
+        "protocol": "packages/protocol/dist/index.js",
+        "node": "v22.22.0",
+        "execPath": "<node-v22.22.0>",
+        "abi": "127",
+        "lockSha256": "5601a0ad49140516bd4c0afb4f346073d68105b86a74472c4f49102854700b22"
+      },
+      "caseRuns": 44,
+      "coordinates": 352,
+      "modelCalls": 2907,
+      "modelThrows": 0,
+      "operationErrors": 0,
+      "byteFailures": 0,
+      "replayFailures": 0,
+      "caseAvailabilityFailures": 0,
+      "ordinaryMismatches": 6,
+      "casesSha256": "b5f2843325c358912f992ad11537405d06217d81b76d9206ec6031cf608672e2",
+      "traceSha256": "bb2f24c04d868748f6b3fc714cd9f6c13f44924db7fac990cfd3f3cc2c05f66c"
+    },
+    {
+      "label": "V31",
+      "candidate": {
+        "label": "V31",
+        "commit": "2e82c9762f2b61f30b2d5697f34df925d27fe998",
+        "packageTreeSha256": "30236927306e8ce9ed60640bce11950c6c7644d7b0641fed8eba18cdb9a674c0",
+        "protocol": "packages/protocol/dist/index.js",
+        "node": "v22.22.0",
+        "execPath": "<node-v22.22.0>",
+        "abi": "127",
+        "lockSha256": "5601a0ad49140516bd4c0afb4f346073d68105b86a74472c4f49102854700b22"
+      },
+      "caseRuns": 44,
+      "coordinates": 352,
+      "modelCalls": 2813,
+      "modelThrows": 0,
+      "operationErrors": 0,
+      "byteFailures": 0,
+      "replayFailures": 0,
+      "caseAvailabilityFailures": 0,
+      "ordinaryMismatches": 6,
+      "casesSha256": "567749982d52c6caddbe4804876a52a6cd2367149e6eecee9c4e0bf840e6c227",
+      "traceSha256": "7a033964fbb72ccad1701e31ef520b2686083f843b692bbe584c53394ad5c357"
+    },
+    {
+      "label": "V77",
+      "candidate": {
+        "label": "V77",
+        "commit": "a67faa3fd3a6f59450a35c4af1d66baa96fee4e8",
+        "packageTreeSha256": "9941afad6ef1994954f78e5e1ac4e3691b6641a6db05e0d55f8e5ff593ec9715",
+        "protocol": "packages/protocol/dist/index.js",
+        "node": "v22.22.0",
+        "execPath": "<node-v22.22.0>",
+        "abi": "127",
+        "lockSha256": "5601a0ad49140516bd4c0afb4f346073d68105b86a74472c4f49102854700b22"
+      },
+      "caseRuns": 44,
+      "coordinates": 352,
+      "modelCalls": 2638,
+      "modelThrows": 0,
+      "operationErrors": 0,
+      "byteFailures": 0,
+      "replayFailures": 0,
+      "caseAvailabilityFailures": 0,
+      "ordinaryMismatches": 6,
+      "casesSha256": "123f25355a6355cdebebce815ff2ae6dd97551ef5f5e001670e67a45e96a073f",
+      "traceSha256": "1ebb816ce05d4d4eb1ddded4f5daa9561b41d09077bae344bf1e9077c603d71a"
+    }
+  ]
+}

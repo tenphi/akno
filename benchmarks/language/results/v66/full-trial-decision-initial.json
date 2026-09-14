@@ -1,0 +1,33 @@
+{
+  "runtimeCommit": "13a7569f54634627c0eae91eb8f55d159c064176",
+  "decision": "defer full V21 trial",
+  "decidedAt": "2026-09-09T12:55:36.420Z",
+  "reason": "Both declared probes fall substantially below usefulness and retention thresholds. Successful transport and zero currently graded accepted errors do not justify exposing fresh held-out inputs.",
+  "probes": [
+    {
+      "probe": "selected",
+      "cases": 8,
+      "usefulRetention": 6,
+      "answerObservations": 64,
+      "usefulRetrieval": 48,
+      "usefulAnswers": 38,
+      "sourceErrors": 0,
+      "qualificationErrors": 0,
+      "languageErrors": 0
+    },
+    {
+      "probe": "built",
+      "cases": 4,
+      "usefulRetention": 3,
+      "answerObservations": 32,
+      "usefulRetrieval": 24,
+      "usefulAnswers": 23,
+      "sourceErrors": 0,
+      "qualificationErrors": 0,
+      "languageErrors": 0
+    }
+  ],
+  "sourceFirstForensics": "pending completion",
+  "freshHeldOutExecuted": false,
+  "unchangedRuntimeSemanticRerun": false
+}

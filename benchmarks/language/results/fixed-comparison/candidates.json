@@ -1,0 +1,20 @@
+[
+  {
+    "label": "V17",
+    "revision": "bb78edf",
+    "root": "tmp/akno-compare-v17",
+    "commit": "bb78edf72a29f0b3e8d80e36fad40697a0b3bb63"
+  },
+  {
+    "label": "V31",
+    "revision": "2e82c97",
+    "root": "tmp/akno-compare-v31",
+    "commit": "2e82c9762f2b61f30b2d5697f34df925d27fe998"
+  },
+  {
+    "label": "V77",
+    "revision": "a67faa3",
+    "root": ".",
+    "commit": "a67faa3fd3a6f59450a35c4af1d66baa96fee4e8"
+  }
+]

@@ -1,0 +1,82 @@
+{
+  "correction": "The project began with an 80% useful-answer gate. Later expanded corpora used90%. V77 calling90% the original project target was inaccurate. Historical scores use different corpora, rubrics and/or model ceilings; they are not a longitudinal comparison. Preserve these historical receipts and compare revisions on the new frozen common suite instead.",
+  "rows": [
+    {
+      "runtime": "v17",
+      "corpus": "v9",
+      "gate": "benchmarks/language/results/v17/gate.json",
+      "gateSha256": "626068666242add1b4c99d600e13ab49b4a41827a8e4286b2ee859e3dc1f57c5",
+      "originalRecordedGate": true,
+      "thresholds": {
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 0,
+        "sourceByteChanges": 0,
+        "usefulRetentionCoverage": 0.8,
+        "qualifiedRetrievalCoverage": 0.8,
+        "usefulQualifiedAnswerCoverage": 0.8,
+        "availabilityFailureRate": 0.05
+      },
+      "usefulAnswers": {
+        "numerator": 143,
+        "denominator": 160
+      },
+      "completeRetention": {
+        "numerator": 19,
+        "denominator": 20
+      }
+    },
+    {
+      "runtime": "v31",
+      "corpus": "v17",
+      "gate": "benchmarks/language/results/v31/gate.json",
+      "gateSha256": "59956d301fbe4716441b2dbb416fc20794bfb790c4767945503cb3df42ff171e",
+      "originalRecordedGate": false,
+      "thresholds": {
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 0,
+        "sourceByteChanges": 0,
+        "usefulRetentionCoverage": 0.8,
+        "qualifiedRetrievalCoverage": 0.8,
+        "usefulQualifiedAnswerCoverage": 0.9,
+        "availabilityFailureRate": 0.05,
+        "unsupportedRetainedOutputs": 0,
+        "unsupportedNonnullAnswers": 0
+      },
+      "usefulAnswers": {
+        "numerator": 279,
+        "denominator": 320
+      },
+      "completeRetention": {
+        "numerator": 33,
+        "denominator": 40
+      }
+    },
+    {
+      "runtime": "v60",
+      "type": "exposed probes only",
+      "usefulAnswers": {
+        "numerator": 68,
+        "denominator": 80
+      },
+      "record": "benchmarks/language/results/v60/README.md",
+      "fullTrial": false
+    },
+    {
+      "runtime": "v77",
+      "corpus": "v22",
+      "type": "terminal historical full trial",
+      "usefulAnswers": {
+        "numerator": 220,
+        "denominator": 320
+      },
+      "completeRetention": {
+        "numerator": 30,
+        "denominator": 40
+      },
+      "answerRoleCap": 2400,
+      "record": "benchmarks/language/results/v77/README.md"
+    }
+  ]
+}

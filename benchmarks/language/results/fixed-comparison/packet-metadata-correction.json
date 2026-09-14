@@ -1,0 +1,6 @@
+{
+  "change": "Add complete existing public read lines, including managed relationship markers, uniformly to every candidate. Sources, retained prose/qualifications, queries, answers and coordinates are unchanged. No provider or runtime rerun.",
+  "observations": 15,
+  "oldPacketSha256": "3cc2d8d3b380daa582c8b15c73ce8ff9defb8dbb47dc93d2fde49688da181eaf",
+  "newPacketSha256": "c7380aba646c6e0faf76532bb84d736f0d7f4b05fe026d018bc2cffaccb7bbd8"
+}

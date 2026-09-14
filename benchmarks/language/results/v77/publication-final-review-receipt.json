@@ -1,0 +1,19 @@
+{
+  "scope": "Independent final evidence-only publication review, completed after full evidence preservation; no runtime or grade mutation.",
+  "files": [
+    {
+      "source": "tmp/language-v77-publication-review-initial.md",
+      "published": "benchmarks/language/results/v77/reviews/publication-review-initial.md",
+      "originalSha256": "6fa7524d029705f940cdabebd4548ff0dc299f785a3d67311a601c6389279858",
+      "publishedSha256": "275e2a99e5f72864b4772f7542af7c9df560122377a9105fd638f1cf021529e5",
+      "normalization": "Trailing line/EOF whitespace only"
+    },
+    {
+      "source": "tmp/language-v77-publication-review.md",
+      "published": "benchmarks/language/results/v77/reviews/publication-review.md",
+      "originalSha256": "1c7595fc6fcb1ba9f9fe51efdcf96db1d74ae611153de213ff6c31e37a1be0a6",
+      "publishedSha256": "51757b324b5d4e8258d7b54e949fc29bbf1f4f30eb3a4799ca4f22761b9c93a4",
+      "normalization": "Trailing line/EOF whitespace only"
+    }
+  ]
+}

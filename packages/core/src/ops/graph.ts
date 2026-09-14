@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import nodePath from 'node:path';
+import { sha256 } from '../store/ids.ts';
 import {
   GraphInput,
   type DegradedReason,
@@ -28,6 +31,9 @@ const FAN_OUT_LIMIT = 50;
 const QUERY_SEED_LIMIT = 8;
 
 interface EdgeRow {
+  source_rel_path: string | null;
+  prose_hash: string | null;
+  source_item: string | null;
   id: string;
   from_node: string;
   to_node: string;
@@ -146,6 +152,7 @@ export async function graph(ctx: AknoContext, rawInput: unknown): Promise<GraphO
       memoryView,
     });
     if (traversed.truncated) degraded.add('graph_traversal_limited');
+    if (traversed.staleSources) degraded.add('partial_graph_index');
 
     const ambiguityNodeIds = resolved.ambiguities.flatMap((ambiguity) =>
       ambiguity.entityIds.flatMap((entityId) => {
@@ -443,11 +450,19 @@ function traverse(
     factStatusAvailable: boolean;
     memoryView: MemoryView;
   },
-): { paths: GraphPath[]; edges: GraphEdgeRef[]; nodeIds: Set<string>; truncated: boolean } {
+): {
+  paths: GraphPath[];
+  edges: GraphEdgeRef[];
+  nodeIds: Set<string>;
+  truncated: boolean;
+  staleSources: boolean;
+} {
   const paths: GraphPath[] = [];
   const edges = new Map<string, GraphEdgeRef>();
   const nodeIds = new Set<string>();
   let truncated = false;
+  let staleSources = false;
+  const sourceHashes = new Map<string, string | null>();
 
   seedLoop: for (const seed of seeds) {
     nodeIds.add(seed.node);
@@ -459,8 +474,9 @@ function traverse(
     while (queue.length > 0) {
       const current = queue.shift()!;
       if (current.edgeIds.length >= options.maxHops) continue;
-      const adjacent = adjacentEdges(ctx, current.node, options);
+      const adjacent = adjacentEdges(ctx, current.node, options, sourceHashes);
       if (adjacent.truncated) truncated = true;
+      staleSources ||= adjacent.staleSources;
 
       for (const row of adjacent.rows) {
         const next = row.from_node === current.node ? row.to_node : row.from_node;
@@ -499,7 +515,7 @@ function traverse(
     }
   }
 
-  return { paths, edges: [...edges.values()], nodeIds, truncated };
+  return { paths, edges: [...edges.values()], nodeIds, truncated, staleSources };
 }
 
 function adjacentEdges(
@@ -512,7 +528,8 @@ function adjacentEdges(
     factStatusAvailable: boolean;
     memoryView: MemoryView;
   },
-): { rows: EdgeRow[]; truncated: boolean } {
+  sourceHashes: Map<string, string | null>,
+): { rows: EdgeRow[]; truncated: boolean; staleSources: boolean } {
   const incident =
     options.direction === 'out'
       ? 'e.from_node = ?'
@@ -535,11 +552,15 @@ function adjacentEdges(
     .prepare(
       `SELECT e.id, e.from_node, e.to_node, e.relation, e.predicate, e.source_kind,
               e.source_document, e.source_event, e.source_fact, p.slug AS source_slug,
+              p.rel_path AS source_rel_path, f.item_id AS source_item, prose.source_hash AS prose_hash,
               e.source_memory,
               e.line_start, e.line_end, e.source_field, e.derivation, e.resolution,
               e.confidence, e.valid_from, e.valid_to
          FROM graph_edges e
          LEFT JOIN pages p ON p.id = e.source_page
+         LEFT JOIN facts f ON f.id = e.source_fact
+         LEFT JOIN prose_entries prose ON prose.source_page = f.page_id AND prose.line = f.line_start
+           AND prose.view = 'factual' AND prose.eligible = 1
          ${options.factStatusAvailable ? 'LEFT JOIN graph_fact_status s ON s.fact_id = e.source_fact' : ''}
          LEFT JOIN managed_memory_entries m ON m.entry_key = e.source_memory
         WHERE ${incident}${relationClause}${eligibility}${memoryEligibility}
@@ -547,7 +568,26 @@ function adjacentEdges(
         LIMIT ?`,
     )
     .all(...params, FAN_OUT_LIMIT + 1) as EdgeRow[];
-  return { rows: rows.slice(0, FAN_OUT_LIMIT), truncated: rows.length > FAN_OUT_LIMIT };
+  const current = rows.filter((row) => {
+    if (!row.source_fact || row.source_item) return true;
+    if (!row.source_rel_path || !row.prose_hash) return false;
+    if (!sourceHashes.has(row.source_rel_path)) {
+      try {
+        sourceHashes.set(
+          row.source_rel_path,
+          sha256(fs.readFileSync(nodePath.join(ctx.config.aknoPath, row.source_rel_path), 'utf8')),
+        );
+      } catch {
+        sourceHashes.set(row.source_rel_path, null);
+      }
+    }
+    return sourceHashes.get(row.source_rel_path) === row.prose_hash;
+  });
+  return {
+    rows: current.slice(0, FAN_OUT_LIMIT),
+    truncated: rows.length > FAN_OUT_LIMIT,
+    staleSources: current.length !== rows.length,
+  };
 }
 
 function memoryEdgeEligibility(view: MemoryView, includeHistory: boolean): string {

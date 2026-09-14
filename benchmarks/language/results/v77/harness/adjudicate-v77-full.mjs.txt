@@ -1,0 +1,11 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
+import {adjudicateLanguageGate} from '../packages/core/src/bench/language-review.ts';import {completionGate} from './v77-completion-gate.mjs';
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));const hash=p=>createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+const reports=['development','held-out'].map(s=>read(`bench-results/language-full-${s}-v77.json`));
+const reviewPath=process.argv[2]??'tmp/language-v77-full-output-review.json';
+const review=read(reviewPath);const original=adjudicateLanguageGate(reports,read('tmp/language-v22-input-review.json'),review);
+const revised=completionGate(original,read('tmp/v77-completion-contract.json'));
+const provenance={runtimeCommit:read('tmp/v77-full-launch-manifest.json').runtimeCommit,reviewPath,reviewSha256:hash(reviewPath),completionContractSha256:hash('tmp/v77-completion-contract.json'),corpusFingerprint:reports[0].corpusFingerprint};
+fs.writeFileSync('tmp/v77-full-original-gate.json',JSON.stringify({...original,provenance},null,2)+'\n',{flag:'wx'});
+fs.writeFileSync('tmp/v77-full-completion-gate.json',JSON.stringify({...revised,provenance},null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify({originalPassed:original.releaseEligible,completionPassed:revised.completionEligible,originalFailures:original.failures,completionFailures:revised.failures,groups:revised.groups.map(g=>({split:g.split,run:g.run,metrics:g.metrics}))}));

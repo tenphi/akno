@@ -1,3 +1,6 @@
+import { dependencyOrder } from '../write/retained-relations.ts';
+import { spanCoveredByFrame } from '../write/retained-spans.ts';
+import { explicitlyUnknownTime } from '../write/retained-time.ts';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import {
@@ -383,6 +386,7 @@ async function retainExtracted(
     placement: 'automatic',
     initialResults,
     modelUsage: { ...extracted.modelUsage, placement: [] },
+    additionalDegraded: extracted.degradedReason ? [extracted.degradedReason] : [],
   });
 }
 
@@ -397,6 +401,7 @@ async function retainCandidates(
     initialResults: RetainCandidateResult[];
     modelUsage: {
       extraction: RetainModelCallReceipt | null;
+      repair?: RetainModelCallReceipt;
       verification: RetainModelCallReceipt | null;
       placement: RetainModelCallReceipt[];
     };
@@ -412,6 +417,29 @@ async function retainCandidates(
   const requestHash = sha256(JSON.stringify(resolvedSource.requested));
   const replay = replayResult(ctx, source.source_id, source.revision, requestHash, sourceHash);
   if (replay) return replay;
+  if (
+    options.selection === 'provided' &&
+    ctx.config.knowledgeLanguage &&
+    source.retention.mode === 'provided' &&
+    source.retention.knowledge_language !== ctx.config.knowledgeLanguage
+  ) {
+    const reasonCode = source.retention.knowledge_language ? 'language_mismatch' : 'language_policy_required';
+    return {
+      source_id: source.source_id,
+      revision: source.revision,
+      outcome: 'held',
+      status: 'ok',
+      knowledge_language: ctx.config.knowledgeLanguage,
+      reason_code: reasonCode,
+      candidates: suppliedCandidates.map((candidate) => ({
+        candidate_id: candidate.candidate_id,
+        outcome: 'held',
+        reason_code: reasonCode,
+        hold_stage: 'validation',
+      })),
+      note: 'Provided candidates require the caller to attest knowledge_language: en. Text is never translated or semantically verified in exact mode; no replay receipt was created.',
+    };
+  }
   const groupIssue = sourceGroupIssue(ctx, source.source_id, source.source_group);
   if (groupIssue) return conflictResult(source.source_id, source.revision, groupIssue);
   const correctionIssue = validateCorrectionTarget(ctx, source);
@@ -427,12 +455,14 @@ async function retainCandidates(
       : {
           candidates: subjectResolvedCandidates.filter(hasDestination),
           routingReceipts: [] as RetainModelCallReceipt[],
+          degraded: [] as DegradedReason[],
           held: subjectResolvedCandidates
             .filter((candidate) => !candidate.destination)
             .map((candidate) => ({
               candidate_id: candidate.candidate_id,
               outcome: 'held' as const,
               reason_code: 'validation_failed' as const,
+              hold_stage: 'validation' as const,
               reason: 'provided exact candidates require a destination',
             })),
         };
@@ -544,6 +574,7 @@ async function retainCandidates(
         outcome: 'held',
         reason_code: 'validation_failed',
         reason: 'candidate relation cycle or blocked dependency',
+        hold_stage: 'validation',
       });
     }
   }
@@ -555,6 +586,7 @@ async function retainCandidates(
         candidate_id: candidate.candidate_id,
         outcome: 'held',
         reason_code: candidateIssueReasonCode(issue),
+        hold_stage: 'validation',
         reason: issue,
       });
       continue;
@@ -569,6 +601,7 @@ async function retainCandidates(
         outcome: 'held',
         reason_code: 'validation_failed',
         reason: `relation target candidate ${missingTarget.target.candidate_id} was not retained`,
+        hold_stage: 'validation',
       });
       continue;
     }
@@ -599,6 +632,7 @@ async function retainCandidates(
         slug,
         reason_code: stage.issue.includes('unreadable') ? 'source_unavailable' : 'no_writable_destination',
         reason: stage.issue,
+        hold_stage: 'apply',
       });
       continue;
     }
@@ -623,6 +657,7 @@ async function retainCandidates(
           slug,
           reason_code: 'support_limit',
           reason: 'support_limit',
+          hold_stage: 'apply',
         });
         continue;
       } else {
@@ -740,6 +775,7 @@ async function retainCandidates(
   const degraded: DegradedReason[] = [
     ...resolvedSource.degraded,
     ...(options.additionalDegraded ?? []),
+    ...resolved.degraded,
     ...(placementDegraded
       ? ([retentionModel(ctx).available ? 'derive_failed' : 'no_derive_model'] as DegradedReason[])
       : []),
@@ -771,6 +807,7 @@ async function retainCandidates(
               ...(result.slug ? { slug: result.slug } : {}),
               reason_code: 'validation_failed',
               reason: 'not applied because the compound correction was not fully admissible',
+              hold_stage: 'apply',
             },
       ),
       source: sourceResultBinding(effectiveBinding),
@@ -779,6 +816,7 @@ async function retainCandidates(
     };
   }
   const preview: RetainSourceResult = {
+    knowledge_language: ctx.config.knowledgeLanguage,
     source_id: source.source_id,
     revision: source.revision,
     outcome: options.sourceHold
@@ -864,8 +902,10 @@ export async function retainRememberCandidates(
     dryRun: boolean;
     candidates: readonly ResolvedRetainCandidate[];
     held: readonly RetainCandidateResult[];
+    additionalDegraded?: DegradedReason[];
     modelUsage: {
       extraction: RetainModelCallReceipt | null;
+      repair?: RetainModelCallReceipt;
       verification: RetainModelCallReceipt | null;
     };
   },
@@ -902,6 +942,7 @@ export async function retainRememberCandidates(
       factsAdded = factsDerived;
     },
     initialResults: [...input.held],
+    additionalDegraded: input.additionalDegraded,
     modelUsage: { ...input.modelUsage, placement: [] },
   });
   return { result, factsAdded };
@@ -914,10 +955,12 @@ async function resolveAutomaticCandidates(
   candidates: ResolvedRetainCandidate[];
   held: RetainCandidateResult[];
   routingReceipts: RetainModelCallReceipt[];
+  degraded: DegradedReason[];
 }> {
   const resolved: ResolvedRetainCandidate[] = [];
   const held: RetainCandidateResult[] = [];
   const routingReceipts: RetainModelCallReceipt[] = [];
+  const degraded = new Set<DegradedReason>();
   const catalog = folderCatalog(ctx.config, ctx.store);
   const fallback = await resolveRememberFallback(ctx, catalog);
   const curator = retentionModel(ctx);
@@ -933,6 +976,10 @@ async function resolveAutomaticCandidates(
       { constrainToSuggestedFolder: false, model: curator },
     );
     if (routed.modelOutcome) routingReceipts.push(modelCallReceipt(curator, routed.modelOutcome));
+    if (routed.reason === 'model_unavailable') degraded.add('no_derive_model');
+    if (routed.reason === 'invalid_model_response') degraded.add('derive_failed');
+    if (routed.reason === 'model_failed')
+      degraded.add(routed.modelOutcome ? curator.degradedReason(routed.modelOutcome) : 'derive_failed');
     let slug = routed.slug;
     if (
       !slug &&
@@ -954,6 +1001,8 @@ async function resolveAutomaticCandidates(
         candidate_id: candidate.candidate_id,
         outcome: 'held',
         reason_code: reasonCode,
+        hold_stage: 'placement',
+        routing_reason: routed.reason,
         reason: routed.blocked
           ? `the strongest semantic destination is read-only: ${routed.blocked}`
           : suggested && pageExists(ctx, suggested)
@@ -964,7 +1013,7 @@ async function resolveAutomaticCandidates(
     }
     resolved.push({ ...candidate, destination: { slug } });
   }
-  return { candidates: resolved, held, routingReceipts };
+  return { candidates: resolved, held, routingReceipts, degraded: [...degraded] };
 }
 
 function hasDestination(
@@ -1041,6 +1090,7 @@ function heldCandidateResult(candidate: RetainHeldCandidate): RetainCandidateRes
     candidate_id: candidate.candidate_id,
     outcome: 'held',
     reason_code: candidate.reason_code,
+    ...(candidate.hold_stage ? { hold_stage: candidate.hold_stage } : {}),
     reason: candidate.reason,
   };
 }
@@ -1113,6 +1163,7 @@ async function stageRetractions(
         outcome: 'held',
         reason_code: 'source_unavailable',
         reason: stage.issue,
+        hold_stage: 'apply',
       });
       continue;
     }
@@ -1210,6 +1261,7 @@ async function retractSource(
 
   const changed = [...stages.values()].filter((stage) => stage.before !== stage.after);
   const preview: RetainSourceResult = {
+    knowledge_language: ctx.config.knowledgeLanguage,
     source_id: source.source_id,
     revision: source.revision,
     outcome: changed.length > 0 ? 'ok' : results.some((item) => item.outcome === 'held') ? 'held' : 'noop',
@@ -1328,14 +1380,27 @@ function candidateIssue(
   if (supportIssue) return `support: ${supportIssue}`;
   const frameIssue = spansIssue(source, candidate.discourse_frame);
   if (frameIssue) return `discourse_frame: ${frameIssue}`;
-  const frameKeys = new Set(candidate.discourse_frame.map(spanKey));
-  if (candidate.support.some((span) => !frameKeys.has(spanKey(span)))) {
+  if (
+    candidate.support.some(
+      (span) =>
+        !spanCoveredByFrame(
+          span,
+          candidate.discourse_frame,
+          'text' in source.input
+            ? source.input.text
+            : source.input.items.find((item) => item.item_id === span.item_id)?.text,
+        ),
+    )
+  ) {
     return 'discourse_frame must contain every support span';
   }
   const attributionIssue = structuredAttributionIssue(source, candidate);
   if (attributionIssue) return attributionIssue;
   if (sourceEvidence(candidate).length > 1200) return 'discourse frame exceeds the evidence limit';
-  if (RELATIVE_TIME.test(sourceEvidence(candidate))) {
+  const qualifiedUnknownTime =
+    explicitlyUnknownTime(candidate.time) &&
+    (candidate.discourse.commitment !== 'asserted' || candidate.discourse.disposition === 'proposed');
+  if (RELATIVE_TIME.test(sourceEvidence(candidate)) && !qualifiedUnknownTime) {
     const sourceItems = 'items' in source.input ? source.input.items : [];
     const supportedMentionTimes = new Set([
       ...(source.mentioned_at ? [source.mentioned_at] : []),
@@ -1398,7 +1463,7 @@ function candidateIssueReasonCode(issue: string): RetainHoldReason {
 }
 
 const RELATIVE_TIME =
-  /\b(today|tomorrow|yesterday|tonight|next\s+(?:day|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|last\s+(?:night|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|this\s+(?:morning|afternoon|evening|week|month|year))\b/i;
+  /\b(today|tomorrow|yesterday|tonight|next\s+(?:day|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|last\s+(?:night|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|this\s+(?:morning|afternoon|evening|week|month|year))\b|сегодня|завтра|вчера|на следующ|на прошл|в следующ|в прошл/iu;
 
 function structuredAttributionIssue(
   source: ResolvedRetainUpsertSource,
@@ -1851,47 +1916,6 @@ function sourceEvidence(candidate: ProvidedRetainCandidate): string {
 
 function sourceOrigin(role: ProvidedRetainCandidate['attribution']['source_role']): PendingSupport['origin'] {
   return role === 'user' || role === 'assistant' ? role : 'unknown';
-}
-
-function dependencyOrder<T extends ProvidedRetainCandidate>(
-  candidates: readonly T[],
-): {
-  candidates: T[];
-  blocked: Set<string>;
-} {
-  const byId = new Map(candidates.map((candidate) => [candidate.candidate_id, candidate]));
-  const ordered: T[] = [];
-  const blocked = new Set<string>();
-  const visited = new Set<string>();
-  const visiting: string[] = [];
-
-  const visit = (candidate: T): boolean => {
-    if (visited.has(candidate.candidate_id)) return !blocked.has(candidate.candidate_id);
-    const cycleAt = visiting.indexOf(candidate.candidate_id);
-    if (cycleAt >= 0) {
-      for (const id of visiting.slice(cycleAt)) blocked.add(id);
-      return false;
-    }
-    visiting.push(candidate.candidate_id);
-    let ready = true;
-    for (const relation of candidate.relations ?? []) {
-      if (!('candidate_id' in relation.target)) continue;
-      const target = byId.get(relation.target.candidate_id);
-      if (!target || !visit(target)) ready = false;
-    }
-    visiting.pop();
-    visited.add(candidate.candidate_id);
-    if (!ready) blocked.add(candidate.candidate_id);
-    else ordered.push(candidate);
-    return ready;
-  };
-
-  for (const candidate of candidates) visit(candidate);
-  return { candidates: ordered, blocked };
-}
-
-function spanKey(span: RetainSourceSpan): string {
-  return `${span.item_id ?? ''}\0${span.quote}`;
 }
 
 function occurrences(text: string, needle: string): number {

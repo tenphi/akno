@@ -1,0 +1,692 @@
+{
+  "runtimeCommit": "44e6e714f1758948f306ec90cdae9b0d453e3604",
+  "purpose": "One separately declared natural-sentence maximum repair transport control. The original V76 nine-of-ten result and repeated-marker exact-copy failure remain preserved. No semantic competence claim, replacement run, changed schema, field size, count, model, or cap.",
+  "originalDeclarationSha256": "89352e531e0274e79d60cd0583fa763652eb9bf73455275a977cf7182119ce0c",
+  "originalResultSha256": "d5d779f311fb84d0081e42d3363e17516d14e417576acfeac3f0e9f335be385c",
+  "id": "natural-four-branch-retention-repair",
+  "api": "responses",
+  "callerCap": 3200,
+  "roleCap": 2400,
+  "effectiveCap": 2400,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "repairs": {
+        "maxItems": 4,
+        "type": "array",
+        "items": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "candidate_index": {
+                  "type": "number",
+                  "enum": [
+                    0
+                  ]
+                },
+                "reported_proposition": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                },
+                "relay_attribution": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 78,
+                  "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                },
+                "personal_limits": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120,
+                  "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                }
+              },
+              "required": [
+                "candidate_index",
+                "reported_proposition",
+                "relay_attribution",
+                "personal_limits"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "candidate_index": {
+                  "type": "number",
+                  "enum": [
+                    1
+                  ]
+                },
+                "proposition_and_nontemporal_scope": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 195,
+                  "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                },
+                "source_clock_anchor_and_unknown_date": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 90,
+                  "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                },
+                "excluded_reference_clocks": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 60,
+                  "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                },
+                "unresolved_calendar_period": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 52,
+                  "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                }
+              },
+              "required": [
+                "candidate_index",
+                "proposition_and_nontemporal_scope",
+                "source_clock_anchor_and_unknown_date",
+                "excluded_reference_clocks",
+                "unresolved_calendar_period"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "candidate_index": {
+                  "type": "number",
+                  "enum": [
+                    2
+                  ]
+                },
+                "proposition_and_nontemporal_scope": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 220,
+                  "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                },
+                "source_clock_anchor_and_unknown_date": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 110,
+                  "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                },
+                "unresolved_calendar_period": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 68,
+                  "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                }
+              },
+              "required": [
+                "candidate_index",
+                "proposition_and_nontemporal_scope",
+                "source_clock_anchor_and_unknown_date",
+                "unresolved_calendar_period"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "candidate_index": {
+                  "type": "number",
+                  "enum": [
+                    3
+                  ]
+                },
+                "candidate": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "claim",
+                        "decision",
+                        "preference",
+                        "plan",
+                        "event",
+                        "question"
+                      ]
+                    },
+                    "attribution": {
+                      "type": "object",
+                      "properties": {
+                        "source_role": {
+                          "type": "string",
+                          "enum": [
+                            "user",
+                            "assistant",
+                            "external",
+                            "unknown"
+                          ]
+                        },
+                        "source_speaker": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "chain": {
+                          "maxItems": 3,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "speaker": {
+                                "type": "string"
+                              },
+                              "role": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "user",
+                                      "assistant",
+                                      "external",
+                                      "unknown"
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "speaker",
+                              "role"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "source_role",
+                        "source_speaker",
+                        "chain"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "discourse": {
+                      "type": "object",
+                      "properties": {
+                        "commitment": {
+                          "type": "string",
+                          "enum": [
+                            "asserted",
+                            "tentative",
+                            "hypothetical",
+                            "counterfactual",
+                            "none"
+                          ]
+                        },
+                        "disposition": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "proposed",
+                            "accepted",
+                            "rejected",
+                            "resolved",
+                            "cancelled",
+                            "completed",
+                            "superseded"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "commitment",
+                        "disposition"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "epistemic": {
+                      "type": "object",
+                      "properties": {
+                        "basis": {
+                          "type": "string",
+                          "enum": [
+                            "self_attested",
+                            "source_report"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "basis"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "polarity": {
+                      "type": "string",
+                      "enum": [
+                        "affirmed",
+                        "negated"
+                      ]
+                    },
+                    "support": {
+                      "minItems": 1,
+                      "maxItems": 8,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "quote": {
+                            "type": "string"
+                          },
+                          "item_id": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "quote",
+                          "item_id"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "discourse_frame": {
+                      "minItems": 1,
+                      "maxItems": 16,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "quote": {
+                            "type": "string"
+                          },
+                          "item_id": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "quote",
+                          "item_id"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "relations": {
+                      "maxItems": 8,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "corrects",
+                              "supersedes",
+                              "contradicts",
+                              "fulfills",
+                              "answers",
+                              "caused_by"
+                            ]
+                          },
+                          "target_candidate": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "support": {
+                            "minItems": 1,
+                            "maxItems": 8,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "quote": {
+                                  "type": "string"
+                                },
+                                "item_id": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "quote",
+                                "item_id"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "target_candidate",
+                          "support"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "time": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "start": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "until": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "precision": {
+                              "type": "string",
+                              "enum": [
+                                "instant",
+                                "day",
+                                "month",
+                                "year",
+                                "unknown"
+                              ]
+                            },
+                            "relation": {
+                              "type": "string",
+                              "enum": [
+                                "occurred",
+                                "valid",
+                                "scheduled",
+                                "due"
+                              ]
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "actual",
+                                "scheduled",
+                                "planned",
+                                "tentative"
+                              ]
+                            },
+                            "timezone": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "mentioned_at": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "recurrence": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "frequency": {
+                                      "type": "string",
+                                      "enum": [
+                                        "daily",
+                                        "weekly",
+                                        "monthly",
+                                        "yearly"
+                                      ]
+                                    },
+                                    "interval": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "exclusiveMinimum": 0,
+                                          "maximum": 9007199254740991
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "weekdays": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string",
+                                        "enum": [
+                                          "mo",
+                                          "tu",
+                                          "we",
+                                          "th",
+                                          "fr",
+                                          "sa",
+                                          "su"
+                                        ]
+                                      }
+                                    },
+                                    "until": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "frequency",
+                                    "interval",
+                                    "weekdays",
+                                    "until"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "start",
+                            "until",
+                            "precision",
+                            "relation",
+                            "status",
+                            "timezone",
+                            "mentioned_at",
+                            "recurrence"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "text": {
+                      "type": "string"
+                    },
+                    "subject": {
+                      "type": "string"
+                    },
+                    "page": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "attribution",
+                    "discourse",
+                    "epistemic",
+                    "polarity",
+                    "support",
+                    "discourse_frame",
+                    "relations",
+                    "time",
+                    "text",
+                    "subject",
+                    "page"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "candidate_index",
+                "candidate"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      }
+    },
+    "required": [
+      "repairs"
+    ],
+    "additionalProperties": false
+  },
+  "expected": {
+    "repairs": [
+      {
+        "candidate_index": 0,
+        "reported_proposition": "Bo Winters reports that the Zephyr QX-100 agreement permits a workshop to measure the latch gap while expressly excluding latch replacement; this account carries the silverpine marker in this dry run.",
+        "relay_attribution": "Ada Marlow relays Bo Winters's account and labels her full retelling amberfin.",
+        "personal_limits": "Ada Marlow has not read the agreement or independently checked the account, and tags an unverified retelling quartzleaf."
+      },
+      {
+        "candidate_index": 1,
+        "proposition_and_nontemporal_scope": "Ada Marlow proposes reviewing Zephyr QX-100 repair terms next month. She has not accepted a plan or organized a meeting; this remains her proposal, with no agreement by the other people recorded.",
+        "source_clock_anchor_and_unknown_date": "Next month means the month after the original source record, whose date is wholly unknown.",
+        "excluded_reference_clocks": "Processing time is not the reference point for «next month».",
+        "unresolved_calendar_period": "The calendar month of this proposal remains unknown."
+      },
+      {
+        "candidate_index": 2,
+        "proposition_and_nontemporal_scope": "Ada Marlow suggests reviewing the Zephyr QX-100 inspection terms next month. She has not accepted a plan nor arranged a meeting. The original note records only her proposal and does not establish anyone else’s agreement.",
+        "source_clock_anchor_and_unknown_date": "The original record has no recorded date; next month refers to the month after that source record was written.",
+        "unresolved_calendar_period": "The calendar month for a suggested review cannot be established yet."
+      },
+      {
+        "candidate_index": 3,
+        "candidate": {
+          "kind": "claim",
+          "subject": "Zephyr QX-100",
+          "text": "Ada Marlow has not arranged delivery of Zephyr QX-100.",
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "chain": []
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "self_attested"
+          },
+          "polarity": "negated",
+          "support": [
+            {
+              "item_id": "denial",
+              "quote": "Ada Marlow has not arranged delivery of Zephyr QX-100."
+            }
+          ],
+          "discourse_frame": [
+            {
+              "item_id": "denial",
+              "quote": "Ada Marlow has not arranged delivery of Zephyr QX-100."
+            }
+          ],
+          "relations": [],
+          "time": null,
+          "page": null
+        }
+      }
+    ]
+  },
+  "changed": [
+    {
+      "path": "repairs[1].proposition_and_nontemporal_scope",
+      "utf16Length": 195,
+      "expected": "Ada Marlow proposes reviewing Zephyr QX-100 repair terms next month. She has not accepted a plan or organized a meeting; this remains her proposal, with no agreement by the other people recorded."
+    },
+    {
+      "path": "repairs[1].source_clock_anchor_and_unknown_date",
+      "utf16Length": 90,
+      "expected": "Next month means the month after the original source record, whose date is wholly unknown."
+    },
+    {
+      "path": "repairs[1].unresolved_calendar_period",
+      "utf16Length": 52,
+      "expected": "The calendar month of this proposal remains unknown."
+    },
+    {
+      "path": "repairs[2].proposition_and_nontemporal_scope",
+      "utf16Length": 220,
+      "expected": "Ada Marlow suggests reviewing the Zephyr QX-100 inspection terms next month. She has not accepted a plan nor arranged a meeting. The original note records only her proposal and does not establish anyone else’s agreement."
+    },
+    {
+      "path": "repairs[2].source_clock_anchor_and_unknown_date",
+      "utf16Length": 110,
+      "expected": "The original record has no recorded date; next month refers to the month after that source record was written."
+    },
+    {
+      "path": "repairs[2].unresolved_calendar_period",
+      "utf16Length": 68,
+      "expected": "The calendar month for a suggested review cannot be established yet."
+    }
+  ],
+  "unchangedAssemblyUnits": [
+    400,
+    400,
+    400
+  ]
+}

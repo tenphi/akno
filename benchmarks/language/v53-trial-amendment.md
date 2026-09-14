@@ -1,0 +1,7 @@
+# V53 post-probe disposition
+
+Both declared probes completed on `9d58554`. Preserve all reports, original-source judgments, separate code/forensic reviews, the initial selected forensic review and corrected audit, and the source-only seating convention under `results/v53`. The final result is 32/48 selected plus 25/32 built-package useful answers: **57/80**, twenty-one writable nulls and two accepted qualification/action-specificity errors. Source bytes and case availability pass. No full trial started; fresh approved V20 held-out remains unexecuted.
+
+The report uncertainty floor no longer blocks the selected report, but independent booking retention is still incomplete. Primary exclusion rejection, query-reopened bilingual clarification, source-clock phrasing, uncertain-hypothesis wording and generated actor/mechanism omissions account for the remaining losses. Preserve the distinction between a correct rejection of a flawed draft and an unjustified case abstention when a faithful source-grounded answer was available.
+
+The next revision must address supported causes without making generated interpretation into authority, admitting source-only unselected propositions or adding a semantic retry. Complete the same separate review/fix, full local gate, freeze, build/restart/socket and compiled/exposed validation workflow before reconsidering full execution. No model or acceptance-threshold change is authorized by these results.

@@ -1,0 +1,517 @@
+{
+  "block": "recent",
+  "run": 2,
+  "part": "rest",
+  "cases": [
+    {
+      "id": "v22-held-fictional-example",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains the invented discussion story, all fictional entities and events, spare control-dial loan, forty-four-day source-relative duration, and absence of a real agreement."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested fictional control-dial loan."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested fictional control-dial loan."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested fictional control-dial loan."
+            },
+            {
+              "id": "6",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested fictional control-dial loan."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-relative-unknown-date",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains Ada Marlow’s proposal, cleaning-instructions comparison, two-week record-relative timing, undated calendar limit, and absence of an agreed meeting; its positive source-record anchor semantically excludes processing-time anchoring."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested relative-time cleaning-instructions proposal."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": false,
+            "sourceEntailed": false,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Preserves both tentative, unselected and unsupported alternatives and the unconfirmed-event limit, but changes the exact reported symptom from rattle to the broader vibration."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": false,
+              "sourceEntailed": false,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Changes the exact source symptom from rattle/дребезг to the broader vibration/вибрация."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": false,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Changes the exact source symptom from rattle/дребезг to the broader vibration/вибрация."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested competing rattle hypotheses."
+            },
+            {
+              "id": "5",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested competing rattle hypotheses."
+            },
+            {
+              "id": "6",
+              "useful": false,
+              "sourceEntailed": false,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Changes the exact source symptom from rattle/дребезг to the broader vibration/вибрация."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": false,
+              "reason": "Retrieval changes the query-requested rattle into the broader vibration."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "reason": "Retrieval changes the query-requested rattle into the broader vibration."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-open-question",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": true,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains Ada Marlow’s annual folding-handle alignment question, her lack of an answer, and that neither inclusion nor exclusion is established."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Null answer loses the requested open folding-handle alignment question."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "7",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-rejected-plan",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": false,
+            "sourceEntailed": true,
+            "qualificationsPreserved": true,
+            "correctLanguage": true,
+            "unsafePromotion": false,
+            "reason": "Retains the rejected calibration-room rotation-stop measurement proposal and Ada Marlow’s lack of intent, but omits the independent facts that no appointment was reserved and no transport was arranged."
+          },
+          "justifiedReadOnlyHold": null,
+          "answers": [
+            {
+              "id": "1",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "3",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "4",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            },
+            {
+              "id": "5",
+              "useful": false,
+              "sourceEntailed": false,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Changes the proposed destination from a calibration room to a calibration laboratory."
+            },
+            {
+              "id": "6",
+              "useful": true,
+              "sourceEntailed": true,
+              "qualificationsPreserved": true,
+              "correctLanguage": true,
+              "unsafePromotion": false,
+              "reason": "Answers the requested proposition with its controlling qualifications in the requested language."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            },
+            {
+              "id": "2",
+              "useful": true,
+              "reason": "Retrieves the query-requested proposition with its controlling qualifications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v22-held-read-only-admission",
+      "observations": [
+        {
+          "candidate": "Candidate D",
+          "retention": {
+            "complete": false,
+            "sourceEntailed": null,
+            "qualificationsPreserved": null,
+            "correctLanguage": null,
+            "unsafePromotion": false,
+            "reason": "No record was retained because the only matching destination was read-only."
+          },
+          "justifiedReadOnlyHold": true,
+          "answers": [
+            {
+              "id": "1",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Required abstention under the justified read-only hold; the requested maintenance interval is unavailable."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Required abstention under the justified read-only hold; the requested maintenance interval is unavailable."
+            },
+            {
+              "id": "3",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Required abstention under the justified read-only hold; the requested maintenance interval is unavailable."
+            },
+            {
+              "id": "4",
+              "useful": false,
+              "sourceEntailed": null,
+              "qualificationsPreserved": null,
+              "correctLanguage": null,
+              "unsafePromotion": false,
+              "reason": "Required abstention under the justified read-only hold; the requested maintenance interval is unavailable."
+            }
+          ],
+          "retrievals": [
+            {
+              "id": "1",
+              "useful": false,
+              "reason": "Required empty retrieval under the justified read-only hold."
+            },
+            {
+              "id": "2",
+              "useful": false,
+              "reason": "Required empty retrieval under the justified read-only hold."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

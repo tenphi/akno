@@ -1,0 +1,1830 @@
+{
+  "mode": "integration",
+  "corpusFingerprint": "27bbb05e7bc8089ba133e5723667190106d02e98b635e41328d683bd9700505a",
+  "scoreHashes": {
+    "comparison": "7d9474914344107172a2bb2211749a3b9eab673278bba760b17608d3482cb59f",
+    "integration": "6ee20e25521ce1a9f5c2d17f9a7f9cc0412a5d3ff2543633bb8a8a647fff809f"
+  },
+  "cases": [
+    {
+      "id": "v3-dev-denial",
+      "block": "legacy",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 7,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 15,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": 0
+    },
+    {
+      "id": "v3-dev-report",
+      "block": "legacy",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 6,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 14,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 6,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 14,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 7,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 15,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": 1
+    },
+    {
+      "id": "v3-dev-alternatives",
+      "block": "legacy",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 0,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 7,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 15,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 8,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": 8
+    },
+    {
+      "id": "v3-dev-example",
+      "block": "legacy",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 7,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 15,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 8,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 6,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 14,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 7,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 15,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": 0
+    },
+    {
+      "id": "v3-dev-undated",
+      "block": "legacy",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 7,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 6,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 13,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 0,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 4,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 4,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 8,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": -5
+    },
+    {
+      "id": "v9-held-report",
+      "block": "legacy",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 0,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 6,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 14,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 6,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 6,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 12,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": 16
+    },
+    {
+      "id": "v9-held-hypothesis",
+      "block": "legacy",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 6,
+              "acceptedErrors": 2
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 6,
+              "acceptedErrors": 2
+            }
+          ],
+          "usefulAnswers": 12,
+          "acceptedErrors": 4,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": 0
+    },
+    {
+      "id": "v9-held-counterfactual",
+      "block": "legacy",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 7,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 7,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 8,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": 0
+    },
+    {
+      "id": "v9-held-question",
+      "block": "legacy",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 3,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 6,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 9,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": 0
+    },
+    {
+      "id": "v9-held-exclusion",
+      "block": "legacy",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": 0
+    },
+    {
+      "id": "v22-held-nested-report",
+      "block": "recent",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 0,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 3,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 5,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 8,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 2,
+              "acceptedErrors": 4
+            },
+            {
+              "run": 2,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 6
+            }
+          ],
+          "usefulAnswers": 2,
+          "acceptedErrors": 10,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 5,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 6,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 11,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": 11
+    },
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "block": "recent",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 8,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": 0
+    },
+    {
+      "id": "v22-held-counterfactual",
+      "block": "recent",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 4,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 4,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 3,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 4,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 7,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 4,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 4,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 8,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 4,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 3,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 7,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": 3
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "block": "recent",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 6,
+              "acceptedErrors": 2
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 7,
+              "acceptedErrors": 1
+            }
+          ],
+          "usefulAnswers": 13,
+          "acceptedErrors": 3,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 7,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 7,
+              "acceptedErrors": 1
+            }
+          ],
+          "usefulAnswers": 14,
+          "acceptedErrors": 1,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 6
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 6,
+              "acceptedErrors": 1
+            }
+          ],
+          "usefulAnswers": 6,
+          "acceptedErrors": 7,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 5,
+              "acceptedErrors": 3
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 7,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 12,
+          "acceptedErrors": 3,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": -1
+    },
+    {
+      "id": "v22-held-assistant-speculation",
+      "block": "recent",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 0,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 2,
+              "acceptedErrors": 1
+            },
+            {
+              "run": 2,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 2
+            }
+          ],
+          "usefulAnswers": 2,
+          "acceptedErrors": 3,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 2
+            },
+            {
+              "run": 2,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 3
+            }
+          ],
+          "usefulAnswers": 0,
+          "acceptedErrors": 5,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 4,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 4,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 8,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": 8
+    },
+    {
+      "id": "v22-held-fictional-example",
+      "block": "recent",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 4,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 4,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 8,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 1,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 2,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 3,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 4,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 3,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 7,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 3,
+              "acceptedErrors": 1
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 3,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 6,
+          "acceptedErrors": 1,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": -2
+    },
+    {
+      "id": "v22-held-relative-unknown-date",
+      "block": "recent",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 7,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 15,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 7,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 15,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": -1
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "block": "recent",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 2,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 6,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 8,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 6
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 5,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 5,
+          "acceptedErrors": 6,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 7
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 7
+            }
+          ],
+          "usefulAnswers": 0,
+          "acceptedErrors": 14,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": false,
+              "retainedError": true,
+              "usefulAnswers": 2,
+              "acceptedErrors": 4
+            }
+          ],
+          "usefulAnswers": 2,
+          "acceptedErrors": 4,
+          "retainedErrors": 1
+        }
+      },
+      "deltaFromV77": -6
+    },
+    {
+      "id": "v22-held-open-question",
+      "block": "recent",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 8
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 8,
+          "acceptedErrors": 8,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 5,
+              "acceptedErrors": 3
+            }
+          ],
+          "usefulAnswers": 13,
+          "acceptedErrors": 3,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 7
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 0,
+              "acceptedErrors": 8
+            }
+          ],
+          "usefulAnswers": 0,
+          "acceptedErrors": 15,
+          "retainedErrors": 0
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 7,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 15,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": 7
+    },
+    {
+      "id": "v22-held-rejected-plan",
+      "block": "recent",
+      "arms": {
+        "V77": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V31": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            }
+          ],
+          "usefulAnswers": 16,
+          "acceptedErrors": 0,
+          "retainedErrors": 0
+        },
+        "V17": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": true,
+              "retainedError": false,
+              "usefulAnswers": 6,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": false,
+              "retainedError": true,
+              "usefulAnswers": 1,
+              "acceptedErrors": 1
+            }
+          ],
+          "usefulAnswers": 7,
+          "acceptedErrors": 1,
+          "retainedErrors": 1
+        },
+        "Integration": {
+          "runs": [
+            {
+              "run": 1,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 8,
+              "acceptedErrors": 0
+            },
+            {
+              "run": 2,
+              "completeRetention": false,
+              "retainedError": false,
+              "usefulAnswers": 7,
+              "acceptedErrors": 1
+            }
+          ],
+          "usefulAnswers": 15,
+          "acceptedErrors": 1,
+          "retainedErrors": 0
+        }
+      },
+      "deltaFromV77": -1
+    }
+  ]
+}

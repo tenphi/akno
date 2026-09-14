@@ -1,0 +1,70 @@
+{
+  "runtimeCommit": "160eab17a92c6a01be82b87158ca664a0754301e",
+  "purpose": "protocol-only",
+  "retentionOutputTokenLimit": 2400,
+  "status": "completed",
+  "expected": {
+    "candidates": [
+      {
+        "kind": "claim",
+        "attribution": {
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "chain": []
+        },
+        "discourse": {
+          "commitment": "hypothetical",
+          "disposition": "active"
+        },
+        "epistemic": {
+          "basis": "self_attested"
+        },
+        "polarity": "affirmed",
+        "support": [
+          {
+            "item_id": "turn-1111",
+            "quote": "For a thought experiment, Ada Marlow assumes that Zephyr QX-100 needs a seal check every three weeks. If that assumed rule were accepted, a missed check would violate the requirement."
+          },
+          {
+            "item_id": "turn-2222",
+            "quote": "The actual requirements are unknown to us. No actual missed check is being reported."
+          }
+        ],
+        "discourse_frame": [
+          {
+            "item_id": "turn-1111",
+            "quote": "For a thought experiment, Ada Marlow assumes that Zephyr QX-100 needs a seal check every three weeks. If that assumed rule were accepted, a missed check would violate the requirement."
+          },
+          {
+            "item_id": "turn-2222",
+            "quote": "The actual requirements are unknown to us. No actual missed check is being reported."
+          }
+        ],
+        "relations": [],
+        "time": null,
+        "text": "For a thought experiment, Ada Marlow assumes Zephyr QX-100 needs a seal check every three weeks; under that rule, a missed check would violate the requirement, while the actual requirements are unknown to the group referred to as us and no actual missed check is reported.",
+        "subject": "Zephyr QX-100",
+        "page": null
+      }
+    ],
+    "events": []
+  },
+  "ok": true,
+  "schemaValid": true,
+  "exact": true,
+  "fieldOrder": [
+    "kind",
+    "attribution",
+    "discourse",
+    "epistemic",
+    "polarity",
+    "support",
+    "discourse_frame",
+    "relations",
+    "time",
+    "text",
+    "subject",
+    "page"
+  ],
+  "reason": null
+}

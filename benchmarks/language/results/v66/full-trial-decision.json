@@ -1,0 +1,37 @@
+{
+  "runtimeCommit": "13a7569f54634627c0eae91eb8f55d159c064176",
+  "decidedAt": "2026-09-09T13:06:15.566Z",
+  "decision": "defer full V21 trial",
+  "probes": [
+    {
+      "probe": "selected",
+      "cases": 8,
+      "usefulRetention": 6,
+      "answerObservations": 64,
+      "usefulAnswers": 36,
+      "usefulRetrieval": 48,
+      "sourceEntailmentFailuresInAdoptedGrade": 0,
+      "acceptedMechanismGeneralizations": 2,
+      "nullAnswers": 26
+    },
+    {
+      "probe": "built",
+      "cases": 4,
+      "usefulRetention": 3,
+      "answerObservations": 32,
+      "usefulAnswers": 23,
+      "usefulRetrieval": 24,
+      "sourceEntailmentFailuresInAdoptedGrade": 0,
+      "acceptedMechanismGeneralizations": 0,
+      "nullAnswers": 9
+    }
+  ],
+  "reason": "59/96 useful answers, 9/12 complete retained sets, and two accepted material mechanism generalizations. The initial grade missed the generalizations; corrected source-only grading and separate source-first forensics agree they are not useful.",
+  "interpretation": "The adopted grade treats both generalized answers as broader entailed categories with intact discourse qualifications. The forensic reviewer labels them accepted source errors. Both analyses and initial/final receipts are preserved; this distinction does not alter the failed usefulness or deferred-trial decision.",
+  "caseAvailabilityFailures": 0,
+  "answerOperationFailures": 2,
+  "answerOperationFailureCause": "Correct language-policy rejection of untranslated ordinary component vocabulary; no provider/schema availability failure.",
+  "freshHeldOutExecuted": false,
+  "unchangedRuntimeSemanticRerun": false,
+  "sourceFirstForensics": "complete"
+}

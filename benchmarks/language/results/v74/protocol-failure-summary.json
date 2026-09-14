@@ -1,0 +1,35 @@
+{
+  "runtimeCommit": "1f7309bc851690af3132cc00f0c7272347c7b2de",
+  "logicalControls": 10,
+  "passed": 7,
+  "failed": [
+    {
+      "id": "positive-retention-verifier",
+      "reason": "request_failed",
+      "endpointRequests": 1,
+      "usage": null,
+      "errorDetailAvailable": false
+    },
+    {
+      "id": "maximum-frame-negative-retention-verifier",
+      "reason": "request_failed",
+      "endpointRequests": 1,
+      "usage": null,
+      "errorDetailAvailable": false
+    },
+    {
+      "id": "four-branch-retention-repair",
+      "reason": "request_failed",
+      "endpointRequests": 1,
+      "usage": null,
+      "errorDetailAvailable": false
+    }
+  ],
+  "endpointRequests": 16,
+  "logicalTransports": 12,
+  "freshHeldOutExecuted": false,
+  "semanticProbesStarted": false,
+  "rootCause": "Not yet established; original failure error text was not preserved.",
+  "declarationSha256": "dd7e8a54389dc0a9011471ceda4a3404aeca1493cfedbc00d1e1224aff695e86",
+  "rawReceiptSha256": "66049fdef8a175d384801454a85de9c4793a53b59ccc9ab65fb827c2e8f79f67"
+}

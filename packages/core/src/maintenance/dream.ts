@@ -6,6 +6,7 @@ import { AknoError } from '@tenphi/akno-protocol';
 import type { ChangeFile } from '../write/journal.ts';
 import { normalizeSlug } from '../ops/write.ts';
 import { sha256 } from '../store/ids.ts';
+import { proseQualifications } from '../kb/prose.ts';
 import { rebuildEvidenceGraph } from '../index/graph.ts';
 import {
   mergeTopLevelStringArray,
@@ -2262,12 +2263,14 @@ async function sealObservationFacts(
   for (const fact of facts) {
     const row = ctx.store.db
       .prepare(
-        `SELECT f.source_line_hash, f.valid_to, p.rel_path, p.role, p.derived_hash, p.body_hash
+        `SELECT f.source_line_hash, f.valid_to, f.item_id, f.line_start, p.rel_path, p.role, p.derived_hash, p.body_hash
            FROM facts f JOIN pages p ON p.id = f.page_id WHERE f.id = ?`,
       )
       .get(fact.id) as
       | {
           source_line_hash: string;
+          item_id: string | null;
+          line_start: number;
           valid_to: string | null;
           rel_path: string;
           role: string;
@@ -2288,6 +2291,12 @@ async function sealObservationFacts(
       .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
       .catch(() => null);
     if (content === null) continue;
+    // An editor can change the enclosing scope before the watcher updates the fact graph.
+    if (
+      !row.item_id &&
+      proseQualifications(content.split('\n')).get(row.line_start)?.answer_eligible !== true
+    )
+      continue;
     out.push({
       slug: fact.slug,
       contentHash: sha256(content),

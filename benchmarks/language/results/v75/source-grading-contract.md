@@ -1,0 +1,15 @@
+# Independent source-only diagnostic grading
+
+Read only this contract and the designated V75 source/output packets. Do not inspect runtime code, model traces, runtime verifier decisions, aggregate scores, prior grades, implementation plans, or fresh held-out sources. These are exposed diagnostics; they cannot establish the full release gate.
+
+Judge each saved proposition and every nonnull answer against the original source in its content and scope. A flawed retained record cannot become authority for an answer. A focused source-supported subset is allowed, but coupled material qualifications must travel with the selected proposition. Preserve actor, action, object, tested property, report chain, epistemic/discourse status, uncertainty, negation, lifecycle and source-relative clock. Judge requested output language separately; canonical proper names may remain unchanged.
+
+Complete useful retention requires the full requested useful retained set. Surviving records can be individually faithful while the retained set is incomplete. An answer may be useful as a focused subset despite incomplete retention, if it answers the query and preserves all qualifications coupled to that selected proposition. Null is not useful and has sourceEntailed/languageCompliant null. Judge justifiedAbstention against whether the original source permits an answer: a null caused by lost retention/retrieval is not source-justified when the original source answers the question, although its reason may separately note that refusing to invent from incomplete retrieved evidence was safe. Nonnull answers have justifiedAbstention false. A source report may be asserted as a report without tentative metadata when the source asserts the occurrence of reporting; do not promote the embedded report to verified fact. Retrieval grades judge the material actually retrieved; paired answer-language coordinates with the same query/view must receive the same retrieval grade.
+
+Write JSON with schemaVersion `language-diagnostic-output-review-v2`, reviewer `{kind:"model",id:"gpt-5.6-sol",independent:true,didNotAuthorCorpus:true,didNotTuneRuntime:true}`, and `cases`.
+
+Each case has `id`, `run`, booleans `retentionUseful`, `retainedSourceEntailed`, `knowledgeLanguageCompliant`, `qualificationPreserved`, `unsafeFactualPromotion`, an evidence-based `reason`, and eight `answers`.
+
+Each answer has `queryLanguage` and `answerLanguage` (en/ru), `explicitView`, booleans `usefulQualifiedAnswer`, `usefulQualifiedRetrieval`, `justifiedAbstention`, `qualificationPreserved`, `unsafeFactualPromotion`, nullable booleans `languageCompliant` and `sourceEntailed`, and an evidence-based `reason`. Grade all eight language/view combinations without deduplicating. Null cannot count as a successful writable answer.
+
+Preserve initial review JSON before any correction, use a separate final review JSON, and write a concise source-review Markdown explaining important distinctions and exact supported totals. Do not use another agent's grades as your first-pass authority. No provider or benchmark calls, code changes, issue updates, or PR mutations.

@@ -1,6 +1,6 @@
 import type { MemoryView, RecallGraphPath, RecallMode, RecallResult } from '@tenphi/akno-protocol';
 import { openOptionsFrom, parse } from '../args.ts';
-import { heading, json, line, statusLabel, style, truncate } from '../output.ts';
+import { proseLabel, heading, json, line, statusLabel, style, truncate } from '../output.ts';
 import { resolveOps } from '../ops-handle.ts';
 
 const RECALL_HELP = `akno recall <query> [options]
@@ -166,7 +166,9 @@ function printRecall(result: {
     if (card.summary) line(`  ${truncate(card.summary, 150)}`);
     for (const bodyLine of card.lines) {
       const confidence = bodyLine.confidence !== undefined ? style.grey(` ~${bodyLine.confidence}`) : '';
-      line(`  ${style.grey(`${card.slug}:${bodyLine.n}`)}  ${truncate(bodyLine.text, 110)}${confidence}`);
+      line(
+        `  ${style.grey(`${card.slug}:${bodyLine.n}`)}  ${truncate(bodyLine.text, 110)}${proseLabel(bodyLine)}${confidence}`,
+      );
     }
     if (card.truncated) line(style.grey('  … quote window capped (source page)'));
     for (const entry of card.superseded ?? []) {

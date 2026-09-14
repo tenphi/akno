@@ -1,0 +1,105 @@
+{
+  "purpose": "Four minimal differential schema diagnostics for V74 request failures. No corpus or full failed fixture is repeated. Success/failure is evidence, not a required all-pass gate.",
+  "controls": [
+    {
+      "id": "plain-sentence",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "quote": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+          }
+        },
+        "required": [
+          "quote"
+        ],
+        "additionalProperties": false
+      },
+      "expected": {
+        "quote": "Ada Marlow inspected Zephyr QX-100."
+      },
+      "callerCap": 400,
+      "roleCap": 400,
+      "effectiveCap": 400,
+      "api": "responses"
+    },
+    {
+      "id": "unicode-content",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "quote": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "[\\p{L}\\p{N}]"
+          }
+        },
+        "required": [
+          "quote"
+        ],
+        "additionalProperties": false
+      },
+      "expected": {
+        "quote": "Ada Marlow inspected Zephyr QX-100."
+      },
+      "callerCap": 400,
+      "roleCap": 400,
+      "effectiveCap": 400,
+      "api": "responses"
+    },
+    {
+      "id": "ascii-lookahead",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "quote": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^(?=[\\s\\S]*[A-Za-z0-9])[^\\r\\n\\u0000]*[.!]$"
+          }
+        },
+        "required": [
+          "quote"
+        ],
+        "additionalProperties": false
+      },
+      "expected": {
+        "quote": "Ada Marlow inspected Zephyr QX-100."
+      },
+      "callerCap": 400,
+      "roleCap": 400,
+      "effectiveCap": 400,
+      "api": "responses"
+    },
+    {
+      "id": "ascii-content",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "quote": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "[A-Za-z0-9]"
+          }
+        },
+        "required": [
+          "quote"
+        ],
+        "additionalProperties": false
+      },
+      "expected": {
+        "quote": "Ada Marlow inspected Zephyr QX-100."
+      },
+      "callerCap": 400,
+      "roleCap": 400,
+      "effectiveCap": 400,
+      "api": "responses"
+    }
+  ]
+}

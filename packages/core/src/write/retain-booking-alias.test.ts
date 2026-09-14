@@ -1,0 +1,120 @@
+import { describe, expect, it, vi } from 'vitest';
+import type { RetainSourceItem } from '@tenphi/akno-protocol';
+import type { ModelClient } from '../models/client.ts';
+import { cleanCandidateBatch, runRetain } from './retain.ts';
+import { frameAuditFields, retentionAudit } from '../../test/semantic-audit.ts';
+
+const sourceItems: RetainSourceItem[] = [
+  {
+    item_id: 'turn-1111',
+    role: 'user',
+    speaker: 'Ada Marlow',
+    text: 'Ada Marlow declined an offer to send Zephyr QX-100 for inspection.',
+  },
+  {
+    item_id: 'turn-2222',
+    role: 'user',
+    speaker: 'Ada Marlow',
+    text: 'No handover of the device has been booked. The offered shipment was rejected, not accepted.',
+  },
+];
+const candidate = {
+  kind: 'claim',
+  subject: 'Zephyr QX-100',
+  text: 'Ada Marlow states that no handover of Zephyr QX-100, referred to as “the device,” has been booked.',
+  attribution: { source_role: 'user', source_speaker: 'Ada Marlow', chain: [] },
+  discourse: { commitment: 'asserted', disposition: 'active' },
+  epistemic: { basis: 'self_attested' },
+  polarity: 'negated',
+  time: null,
+  support: [{ item_id: 'turn-2222', quote: 'No handover of the device has been booked.' }],
+  discourse_frame: [
+    { item_id: 'turn-2222', quote: 'No handover of the device has been booked.' },
+    { item_id: 'turn-1111', quote: sourceItems[0]!.text },
+  ],
+};
+
+describe('a negative booking subject with a quoted noun alias', () => {
+  it.each(
+    [
+      candidate.text,
+      'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 has been booked.',
+    ].flatMap((text) => [true, false].map((supported) => ({ text, supported }))),
+  )(
+    'preserves all original source context and requires semantics: $supported / $text',
+    async ({ text, supported }) => {
+      const draft = { ...candidate, text };
+      const chat = vi.fn(async (messages: { content: string }[]) => {
+        if (chat.mock.calls.length === 1)
+          return { ok: true, value: JSON.stringify({ candidates: [draft] }), latencyMs: 11 };
+        const payload = JSON.parse(messages.at(-1)!.content);
+        expect(payload.source.items).toEqual(sourceItems);
+        expect(payload.candidates[0].text).toBe(text);
+        expect(payload.candidates[0].time).toBeUndefined();
+        return {
+          ok: true,
+          value: JSON.stringify({
+            verdicts: payload.candidates.map(
+              (c: {
+                polarity: 'affirmed' | 'negated';
+                candidate_id: string;
+                frame_spans: { frame_id: string }[];
+              }) => ({
+                candidate_id: c.candidate_id,
+                source_selected_polarity: c.polarity,
+                ...frameAuditFields(c),
+                ...retentionAudit(c, supported, true, true),
+                proposition_supported: supported,
+                action_arguments_preserved: true,
+                qualification_scope_preserved: true,
+                reason_code: supported ? null : 'discourse_uncertain',
+              }),
+            ),
+          }),
+          latencyMs: 11,
+        };
+      });
+      const model = {
+        available: true,
+        modelId: 'invented-booking-alias',
+        chat,
+        degradedReason: () => null,
+        reportInvalidResponse: vi.fn(),
+      } as unknown as ModelClient;
+      const result = await runRetain('', model, { sourceItems });
+      expect(chat).toHaveBeenCalledTimes(2);
+      expect(result.modelUsage.repair).toBeUndefined();
+      expect(result.candidates).toHaveLength(supported ? 1 : 0);
+      if (!supported) expect(result.held[0]?.hold_stage).toBe('verification');
+    },
+  );
+
+  it.each([
+    'Ada Marlow states that handover of the device referred to as Zephyr QX-100 has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 is ready and a collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 is ready, but a collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 was denied. A collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 has been booked and a collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100\nhas been booked, but a collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 AND A Collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 Is Ready And A Collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 Then A Collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 THEN A Collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 Ada Marlow has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100\nAda Marlow has been booked.',
+  ])('does not lend a negative naming subject to another booking: %s', (text) => {
+    const result = cleanCandidateBatch([{ ...candidate, text }], { generated: true, sourceItems });
+    expect(result.candidates).toHaveLength(0);
+    expect(result.held).toEqual([expect.objectContaining({ reason_code: 'time_unresolved' })]);
+  });
+
+  it.each(['Zephyr QX-100 Then A Collection', 'Zephyr QX-100 Ada Marlow'])(
+    'cannot self-certify a naming tail by declaring an unsupported subject: %s',
+    (subject) => {
+      const text = `Ada Marlow states that no handover of the device referred to as ${subject} has been booked.`;
+      const result = cleanCandidateBatch([{ ...candidate, subject, text }], { generated: true, sourceItems });
+      expect(result.candidates).toHaveLength(0);
+      expect(result.held).toEqual([expect.objectContaining({ reason_code: 'time_unresolved' })]);
+    },
+  );
+});

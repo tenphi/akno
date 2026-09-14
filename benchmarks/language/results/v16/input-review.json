@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "language-input-review-v1",
+  "corpusFingerprint": "e2345553c93d5962321fb752cc8cc18434b9e0023fdf283d2709868a6f18c68a",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-5.6-sol",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutOutputs": true
+  },
+  "cases": [
+    {
+      "id": "v3-dev-denial",
+      "approved": true,
+      "reason": "The source directly asserts that housing replacement is excluded. Preserving negative coverage while avoiding broader or independently verified claims is faithful."
+    },
+    {
+      "id": "v3-dev-report",
+      "approved": true,
+      "reason": "The assistant explicitly presents sensor-cleaning coverage as an unconfirmed suspicion. Attribution and tentative status must therefore be retained."
+    },
+    {
+      "id": "v3-dev-alternatives",
+      "approved": true,
+      "reason": "The source presents annual and biennial service as incompatible, unestablished hypotheses and asks to keep both. The expectation accurately requires both without choosing one."
+    },
+    {
+      "id": "v3-dev-example",
+      "approved": true,
+      "reason": "Ada Marlow records a fictional example involving Bo Winters and explicitly says the twenty-year warranty is not real. Fictional scope and nested attribution are supported."
+    },
+    {
+      "id": "v3-dev-undated",
+      "approved": true,
+      "reason": "The proposal is unaccepted and unscheduled, and the undated source cannot anchor “tomorrow” to a calendar date. The temporal expectation follows directly."
+    },
+    {
+      "id": "v8-held-report",
+      "approved": true,
+      "reason": "Ada Marlow records Bo Winters’s statement about door-seal replacement and explicitly says she has not checked it. Both attribution levels and unverified status are required."
+    },
+    {
+      "id": "v8-held-hypothesis",
+      "approved": true,
+      "reason": "The semiannual filter inspection is explicitly introduced only as a discussion hypothesis, with no actual obligation established. The expectation preserves that scope."
+    },
+    {
+      "id": "v8-held-counterfactual",
+      "approved": true,
+      "reason": "Ada Marlow repeatedly states that she declined the extension and confines year-four pump repair to the unrealized alternative. Preserving rejection and counterfactual scope is faithful."
+    },
+    {
+      "id": "v8-held-question",
+      "approved": true,
+      "reason": "The source explicitly records payment for spare-part delivery as an unresolved question. Describing the question without answering it is the useful supported response."
+    },
+    {
+      "id": "v8-held-exclusion",
+      "approved": true,
+      "reason": "The mixed-language source clearly denies coverage for cosmetic discoloration. Requiring semantic negation and negated metadata is coherent, while ordinary prose with structured provenance remains allowed."
+    },
+    {
+      "id": "v8-held-admission",
+      "approved": true,
+      "reason": "The source is assigned to a read-only destination. Holding retention and abstaining over the empty memory folder without file changes are justified by the setup."
+    }
+  ]
+}

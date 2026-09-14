@@ -1,0 +1,112 @@
+{
+  "mode": "after",
+  "testedAt": "2026-09-13T12:08:05.674Z",
+  "node": "v22.22.0",
+  "transport": "isolated production Unix-socket service",
+  "models": "disabled by isolated defaults",
+  "observations": [
+    {
+      "slug": "retelling",
+      "expectedView": "reports",
+      "observed": {
+        "status": "qualified",
+        "view": "reports",
+        "reason": "heading_scope",
+        "answer_eligible": false,
+        "source_hash": "3b09b96ad8078307335dfc9dc7bdb05eedea7d383d88907db80dbcafcfc94b49",
+        "frame": [
+          {
+            "n": 1,
+            "text": "# Zephyr QX-100"
+          },
+          {
+            "n": 3,
+            "text": "## Пересказ"
+          },
+          {
+            "n": 4,
+            "text": "The Zephyr QX-100 warranty lasts five years."
+          }
+        ]
+      },
+      "sibling": {
+        "status": "qualified",
+        "view": "factual",
+        "reason": "asserted",
+        "answer_eligible": true,
+        "source_hash": "3b09b96ad8078307335dfc9dc7bdb05eedea7d383d88907db80dbcafcfc94b49",
+        "frame": []
+      },
+      "bytesStable": true
+    },
+    {
+      "slug": "assistant",
+      "expectedView": "reports",
+      "observed": {
+        "status": "qualified",
+        "view": "reports",
+        "reason": "heading_scope",
+        "answer_eligible": false,
+        "source_hash": "3d685f80ed18a33e1dce2efb138bac51468bd9fd3362daae548be68b7d92b260",
+        "frame": [
+          {
+            "n": 1,
+            "text": "# Zephyr QX-100"
+          },
+          {
+            "n": 3,
+            "text": "## Assistant report"
+          },
+          {
+            "n": 4,
+            "text": "The Zephyr QX-100 case is silver."
+          }
+        ]
+      },
+      "sibling": {
+        "status": "qualified",
+        "view": "factual",
+        "reason": "asserted",
+        "answer_eligible": true,
+        "source_hash": "3d685f80ed18a33e1dce2efb138bac51468bd9fd3362daae548be68b7d92b260",
+        "frame": []
+      },
+      "bytesStable": true
+    },
+    {
+      "slug": "alternatives",
+      "expectedView": "discussion",
+      "observed": {
+        "status": "qualified",
+        "view": "discussion",
+        "reason": "heading_scope",
+        "answer_eligible": false,
+        "source_hash": "23e7d65b3554c5633db299fa5941e980c8daf6b5269e413fab77360e96a8cc9a",
+        "frame": [
+          {
+            "n": 1,
+            "text": "# Zephyr QX-100"
+          },
+          {
+            "n": 3,
+            "text": "## Предварительные версии"
+          },
+          {
+            "n": 4,
+            "text": "The Zephyr QX-100 noise comes from the hinge."
+          }
+        ]
+      },
+      "sibling": {
+        "status": "qualified",
+        "view": "factual",
+        "reason": "asserted",
+        "answer_eligible": true,
+        "source_hash": "23e7d65b3554c5633db299fa5941e980c8daf6b5269e413fab77360e96a8cc9a",
+        "frame": []
+      },
+      "bytesStable": true
+    }
+  ],
+  "sourceBytesStable": true
+}

@@ -1,0 +1,1550 @@
+{
+  "runtimeCommit": "c699916e8f0f8f6537dcb66558ded4f998cf8cfd",
+  "declarationSha256": "465f40be4af3cf0daa4771a1970b5668590c5336288faf596e021ae9f416dafc",
+  "purpose": "Ten once-only invented strict-schema echo controls; not semantic grading or universal budget proof.",
+  "modelId": "gpt-5.6-luna",
+  "reasoningEffort": "low",
+  "startedAt": "2026-09-09T22:28:13.421Z",
+  "results": [
+    {
+      "id": "rendering-copy",
+      "index": 0,
+      "api": "responses",
+      "status": "completed",
+      "expected": {
+        "record_readings": [
+          {
+            "evidence_id": "E1",
+            "selected_meaning": "The retained coverage question remains unanswered.",
+            "clarification_or_ambiguity": null
+          }
+        ],
+        "blocks": [
+          {
+            "rendering_mode": "copy",
+            "evidence_ids": [
+              "E1"
+            ]
+          }
+        ],
+        "missing_concepts": []
+      },
+      "callerCap": 2222,
+      "effectiveCap": 2222,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 2222,
+          "effectiveCap": 2222,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"record_readings\":[{\"evidence_id\":\"E1\",\"selected_meaning\":\"The retained coverage question remains unanswered.\",\"clarification_or_ambiguity\":null}],\"blocks\":[{\"rendering_mode\":\"copy\",\"evidence_ids\":[\"E1\"]}],\"missing_concepts\":[]}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 457,
+            "outputTokens": 79,
+            "totalTokens": 536,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 11
+          }
+        },
+        {
+          "kind": "language-check",
+          "callerCap": 1024,
+          "effectiveCap": 1024,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"hint_roles\":[],\"prose_result\":{\"status\":\"compliant\",\"counterexample\":null}}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 949,
+            "outputTokens": 81,
+            "totalTokens": 1030,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 51
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": null,
+      "reason": null,
+      "error": null,
+      "value": "{\"record_readings\":[{\"evidence_id\":\"E1\",\"selected_meaning\":\"The retained coverage question remains unanswered.\",\"clarification_or_ambiguity\":null}],\"blocks\":[{\"rendering_mode\":\"copy\",\"evidence_ids\":[\"E1\"]}],\"missing_concepts\":[]}",
+      "endpointRequests": 2,
+      "usage": {
+        "inputTokens": 1406,
+        "outputTokens": 160,
+        "totalTokens": 1566,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 62
+      }
+    },
+    {
+      "id": "two-record-answer-verifier",
+      "index": 1,
+      "api": "responses",
+      "status": "completed",
+      "expected": {
+        "verdicts": [
+          {
+            "block_id": "B1",
+            "excerpt_selection": {
+              "selected_by_retained_excerpt": false,
+              "unselected_content": "Marker ssllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct."
+            },
+            "source_alignments": [
+              {
+                "evidence_id": "E1",
+                "source_context": "Marker sallllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.",
+                "actor": {
+                  "source_anchor": null,
+                  "answer_anchor": null,
+                  "detail": "Marker sbllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.",
+                  "relation": "not_selected"
+                },
+                "object_and_operation": {
+                  "source_anchor": "E1_bf777a9014ca_1",
+                  "answer_anchor": "B1_bf777a9014ca_1",
+                  "source_specifics": "Marker sdllllllllllllllllllllllllllll is distinct.",
+                  "answer_specifics": "Marker sellllllllllllllllllllllllllll is distinct.",
+                  "relation": "preserved"
+                },
+                "qualification": {
+                  "source_anchor": "E1_bf777a9014ca_1",
+                  "answer_anchor": null,
+                  "detail": "Marker scllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.",
+                  "relation": "omitted"
+                },
+                "tested_property": {
+                  "source_anchor": "E1_bf777a9014ca_1",
+                  "answer_anchor": "B1_bf777a9014ca_1",
+                  "source_property": "Marker sfllllllll is distinct.",
+                  "answer_property": "Marker sgllllllll is distinct.",
+                  "relation": "preserved"
+                }
+              },
+              {
+                "evidence_id": "E2",
+                "source_context": "Marker shllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.",
+                "actor": {
+                  "source_anchor": null,
+                  "answer_anchor": null,
+                  "detail": "Marker sillllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.",
+                  "relation": "not_selected"
+                },
+                "object_and_operation": {
+                  "source_anchor": "E2_bf777a9014ca_1",
+                  "answer_anchor": "B1_bf777a9014ca_1",
+                  "source_specifics": "Marker skllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.",
+                  "answer_specifics": "Marker slllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.",
+                  "relation": "preserved"
+                },
+                "qualification": {
+                  "source_anchor": "E2_bf777a9014ca_1",
+                  "answer_anchor": "B1_bf777a9014ca_1",
+                  "detail": "Marker sjllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.",
+                  "relation": "preserved"
+                },
+                "tested_property": {
+                  "source_anchor": null,
+                  "answer_anchor": null,
+                  "source_property": null,
+                  "answer_property": null,
+                  "relation": "absent_from_both"
+                }
+              }
+            ],
+            "comparison": {
+              "source_meaning": "Marker smllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.",
+              "candidate_meaning": "Marker snllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.",
+              "action_arguments": "Marker sollllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.",
+              "qualification_scope": "Marker spllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct."
+            },
+            "mismatches": [
+              {
+                "dimension": "action_arguments_preserved",
+                "kind": "changed_action_or_role",
+                "detail": "Marker sqllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct."
+              },
+              {
+                "dimension": "qualification_scope_preserved",
+                "kind": "changed_qualification",
+                "detail": "Marker srllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct."
+              }
+            ],
+            "proposition_supported": true,
+            "action_arguments_preserved": false,
+            "qualification_scope_preserved": false
+          }
+        ]
+      },
+      "callerCap": 2222,
+      "effectiveCap": 2222,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 2222,
+          "effectiveCap": 2222,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"verdicts\":[{\"block_id\":\"B1\",\"excerpt_selection\":{\"selected_by_retained_excerpt\":false,\"unselected_content\":\"Marker ssllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\"},\"source_alignments\":[{\"evidence_id\":\"E1\",\"source_context\":\"Marker sallllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"Marker sbllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"Marker sdllllllllllllllllllllllllllll is distinct.\",\"answer_specifics\":\"Marker sellllllllllllllllllllllllllll is distinct.\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_property\":\"Marker sfllllllll is distinct.\",\"answer_property\":\"Marker sgllllllll is distinct.\",\"relation\":\"preserved\"},\"qualification\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":null,\"detail\":\"Marker scllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"relation\":\"omitted\"}},{\"evidence_id\":\"E2\",\"source_context\":\"Marker shllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"Marker sillllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"Marker skllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"answer_specifics\":\"Marker slllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":null,\"answer_anchor\":null,\"source_property\":null,\"answer_property\":null,\"relation\":\"absent_from_both\"},\"qualification\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"detail\":\"Marker sjllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"relation\":\"preserved\"}}],\"comparison\":{\"source_meaning\":\"Marker smllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is ל\" ,\"candidate_meaning\":\"Marker snllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"action_arguments\":\"Marker sollllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"qualification_scope\":\"Marker spllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\"},\"mismatches\":[{\"dimension\":\"action_arguments_preserved\",\"kind\":\"changed_action_or_role\",\"detail\":\"Marker sqllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\"},{\"dimension\":\"qualification_scope_preserved\",\"kind\":\"changed_qualification\",\"detail\":\"Marker srllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\"}],\"proposition_supported\":true,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false}]}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 5756,
+            "outputTokens": 929,
+            "totalTokens": 6685,
+            "cachedInputTokens": 5753,
+            "reasoningOutputTokens": 21
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": false,
+      "auditStatus": null,
+      "reason": null,
+      "error": null,
+      "value": "{\"verdicts\":[{\"block_id\":\"B1\",\"excerpt_selection\":{\"selected_by_retained_excerpt\":false,\"unselected_content\":\"Marker ssllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\"},\"source_alignments\":[{\"evidence_id\":\"E1\",\"source_context\":\"Marker sallllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"Marker sbllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"Marker sdllllllllllllllllllllllllllll is distinct.\",\"answer_specifics\":\"Marker sellllllllllllllllllllllllllll is distinct.\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_property\":\"Marker sfllllllll is distinct.\",\"answer_property\":\"Marker sgllllllll is distinct.\",\"relation\":\"preserved\"},\"qualification\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":null,\"detail\":\"Marker scllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"relation\":\"omitted\"}},{\"evidence_id\":\"E2\",\"source_context\":\"Marker shllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"Marker sillllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"Marker skllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"answer_specifics\":\"Marker slllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":null,\"answer_anchor\":null,\"source_property\":null,\"answer_property\":null,\"relation\":\"absent_from_both\"},\"qualification\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"detail\":\"Marker sjllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"relation\":\"preserved\"}}],\"comparison\":{\"source_meaning\":\"Marker smllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is ל\" ,\"candidate_meaning\":\"Marker snllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"action_arguments\":\"Marker sollllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\",\"qualification_scope\":\"Marker spllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\"},\"mismatches\":[{\"dimension\":\"action_arguments_preserved\",\"kind\":\"changed_action_or_role\",\"detail\":\"Marker sqllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\"},{\"dimension\":\"qualification_scope_preserved\",\"kind\":\"changed_qualification\",\"detail\":\"Marker srllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll is distinct.\"}],\"proposition_supported\":true,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false}]}",
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 5756,
+        "outputTokens": 929,
+        "totalTokens": 6685,
+        "cachedInputTokens": 5753,
+        "reasoningOutputTokens": 21
+      }
+    },
+    {
+      "id": "answer-clock-translation",
+      "index": 2,
+      "api": "responses",
+      "status": "completed",
+      "expected": {
+        "record_readings": [
+          {
+            "evidence_id": "E1",
+            "selected_meaning": "The original proposal and its unresolved source clock.",
+            "clarification_or_ambiguity": null
+          }
+        ],
+        "blocks": [
+          {
+            "rendering_mode": "translate",
+            "translated_record": {
+              "proposition_and_nontemporal_scope": "Предложение · Предварительный срок: Ada Marlow предложила рассмотреть смету Zephyr QX-100 в следующем месяце. Ada Marlow не приняла план и не организовала встречу; это только предложение.",
+              "source_clock_anchor": "Следующий месяц отсчитывается от времени первоначальной записи без даты.",
+              "remaining_clock_qualifications": "Отсчёт ведётся не от времени обработки. Календарный месяц неизвестен."
+            },
+            "evidence_ids": [
+              "E1"
+            ]
+          }
+        ],
+        "missing_concepts": []
+      },
+      "callerCap": 2222,
+      "effectiveCap": 2222,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 2222,
+          "effectiveCap": 2222,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"record_readings\":[{\"evidence_id\":\"E1\",\"selected_meaning\":\"The original proposal and its unresolved source clock.\",\"clarification_or_ambiguity\":null}],\"blocks\":[{\"rendering_mode\":\"translate\",\"translated_record\":{\"proposition_and_nontemporal_scope\":\"Предложение · Предварительный срок: Ada Marlow предложила рассмотреть смету Zephyr QX-100 в следующем месяце. Ada Marlow не приняла план и не организовала встречу; это только предложение.\",\"source_clock_anchor\":\"Следующий месяц отсчитывается от времени первоначальной записи без даты.\",\"remaining_clock_qualifications\":\"Отсчёт ведётся не от времени обработки. Календарный месяц неизвестен.\"},\"evidence_ids\":[\"E1\"]}],\"missing_concepts\":[]}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 550,
+            "outputTokens": 171,
+            "totalTokens": 721,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 0
+          }
+        },
+        {
+          "kind": "language-check",
+          "callerCap": 1024,
+          "effectiveCap": 1024,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"hint_roles\":[],\"prose_result\":{\"status\":\"compliant\",\"counterexample\":null}}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 1008,
+            "outputTokens": 98,
+            "totalTokens": 1106,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 68
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": null,
+      "reason": null,
+      "error": null,
+      "value": "{\"record_readings\":[{\"evidence_id\":\"E1\",\"selected_meaning\":\"The original proposal and its unresolved source clock.\",\"clarification_or_ambiguity\":null}],\"blocks\":[{\"rendering_mode\":\"translate\",\"translated_record\":{\"proposition_and_nontemporal_scope\":\"Предложение · Предварительный срок: Ada Marlow предложила рассмотреть смету Zephyr QX-100 в следующем месяце. Ada Marlow не приняла план и не организовала встречу; это только предложение.\",\"source_clock_anchor\":\"Следующий месяц отсчитывается от времени первоначальной записи без даты.\",\"remaining_clock_qualifications\":\"Отсчёт ведётся не от времени обработки. Календарный месяц неизвестен.\"},\"evidence_ids\":[\"E1\"]}],\"missing_concepts\":[]}",
+      "endpointRequests": 2,
+      "usage": {
+        "inputTokens": 1558,
+        "outputTokens": 269,
+        "totalTokens": 1827,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 68
+      }
+    },
+    {
+      "id": "positive-retention-verifier",
+      "index": 3,
+      "api": "responses",
+      "status": "completed",
+      "expected": {
+        "verdicts": [
+          {
+            "candidate_id": "cand_13d16614a67e59df919186d6",
+            "comparison": {
+              "source_meaning": "Invented source inspection.",
+              "candidate_meaning": "Invented candidate inspection.",
+              "action_arguments": "Invented actor and component.",
+              "qualification_scope": "Invented active record scope."
+            },
+            "source_selected_polarity": "affirmed",
+            "mismatches": [],
+            "polarity_evidence": null,
+            "proposition_supported": true,
+            "action_arguments_preserved": true,
+            "qualification_scope_preserved": true,
+            "reason_code": null
+          },
+          {
+            "candidate_id": "cand_97927623ee8f2283a796b536",
+            "span_audit": [
+              {
+                "frame_id": "F1",
+                "interpretation": "Invented inspection marker 1-0.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F2",
+                "interpretation": "Invented inspection marker 1-1.",
+                "relationship": "independent"
+              }
+            ],
+            "comparison": {
+              "source_meaning": "Invented source inspection.",
+              "candidate_meaning": "Invented candidate inspection.",
+              "action_arguments": "Invented actor and component.",
+              "qualification_scope": "Invented active record scope."
+            },
+            "source_selected_polarity": "affirmed",
+            "mismatches": [],
+            "polarity_evidence": null,
+            "proposition_supported": true,
+            "action_arguments_preserved": true,
+            "qualification_scope_preserved": true,
+            "reason_code": null
+          }
+        ]
+      },
+      "callerCap": 3744,
+      "effectiveCap": 2400,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 3744,
+          "effectiveCap": 2400,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"verdicts\":[{\"candidate_id\":\"cand_13d16614a67e59df919186d6\",\"comparison\":{\"source_meaning\":\"Invented source inspection.\",\"candidate_meaning\":\"Invented candidate inspection.\",\"action_arguments\":\"Invented actor and component.\",\"qualification_scope\":\"Invented active record scope.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[],\"polarity_evidence\":null,\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null},{\"candidate_id\":\"cand_97927623ee8f2283a796b536\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented inspection marker 1-0.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented inspection marker 1-1.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented source inspection.\",\"candidate_meaning\":\"Invented candidate inspection.\",\"action_arguments\":\"Invented actor and component.\",\"qualification_scope\":\"Invented active record scope.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[],\"polarity_evidence\":null,\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null}]}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 1722,
+            "outputTokens": 292,
+            "totalTokens": 2014,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 15
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": null,
+      "reason": null,
+      "error": null,
+      "value": "{\"verdicts\":[{\"candidate_id\":\"cand_13d16614a67e59df919186d6\",\"comparison\":{\"source_meaning\":\"Invented source inspection.\",\"candidate_meaning\":\"Invented candidate inspection.\",\"action_arguments\":\"Invented actor and component.\",\"qualification_scope\":\"Invented active record scope.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[],\"polarity_evidence\":null,\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null},{\"candidate_id\":\"cand_97927623ee8f2283a796b536\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented inspection marker 1-0.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented inspection marker 1-1.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented source inspection.\",\"candidate_meaning\":\"Invented candidate inspection.\",\"action_arguments\":\"Invented actor and component.\",\"qualification_scope\":\"Invented active record scope.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[],\"polarity_evidence\":null,\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null}]}",
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 1722,
+        "outputTokens": 292,
+        "totalTokens": 2014,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 15
+      }
+    },
+    {
+      "id": "maximum-frame-negative-retention-verifier",
+      "index": 4,
+      "api": "responses",
+      "status": "completed",
+      "expected": {
+        "verdicts": [
+          {
+            "candidate_id": "cand_452be17697d6185d2a600b47",
+            "span_audit": [
+              {
+                "frame_id": "F1",
+                "interpretation": "Invented inspection marker 0-0.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F2",
+                "interpretation": "Invented inspection marker 0-1.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F3",
+                "interpretation": "Invented inspection marker 0-2.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F4",
+                "interpretation": "Invented inspection marker 0-3.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F5",
+                "interpretation": "Invented inspection marker 0-4.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F6",
+                "interpretation": "Invented inspection marker 0-5.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F7",
+                "interpretation": "Invented inspection marker 0-6.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F8",
+                "interpretation": "Invented inspection marker 0-7.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F9",
+                "interpretation": "Invented inspection marker 0-8.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F10",
+                "interpretation": "Invented inspection marker 0-9.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F11",
+                "interpretation": "Invented inspection marker 0-10.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F12",
+                "interpretation": "Invented inspection marker 0-11.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F13",
+                "interpretation": "Invented inspection marker 0-12.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F14",
+                "interpretation": "Invented inspection marker 0-13.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F15",
+                "interpretation": "Invented inspection marker 0-14.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F16",
+                "interpretation": "Invented inspection marker 0-15.",
+                "relationship": "independent"
+              }
+            ],
+            "comparison": {
+              "source_meaning": "Invented source inspection.",
+              "candidate_meaning": "Invented candidate inspection.",
+              "action_arguments": "Invented actor and component.",
+              "qualification_scope": "Invented active record scope."
+            },
+            "source_selected_polarity": "affirmed",
+            "mismatches": [
+              {
+                "dimension": "proposition_supported",
+                "kind": "changed_value",
+                "source": {
+                  "frame_id": "F1",
+                  "exact_excerpt": "Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineaallllllll."
+                },
+                "candidate": {
+                  "kind": "text",
+                  "exact_excerpt": "Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineaallllllll."
+                },
+                "detail": "This protocol-only negative compares the invented marker silverpineaallllllllll."
+              },
+              {
+                "dimension": "action_arguments_preserved",
+                "kind": "changed_value",
+                "source": {
+                  "frame_id": "F2",
+                  "exact_excerpt": "Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineabllllllll."
+                },
+                "candidate": {
+                  "kind": "text",
+                  "exact_excerpt": "Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineabllllllll."
+                },
+                "detail": "This protocol-only negative compares the invented marker silverpineabllllllllll."
+              },
+              {
+                "dimension": "qualification_scope_preserved",
+                "kind": "changed_value",
+                "source": {
+                  "frame_id": "F3",
+                  "exact_excerpt": "Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineacllllllll."
+                },
+                "candidate": {
+                  "kind": "text",
+                  "exact_excerpt": "Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineacllllllll."
+                },
+                "detail": "This protocol-only negative compares the invented marker silverpineacllllllllll."
+              }
+            ],
+            "polarity_evidence": null,
+            "proposition_supported": false,
+            "action_arguments_preserved": false,
+            "qualification_scope_preserved": false,
+            "reason_code": null
+          },
+          {
+            "candidate_id": "cand_c2d9ebc9799e5d337e611338",
+            "span_audit": [
+              {
+                "frame_id": "F1",
+                "interpretation": "Invented inspection marker 1-0.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F2",
+                "interpretation": "Invented inspection marker 1-1.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F3",
+                "interpretation": "Invented inspection marker 1-2.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F4",
+                "interpretation": "Invented inspection marker 1-3.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F5",
+                "interpretation": "Invented inspection marker 1-4.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F6",
+                "interpretation": "Invented inspection marker 1-5.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F7",
+                "interpretation": "Invented inspection marker 1-6.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F8",
+                "interpretation": "Invented inspection marker 1-7.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F9",
+                "interpretation": "Invented inspection marker 1-8.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F10",
+                "interpretation": "Invented inspection marker 1-9.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F11",
+                "interpretation": "Invented inspection marker 1-10.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F12",
+                "interpretation": "Invented inspection marker 1-11.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F13",
+                "interpretation": "Invented inspection marker 1-12.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F14",
+                "interpretation": "Invented inspection marker 1-13.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F15",
+                "interpretation": "Invented inspection marker 1-14.",
+                "relationship": "independent"
+              },
+              {
+                "frame_id": "F16",
+                "interpretation": "Invented inspection marker 1-15.",
+                "relationship": "independent"
+              }
+            ],
+            "comparison": {
+              "source_meaning": "Invented source inspection.",
+              "candidate_meaning": "Invented candidate inspection.",
+              "action_arguments": "Invented actor and component.",
+              "qualification_scope": "Invented active record scope."
+            },
+            "source_selected_polarity": "affirmed",
+            "mismatches": [
+              {
+                "dimension": "proposition_supported",
+                "kind": "changed_value",
+                "source": {
+                  "frame_id": "F1",
+                  "exact_excerpt": "Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineaqllllllll."
+                },
+                "candidate": {
+                  "kind": "text",
+                  "exact_excerpt": "Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineaqllllllll."
+                },
+                "detail": "This protocol-only negative compares the invented marker silverpineadllllllllll."
+              },
+              {
+                "dimension": "action_arguments_preserved",
+                "kind": "changed_value",
+                "source": {
+                  "frame_id": "F2",
+                  "exact_excerpt": "Bo Winters inspected the Zephyr QX-100 frame beside marker silverpinearllllllll."
+                },
+                "candidate": {
+                  "kind": "text",
+                  "exact_excerpt": "Bo Winters inspected the Zephyr QX-100 frame beside marker silverpinearllllllll."
+                },
+                "detail": "This protocol-only negative compares the invented marker silverpineaellllllllll."
+              },
+              {
+                "dimension": "qualification_scope_preserved",
+                "kind": "changed_value",
+                "source": {
+                  "frame_id": "F3",
+                  "exact_excerpt": "Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineasllllllll."
+                },
+                "candidate": {
+                  "kind": "text",
+                  "exact_excerpt": "Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineasllllllll."
+                },
+                "detail": "This protocol-only negative compares the invented marker silverpineafllllllllll."
+              }
+            ],
+            "polarity_evidence": null,
+            "proposition_supported": false,
+            "action_arguments_preserved": false,
+            "qualification_scope_preserved": false,
+            "reason_code": null
+          }
+        ]
+      },
+      "callerCap": 8544,
+      "effectiveCap": 2400,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 8544,
+          "effectiveCap": 2400,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"verdicts\":[{\"candidate_id\":\"cand_452be17697d6185d2a600b47\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented inspection marker 0-0.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented inspection marker 0-1.\",\"relationship\":\"independent\"},{\"frame_id\":\"F3\",\"interpretation\":\"Invented inspection marker 0-2.\",\"relationship\":\"independent\"},{\"frame_id\":\"F4\",\"interpretation\":\"Invented inspection marker 0-3.\",\"relationship\":\"independent\"},{\"frame_id\":\"F5\",\"interpretation\":\"Invented inspection marker 0-4.\",\"relationship\":\"independent\"},{\"frame_id\":\"F6\",\"interpretation\":\"Invented inspection marker 0-5.\",\"relationship\":\"independent\"},{\"frame_id\":\"F7\",\"interpretation\":\"Invented inspection marker 0-6.\",\"relationship\":\"independent\"},{\"frame_id\":\"F8\",\"interpretation\":\"Invented inspection marker 0-7.\",\"relationship\":\"independent\"},{\"frame_id\":\"F9\",\"interpretation\":\"Invented inspection marker 0-8.\",\"relationship\":\"independent\"},{\"frame_id\":\"F10\",\"interpretation\":\"Invented inspection marker 0-9.\",\"relationship\":\"independent\"},{\"frame_id\":\"F11\",\"interpretation\":\"Invented inspection marker 0-10.\",\"relationship\":\"independent\"},{\"frame_id\":\"F12\",\"interpretation\":\"Invented inspection marker 0-11.\",\"relationship\":\"independent\"},{\"frame_id\":\"F13\",\"interpretation\":\"Invented inspection marker 0-12.\",\"relationship\":\"independent\"},{\"frame_id\":\"F14\",\"interpretation\":\"Invented inspection marker 0-13.\",\"relationship\":\"independent\"},{\"frame_id\":\"F15\",\"interpretation\":\"Invented inspection marker 0-14.\",\"relationship\":\"independent\"},{\"frame_id\":\"F16\",\"interpretation\":\"Invented inspection marker 0-15.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented source inspection.\",\"candidate_meaning\":\"Invented candidate inspection.\",\"action_arguments\":\"Invented actor and component.\",\"qualification_scope\":\"Invented active record scope.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[{\"dimension\":\"proposition_supported\",\"detail\":\"This protocol-only negative compares the invented marker silverpineaallllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F1\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineaallllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineaallllllll.\"}},{\"dimension\":\"action_arguments_preserved\",\"detail\":\"This protocol-only negative compares the invented marker silverpineabllllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F2\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineabllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineabllllllll.\"}},{\"dimension\":\"qualification_scope_preserved\",\"detail\":\"This protocol-only negative compares the invented marker silverpineacllllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F3\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineacllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineacllllllll.\"}}],\"polarity_evidence\":null,\"proposition_supported\":false,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false,\"reason_code\":null},{\"candidate_id\":\"cand_c2d9ebc9799e5d337e611338\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented inspection marker 1-0.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented inspection marker 1-1.\",\"relationship\":\"independent\"},{\"frame_id\":\"F3\",\"interpretation\":\"Invented inspection marker 1-2.\",\"relationship\":\"independent\"},{\"frame_id\":\"F4\",\"interpretation\":\"Invented inspection marker 1-3.\",\"relationship\":\"independent\"},{\"frame_id\":\"F5\",\"interpretation\":\"Invented inspection marker 1-4.\",\"relationship\":\"independent\"},{\"frame_id\":\"F6\",\"interpretation\":\"Invented inspection marker 1-5.\",\"relationship\":\"independent\"},{\"frame_id\":\"F7\",\"interpretation\":\"Invented inspection marker 1-6.\",\"relationship\":\"independent\"},{\"frame_id\":\"F8\",\"interpretation\":\"Invented inspection marker 1-7.\",\"relationship\":\"independent\"},{\"frame_id\":\"F9\",\"interpretation\":\"Invented inspection marker 1-8.\",\"relationship\":\"independent\"},{\"frame_id\":\"F10\",\"interpretation\":\"Invented inspection marker 1-9.\",\"relationship\":\"independent\"},{\"frame_id\":\"F11\",\"interpretation\":\"Invented inspection marker 1-10.\",\"relationship\":\"independent\"},{\"frame_id\":\"F12\",\"interpretation\":\"Invented inspection marker 1-11.\",\"relationship\":\"independent\"},{\"frame_id\":\"F13\",\"interpretation\":\"Invented inspection marker 1-12.\",\"relationship\":\"independent\"},{\"frame_id\":\"F14\",\"interpretation\":\"Invented inspection marker 1-13.\",\"relationship\":\"independent\"},{\"frame_id\":\"F15\",\"interpretation\":\"Invented inspection marker 1-14.\",\"relationship\":\"independent\"},{\"frame_id\":\"F16\",\"interpretation\":\"Invented inspection marker 1-15.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented source inspection.\",\"candidate_meaning\":\"Invented candidate inspection.\",\"action_arguments\":\"Invented actor and component.\",\"qualification_scope\":\"Invented active record scope.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[{\"dimension\":\"proposition_supported\",\"detail\":\"This protocol-only negative compares the invented marker silverpineadllllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F1\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineaqllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineaqllllllll.\"}},{\"dimension\":\"action_arguments_preserved\",\"detail\":\"This protocol-only negative compares the invented marker silverpineaellllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F2\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpinearllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpinearllllllll.\"}},{\"dimension\":\"qualification_scope_preserved\",\"detail\":\"This protocol-only negative compares the invented marker silverpineafllllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F3\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineasllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineasllllllll.\"}}],\"polarity_evidence\":null,\"proposition_supported\":false,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false,\"reason_code\":null}]}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 3364,
+            "outputTokens": 1523,
+            "totalTokens": 4887,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 18
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": null,
+      "reason": null,
+      "error": null,
+      "value": "{\"verdicts\":[{\"candidate_id\":\"cand_452be17697d6185d2a600b47\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented inspection marker 0-0.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented inspection marker 0-1.\",\"relationship\":\"independent\"},{\"frame_id\":\"F3\",\"interpretation\":\"Invented inspection marker 0-2.\",\"relationship\":\"independent\"},{\"frame_id\":\"F4\",\"interpretation\":\"Invented inspection marker 0-3.\",\"relationship\":\"independent\"},{\"frame_id\":\"F5\",\"interpretation\":\"Invented inspection marker 0-4.\",\"relationship\":\"independent\"},{\"frame_id\":\"F6\",\"interpretation\":\"Invented inspection marker 0-5.\",\"relationship\":\"independent\"},{\"frame_id\":\"F7\",\"interpretation\":\"Invented inspection marker 0-6.\",\"relationship\":\"independent\"},{\"frame_id\":\"F8\",\"interpretation\":\"Invented inspection marker 0-7.\",\"relationship\":\"independent\"},{\"frame_id\":\"F9\",\"interpretation\":\"Invented inspection marker 0-8.\",\"relationship\":\"independent\"},{\"frame_id\":\"F10\",\"interpretation\":\"Invented inspection marker 0-9.\",\"relationship\":\"independent\"},{\"frame_id\":\"F11\",\"interpretation\":\"Invented inspection marker 0-10.\",\"relationship\":\"independent\"},{\"frame_id\":\"F12\",\"interpretation\":\"Invented inspection marker 0-11.\",\"relationship\":\"independent\"},{\"frame_id\":\"F13\",\"interpretation\":\"Invented inspection marker 0-12.\",\"relationship\":\"independent\"},{\"frame_id\":\"F14\",\"interpretation\":\"Invented inspection marker 0-13.\",\"relationship\":\"independent\"},{\"frame_id\":\"F15\",\"interpretation\":\"Invented inspection marker 0-14.\",\"relationship\":\"independent\"},{\"frame_id\":\"F16\",\"interpretation\":\"Invented inspection marker 0-15.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented source inspection.\",\"candidate_meaning\":\"Invented candidate inspection.\",\"action_arguments\":\"Invented actor and component.\",\"qualification_scope\":\"Invented active record scope.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[{\"dimension\":\"proposition_supported\",\"detail\":\"This protocol-only negative compares the invented marker silverpineaallllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F1\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineaallllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineaallllllll.\"}},{\"dimension\":\"action_arguments_preserved\",\"detail\":\"This protocol-only negative compares the invented marker silverpineabllllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F2\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineabllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineabllllllll.\"}},{\"dimension\":\"qualification_scope_preserved\",\"detail\":\"This protocol-only negative compares the invented marker silverpineacllllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F3\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineacllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Ada Marlow inspected the Zephyr QX-100 frame beside marker silverpineacllllllll.\"}}],\"polarity_evidence\":null,\"proposition_supported\":false,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false,\"reason_code\":null},{\"candidate_id\":\"cand_c2d9ebc9799e5d337e611338\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented inspection marker 1-0.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented inspection marker 1-1.\",\"relationship\":\"independent\"},{\"frame_id\":\"F3\",\"interpretation\":\"Invented inspection marker 1-2.\",\"relationship\":\"independent\"},{\"frame_id\":\"F4\",\"interpretation\":\"Invented inspection marker 1-3.\",\"relationship\":\"independent\"},{\"frame_id\":\"F5\",\"interpretation\":\"Invented inspection marker 1-4.\",\"relationship\":\"independent\"},{\"frame_id\":\"F6\",\"interpretation\":\"Invented inspection marker 1-5.\",\"relationship\":\"independent\"},{\"frame_id\":\"F7\",\"interpretation\":\"Invented inspection marker 1-6.\",\"relationship\":\"independent\"},{\"frame_id\":\"F8\",\"interpretation\":\"Invented inspection marker 1-7.\",\"relationship\":\"independent\"},{\"frame_id\":\"F9\",\"interpretation\":\"Invented inspection marker 1-8.\",\"relationship\":\"independent\"},{\"frame_id\":\"F10\",\"interpretation\":\"Invented inspection marker 1-9.\",\"relationship\":\"independent\"},{\"frame_id\":\"F11\",\"interpretation\":\"Invented inspection marker 1-10.\",\"relationship\":\"independent\"},{\"frame_id\":\"F12\",\"interpretation\":\"Invented inspection marker 1-11.\",\"relationship\":\"independent\"},{\"frame_id\":\"F13\",\"interpretation\":\"Invented inspection marker 1-12.\",\"relationship\":\"independent\"},{\"frame_id\":\"F14\",\"interpretation\":\"Invented inspection marker 1-13.\",\"relationship\":\"independent\"},{\"frame_id\":\"F15\",\"interpretation\":\"Invented inspection marker 1-14.\",\"relationship\":\"independent\"},{\"frame_id\":\"F16\",\"interpretation\":\"Invented inspection marker 1-15.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented source inspection.\",\"candidate_meaning\":\"Invented candidate inspection.\",\"action_arguments\":\"Invented actor and component.\",\"qualification_scope\":\"Invented active record scope.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[{\"dimension\":\"proposition_supported\",\"detail\":\"This protocol-only negative compares the invented marker silverpineadllllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F1\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineaqllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineaqllllllll.\"}},{\"dimension\":\"action_arguments_preserved\",\"detail\":\"This protocol-only negative compares the invented marker silverpineaellllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F2\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpinearllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpinearllllllll.\"}},{\"dimension\":\"qualification_scope_preserved\",\"detail\":\"This protocol-only negative compares the invented marker silverpineafllllllllll.\",\"kind\":\"changed_value\",\"source\":{\"frame_id\":\"F3\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineasllllllll.\"},\"candidate\":{\"kind\":\"text\",\"exact_excerpt\":\"Bo Winters inspected the Zephyr QX-100 frame beside marker silverpineasllllllll.\"}}],\"polarity_evidence\":null,\"proposition_supported\":false,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false,\"reason_code\":null}]}",
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 3364,
+        "outputTokens": 1523,
+        "totalTokens": 4887,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 18
+      }
+    },
+    {
+      "id": "four-branch-retention-repair",
+      "index": 5,
+      "api": "responses",
+      "status": "completed",
+      "expected": {
+        "repairs": [
+          {
+            "candidate_index": 0,
+            "reported_proposition": "Bo Winters reports that the Zephyr QX-100 agreement permits a workshop to measure the latch gap while expressly excluding latch replacement; this account carries the silverpine marker in this dry run.",
+            "relay_attribution": "Ada Marlow relays Bo Winters's account and labels her full retelling amberfin.",
+            "personal_limits": "Ada Marlow has not read the agreement or independently checked the account, and tags an unverified retelling quartzleaf."
+          },
+          {
+            "candidate_index": 1,
+            "proposition_and_nontemporal_scope": "Ada Marlow proposes reviewing the invented repair terms for marker silverpineahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszg.",
+            "source_clock_anchor_and_unknown_date": "The original record date is unknown for marker silverpineahovcjqxelszgnubipwdkryfmtahovcj.",
+            "excluded_reference_clocks": "Processing does not anchor marker silverpineahovcjqxelszgnu.",
+            "unresolved_calendar_period": "The calendar month is unknown for silverpineahovcjq."
+          },
+          {
+            "candidate_index": 2,
+            "proposition_and_nontemporal_scope": "Ada Marlow proposes reviewing the invented repair terms for marker silverpineahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelsz.",
+            "source_clock_anchor_and_unknown_date": "The original record date is unknown for marker silverpineahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmt.",
+            "unresolved_calendar_period": "The calendar month is unknown for silverpineahovcjqxelszgnubipwdkry."
+          },
+          {
+            "candidate_index": 3,
+            "candidate": {
+              "kind": "claim",
+              "subject": "Zephyr QX-100",
+              "text": "Ada Marlow has not arranged delivery of Zephyr QX-100.",
+              "attribution": {
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "chain": []
+              },
+              "discourse": {
+                "commitment": "asserted",
+                "disposition": "active"
+              },
+              "epistemic": {
+                "basis": "self_attested"
+              },
+              "polarity": "negated",
+              "support": [
+                {
+                  "item_id": "denial",
+                  "quote": "Ada Marlow has not arranged delivery of Zephyr QX-100."
+                }
+              ],
+              "discourse_frame": [
+                {
+                  "item_id": "denial",
+                  "quote": "Ada Marlow has not arranged delivery of Zephyr QX-100."
+                }
+              ],
+              "relations": [],
+              "time": null,
+              "page": null
+            }
+          }
+        ]
+      },
+      "callerCap": 3200,
+      "effectiveCap": 2400,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 3200,
+          "effectiveCap": 2400,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"repairs\":[{\"candidate_index\":0,\"reported_proposition\":\"Bo Winters reports that the Zephyr QX-100 agreement permits a workshop to measure the latch gap while expressly excluding latch replacement; this account carries the silverpine marker in this dry run.\",\"relay_attribution\":\"Ada Marlow relays Bo Winters's account and labels her full retelling amberfin.\",\"personal_limits\":\"Ada Marlow has not read the agreement or independently checked the account, and tags an unverified retelling quartzleaf.\"},{\"candidate_index\":1,\"proposition_and_nontemporal_scope\":\"Ada Marlow proposes reviewing the invented repair terms for marker silverpineahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszg.\",\"source_clock_anchor_and_unknown_date\":\"The original record date is unknown for marker silverpineahovcjqxelszgnubipwdkryfmtahovcj.\",\"excluded_reference_clocks\":\"Processing does not anchor marker silverpineahovcjqxelszgnu.\",\"unresolved_calendar_period\":\"The calendar month is unknown for silverpineahovcjq.\"},{\"candidate_index\":2,\"proposition_and_nontemporal_scope\":\"Ada Marlow proposes reviewing the invented repair terms for marker silverpineahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelsz.\",\"source_clock_anchor_and_unknown_date\":\"The original record date is unknown for marker silverpineahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmt.\",\"unresolved_calendar_period\":\"The calendar month is unknown for silverpineahovcjqxelszgnubipwdkry.\"},{\"candidate_index\":3,\"candidate\":{\"kind\":\"claim\",\"attribution\":{\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"chain\":[]},\"discourse\":{\"commitment\":\"asserted\",\"disposition\":\"active\"},\"epistemic\":{\"basis\":\"self_attested\"},\"polarity\":\"negated\",\"support\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":\"denial\"}],\"discourse_frame\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":\"denial\"}],\"relations\":[],\"time\":null,\"text\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"subject\":\"Zephyr QX-100\",\"page\":null}}]}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 1530,
+            "outputTokens": 629,
+            "totalTokens": 2159,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 16
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": null,
+      "reason": null,
+      "error": null,
+      "value": "{\"repairs\":[{\"candidate_index\":0,\"reported_proposition\":\"Bo Winters reports that the Zephyr QX-100 agreement permits a workshop to measure the latch gap while expressly excluding latch replacement; this account carries the silverpine marker in this dry run.\",\"relay_attribution\":\"Ada Marlow relays Bo Winters's account and labels her full retelling amberfin.\",\"personal_limits\":\"Ada Marlow has not read the agreement or independently checked the account, and tags an unverified retelling quartzleaf.\"},{\"candidate_index\":1,\"proposition_and_nontemporal_scope\":\"Ada Marlow proposes reviewing the invented repair terms for marker silverpineahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszg.\",\"source_clock_anchor_and_unknown_date\":\"The original record date is unknown for marker silverpineahovcjqxelszgnubipwdkryfmtahovcj.\",\"excluded_reference_clocks\":\"Processing does not anchor marker silverpineahovcjqxelszgnu.\",\"unresolved_calendar_period\":\"The calendar month is unknown for silverpineahovcjq.\"},{\"candidate_index\":2,\"proposition_and_nontemporal_scope\":\"Ada Marlow proposes reviewing the invented repair terms for marker silverpineahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmtahovcjqxelsz.\",\"source_clock_anchor_and_unknown_date\":\"The original record date is unknown for marker silverpineahovcjqxelszgnubipwdkryfmtahovcjqxelszgnubipwdkryfmt.\",\"unresolved_calendar_period\":\"The calendar month is unknown for silverpineahovcjqxelszgnubipwdkry.\"},{\"candidate_index\":3,\"candidate\":{\"kind\":\"claim\",\"attribution\":{\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"chain\":[]},\"discourse\":{\"commitment\":\"asserted\",\"disposition\":\"active\"},\"epistemic\":{\"basis\":\"self_attested\"},\"polarity\":\"negated\",\"support\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":\"denial\"}],\"discourse_frame\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":\"denial\"}],\"relations\":[],\"time\":null,\"text\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"subject\":\"Zephyr QX-100\",\"page\":null}}]}",
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 1530,
+        "outputTokens": 629,
+        "totalTokens": 2159,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 16
+      }
+    },
+    {
+      "id": "maximum-language-chat_completions-compliant",
+      "index": 6,
+      "api": "chat_completions",
+      "status": "completed",
+      "expected": {
+        "hint_roles": [
+          {
+            "hint_id": "h0",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h1",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h2",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h3",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h4",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h5",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h6",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h7",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h8",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h9",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h10",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h11",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h12",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h13",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h14",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h15",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h16",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h17",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h18",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h19",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h20",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h21",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h22",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h23",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h24",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h25",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h26",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h27",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h28",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h29",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h30",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h31",
+            "classification": "supplied_identifier"
+          }
+        ],
+        "prose_result": {
+          "status": "compliant",
+          "counterexample": null
+        }
+      },
+      "callerCap": 1024,
+      "effectiveCap": 1024,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 1024,
+          "effectiveCap": 1024,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"hint_roles\":[{\"hint_id\":\"h0\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h1\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h2\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h3\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h4\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h5\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h6\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h7\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h8\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h9\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h10\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h11\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h12\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h13\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h14\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h15\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h16\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h17\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h18\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h19\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h20\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h21\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h22\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h23\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h24\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h25\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h26\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h27\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h28\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h29\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h30\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h31\",\"classification\":\"supplied_identifier\"}],\"prose_result\":{\"status\":\"compliant\",\"counterexample\":null}}",
+          "endpointRequests": 3,
+          "usage": {
+            "inputTokens": 859,
+            "outputTokens": 412,
+            "totalTokens": 1271,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 0
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": "compliant",
+      "reason": null,
+      "error": null,
+      "value": "{\"hint_roles\":[{\"hint_id\":\"h0\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h1\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h2\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h3\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h4\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h5\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h6\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h7\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h8\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h9\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h10\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h11\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h12\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h13\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h14\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h15\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h16\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h17\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h18\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h19\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h20\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h21\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h22\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h23\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h24\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h25\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h26\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h27\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h28\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h29\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h30\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h31\",\"classification\":\"supplied_identifier\"}],\"prose_result\":{\"status\":\"compliant\",\"counterexample\":null}}",
+      "endpointRequests": 3,
+      "usage": {
+        "inputTokens": 859,
+        "outputTokens": 412,
+        "totalTokens": 1271,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 0
+      }
+    },
+    {
+      "id": "maximum-language-chat_completions-noncompliant",
+      "index": 7,
+      "api": "chat_completions",
+      "status": "completed",
+      "expected": {
+        "hint_roles": [
+          {
+            "hint_id": "h0",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h1",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h2",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h3",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h4",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h5",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h6",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h7",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h8",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h9",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h10",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h11",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h12",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h13",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h14",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h15",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h16",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h17",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h18",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h19",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h20",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h21",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h22",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h23",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h24",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h25",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h26",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h27",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h28",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h29",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h30",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h31",
+            "classification": "foreign_ordinary"
+          }
+        ],
+        "prose_result": {
+          "status": "noncompliant",
+          "counterexample": {
+            "kind": "hint",
+            "hint_id": "h0"
+          }
+        }
+      },
+      "callerCap": 1024,
+      "effectiveCap": 1024,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 1024,
+          "effectiveCap": 1024,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"hint_roles\":[{\"hint_id\":\"h0\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h1\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h2\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h3\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h4\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h5\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h6\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h7\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h8\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h9\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h10\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h11\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h12\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h13\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h14\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h15\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h16\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h17\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h18\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h19\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h20\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h21\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h22\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h23\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h24\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h25\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h26\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h27\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h28\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h29\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h30\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h31\",\"classification\":\"foreign_ordinary\"}],\"prose_result\":{\"status\":\"noncompliant\",\"counterexample\":{\"kind\":\"hint\",\"hint_id\":\"h0\"}}}",
+          "endpointRequests": 3,
+          "usage": {
+            "inputTokens": 869,
+            "outputTokens": 434,
+            "totalTokens": 1303,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 6
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": "noncompliant",
+      "reason": null,
+      "error": null,
+      "value": "{\"hint_roles\":[{\"hint_id\":\"h0\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h1\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h2\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h3\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h4\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h5\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h6\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h7\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h8\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h9\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h10\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h11\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h12\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h13\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h14\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h15\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h16\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h17\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h18\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h19\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h20\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h21\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h22\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h23\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h24\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h25\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h26\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h27\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h28\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h29\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h30\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h31\",\"classification\":\"foreign_ordinary\"}],\"prose_result\":{\"status\":\"noncompliant\",\"counterexample\":{\"kind\":\"hint\",\"hint_id\":\"h0\"}}}",
+      "endpointRequests": 3,
+      "usage": {
+        "inputTokens": 869,
+        "outputTokens": 434,
+        "totalTokens": 1303,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 6
+      }
+    },
+    {
+      "id": "maximum-language-responses-compliant",
+      "index": 8,
+      "api": "responses",
+      "status": "completed",
+      "expected": {
+        "hint_roles": [
+          {
+            "hint_id": "h0",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h1",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h2",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h3",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h4",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h5",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h6",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h7",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h8",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h9",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h10",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h11",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h12",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h13",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h14",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h15",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h16",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h17",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h18",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h19",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h20",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h21",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h22",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h23",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h24",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h25",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h26",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h27",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h28",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h29",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h30",
+            "classification": "supplied_identifier"
+          },
+          {
+            "hint_id": "h31",
+            "classification": "supplied_identifier"
+          }
+        ],
+        "prose_result": {
+          "status": "compliant",
+          "counterexample": null
+        }
+      },
+      "callerCap": 1024,
+      "effectiveCap": 1024,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 1024,
+          "effectiveCap": 1024,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"hint_roles\":[{\"hint_id\":\"h0\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h1\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h2\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h3\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h4\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h5\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h6\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h7\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h8\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h9\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h10\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h11\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h12\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h13\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h14\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h15\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h16\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h17\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h18\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h19\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h20\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h21\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h22\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h23\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h24\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h25\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h26\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h27\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h28\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h29\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h30\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h31\",\"classification\":\"supplied_identifier\"}],\"prose_result\":{\"status\":\"compliant\",\"counterexample\":null}}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 856,
+            "outputTokens": 426,
+            "totalTokens": 1282,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 11
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": "compliant",
+      "reason": null,
+      "error": null,
+      "value": "{\"hint_roles\":[{\"hint_id\":\"h0\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h1\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h2\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h3\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h4\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h5\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h6\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h7\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h8\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h9\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h10\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h11\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h12\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h13\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h14\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h15\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h16\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h17\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h18\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h19\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h20\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h21\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h22\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h23\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h24\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h25\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h26\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h27\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h28\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h29\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h30\",\"classification\":\"supplied_identifier\"},{\"hint_id\":\"h31\",\"classification\":\"supplied_identifier\"}],\"prose_result\":{\"status\":\"compliant\",\"counterexample\":null}}",
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 856,
+        "outputTokens": 426,
+        "totalTokens": 1282,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 11
+      }
+    },
+    {
+      "id": "maximum-language-responses-noncompliant",
+      "index": 9,
+      "api": "responses",
+      "status": "completed",
+      "expected": {
+        "hint_roles": [
+          {
+            "hint_id": "h0",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h1",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h2",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h3",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h4",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h5",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h6",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h7",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h8",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h9",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h10",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h11",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h12",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h13",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h14",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h15",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h16",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h17",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h18",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h19",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h20",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h21",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h22",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h23",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h24",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h25",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h26",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h27",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h28",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h29",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h30",
+            "classification": "foreign_ordinary"
+          },
+          {
+            "hint_id": "h31",
+            "classification": "foreign_ordinary"
+          }
+        ],
+        "prose_result": {
+          "status": "noncompliant",
+          "counterexample": {
+            "kind": "hint",
+            "hint_id": "h0"
+          }
+        }
+      },
+      "callerCap": 1024,
+      "effectiveCap": 1024,
+      "transports": [
+        {
+          "kind": "schema-echo",
+          "callerCap": 1024,
+          "effectiveCap": 1024,
+          "status": "completed",
+          "ok": true,
+          "reason": null,
+          "error": null,
+          "value": "{\"hint_roles\":[{\"hint_id\":\"h0\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h1\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h2\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h3\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h4\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h5\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h6\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h7\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h8\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h9\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h10\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h11\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h12\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h13\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h14\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h15\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h16\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h17\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h18\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h19\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h20\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h21\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h22\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h23\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h24\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h25\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h26\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h27\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h28\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h29\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h30\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h31\",\"classification\":\"foreign_ordinary\"}],\"prose_result\":{\"status\":\"noncompliant\",\"counterexample\":{\"kind\":\"hint\",\"hint_id\":\"h0\"}}}",
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 866,
+            "outputTokens": 437,
+            "totalTokens": 1303,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 12
+          }
+        }
+      ],
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "auditStatus": "noncompliant",
+      "reason": null,
+      "error": null,
+      "value": "{\"hint_roles\":[{\"hint_id\":\"h0\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h1\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h2\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h3\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h4\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h5\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h6\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h7\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h8\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h9\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h10\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h11\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h12\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h13\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h14\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h15\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h16\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h17\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h18\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h19\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h20\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h21\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h22\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h23\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h24\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h25\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h26\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h27\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h28\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h29\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h30\",\"classification\":\"foreign_ordinary\"},{\"hint_id\":\"h31\",\"classification\":\"foreign_ordinary\"}],\"prose_result\":{\"status\":\"noncompliant\",\"counterexample\":{\"kind\":\"hint\",\"hint_id\":\"h0\"}}}",
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 866,
+        "outputTokens": 437,
+        "totalTokens": 1303,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 12
+      }
+    }
+  ],
+  "completedAt": "2026-09-09T22:29:09.788Z",
+  "passed": false
+}

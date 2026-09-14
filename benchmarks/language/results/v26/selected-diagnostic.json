@@ -1,0 +1,786 @@
+{
+  "schemaVersion": "language-benchmark-v2",
+  "createdAt": "2026-09-08T11:14:26.198Z",
+  "corpusVersion": "language-discourse-v15",
+  "corpusFingerprint": "4d03a9fde500f2c415f13add30b5db1d3bc843892bb052b3f207be47f9be1746",
+  "selectedCaseIds": [
+    "v15-held-exclusion"
+  ],
+  "runs": 1,
+  "setup": "separate-writable-fidelity-and-read-only-admission",
+  "queryMatrix": [
+    "query_language",
+    "answer_language",
+    "explicit_view"
+  ],
+  "split": "held-out",
+  "knowledgeLanguage": "en",
+  "proseProjectionVersion": "prose-v1",
+  "memoryViewVersion": "memory-view-v6",
+  "answerPromptVersion": "answer-generation-v25",
+  "answerVerifierVersion": "answer-verifier-v15",
+  "retentionPromptVersion": "retain-extraction-language-v18",
+  "retentionVerifierVersion": "retain-verifier-language-v11",
+  "models": {
+    "retention": "gpt-5.6-luna",
+    "answer": "gpt-5.6-luna",
+    "embedding": "text-embedding-qwen3-embedding-0.6b",
+    "expansion": "llama-3.2-3b-instruct"
+  },
+  "indexModelDerivation": false,
+  "independentlyReviewed": false,
+  "releaseEligible": false,
+  "adjudication": "pending: inspect review material; verifier agreement and typed expectations are not independent truth labels",
+  "thresholds": {
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "usefulQualifiedAnswerCoverage": 0.9,
+    "availabilityFailureRate": 0.05,
+    "unsupportedRetainedOutputs": 0,
+    "unsupportedNonnullAnswers": 0
+  },
+  "metrics": {
+    "availabilityFailures": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0
+    },
+    "answerOperationFailures": {
+      "numerator": 0,
+      "denominator": 8,
+      "rate": 0
+    },
+    "producedAnswers": {
+      "numerator": 8,
+      "denominator": 8,
+      "rate": 1
+    },
+    "producedAnswersOverRetained": {
+      "numerator": 8,
+      "denominator": 8,
+      "rate": 1
+    },
+    "answerReasons": {
+      "answered": 8
+    },
+    "routingReasons": {},
+    "holdStages": {
+      "verification": 1
+    },
+    "independentlyJudgedQualifiedAnswers": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "independentlyJustifiedAbstentions": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "languagePolicyRejections": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0
+    },
+    "acceptedLanguageViolations": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "translationQualificationErrors": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "unsafeFactualPromotion": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "noncanonicalEligibilityFlags": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "usefulRetentionCoverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "expectedRetentionMisses": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0
+    },
+    "falseHolds": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "expectedSafeHolds": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "typedSemanticsMatch": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "qualifiedRetrievalCoverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "ordinaryProseQualification": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1
+    },
+    "sourceByteChanges": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0
+    }
+  },
+  "byLanguage": {
+    "en": 0,
+    "ru": 1,
+    "mixed": 0
+  },
+  "byScenario": {
+    "factual-negation": 1
+  },
+  "cases": [
+    {
+      "id": "v15-held-exclusion",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Preserve the direct user assertion excluding sanding housing scratches. It does not settle electrical-fault repair. A direct attributed denial is useful; do not broaden the exclusion or claim independent verification.",
+      "language": "ru",
+      "scenario": "factual-negation",
+      "expectedHold": false,
+      "nonfactualExpected": false,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "held",
+            "reason": "discourse_uncertain",
+            "holdStage": "verification",
+            "routingReason": null
+          },
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 12132,
+            "input_tokens": 3266,
+            "output_tokens": 1200,
+            "total_tokens": 4466
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 4582,
+            "input_tokens": 2446,
+            "output_tokens": 430,
+            "total_tokens": 2876
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1196,
+              "input_tokens": 471,
+              "output_tokens": 39,
+              "total_tokens": 510
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1340,
+              "input_tokens": 308,
+              "output_tokens": 58,
+              "total_tokens": 366
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- The Zephyr QX-100 service contract does not include sanding scratches on the casing; Ada Marlow specifically asserts this exclusion.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4418107b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4421c88bf3b82d107cd2ffa5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2619,
+              "input_tokens": 1545,
+              "output_tokens": 88,
+              "total_tokens": 1633
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1923,
+              "input_tokens": 1673,
+              "output_tokens": 133,
+              "total_tokens": 1806
+            }
+          },
+          "reviewAnswer": "No. Ada Marlow asserts that the Zephyr QX-100 service contract does not include sanding scratches on the casing. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- The Zephyr QX-100 service contract does not include sanding scratches on the casing; Ada Marlow specifically asserts this exclusion.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4418107b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4421c88bf3b82d107cd2ffa5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2154,
+              "input_tokens": 1553,
+              "output_tokens": 77,
+              "total_tokens": 1630
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1897,
+              "input_tokens": 1681,
+              "output_tokens": 138,
+              "total_tokens": 1819
+            }
+          },
+          "reviewAnswer": "Нет. По утверждению Ada Marlow, сервисный контракт Zephyr QX-100 не включает шлифовку царапин на корпусе. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- The Zephyr QX-100 service contract does not include sanding scratches on the casing; Ada Marlow specifically asserts this exclusion.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4418107b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4421c88bf3b82d107cd2ffa5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2740,
+              "input_tokens": 1543,
+              "output_tokens": 67,
+              "total_tokens": 1610
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1034,
+              "input_tokens": 1671,
+              "output_tokens": 42,
+              "total_tokens": 1713
+            }
+          },
+          "reviewAnswer": "Ada Marlow asserts that the Zephyr QX-100 service contract does not cover sanding scratches on the casing. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- The Zephyr QX-100 service contract does not include sanding scratches on the casing; Ada Marlow specifically asserts this exclusion.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4418107b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4421c88bf3b82d107cd2ffa5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2675,
+              "input_tokens": 1553,
+              "output_tokens": 77,
+              "total_tokens": 1630
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1752,
+              "input_tokens": 1681,
+              "output_tokens": 115,
+              "total_tokens": 1796
+            }
+          },
+          "reviewAnswer": "Нет. Согласно утверждению Ada Marlow, сервисный контракт Zephyr QX-100 не включает зашкуривание царапин на корпусе. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- The Zephyr QX-100 service contract does not include sanding scratches on the casing; Ada Marlow specifically asserts this exclusion.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4418107b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4421c88bf3b82d107cd2ffa5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3952,
+              "input_tokens": 1557,
+              "output_tokens": 72,
+              "total_tokens": 1629
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1827,
+              "input_tokens": 1685,
+              "output_tokens": 115,
+              "total_tokens": 1800
+            }
+          },
+          "reviewAnswer": "No. The Zephyr QX-100 service contract does not include sanding scratches on the casing. Ada Marlow specifically asserts this exclusion. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- The Zephyr QX-100 service contract does not include sanding scratches on the casing; Ada Marlow specifically asserts this exclusion.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4418107b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4421c88bf3b82d107cd2ffa5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2559,
+              "input_tokens": 1561,
+              "output_tokens": 97,
+              "total_tokens": 1658
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1561,
+              "input_tokens": 1689,
+              "output_tokens": 80,
+              "total_tokens": 1769
+            }
+          },
+          "reviewAnswer": "Нет. По утверждению Ada Marlow, договор обслуживания Zephyr QX-100 не включает шлифовку царапин на корпусе. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- The Zephyr QX-100 service contract does not include sanding scratches on the casing; Ada Marlow specifically asserts this exclusion.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4418107b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4421c88bf3b82d107cd2ffa5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2504,
+              "input_tokens": 1554,
+              "output_tokens": 69,
+              "total_tokens": 1623
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1000,
+              "input_tokens": 1682,
+              "output_tokens": 42,
+              "total_tokens": 1724
+            }
+          },
+          "reviewAnswer": "No. Ada Marlow asserts that the Zephyr QX-100 service contract does not include sanding scratches on the casing. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- The Zephyr QX-100 service contract does not include sanding scratches on the casing; Ada Marlow specifically asserts this exclusion.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4418107b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4421c88bf3b82d107cd2ffa5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2174,
+              "input_tokens": 1561,
+              "output_tokens": 76,
+              "total_tokens": 1637
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1435,
+              "input_tokens": 1689,
+              "output_tokens": 94,
+              "total_tokens": 1783
+            }
+          },
+          "reviewAnswer": "Нет. По утверждению Ada Marlow, договор обслуживания Zephyr QX-100 не включает шлифовку царапин на корпусе. [memory/equipment:7]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- The Zephyr QX-100 service contract does not include sanding scratches on the casing; Ada Marlow specifically asserts this exclusion.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_4418107b",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_4421c88bf3b82d107cd2ffa5",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "error": null
+    }
+  ]
+}

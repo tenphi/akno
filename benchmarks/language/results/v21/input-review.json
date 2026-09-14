@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "language-input-review-v1",
+  "corpusFingerprint": "696d85cd437e434c1f167a812e6ae823d98eaf6cc2d80e8649603d2fafa8f14e",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-5.6-sol",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutOutputs": true
+  },
+  "cases": [
+    {
+      "id": "v12-held-report",
+      "approved": true,
+      "reason": "The mixed-language source explicitly nests Bo Winters’s unverified report under Ada Marlow’s recording and contrasts cooling-duct cleaning with new-fan installation; the expectation and questions retain every material qualification."
+    },
+    {
+      "id": "v12-held-hypothesis",
+      "approved": true,
+      "reason": "The Russian source expressly assumes a five-month mounting-check interval and conditional missed-check violation for discussion while saying the actual rule is unknown; the expectation is fully entailed."
+    },
+    {
+      "id": "v12-held-counterfactual",
+      "approved": true,
+      "reason": "The mixed-language source distinguishes Ada’s actual declined extension from third-year duct cleaning that would have applied only upon acceptance; requiring both facts and preventing actual-coverage inference is fair."
+    },
+    {
+      "id": "v12-held-question",
+      "approved": true,
+      "reason": "The English source records an unresolved packing-crate question for repair return and expressly withholds both provision and exclusion claims; the expectation and bilingual questions match."
+    },
+    {
+      "id": "v12-held-exclusion",
+      "approved": true,
+      "reason": "The Russian source directly asserts worn-label replacement is excluded and disclaims any statement about casing damage; the requested qualified denial is supported without implying external verification."
+    },
+    {
+      "id": "v12-held-assistant",
+      "approved": true,
+      "reason": "The assistant explicitly labels four annual duct cleanings as its tentative, unchecked, unconfirmed suggestion; the expectation faithfully requires source attribution, quantity, and uncertainty."
+    },
+    {
+      "id": "v12-held-fiction",
+      "approved": true,
+      "reason": "The source marks the three-year free mounting-check promise as invented, names Ada as source and Bo as a fictional participant, and limits its duration; the expectation and queries are precise and supported."
+    },
+    {
+      "id": "v12-held-rejected",
+      "approved": true,
+      "reason": "The Russian source says Ada considered and rejected a workshop trip for mounting checks and has no trip planned; the expectation preserves the complete rejected-plan meaning without overclaiming."
+    },
+    {
+      "id": "v12-held-undated",
+      "approved": true,
+      "reason": "The mixed-language source proposes comparison next month, denies a scheduled meeting, and says the source date and calendar month are unknown; requiring readable source-relative uncertainty is supported."
+    },
+    {
+      "id": "v12-held-alternatives",
+      "approved": true,
+      "reason": "The source explicitly gives a loose bracket and clogged duct as equally unsupported, unconfirmed alternatives with no selected cause; the expectation follows the packet’s embedded-commitment contract and reasonably bars factual/current eligibility for either cause."
+    },
+    {
+      "id": "v12-held-admission",
+      "approved": true,
+      "reason": "The source contains a factual warranty duration, but all destinations are read-only and the memory folder is empty; holding retention and abstaining is the correct expectation."
+    },
+    {
+      "id": "v13-held-report",
+      "approved": true,
+      "reason": "The Russian source explicitly nests Bo Winters’s unverified statement under recorder Ada Marlow and says the terms provide a visit for connector inspection rather than cable replacement. The expectation faithfully preserves that contrast and correctly bars inference of a booked or dated visit."
+    },
+    {
+      "id": "v13-held-hypothesis",
+      "approved": true,
+      "reason": "The English source explicitly assumes a six-month rubber-foot check and a conditional missed-check consequence while declaring the actual requirement unknown. The expectation and bilingual questions preserve the hypothetical scope without creating a schedule."
+    },
+    {
+      "id": "v13-held-counterfactual",
+      "approved": true,
+      "reason": "The Russian source distinguishes Ada Marlow’s completed rejection from fifth-year connector repair that would have been covered only under the declined plan. Requiring both in retention while allowing a focused qualified answer is supported."
+    },
+    {
+      "id": "v13-held-question",
+      "approved": true,
+      "reason": "The mixed source records Ada Marlow’s unanswered replacement-handle question and explicitly withholds both inclusion and exclusion conclusions. The expectation and questions are faithful."
+    },
+    {
+      "id": "v13-held-exclusion",
+      "approved": true,
+      "reason": "The direct English assertion excludes sticker-residue removal and expressly says nothing about damaged rubber feet. The expectation reasonably permits a qualified denial while preventing scope expansion and claims of external verification."
+    },
+    {
+      "id": "v13-held-assistant",
+      "approved": true,
+      "reason": "The mixed assistant statement gives two handle adjustments per year as its tentative, unchecked assumption. The expectation correctly requires assistant attribution, exact quantity, and lack of verification."
+    },
+    {
+      "id": "v13-held-fiction",
+      "approved": true,
+      "reason": "The Russian source clearly identifies Ada Marlow as source, Bo Winters as a fictional character, and a fictional two-year free connector-check promise. The expectation preserves participants, fictionality, service, and duration."
+    },
+    {
+      "id": "v13-held-rejected",
+      "approved": true,
+      "reason": "The mixed source explicitly records a rejected workshop offer and no planned trip. Requiring both for retention while allowing a focused answer to rely on explicit rejected disposition is semantically fair and supported."
+    },
+    {
+      "id": "v13-held-undated",
+      "approved": true,
+      "reason": "The Russian source proposes comparison tomorrow relative to an undated note, denies a meeting arrangement, and says the calendar day is unrecoverable. The expectation correctly requires readable source-relative and unknown-date qualification."
+    },
+    {
+      "id": "v13-held-alternatives",
+      "approved": true,
+      "reason": "The mixed source names a loose rubber foot and cracked handle as equally unsupported, unconfirmed competing explanations with no selected cause. The embedded-commitment expectation faithfully bars factual promotion of either cause."
+    },
+    {
+      "id": "v13-held-admission",
+      "approved": true,
+      "reason": "The source asserts a warranty duration, but the setup makes every destination read-only and the memory folder empty. Holding retention and abstaining while preserving files is justified."
+    }
+  ],
+  "summary": "All 22 cases are approved. Sources, bilingual questions, admissions, and expectations are mutually consistent. The packet fairly separates full retention completeness from focused-answer sufficiency and preserves attribution, uncertainty, embedded commitment, corrective scope contrasts, and unknown source-relative time."
+}

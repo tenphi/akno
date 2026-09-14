@@ -1,0 +1,35 @@
+{
+  "mode": "integration",
+  "validatedAt": "2026-09-13T12:07:25.336Z",
+  "declarationSha256": "3ae4fcb0115329ab38b593638f8ed7d59ccb62170a21f62bed157e041dc99e66",
+  "postvalidatorSha256": "6384cf1ef90bc4b302a975b4f5be433e93cd7e05c5c14b51e9871e6a35189d5c",
+  "publicValidatorSha256": "6be15fb668440cec1901648eb81d6412944b40343624202b64a1ba8edfc6cd82",
+  "completedSha256": "a4b262bcf0df125d640c88c89f25edeaedaa7b81fb62e32807df8229c7700316",
+  "corpusFingerprint": "27bbb05e7bc8089ba133e5723667190106d02e98b635e41328d683bd9700505a",
+  "arms": [
+    {
+      "label": "Integration",
+      "candidate": {
+        "label": "Integration",
+        "commit": "963bf68e3cd07c687007dceaadb4ebb0434613e6",
+        "packageTreeSha256": "51a4e04a1a62e36ef2a99d1e66de91da9ddad04eaefed486f96b620db0c565d2",
+        "protocol": "packages/protocol/dist/index.js",
+        "node": "v22.22.0",
+        "execPath": "<node-v22.22.0>",
+        "abi": "127",
+        "lockSha256": "5601a0ad49140516bd4c0afb4f346073d68105b86a74472c4f49102854700b22"
+      },
+      "caseRuns": 44,
+      "coordinates": 352,
+      "modelCalls": 2890,
+      "modelThrows": 0,
+      "operationErrors": 0,
+      "byteFailures": 0,
+      "replayFailures": 0,
+      "caseAvailabilityFailures": 4,
+      "ordinaryMismatches": 0,
+      "casesSha256": "74a630cdb89e5215669951961cb34f64fa0b2610420a7c292f61e1386061252d",
+      "traceSha256": "d30e18a6234f491319a913561fc79069c0d2ccd0b66c880d86cb2a222949360c"
+    }
+  ]
+}

@@ -81,6 +81,7 @@ export const AutoRecallActivation = z.object({
 export type AutoRecallActivation = z.infer<typeof AutoRecallActivation>;
 
 export const ContextOutput = ResultEnvelope.extend({
+  knowledge_language: z.literal('en').nullable().optional(),
   profile: ContextProfile.optional(),
   /** Content-free receipt for the precision-first auto-recall activation decision. */
   activation: AutoRecallActivation.optional(),

@@ -1,0 +1,176 @@
+{
+  "schemaVersion": "language-quality-gate-v1",
+  "independentlyReviewed": true,
+  "adjudicationKind": "model",
+  "reviewer": "gpt-5.6-sol",
+  "releaseEligible": false,
+  "scope": "Frozen invented English/Russian corpus; independent model adjudication is fallible and is not human validation or a general reliability guarantee.",
+  "packetFingerprint": "d8a53c1ea22076282506ae25a1d8fcdb00ce189a7a409c1c51e708cc114744f1",
+  "inputReviewFingerprint": "3e3be8fe16f96ce37f2d09988cea010cd51557a05aa8e201845154eeb294803a",
+  "outputReviewFingerprint": "6a4257a18ec1b2cced89ee9565ee13c481e0c5eb26d2dee1b2ffe0e162798976",
+  "thresholds": {
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "usefulQualifiedAnswerCoverage": 0.8,
+    "availabilityFailureRate": 0.05
+  },
+  "failures": [
+    "development/run-1:translationQualificationErrors",
+    "held-out/run-1:usefulQualifiedAnswerCoverage",
+    "held-out/run-2:usefulQualifiedAnswerCoverage"
+  ],
+  "groups": [
+    {
+      "split": "development",
+      "run": 1,
+      "metrics": {
+        "usefulRetentionCoverage": {
+          "numerator": 5,
+          "denominator": 5,
+          "rate": 1
+        },
+        "qualifiedRetrievalCoverage": {
+          "numerator": 16,
+          "denominator": 20,
+          "rate": 0.8
+        },
+        "usefulQualifiedAnswerCoverage": {
+          "numerator": 40,
+          "denominator": 40,
+          "rate": 1
+        },
+        "justifiedAbstentions": 0,
+        "expectedSafeHolds": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 1,
+        "sourceByteChanges": 0,
+        "availabilityFailureRate": {
+          "numerator": 0,
+          "denominator": 5,
+          "rate": 0
+        },
+        "ordinaryProseFailures": 0
+      }
+    },
+    {
+      "split": "development",
+      "run": 2,
+      "metrics": {
+        "usefulRetentionCoverage": {
+          "numerator": 5,
+          "denominator": 5,
+          "rate": 1
+        },
+        "qualifiedRetrievalCoverage": {
+          "numerator": 20,
+          "denominator": 20,
+          "rate": 1
+        },
+        "usefulQualifiedAnswerCoverage": {
+          "numerator": 40,
+          "denominator": 40,
+          "rate": 1
+        },
+        "justifiedAbstentions": 0,
+        "expectedSafeHolds": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 0,
+        "sourceByteChanges": 0,
+        "availabilityFailureRate": {
+          "numerator": 0,
+          "denominator": 5,
+          "rate": 0
+        },
+        "ordinaryProseFailures": 0
+      }
+    },
+    {
+      "split": "held-out",
+      "run": 1,
+      "metrics": {
+        "usefulRetentionCoverage": {
+          "numerator": 4,
+          "denominator": 5,
+          "rate": 0.8
+        },
+        "qualifiedRetrievalCoverage": {
+          "numerator": 16,
+          "denominator": 20,
+          "rate": 0.8
+        },
+        "usefulQualifiedAnswerCoverage": {
+          "numerator": 22,
+          "denominator": 40,
+          "rate": 0.55
+        },
+        "justifiedAbstentions": 8,
+        "expectedSafeHolds": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 0,
+        "sourceByteChanges": 0,
+        "availabilityFailureRate": {
+          "numerator": 0,
+          "denominator": 6,
+          "rate": 0
+        },
+        "ordinaryProseFailures": 0
+      }
+    },
+    {
+      "split": "held-out",
+      "run": 2,
+      "metrics": {
+        "usefulRetentionCoverage": {
+          "numerator": 4,
+          "denominator": 5,
+          "rate": 0.8
+        },
+        "qualifiedRetrievalCoverage": {
+          "numerator": 16,
+          "denominator": 20,
+          "rate": 0.8
+        },
+        "usefulQualifiedAnswerCoverage": {
+          "numerator": 26,
+          "denominator": 40,
+          "rate": 0.65
+        },
+        "justifiedAbstentions": 8,
+        "expectedSafeHolds": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 0,
+        "sourceByteChanges": 0,
+        "availabilityFailureRate": {
+          "numerator": 0,
+          "denominator": 6,
+          "rate": 0
+        },
+        "ordinaryProseFailures": 0
+      }
+    }
+  ]
+}

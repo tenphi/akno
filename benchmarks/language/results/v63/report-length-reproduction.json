@@ -1,0 +1,15 @@
+{
+  "frozen_module": "tmp/core-v63/write/retain.js",
+  "text_length": 403,
+  "text": "According to Ada Marlow's retelling, Bo Winters said that the Zephyr QX-100 service terms permit sending the device to a service bench to measure the tension of its return spring, not replacing that spring; Ada Marlow has not read the service terms or independently confirmed this report, and she clarifies that this is Bo Winters's wording in her retelling rather than a condition she verified herself.",
+  "result": {
+    "candidates": [],
+    "held": [
+      {
+        "candidate_id": "cand_3614cfdfa23efd34c127367a",
+        "reason_code": "validation_failed",
+        "reason": "candidate text is not one bounded self-contained statement"
+      }
+    ]
+  }
+}

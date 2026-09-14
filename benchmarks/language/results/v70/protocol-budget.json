@@ -1,0 +1,17 @@
+{
+  "runtimeCommit": "1ceb557224602d132bb3c5944c2ac81ac7d2a696",
+  "purpose": "Protocol-only two-record fixture with bounded descriptions filled; this is not a semantic result or a bound for all languages.",
+  "jsonCharacters": 5054,
+  "usage": {
+    "inputTokens": 4795,
+    "outputTokens": 1063,
+    "totalTokens": 5858,
+    "cachedInputTokens": 0,
+    "reasoningOutputTokens": 27
+  },
+  "callerMaxTokens": 2222,
+  "roleMaxTokens": 2400,
+  "completeExactEcho": true,
+  "extraSemanticPasses": 0,
+  "service1024OverlayValidated": false
+}

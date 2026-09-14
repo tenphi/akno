@@ -1,0 +1,20 @@
+{
+  "runtimeCommit": "44e6e714f1758948f306ec90cdae9b0d453e3604",
+  "sourceDigest": "6c059762a6184f8c0d9dbb328ccfa7a099a02c11cdda228f0e4d2e79429adb4d",
+  "distDigest": "a6f26b6769440b9d05475f1deb3d2950e50c7833557b74b5f957fd6c8c72071f",
+  "files": {
+    "scripts/bench-language.mjs": "80e8b2799f4b8e73d901ba697b8000938606165d498958b5671cfd2c411fd54f",
+    "tmp/run-v76-selected.sh": "1627b37514e532b5f1f580e4d338055b63ce3ce07db33354a6341682bbf64ba4",
+    "tmp/run-v76-built.sh": "768d7bdfe6abd3a7c3a08eb2954e45961f6bbf2d720ef61cbe738d7410dadf76",
+    "tmp/bench-language-built-v76.mjs": "d2fdc665b02e00fce57274ab74654154a5b2df2582da1428765b43183ea2e5e6",
+    "tmp/capture-language-models-v76.mjs": "3f282e451610b670fb9c5c30a8de3c4b79a422991362b61b20fd20b0462afa7a",
+    "tmp/capture-language-built-v76.mjs": "f88301c779a147fa737bd0f2d926afbe84df1d159e1290f9b54c5343d882f9da",
+    "tmp/v76-launch-integrity.mjs": "244fce7f0d0f877749763be70127da97c8758ab9706dedbb4176e650c3ca9867",
+    "tmp/start-v76-probes.mjs": "9040d4ae6f094e9c0a5dca3fc52649ca3aabdbff4fddde697339305633e5f97c",
+    "tmp/validate-v76-evidence.mjs": "70401ae40cb606daeb604633f7c1c41d2ecb7933542dd3ad28a247f15c12b507",
+    "tmp/v76-trace-integrity.mjs": "c09c729dc26942feab834d0a0565d69cb224ef10def3e70f70cf565bbba75b2a",
+    "tmp/write-v76-readiness.mjs": "e69cdc48d079fbfd579bed8f4a323ba5f61b4ebd3ea79805f673a2b20e1c0fd7"
+  },
+  "mode": "selected",
+  "startedAt": "2026-09-09T23:48:03.742Z"
+}

@@ -1,0 +1,477 @@
+{
+  "purpose": "V67 prefreeze deterministic replay of exact exposed V66 candidates and drafts. No model calls or semantic competence claim.",
+  "report": [
+    {
+      "candidate": {
+        "kind": "claim",
+        "attribution": {
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "chain": [
+            {
+              "speaker": "Bo Winters",
+              "role": "user"
+            }
+          ]
+        },
+        "discourse": {
+          "commitment": "asserted",
+          "disposition": "active"
+        },
+        "epistemic": {
+          "basis": "source_report"
+        },
+        "polarity": "affirmed",
+        "support": [
+          {
+            "quote": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+            "item_id": "turn-2222"
+          },
+          {
+            "quote": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+            "item_id": "turn-3333"
+          },
+          {
+            "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account.",
+            "item_id": "turn-1111"
+          }
+        ],
+        "discourse_frame": [
+          {
+            "quote": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+            "item_id": "turn-2222"
+          },
+          {
+            "quote": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+            "item_id": "turn-3333"
+          },
+          {
+            "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account.",
+            "item_id": "turn-1111"
+          }
+        ],
+        "relations": [],
+        "time": null,
+        "text": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch, not replace the latch; Ada Marlow has not read the agreement or independently checked this account.",
+        "subject": "Zephyr QX-100",
+        "page": "memory/zephyr-qx-100"
+      },
+      "result": {
+        "candidates": [
+          {
+            "candidate_id": "cand_4614a702f355dfac4c6415fe",
+            "kind": "claim",
+            "text": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch, not replace the latch; Ada Marlow has not read the agreement or independently checked this account.",
+            "subject": "Zephyr QX-100",
+            "attribution": {
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "chain": [
+                {
+                  "speaker": "Bo Winters",
+                  "role": "user"
+                }
+              ]
+            },
+            "discourse": {
+              "commitment": "asserted",
+              "disposition": "active"
+            },
+            "epistemic": {
+              "basis": "source_report"
+            },
+            "polarity": "affirmed",
+            "support": [
+              {
+                "quote": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+                "item_id": "turn-2222"
+              },
+              {
+                "quote": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+                "item_id": "turn-3333"
+              },
+              {
+                "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account.",
+                "item_id": "turn-1111"
+              }
+            ],
+            "discourse_frame": [
+              {
+                "quote": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+                "item_id": "turn-2222"
+              },
+              {
+                "quote": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+                "item_id": "turn-3333"
+              },
+              {
+                "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account.",
+                "item_id": "turn-1111"
+              }
+            ],
+            "relations": [],
+            "destination": {
+              "slug": "memory/zephyr-qx-100"
+            },
+            "page": "memory/zephyr-qx-100",
+            "origin": "user",
+            "evidence": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.\n…\nУточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.\n…\nI, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account."
+          }
+        ],
+        "held": []
+      }
+    },
+    {
+      "candidate": {
+        "kind": "claim",
+        "attribution": {
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "chain": [
+            {
+              "speaker": "Bo Winters",
+              "role": "user"
+            }
+          ]
+        },
+        "discourse": {
+          "commitment": "asserted",
+          "disposition": "active"
+        },
+        "epistemic": {
+          "basis": "source_report"
+        },
+        "polarity": "affirmed",
+        "support": [
+          {
+            "quote": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+            "item_id": "turn-2222"
+          },
+          {
+            "quote": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+            "item_id": "turn-3333"
+          },
+          {
+            "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account.",
+            "item_id": "turn-1111"
+          }
+        ],
+        "discourse_frame": [
+          {
+            "quote": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+            "item_id": "turn-2222"
+          },
+          {
+            "quote": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+            "item_id": "turn-3333"
+          },
+          {
+            "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account.",
+            "item_id": "turn-1111"
+          }
+        ],
+        "relations": [],
+        "time": null,
+        "text": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch, not change the latch; Ada Marlow is only passing on this meaning, has not read the agreement, and has not independently checked Bo Winters’s account.",
+        "subject": "Zephyr QX-100",
+        "page": "memory/zephyr-qx-100"
+      },
+      "result": {
+        "candidates": [
+          {
+            "candidate_id": "cand_8c69516562d9128564ffae3f",
+            "kind": "claim",
+            "text": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch, not change the latch; Ada Marlow is only passing on this meaning, has not read the agreement, and has not independently checked Bo Winters’s account.",
+            "subject": "Zephyr QX-100",
+            "attribution": {
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "chain": [
+                {
+                  "speaker": "Bo Winters",
+                  "role": "user"
+                }
+              ]
+            },
+            "discourse": {
+              "commitment": "asserted",
+              "disposition": "active"
+            },
+            "epistemic": {
+              "basis": "source_report"
+            },
+            "polarity": "affirmed",
+            "support": [
+              {
+                "quote": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+                "item_id": "turn-2222"
+              },
+              {
+                "quote": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+                "item_id": "turn-3333"
+              },
+              {
+                "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account.",
+                "item_id": "turn-1111"
+              }
+            ],
+            "discourse_frame": [
+              {
+                "quote": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.",
+                "item_id": "turn-2222"
+              },
+              {
+                "quote": "Уточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.",
+                "item_id": "turn-3333"
+              },
+              {
+                "quote": "I, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account.",
+                "item_id": "turn-1111"
+              }
+            ],
+            "relations": [],
+            "destination": {
+              "slug": "memory/zephyr-qx-100"
+            },
+            "page": "memory/zephyr-qx-100",
+            "origin": "user",
+            "evidence": "Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch.\n…\nУточнение к пересказу: измеряется зазор у защёлки, а не меняется защёлка. Я, Ada Marlow, лишь передаю этот смысл слов Bo Winters; сама я его не проверяла.\n…\nI, Ada Marlow, am passing on Bo Winters’s account, without having read the agreement or independently checked the account."
+          }
+        ],
+        "held": []
+      }
+    }
+  ],
+  "clock": [
+    {
+      "candidate": {
+        "kind": "plan",
+        "attribution": {
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "chain": []
+        },
+        "discourse": {
+          "commitment": "asserted",
+          "disposition": "proposed"
+        },
+        "epistemic": {
+          "basis": "self_attested"
+        },
+        "polarity": "affirmed",
+        "support": [
+          {
+            "quote": "I, Ada Marlow, propose reviewing the Zephyr QX-100 repair terms next month. I have not accepted a plan or organized a meeting; this is my proposal only.",
+            "item_id": "turn-1111"
+          },
+          {
+            "quote": "Дата первоначальной записи неизвестна. «Следующий месяц» означает месяц после этой записи, а не после обработки. Какой это календарный месяц, установить невозможно.",
+            "item_id": "turn-2222"
+          }
+        ],
+        "discourse_frame": [
+          {
+            "quote": "I, Ada Marlow, propose reviewing the Zephyr QX-100 repair terms next month. I have not accepted a plan or organized a meeting; this is my proposal only.",
+            "item_id": "turn-1111"
+          },
+          {
+            "quote": "Дата первоначальной записи неизвестна. «Следующий месяц» означает месяц после этой записи, а не после обработки. Какой это календарный месяц, установить невозможно.",
+            "item_id": "turn-2222"
+          }
+        ],
+        "relations": [],
+        "time": {
+          "start": null,
+          "until": null,
+          "precision": "unknown",
+          "relation": "scheduled",
+          "status": "tentative",
+          "timezone": null,
+          "mentioned_at": null,
+          "recurrence": null
+        },
+        "text": "Ada Marlow proposes reviewing the Zephyr QX-100 repair terms next month, meaning the month after her undated source entry; the calendar month is impossible to determine, and she has not accepted a plan or organized a meeting, so this is only her proposal.",
+        "subject": "Zephyr QX-100 repair terms review proposal",
+        "page": "memory/zephyr-qx-100"
+      },
+      "relative": true,
+      "unknown": true,
+      "result": {
+        "candidates": [
+          {
+            "candidate_id": "cand_f90d502ba3450b4d3b4f579c",
+            "kind": "plan",
+            "text": "Ada Marlow proposes reviewing the Zephyr QX-100 repair terms next month, meaning the month after her undated source entry; the calendar month is impossible to determine, and she has not accepted a plan or organized a meeting, so this is only her proposal.",
+            "subject": "Zephyr QX-100 repair terms review proposal",
+            "attribution": {
+              "source_role": "user",
+              "source_speaker": "Ada Marlow"
+            },
+            "discourse": {
+              "commitment": "asserted",
+              "disposition": "proposed"
+            },
+            "epistemic": {
+              "basis": "self_attested"
+            },
+            "polarity": "affirmed",
+            "support": [
+              {
+                "quote": "I, Ada Marlow, propose reviewing the Zephyr QX-100 repair terms next month. I have not accepted a plan or organized a meeting; this is my proposal only.",
+                "item_id": "turn-1111"
+              },
+              {
+                "quote": "Дата первоначальной записи неизвестна. «Следующий месяц» означает месяц после этой записи, а не после обработки. Какой это календарный месяц, установить невозможно.",
+                "item_id": "turn-2222"
+              }
+            ],
+            "discourse_frame": [
+              {
+                "quote": "I, Ada Marlow, propose reviewing the Zephyr QX-100 repair terms next month. I have not accepted a plan or organized a meeting; this is my proposal only.",
+                "item_id": "turn-1111"
+              },
+              {
+                "quote": "Дата первоначальной записи неизвестна. «Следующий месяц» означает месяц после этой записи, а не после обработки. Какой это календарный месяц, установить невозможно.",
+                "item_id": "turn-2222"
+              }
+            ],
+            "relations": [],
+            "time": {
+              "precision": "unknown",
+              "relation": "scheduled",
+              "status": "tentative"
+            },
+            "destination": {
+              "slug": "memory/zephyr-qx-100"
+            },
+            "page": "memory/zephyr-qx-100",
+            "origin": "user",
+            "evidence": "I, Ada Marlow, propose reviewing the Zephyr QX-100 repair terms next month. I have not accepted a plan or organized a meeting; this is my proposal only.\n…\nДата первоначальной записи неизвестна. «Следующий месяц» означает месяц после этой записи, а не после обработки. Какой это календарный месяц, установить невозможно."
+          }
+        ],
+        "held": []
+      }
+    },
+    {
+      "candidate": {
+        "kind": "plan",
+        "attribution": {
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "chain": []
+        },
+        "discourse": {
+          "commitment": "asserted",
+          "disposition": "proposed"
+        },
+        "epistemic": {
+          "basis": "self_attested"
+        },
+        "polarity": "affirmed",
+        "support": [
+          {
+            "quote": "I, Ada Marlow, propose reviewing the Zephyr QX-100 repair terms next month. I have not accepted a plan or organized a meeting; this is my proposal only.",
+            "item_id": "turn-1111"
+          },
+          {
+            "quote": "Дата первоначальной записи неизвестна. «Следующий месяц» означает месяц после этой записи, а не после обработки. Какой это календарный месяц, установить невозможно.",
+            "item_id": "turn-2222"
+          }
+        ],
+        "discourse_frame": [
+          {
+            "quote": "I, Ada Marlow, propose reviewing the Zephyr QX-100 repair terms next month. I have not accepted a plan or organized a meeting; this is my proposal only.",
+            "item_id": "turn-1111"
+          },
+          {
+            "quote": "Дата первоначальной записи неизвестна. «Следующий месяц» означает месяц после этой записи, а не после обработки. Какой это календарный месяц, установить невозможно.",
+            "item_id": "turn-2222"
+          }
+        ],
+        "relations": [],
+        "time": {
+          "start": null,
+          "until": null,
+          "precision": "unknown",
+          "relation": "scheduled",
+          "status": "tentative",
+          "timezone": null,
+          "mentioned_at": null,
+          "recurrence": null
+        },
+        "text": "Ada Marlow proposes reviewing the Zephyr QX-100 repair terms next month, meaning the month after her original source entry rather than after processing; the entry's calendar date is unknown, and she has not accepted a plan or organized a meeting, so this is only her proposal.",
+        "subject": "Zephyr QX-100 repair terms review proposal",
+        "page": "memory/zephyr-qx-100"
+      },
+      "relative": true,
+      "unknown": true,
+      "result": {
+        "candidates": [
+          {
+            "candidate_id": "cand_800f6f9aa6c2f49ade75dd8d",
+            "kind": "plan",
+            "text": "Ada Marlow proposes reviewing the Zephyr QX-100 repair terms next month, meaning the month after her original source entry rather than after processing; the entry's calendar date is unknown, and she has not accepted a plan or organized a meeting, so this is only her proposal.",
+            "subject": "Zephyr QX-100 repair terms review proposal",
+            "attribution": {
+              "source_role": "user",
+              "source_speaker": "Ada Marlow"
+            },
+            "discourse": {
+              "commitment": "asserted",
+              "disposition": "proposed"
+            },
+            "epistemic": {
+              "basis": "self_attested"
+            },
+            "polarity": "affirmed",
+            "support": [
+              {
+                "quote": "I, Ada Marlow, propose reviewing the Zephyr QX-100 repair terms next month. I have not accepted a plan or organized a meeting; this is my proposal only.",
+                "item_id": "turn-1111"
+              },
+              {
+                "quote": "Дата первоначальной записи неизвестна. «Следующий месяц» означает месяц после этой записи, а не после обработки. Какой это календарный месяц, установить невозможно.",
+                "item_id": "turn-2222"
+              }
+            ],
+            "discourse_frame": [
+              {
+                "quote": "I, Ada Marlow, propose reviewing the Zephyr QX-100 repair terms next month. I have not accepted a plan or organized a meeting; this is my proposal only.",
+                "item_id": "turn-1111"
+              },
+              {
+                "quote": "Дата первоначальной записи неизвестна. «Следующий месяц» означает месяц после этой записи, а не после обработки. Какой это календарный месяц, установить невозможно.",
+                "item_id": "turn-2222"
+              }
+            ],
+            "relations": [],
+            "time": {
+              "precision": "unknown",
+              "relation": "scheduled",
+              "status": "tentative"
+            },
+            "destination": {
+              "slug": "memory/zephyr-qx-100"
+            },
+            "page": "memory/zephyr-qx-100",
+            "origin": "user",
+            "evidence": "I, Ada Marlow, propose reviewing the Zephyr QX-100 repair terms next month. I have not accepted a plan or organized a meeting; this is my proposal only.\n…\nДата первоначальной записи неизвестна. «Следующий месяц» означает месяц после этой записи, а не после обработки. Какой это календарный месяц, установить невозможно."
+          }
+        ],
+        "held": []
+      }
+    }
+  ],
+  "counterfactual": [
+    {
+      "row": 66,
+      "text": "Ada Marlow described an unrealized option in which purchasing the optional repair extension would have covered wheel-hub repair in the fifth year. She did not purchase the extension, so this was not her current coverage.",
+      "recognized": true
+    },
+    {
+      "row": 68,
+      "text": "Ada Marlow описала нереализованный вариант, при котором после покупки дополнительного продления ремонта ремонт ступицы колеса в пятом году был бы покрыт. Она это продление не приобрела, поэтому речь не идёт о её действующем покрытии.",
+      "recognized": true
+    }
+  ]
+}

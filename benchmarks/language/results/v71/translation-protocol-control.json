@@ -1,0 +1,46 @@
+{
+  "runtimeCommit": "304b2195ae6c34fabab2b6c4106730a7edbf3186",
+  "purpose": "Protocol-only exact structured-clock translation echo; no semantic quality claim.",
+  "results": [
+    {
+      "kind": "translation-generation",
+      "status": "completed",
+      "expected": {
+        "record_readings": [
+          {
+            "evidence_id": "E1",
+            "selected_meaning": "The original proposal and its unresolved source clock.",
+            "clarification_or_ambiguity": null
+          }
+        ],
+        "blocks": [
+          {
+            "rendering_mode": "translate",
+            "translated_record": {
+              "proposition_and_nontemporal_scope": "Предложение · Предварительный срок: Ada Marlow предложила рассмотреть смету Zephyr QX-100 в следующем месяце. Ada Marlow не приняла план и не организовала встречу; это только предложение.",
+              "source_clock_anchor": "Следующий месяц отсчитывается от времени первоначальной записи без даты.",
+              "remaining_clock_qualifications": "Отсчёт ведётся не от времени обработки. Календарный месяц неизвестен."
+            },
+            "evidence_ids": [
+              "E1"
+            ]
+          }
+        ],
+        "missing_concepts": []
+      },
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "reason": null,
+      "value": "{\"record_readings\":[{\"evidence_id\":\"E1\",\"selected_meaning\":\"The original proposal and its unresolved source clock.\",\"clarification_or_ambiguity\":null}],\"blocks\":[{\"rendering_mode\":\"translate\",\"translated_record\":{\"proposition_and_nontemporal_scope\":\"Предложение · Предварительный срок: Ada Marlow предложила рассмотреть смету Zephyr QX-100 в следующем месяце. Ada Marlow не приняла план и не организовала встречу; это только предложение.\",\"source_clock_anchor\":\"Следующий месяц отсчитывается от времени первоначальной записи без даты.\",\"remaining_clock_qualifications\":\"Отсчёт ведётся не от времени обработки. Календарный месяц неизвестен.\"},\"evidence_ids\":[\"E1\"]}],\"missing_concepts\":[]}",
+      "usage": {
+        "inputTokens": 1123,
+        "outputTokens": 203,
+        "totalTokens": 1326,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 15
+      },
+      "callerMaxTokens": 2222
+    }
+  ]
+}

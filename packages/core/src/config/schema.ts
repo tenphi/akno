@@ -483,6 +483,7 @@ const MaintenanceDoc = z.object({
 });
 
 export const ConfigDoc = z.object({
+  knowledge_language: z.literal('en').nullable().optional(),
   akno_path: z.string().nullable().optional(),
   state_dir: z.string().nullable().optional(),
   paths: PathsDoc.optional(),
@@ -531,6 +532,7 @@ export interface ResolvedProvider {
 }
 
 export interface ResolvedModelRole {
+  knowledgeLanguage?: 'en' | null;
   /**
    * `maintenance` is the same capability as `derive`, named apart only so that a failure at
    * 03:00 says which model failed — "derive endpoint returned 401" sends someone to look at
@@ -577,6 +579,7 @@ export interface FolderRule extends FolderRuleDoc {
 }
 
 export interface AknoConfig {
+  knowledgeLanguage: 'en' | null;
   aknoPath: string;
   stateDir: string;
   dbPath: string;

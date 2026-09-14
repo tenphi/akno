@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "pr70-terminal-disposition-v1",
+  "taskDisposition": "implementation-and-evaluation-finished-with-unmet-reliability-acceptance",
+  "runtimeCommit": "a67faa3fd3a6f59450a35c4af1d66baa96fee4e8",
+  "originalGatePassed": false,
+  "completionGatePassed": false,
+  "iterationsCharged": 2,
+  "iterationCap": 10,
+  "productionChangesAfterFrozenRuntime": false,
+  "replacementRuns": false,
+  "furtherHeldOutTuning": false,
+  "pr": {
+    "number": 70,
+    "state": "open",
+    "merged": false
+  },
+  "issuesEdited": false,
+  "limitations": [
+    "220/320 useful writable answers, below both declared targets in every split/run.",
+    "30/40 complete writable retained sets; losses include central qualified records.",
+    "Five case-level availability failures exceed the per-run limit.",
+    "Three nonfactual ordinary-Markdown passages become fact-eligible in each held-out run; this is a source-admission defect, distinct from observed generated-output promotions.",
+    "Finite invented English/Russian corpus; independent model adjudication is fallible.",
+    "2400-token role ceilings do not evaluate the unchanged 1024-token service answer overlay."
+  ],
+  "reviewSha256": "ea42d3a32cbc4ebcbb0cfe82e1ed94b77d31b02a944366224afae21e75f2b6c8",
+  "originalGateSha256": "be74bb0980a17752c6b94fcb029172ea8eefc041da97cefa00a0fb8726a17696",
+  "completionGateSha256": "2ae6ad156e4d04d4cb1b88aa6d864caf64575df651cdf7142b7232d5d27d4da4",
+  "outputSummarySha256": "d5787f52c5705e1b94aa5c6baed77cf7f6c2de5d8b8d3029feedaad1d255a09d",
+  "nextDesignDirection": "Source-bound proposition representation and controlled language rendering, with fresh independent evaluation; no more phrase-specific tuning in this PR."
+}

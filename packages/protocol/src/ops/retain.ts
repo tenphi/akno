@@ -86,7 +86,7 @@ export const ProvidedRetainCandidate = z
       claim: ['active', 'superseded'],
       preference: ['active', 'superseded'],
       decision: ['accepted', 'rejected', 'superseded'],
-      plan: ['proposed', 'accepted', 'cancelled', 'completed', 'superseded'],
+      plan: ['proposed', 'accepted', 'rejected', 'cancelled', 'completed', 'superseded'],
       event: ['active', 'cancelled', 'superseded'],
       question: ['active', 'resolved'],
     };
@@ -166,6 +166,8 @@ export const RetainUpsertSource = z
     retention: z.union([
       z.object({
         mode: z.literal('provided'),
+        /** Caller attestation for exact prose; Akno never translates provided candidates. */
+        knowledge_language: z.enum(['en', 'ru']).optional(),
         placement: z.enum(['exact', 'automatic']),
         candidates: z.array(ProvidedRetainCandidate).min(1).max(50),
       }),
@@ -266,6 +268,8 @@ export const RetainHoldReason = z.enum([
   'placement_degraded',
   'apply_failed',
   'validation_failed',
+  'language_policy_required',
+  'language_mismatch',
 ]);
 export type RetainHoldReason = z.infer<typeof RetainHoldReason>;
 
@@ -279,7 +283,22 @@ export const RetainModelCallReceipt = z.object({
 });
 export type RetainModelCallReceipt = z.infer<typeof RetainModelCallReceipt>;
 
+export const RetainRoutingReason = z.enum([
+  'existing_selected',
+  'new_selected',
+  'read_only_match',
+  'no_admitted_destination',
+  'ownership_uncertain',
+  'model_unavailable',
+  'model_failed',
+  'invalid_model_response',
+]);
+export type RetainRoutingReason = z.infer<typeof RetainRoutingReason>;
+
 export const RetainCandidateResult = z.object({
+  hold_stage: z.enum(['validation', 'verification', 'placement', 'apply']).optional(),
+  routing_reason: RetainRoutingReason.optional(),
+
   candidate_id: z.string(),
   outcome: z.enum(['written', 'duplicate', 'support_added', 'retracted', 'held', 'not_found']),
   memory_id: z.string().optional(),
@@ -290,6 +309,8 @@ export const RetainCandidateResult = z.object({
 export type RetainCandidateResult = z.infer<typeof RetainCandidateResult>;
 
 export const RetainSourceResult = z.object({
+  /** Policy at original processing time; replay preserves this receipt. */
+  knowledge_language: z.literal('en').nullable().optional(),
   source_id: z.string(),
   revision: z.string(),
   outcome: z.enum(['ok', 'replayed', 'noop', 'held', 'revision_conflict']),
@@ -311,6 +332,7 @@ export const RetainSourceResult = z.object({
   model_usage: z
     .object({
       extraction: RetainModelCallReceipt.nullable(),
+      repair: RetainModelCallReceipt.optional(),
       verification: RetainModelCallReceipt.nullable(),
       placement: z.array(RetainModelCallReceipt),
     })

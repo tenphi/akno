@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {ModelClient} from '../packages/core/src/models/client.ts';
+let sequence=0;
+const append=value=>fs.appendFileSync(process.env.AKNO_EVAL_TRACE,JSON.stringify(value)+'\n');
+const classify=error=>!error?null:/regex|lookaround|lookahead|unicode.*pattern/iu.test(error)?'regex_unsupported':/invalid.*schema|schema.*invalid/iu.test(error)?'schema_invalid':/schema.*(?:not supported|not permitted)/iu.test(error)?'schema_unsupported':'other_provider_failure';
+const original=ModelClient.prototype.chat;
+ModelClient.prototype.chat=async function(messages,options){
+ const id=++sequence,user=messages.at(-1)?.content,system=messages.find(m=>m.role==='system')?.content??'';
+ const kind=system.startsWith('You place durable knowledge into one Markdown page.')?'placement':system.startsWith('You select the canonical home')?'ownership':system.includes('You extract durable memory')?'retention':system.startsWith('You answer a question')?'answer':system.startsWith('You independently verify whether drafted')?'answer-verifier':system.includes('independently verify proposed retained memories')?'retain-verifier':null;
+ const before=options?.additionalLanguageProse;
+ const observed=before?{...options,additionalLanguageProse(value){const additional=before(value),valid=options.schema.safeParse(value).success;append({kind:'rendering-choice',call_id:id,source:user,schemaValid:valid,blocks:valid?value.blocks:null,additionalLanguageProse:additional});return additional;}}:options;
+ append({kind:'model-call-start',call_id:id,operation:kind,modelId:this.modelId});
+ try{
+  // Retention/answer use Luna; query expansion has its own manifest-bound model.
+  // Enforce inside the lifecycle so a policy failure is observable and balanced.
+  const expansion=['Expand a keyword search over a personal knowledge base.', 'A user asked a question of their personal knowledge base.', 'A user wants a broad overview from their personal knowledge base.'].some(prefix=>system.startsWith(prefix));
+  assert(expansion||kind!==null,'Unknown full-trial operation before provider call');
+  assert.equal(this.modelId,expansion?'llama-3.2-3b-instruct':'gpt-5.6-luna','Frozen full-trial role model changed before provider call');
+  const result=await original.call(this,messages,observed);if(kind)append({kind,call_id:id,source:user,value:result.value,ok:result.ok,reason:result.reason??null,errorClass:classify(result.error),schemaError:/invalid schema|schema.*(?:not supported|not permitted)/iu.test(result.error??''),schemaKeywords:['oneOf','anyOf','const','span_audit','pattern'].filter(key=>(result.error??'').includes(key))});append({kind:'model-call-finish',call_id:id,ok:result.ok,reason:result.reason??null,endpointRequests:result.endpointRequests??null,usage:result.usage??null});return result;}catch(error){append({kind:'model-call-throw',call_id:id,errorClass:classify(error instanceof Error?error.message:'exception')});throw error;}
+};
+const transport=ModelClient.prototype.chatTransport;
+ModelClient.prototype.chatTransport=async function(messages,options){
+ const id=++sequence,isLanguage=messages.some(m=>m.role==='system'&&m.content.startsWith('Check the language of generated prose'));append({kind:'transport-start',transport_id:id,language:isLanguage,callerMaxTokens:options?.maxTokens??null});
+ try{const result=await transport.call(this,messages,options);append({kind:isLanguage?'language-check':'transport-result',transport_id:id,source:messages.at(-1)?.content,value:result.value,ok:result.ok,reason:result.reason??null,errorClass:classify(result.error),endpointRequests:result.endpointRequests??null,usage:result.usage??null});return result;}catch(error){append({kind:'transport-throw',transport_id:id,errorClass:classify(error instanceof Error?error.message:'exception')});throw error;}
+};

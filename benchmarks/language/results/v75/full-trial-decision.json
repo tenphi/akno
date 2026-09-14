@@ -1,0 +1,148 @@
+{
+  "runtimeCommit": "c699916e8f0f8f6537dcb66558ded4f998cf8cfd",
+  "decision": "hold",
+  "decidedAt": "2026-09-09T23:05:17.890Z",
+  "rationale": "Selected64 produces 55/64 independently useful compliant answers (85.9375%), below the unchanged 90% diagnostic criterion; built32 is 32/32. Their pooled 87/96 result cannot average the failing selected probe into a pass. All 12 retained sets and all 96 retrieval coordinates are independently useful, and all 87 published answers are source-entailed, qualification-preserving and requested-language compliant. Nine writable nulls are coverage losses; none is justified by an unanswerable original. Preserve the run and diagnose bounded next changes before any fresh full repeated trial.",
+  "exposed": [
+    {
+      "probe": "selected",
+      "cases": 8,
+      "completeUsefulRetention": 8,
+      "observations": 64,
+      "producedAnswers": 55,
+      "usefulAnswers": 55,
+      "usefulCompliantAnswers": 55,
+      "usefulRetrieval": 64,
+      "nullAnswers": 9,
+      "gradeErrors": {
+        "source": 0,
+        "qualification": 0,
+        "language": 0,
+        "promotion": 0
+      },
+      "retainedErrors": [],
+      "emptyRetainedSets": [],
+      "caseAvailabilityFailures": 0,
+      "sourceByteChanges": 0,
+      "perCase": [
+        {
+          "id": "v20-held-report",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v20-held-hypothesis",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v20-held-counterfactual",
+          "retention": true,
+          "usefulAnswers": 6,
+          "producedAnswers": 6
+        },
+        {
+          "id": "v20-held-exclusion",
+          "retention": true,
+          "usefulAnswers": 7,
+          "producedAnswers": 7
+        },
+        {
+          "id": "v20-held-assistant",
+          "retention": true,
+          "usefulAnswers": 7,
+          "producedAnswers": 7
+        },
+        {
+          "id": "v20-held-fiction",
+          "retention": true,
+          "usefulAnswers": 5,
+          "producedAnswers": 5
+        },
+        {
+          "id": "v20-held-undated",
+          "retention": true,
+          "usefulAnswers": 6,
+          "producedAnswers": 6
+        },
+        {
+          "id": "v20-held-alternatives",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        }
+      ],
+      "problematicProduced": []
+    },
+    {
+      "probe": "built",
+      "cases": 4,
+      "completeUsefulRetention": 4,
+      "observations": 32,
+      "producedAnswers": 32,
+      "usefulAnswers": 32,
+      "usefulCompliantAnswers": 32,
+      "usefulRetrieval": 32,
+      "nullAnswers": 0,
+      "gradeErrors": {
+        "source": 0,
+        "qualification": 0,
+        "language": 0,
+        "promotion": 0
+      },
+      "retainedErrors": [],
+      "emptyRetainedSets": [],
+      "caseAvailabilityFailures": 0,
+      "sourceByteChanges": 0,
+      "perCase": [
+        {
+          "id": "v19-held-report",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-question",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-rejected",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-alternatives",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        }
+      ],
+      "problematicProduced": []
+    }
+  ],
+  "fullRunsPerSplit": 2,
+  "fullSplits": [
+    "development",
+    "held-out"
+  ],
+  "fullTrialStarted": false,
+  "freshHeldOutExecutedBeforeDecision": false,
+  "corpusFingerprint": "208d2ea60ef5f5bcf2158ef56a35e57e1ee6b5c36069ac2fbb606abe1ab1cf44",
+  "model": "gpt-5.6-luna",
+  "roleOutputTokenCap": 2400,
+  "thresholdsChanged": false,
+  "reviewEvidence": {
+    "tmp/v75-output-summary.json": "54429429833f449867dac1a09a9e846e2e02886d44524b4a1d7b8377d462bede",
+    "tmp/v75-grade-structure-audit.json": "438a3024e539b41bbb612d44373391ae998d751bce941f914e6f0752a5a41e60",
+    "tmp/v75-completed-probe-provenance.json": "720a95c36d4f1fd5e1068678485326177d4847ae4d8aa75b1531075d3e7b5b6a",
+    "tmp/language-selected-output-review-v75-initial.json": "63745ccc60c9d1df61e29195850d0fd745e9ba6db3e42cfd3a4b0f8b1c4e416d",
+    "tmp/language-selected-output-review-v75.json": "63745ccc60c9d1df61e29195850d0fd745e9ba6db3e42cfd3a4b0f8b1c4e416d",
+    "tmp/language-built-output-review-v75-initial.json": "807bb13432878daf0961dfa327c519226d31a7c51b8da9e263e79fd50019390a",
+    "tmp/language-built-output-review-v75.json": "807bb13432878daf0961dfa327c519226d31a7c51b8da9e263e79fd50019390a"
+  }
+}

@@ -1,0 +1,239 @@
+{
+  "runtimeCommit": "a67faa3fd3a6f59450a35c4af1d66baa96fee4e8",
+  "corpusFingerprint": "b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a",
+  "originalGatePassed": false,
+  "completionGatePassed": false,
+  "originalFailures": [
+    "development/run-1:usefulQualifiedAnswerCoverage",
+    "development/run-1:availability",
+    "development/run-2:usefulRetentionCoverage",
+    "development/run-2:qualifiedRetrievalCoverage",
+    "development/run-2:usefulQualifiedAnswerCoverage",
+    "development/run-2:availability",
+    "held-out/run-1:usefulRetentionCoverage",
+    "held-out/run-1:usefulQualifiedAnswerCoverage",
+    "held-out/run-1:ordinaryProse",
+    "held-out/run-2:usefulRetentionCoverage",
+    "held-out/run-2:usefulQualifiedAnswerCoverage",
+    "held-out/run-2:ordinaryProse"
+  ],
+  "completionFailures": [
+    "development/run-1:availability",
+    "development/run-2:usefulRetentionCoverage",
+    "development/run-2:qualifiedRetrievalCoverage",
+    "development/run-2:availability",
+    "held-out/run-1:usefulRetentionCoverage",
+    "held-out/run-1:ordinaryProse",
+    "held-out/run-2:usefulRetentionCoverage",
+    "held-out/run-2:ordinaryProse",
+    "development/run-1:usefulQualifiedAnswerCoverage",
+    "development/run-2:usefulQualifiedAnswerCoverage",
+    "held-out/run-1:usefulQualifiedAnswerCoverage",
+    "held-out/run-2:usefulQualifiedAnswerCoverage"
+  ],
+  "groups": [
+    {
+      "split": "development",
+      "run": 1,
+      "usefulRetentionCoverage": {
+        "numerator": 9,
+        "denominator": 10,
+        "rate": 0.9
+      },
+      "qualifiedRetrievalCoverage": {
+        "numerator": 36,
+        "denominator": 40,
+        "rate": 0.9
+      },
+      "usefulQualifiedAnswerCoverage": {
+        "numerator": 63,
+        "denominator": 80,
+        "rate": 0.7875
+      },
+      "justifiedAbstentions": 8,
+      "expectedSafeHolds": {
+        "numerator": 1,
+        "denominator": 1,
+        "rate": 1
+      },
+      "unsafeFactualPromotion": 0,
+      "acceptedLanguageViolations": 0,
+      "translationQualificationErrors": 0,
+      "unsupportedRetainedOutputs": 0,
+      "unsupportedNonnullAnswers": 0,
+      "sourceByteChanges": 0,
+      "availabilityFailureRate": {
+        "numerator": 1,
+        "denominator": 11,
+        "rate": 0.09090909090909091
+      },
+      "ordinaryProseFailures": 0,
+      "publishedWritableAnswers": 63,
+      "nullWritableAnswers": 17,
+      "readOnlyObservations": 8,
+      "readOnlyPublishedAnswers": 0,
+      "sourceBytesVerified": true,
+      "replayVerified": true,
+      "availabilityCases": [
+        "v20-held-report"
+      ]
+    },
+    {
+      "split": "development",
+      "run": 2,
+      "usefulRetentionCoverage": {
+        "numerator": 7,
+        "denominator": 10,
+        "rate": 0.7
+      },
+      "qualifiedRetrievalCoverage": {
+        "numerator": 28,
+        "denominator": 40,
+        "rate": 0.7
+      },
+      "usefulQualifiedAnswerCoverage": {
+        "numerator": 52,
+        "denominator": 80,
+        "rate": 0.65
+      },
+      "justifiedAbstentions": 8,
+      "expectedSafeHolds": {
+        "numerator": 1,
+        "denominator": 1,
+        "rate": 1
+      },
+      "unsafeFactualPromotion": 0,
+      "acceptedLanguageViolations": 0,
+      "translationQualificationErrors": 0,
+      "unsupportedRetainedOutputs": 0,
+      "unsupportedNonnullAnswers": 0,
+      "sourceByteChanges": 0,
+      "availabilityFailureRate": {
+        "numerator": 4,
+        "denominator": 11,
+        "rate": 0.36363636363636365
+      },
+      "ordinaryProseFailures": 0,
+      "publishedWritableAnswers": 52,
+      "nullWritableAnswers": 28,
+      "readOnlyObservations": 8,
+      "readOnlyPublishedAnswers": 0,
+      "sourceBytesVerified": true,
+      "replayVerified": true,
+      "availabilityCases": [
+        "v20-held-rejected",
+        "v20-held-undated",
+        "v20-held-alternatives",
+        "v20-held-admission"
+      ]
+    },
+    {
+      "split": "held-out",
+      "run": 1,
+      "usefulRetentionCoverage": {
+        "numerator": 7,
+        "denominator": 10,
+        "rate": 0.7
+      },
+      "qualifiedRetrievalCoverage": {
+        "numerator": 32,
+        "denominator": 40,
+        "rate": 0.8
+      },
+      "usefulQualifiedAnswerCoverage": {
+        "numerator": 52,
+        "denominator": 80,
+        "rate": 0.65
+      },
+      "justifiedAbstentions": 8,
+      "expectedSafeHolds": {
+        "numerator": 1,
+        "denominator": 1,
+        "rate": 1
+      },
+      "unsafeFactualPromotion": 0,
+      "acceptedLanguageViolations": 0,
+      "translationQualificationErrors": 0,
+      "unsupportedRetainedOutputs": 0,
+      "unsupportedNonnullAnswers": 0,
+      "sourceByteChanges": 0,
+      "availabilityFailureRate": {
+        "numerator": 0,
+        "denominator": 11,
+        "rate": 0
+      },
+      "ordinaryProseFailures": 3,
+      "publishedWritableAnswers": 52,
+      "nullWritableAnswers": 28,
+      "readOnlyObservations": 8,
+      "readOnlyPublishedAnswers": 0,
+      "sourceBytesVerified": true,
+      "replayVerified": true,
+      "availabilityCases": []
+    },
+    {
+      "split": "held-out",
+      "run": 2,
+      "usefulRetentionCoverage": {
+        "numerator": 7,
+        "denominator": 10,
+        "rate": 0.7
+      },
+      "qualifiedRetrievalCoverage": {
+        "numerator": 32,
+        "denominator": 40,
+        "rate": 0.8
+      },
+      "usefulQualifiedAnswerCoverage": {
+        "numerator": 53,
+        "denominator": 80,
+        "rate": 0.6625
+      },
+      "justifiedAbstentions": 8,
+      "expectedSafeHolds": {
+        "numerator": 1,
+        "denominator": 1,
+        "rate": 1
+      },
+      "unsafeFactualPromotion": 0,
+      "acceptedLanguageViolations": 0,
+      "translationQualificationErrors": 0,
+      "unsupportedRetainedOutputs": 0,
+      "unsupportedNonnullAnswers": 0,
+      "sourceByteChanges": 0,
+      "availabilityFailureRate": {
+        "numerator": 0,
+        "denominator": 11,
+        "rate": 0
+      },
+      "ordinaryProseFailures": 3,
+      "publishedWritableAnswers": 54,
+      "nullWritableAnswers": 26,
+      "readOnlyObservations": 8,
+      "readOnlyPublishedAnswers": 0,
+      "sourceBytesVerified": true,
+      "replayVerified": true,
+      "availabilityCases": []
+    }
+  ],
+  "totals": {
+    "writableObservations": 320,
+    "readOnlyObservations": 32,
+    "usefulWritableAnswers": 220,
+    "publishedWritableAnswers": 221,
+    "nullWritableAnswers": 99,
+    "completeRetainedSets": 30,
+    "usefulRetrievals": 128,
+    "unsupportedRetainedOutputs": 0,
+    "unsupportedNonnullAnswers": 0,
+    "qualificationErrors": 0,
+    "languageErrors": 0,
+    "promotions": 0,
+    "sourceByteErrors": 0,
+    "availabilityCases": 5
+  },
+  "reviewSha256": "ea42d3a32cbc4ebcbb0cfe82e1ed94b77d31b02a944366224afae21e75f2b6c8",
+  "originalGateSha256": "be74bb0980a17752c6b94fcb029172ea8eefc041da97cefa00a0fb8726a17696",
+  "completionGateSha256": "2ae6ad156e4d04d4cb1b88aa6d864caf64575df651cdf7142b7232d5d27d4da4",
+  "notAUniversalReliabilityClaim": true
+}

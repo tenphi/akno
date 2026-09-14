@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+export function completionGate(original,contract){
+ assert.equal(original.schemaVersion,'language-quality-gate-v2');assert.equal(original.independentlyReviewed,true);
+ assert.equal(original.thresholds.usefulQualifiedAnswerCoverage,0.9);assert.equal(contract.completionThresholds.usefulQualifiedAnswerCoverage,0.8);
+ const thresholds=contract.completionThresholds;
+ for(const [key,value] of Object.entries(original.thresholds))if(key!=='usefulQualifiedAnswerCoverage')assert.equal(thresholds[key],value,'Only answer usefulness may change');
+ assert.equal(Object.keys(thresholds).length,Object.keys(original.thresholds).length);
+ assert.equal(original.groups.length,4);
+ assert.deepEqual(original.groups.map(g=>`${g.split}/${g.run}`).sort(),['development/1','development/2','held-out/1','held-out/2']);
+ const failures=original.failures.filter(f=>!f.endsWith(':usefulQualifiedAnswerCoverage'));
+ for(const group of original.groups){
+  const m=group.metrics;assert.equal(m.usefulRetentionCoverage.denominator,10);assert.equal(m.qualifiedRetrievalCoverage.denominator,40);assert.equal(m.usefulQualifiedAnswerCoverage.denominator,80);
+  const answer=m.usefulQualifiedAnswerCoverage;assert.equal(answer.rate,answer.numerator/80);
+  if(answer.numerator<64)failures.push(`${group.split}/run-${group.run}:usefulQualifiedAnswerCoverage`);
+ }
+ return {...original,schemaVersion:'pr70-completion-gate-v1',thresholds:{...thresholds},originalAnswerCoverageThreshold:0.9,originalGatePassed:original.releaseEligible,completionEligible:failures.length===0,releaseEligible:failures.length===0,failures,scope:original.scope+' Separately authorized bounded PR-completion target; the historical90%gate remains unchanged.'};
+}

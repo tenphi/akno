@@ -1,0 +1,37 @@
+{
+  "purpose": "Frozen V65 invented drafts checked against the bounded V66 guard; no model rerun.",
+  "values": [
+    {
+      "row": 150,
+      "blocked": true
+    },
+    {
+      "row": 158,
+      "blocked": true
+    },
+    {
+      "row": 166,
+      "blocked": true
+    },
+    {
+      "row": 174,
+      "blocked": true
+    },
+    {
+      "row": 440,
+      "blocked": true
+    },
+    {
+      "row": 448,
+      "blocked": true
+    },
+    {
+      "row": 456,
+      "blocked": true
+    },
+    {
+      "row": 464,
+      "blocked": true
+    }
+  ]
+}

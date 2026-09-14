@@ -1,0 +1,12 @@
+{
+  "trace": "bench-results/language-selected-v67-trace.jsonl",
+  "row": 233,
+  "text": "**Предложение · Предварительный срок:** Ada Marlow предложила в следующем месяце рассмотреть условия ремонта Zephyr QX-100 — то есть в месяце после недатированной первоначальной записи, а не после обработки; она не приняла план и не организовала встречу, и календарный месяц определить невозможно.",
+  "relative": true,
+  "unknown": true,
+  "withoutCalendarPredicate": {
+    "relative": true,
+    "unknown": false
+  },
+  "semanticCompetenceClaimed": false
+}

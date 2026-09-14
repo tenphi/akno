@@ -1,0 +1,2282 @@
+{
+  "runtimeCommit": "1eb002b84c05927b1ac1c5f69e974908de36c224",
+  "tests": 3488,
+  "testFiles": 147,
+  "checks": {
+    "build": "passed",
+    "lint": "passed",
+    "knip": "passed",
+    "suite": "passed",
+    "formatting": "passed",
+    "repositorySafety": "passed",
+    "documentationDoctor": "passed",
+    "documentationBuild": "passed",
+    "smoke": "passed",
+    "installedPackageSmoke": "passed",
+    "redeployBuildRestartSocket": "passed"
+  },
+  "ci": {
+    "run": 34398656057,
+    "conclusion": "success"
+  },
+  "documentationCI": {
+    "run": 34398656056,
+    "conclusion": "success"
+  },
+  "compiled": {
+    "alignment": [
+      {
+        "compiledSourceClock": true,
+        "compiledFramedAnswers": true,
+        "immutableOwnTextReferences": true,
+        "staleAndForeignBlockReferencesRejected": true,
+        "mandatorySemantics": true,
+        "mandatorySelection": true,
+        "strictVerdictJson": true,
+        "readingsPrivate": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0
+      }
+    ],
+    "qualification": [
+      {
+        "compiledContinuedReportUncertainty": true,
+        "compiledProposerFloor": true,
+        "compiledHypotheticalVersions": true,
+        "mandatorySemantics": true,
+        "unrelatedInstallationHeld": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0
+      }
+    ],
+    "rendering": [
+      {
+        "compiledQuestionSeparation": true,
+        "compiledFullOriginalFrameUnchanged": true,
+        "compiledCopyAndTranslation": true,
+        "currentPayloadLanguageChecked": true,
+        "strictCopyBranches": true,
+        "completeRecordVerification": true,
+        "mandatorySemantics": true,
+        "mandatorySelection": true,
+        "strictJson": true,
+        "leadingDenialVerifiedWithoutRepair": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0
+      },
+      {
+        "compiledTwoFrameSchema": true,
+        "excerptSelectionBeforeAlignments": true,
+        "mandatoryNegativeSelection": true,
+        "modelCompetenceClaimed": false
+      }
+    ],
+    "boundaries": [
+      {
+        "compiledOrdinaryQuestionPreserved": true,
+        "compiledRussianExplainedProposal": true,
+        "compiledProposalClockRetractions": true,
+        "compiledNominalAssistantAttribution": true,
+        "compiledRussianSourceTimeAnchor": true,
+        "compiledRussianUnknownClock": true,
+        "compiledClockMandatorySemantics": true,
+        "compiled600CharacterBound": true,
+        "compiledSourceClock": true,
+        "sourceClockQuotesExcluded": true,
+        "unknownProposalFullyVerified": true,
+        "compiledReporterReversal": true,
+        "compiledGenericPassive": true,
+        "compiledCoverageInstrument": true,
+        "mandatorySemantics": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0
+      }
+    ],
+    "retention": [
+      {
+        "compiledExtractionAndRepairFieldOrder": true,
+        "compiledExplicitRepairTargets": true,
+        "compiledReadOnlyAdmittedContext": true,
+        "compiledClosedReportClarification": true,
+        "compiledQuotedBookingAlias": true,
+        "compiledSubjectFrameCompleteness": true,
+        "providedCandidateUnchanged": true,
+        "repairPositionPreserved": true,
+        "mandatoryFullSourceSemantics": true,
+        "extraModelPasses": 0
+      }
+    ],
+    "person": [
+      {
+        "compiledPersonProposal": true,
+        "independentOwnershipRequired": true,
+        "noSynthesizedProposal": true,
+        "unresolvedDevicePreserved": true,
+        "passiveAgentPreserved": true,
+        "unrelatedProductBytesUnchanged": true,
+        "extraModelPasses": 0
+      }
+    ],
+    "retention-shape": [
+      {
+        "compiledRetentionFieldOrder": true,
+        "compiledRestrictiveNamingDenial": true,
+        "sourceAndSubjectBoundNaming": true,
+        "affirmativeBookingStillRequiresTime": true,
+        "governingEpistemicQualification": true,
+        "canonicalModalFrameStillHeld": true,
+        "completeOriginalSource": true,
+        "mandatoryFullSourceSemantics": true,
+        "extraModelPasses": 0
+      }
+    ],
+    "epistemic-object": [
+      {
+        "compiledEpistemicObjectControls": true,
+        "answerCases": 8,
+        "mandatoryOriginalFrame": true,
+        "negativeSemanticsRejected": true,
+        "negativeAlignmentRejected": true,
+        "invalidOmittedAnchorUnavailable": true,
+        "contractualAndPhysicalStateSupported": true,
+        "recordAndPersonalSubjectsDistinct": true,
+        "retentionSemanticsRequired": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0,
+        "modelCompetenceClaimed": false
+      }
+    ],
+    "translation": [
+      {
+        "compiledQuestionSeparation": true,
+        "compiledFullOriginalFrameUnchanged": true,
+        "compiledTranslationOnly": true,
+        "forbiddenCopyRejected": true,
+        "declaredLanguagePolicyRestriction": true,
+        "currentPayloadLanguageChecked": true,
+        "strictCopyBranches": true,
+        "completeRecordVerification": true,
+        "mandatorySemantics": true,
+        "mandatorySelection": true,
+        "strictJson": true,
+        "leadingDenialVerifiedWithoutRepair": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0
+      }
+    ],
+    "presentation": [
+      {
+        "compiledReportDisplayPhrases": true,
+        "compiledExactNamedSourceHint": true,
+        "compiledConditionalTentativeScope": true,
+        "namedAndGenericSources": true,
+        "englishAndRussian": true,
+        "generationOnly": true,
+        "mandatorySemantics": true,
+        "sourceBytesUnchanged": true,
+        "cases": 8,
+        "extraModelPasses": 0
+      }
+    ],
+    "text-bound": [
+      {
+        "compiledNormalizedTextBound": true,
+        "boundaries": [
+          399,
+          400,
+          401
+        ],
+        "utf16AstralBoundary": true,
+        "preciseOriginalPositionRepair": true,
+        "immutableAdmittedSibling": true,
+        "completeOriginalSource": true,
+        "mandatoryFullSourceSemantics": true,
+        "extraModelPasses": 0,
+        "modelCompetenceClaimed": false
+      }
+    ],
+    "reference": [
+      {
+        "compiledSourceAttachedRecord": true,
+        "cases": 8,
+        "completeOriginalSource": true,
+        "componentOwnershipDistinct": true,
+        "competingAndUnrelatedSubjectsRejected": true,
+        "scopeAndObjectChangesRejected": true,
+        "mandatoryFullSourceSemantics": true,
+        "extraModelPasses": 0,
+        "modelCompetenceClaimed": false
+      }
+    ],
+    "group": [
+      {
+        "compiledGroupRelativeEpistemicScope": true,
+        "cases": 13,
+        "englishRussianAndFiniteParaphrases": true,
+        "omittedNullAndChangedActualAnchors": true,
+        "validNegativeVerdictsOrdinaryRejection": true,
+        "impersonalSourcePreserved": true,
+        "independentPrivateLimitUnselected": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0,
+        "modelCompetenceClaimed": false
+      }
+    ],
+    "bounded": [
+      {
+        "compiledUnansweredCoverageRoles": true,
+        "compiledNominalCounterfactual": true,
+        "compiledOriginalUnknownClock": true,
+        "compiledAlignmentBranches": 20,
+        "compiledCoordinatedPersonalReport": true,
+        "mandatoryFullSourceVerification": true,
+        "extraSemanticPasses": 0,
+        "modelCompetenceClaimed": false
+      },
+      {
+        "compiledExactAdvisoryRepair": true,
+        "compiledOriginalObligation": true,
+        "compiledCompactAuditSourceAuthority": true,
+        "mandatoryFullSourceVerification": true,
+        "extraSemanticPasses": 0,
+        "modelCompetenceClaimed": false
+      },
+      {
+        "compiledTwoPartNegativeReport": true,
+        "compiledEnglishSourceEntry": true,
+        "compiledEnglishAndRussianCounterfactual": true,
+        "compiledComparisonBeforeRelation": true,
+        "strictPairedAlignmentShapes": true,
+        "extraSemanticPasses": 0,
+        "modelCompetenceClaimed": false
+      },
+      {
+        "compiledAffirmativeReportBoundary": true,
+        "compiledAffirmativeSourceClockBoundary": true,
+        "compiledAffirmativeCounterfactualBoundary": true,
+        "colonScopePreserved": true,
+        "extraSemanticPasses": 0,
+        "modelCompetenceClaimed": false
+      },
+      {
+        "compiledCounterfactualRightBoundary": true,
+        "modelCompetenceClaimed": false
+      },
+      {
+        "compiledRussianExplainedProposalClock": true,
+        "compiledIndependentUnknownCalendar": true,
+        "compiledClockRetractionAndConditionalBoundaries": true,
+        "compiledTentativeRecordScope": true,
+        "mandatoryFullSourceVerification": true,
+        "extraSemanticPasses": 0,
+        "modelCompetenceClaimed": false
+      },
+      {
+        "compiledAttributionBoundReportRelay": true,
+        "compiledReportSemanticNegative": true,
+        "compiledInitialRecordingIndependentClocks": true,
+        "compiledImmediateRetractionBoundary": true,
+        "compiledMechanismBranches": 20,
+        "legacyMechanismShapeRejected": true,
+        "incidentalOperationCaps80Each": true,
+        "modelCompetenceClaimed": false
+      }
+    ],
+    "property": [
+      {
+        "compiledPropertyCases": 13,
+        "separateNegativePropertyEnforced": true,
+        "allPositiveNegativeHeld": true,
+        "positivePropertyCannotOverrideSemanticsOrSelection": true,
+        "copyAndTranslation": true,
+        "strictWireCaps50And30": true,
+        "mixedCitationOwnership": true,
+        "foreignStaleAndMalformedHeld": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0,
+        "modelCompetenceClaimed": false
+      },
+      {
+        "compiledPromptClockPhraseMeetsFrozenFloor": true,
+        "compiledCompleteReportSentences": true,
+        "compiledPresentationRepair": true,
+        "oneRepairAndMandatorySemantics": true,
+        "unchanged400UnitBound": true,
+        "modelCompetenceClaimed": false
+      },
+      {
+        "compiledPersonallyCheck": true,
+        "closedSourceBoundaries": true,
+        "propertyAbsentAndUnselectedSeparated": true,
+        "noSemanticCompetenceClaim": true
+      }
+    ],
+    "polarity": [
+      {
+        "compiledSourcePolarityCases": 11,
+        "requiredStrictEnum": true,
+        "immutableCandidateEquality": true,
+        "allPositiveMismatchHeld": true,
+        "matchingCannotOverrideSemanticNegative": true,
+        "atomicInvalidUnavailable": true,
+        "extraModelPasses": 0,
+        "modelCompetenceClaimed": false
+      }
+    ],
+    "clock": [
+      {
+        "compiledClockCases": 7,
+        "narrowClockBranch": true,
+        "joinedLanguageProse": true,
+        "unchangedLocalAndSemanticGates": true,
+        "malformedNoFallback": true,
+        "sourceBytesUnchanged": true,
+        "extraModelPasses": 0,
+        "modelCompetenceClaimed": false
+      }
+    ],
+    "report-repair": [
+      {
+        "compiledReportTextRepair": true,
+        "strictMixedIndexBranches": true,
+        "unchanged400UnitBound": true,
+        "languageMaterialization": true,
+        "immutableSiblingAndCompletedSourceProof": true,
+        "finalSemanticAndPolarityNegatives": true,
+        "governingComparisonBeforePolarity": true,
+        "standaloneUnknownClock": true,
+        "extraSemanticPasses": 0,
+        "modelCompetenceClaimed": false
+      }
+    ]
+  },
+  "protocol": {
+    "runtimeCommit": "1eb002b84c05927b1ac1c5f69e974908de36c224",
+    "purpose": "protocol-only",
+    "answerOutputTokenLimit": 2400,
+    "results": [
+      {
+        "kind": "generation",
+        "status": "completed",
+        "expected": {
+          "record_readings": [
+            {
+              "evidence_id": "E1",
+              "selected_meaning": "The retained coverage question remains unanswered.",
+              "clarification_or_ambiguity": null
+            }
+          ],
+          "blocks": [
+            {
+              "rendering_mode": "copy",
+              "evidence_ids": [
+                "E1"
+              ]
+            }
+          ],
+          "missing_concepts": []
+        },
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "reason": null,
+        "value": "{\"record_readings\":[{\"evidence_id\":\"E1\",\"selected_meaning\":\"The retained coverage question remains unanswered.\",\"clarification_or_ambiguity\":null}],\"blocks\":[{\"rendering_mode\":\"copy\",\"evidence_ids\":[\"E1\"]}],\"missing_concepts\":[]}",
+        "usage": {
+          "inputTokens": 972,
+          "outputTokens": 116,
+          "totalTokens": 1088,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 33
+        },
+        "callerMaxTokens": 2222
+      },
+      {
+        "kind": "verification",
+        "status": "completed",
+        "expected": {
+          "verdicts": [
+            {
+              "block_id": "B1",
+              "excerpt_selection": {
+                "selected_by_retained_excerpt": false,
+                "unselected_content": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only."
+              },
+              "source_alignments": [
+                {
+                  "evidence_id": "E1",
+                  "source_context": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                  "actor": {
+                    "source_anchor": null,
+                    "answer_anchor": null,
+                    "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                    "relation": "not_selected"
+                  },
+                  "object_and_operation": {
+                    "source_anchor": "E1_bf777a9014ca_1",
+                    "answer_anchor": "B1_bf777a9014ca_1",
+                    "source_specifics": "Invented protocol comparison text only. Invented p",
+                    "answer_specifics": "Invented protocol comparison text only. Invented p",
+                    "relation": "preserved"
+                  },
+                  "qualification": {
+                    "source_anchor": "E1_bf777a9014ca_1",
+                    "answer_anchor": null,
+                    "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                    "relation": "omitted"
+                  },
+                  "tested_property": {
+                    "source_anchor": "E1_bf777a9014ca_1",
+                    "answer_anchor": "B1_bf777a9014ca_1",
+                    "source_property": "Invented protocol comparison t",
+                    "answer_property": "Invented protocol comparison t",
+                    "relation": "preserved"
+                  }
+                },
+                {
+                  "evidence_id": "E2",
+                  "source_context": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                  "actor": {
+                    "source_anchor": null,
+                    "answer_anchor": null,
+                    "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                    "relation": "not_selected"
+                  },
+                  "object_and_operation": {
+                    "source_anchor": "E2_bf777a9014ca_1",
+                    "answer_anchor": "B1_bf777a9014ca_1",
+                    "source_specifics": "Invented protocol comparison text only. Invented protocol comparison text only.",
+                    "answer_specifics": "Invented protocol comparison text only. Invented protocol comparison text only.",
+                    "relation": "preserved"
+                  },
+                  "qualification": {
+                    "source_anchor": "E2_bf777a9014ca_1",
+                    "answer_anchor": "B1_bf777a9014ca_1",
+                    "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                    "relation": "preserved"
+                  },
+                  "tested_property": {
+                    "source_anchor": null,
+                    "answer_anchor": null,
+                    "source_property": null,
+                    "answer_property": null,
+                    "relation": "absent_from_both"
+                  }
+                }
+              ],
+              "comparison": {
+                "source_meaning": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                "candidate_meaning": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                "action_arguments": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.",
+                "qualification_scope": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only."
+              },
+              "mismatches": [
+                {
+                  "dimension": "action_arguments_preserved",
+                  "kind": "changed_action_or_role",
+                  "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only."
+                },
+                {
+                  "dimension": "qualification_scope_preserved",
+                  "kind": "changed_qualification",
+                  "detail": "Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only."
+                }
+              ],
+              "proposition_supported": true,
+              "action_arguments_preserved": false,
+              "qualification_scope_preserved": false
+            }
+          ]
+        },
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "reason": null,
+        "value": "{\"verdicts\":[{\"block_id\":\"B1\",\"excerpt_selection\":{\"selected_by_retained_excerpt\":false,\"unselected_content\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\"},\"source_alignments\":[{\"evidence_id\":\"E1\",\"source_context\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"Invented protocol comparison text only. Invented p\",\"answer_specifics\":\"Invented protocol comparison text only. Invented p\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_property\":\"Invented protocol comparison t\",\"answer_property\":\"Invented protocol comparison t\",\"relation\":\"preserved\"},\"qualification\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":null,\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"omitted\"}},{\"evidence_id\":\"E2\",\"source_context\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"Invented protocol comparison text only. Invented protocol comparison text only.\",\"answer_specifics\":\"Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":null,\"answer_anchor\":null,\"source_property\":null,\"answer_property\":null,\"relation\":\"absent_from_both\"},\"qualification\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"relation\":\"preserved\"}}],\"comparison\":{\"source_meaning\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"candidate_meaning\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"action_arguments\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\",\"qualification_scope\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\"},\"mismatches\":[{\"dimension\":\"action_arguments_preserved\",\"kind\":\"changed_action_or_role\",\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\"},{\"dimension\":\"qualification_scope_preserved\",\"kind\":\"changed_qualification\",\"detail\":\"Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only. Invented protocol comparison text only.\"}],\"proposition_supported\":true,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false}]}",
+        "usage": {
+          "inputTokens": 5875,
+          "outputTokens": 1075,
+          "totalTokens": 6950,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 43
+        },
+        "callerMaxTokens": 2222
+      }
+    ]
+  },
+  "translation": {
+    "runtimeCommit": "1eb002b84c05927b1ac1c5f69e974908de36c224",
+    "purpose": "Protocol-only exact structured-clock translation echo; no semantic quality claim.",
+    "results": [
+      {
+        "kind": "translation-generation",
+        "status": "completed",
+        "expected": {
+          "record_readings": [
+            {
+              "evidence_id": "E1",
+              "selected_meaning": "The original proposal and its unresolved source clock.",
+              "clarification_or_ambiguity": null
+            }
+          ],
+          "blocks": [
+            {
+              "rendering_mode": "translate",
+              "translated_record": {
+                "proposition_and_nontemporal_scope": "Предложение · Предварительный срок: Ada Marlow предложила рассмотреть смету Zephyr QX-100 в следующем месяце. Ada Marlow не приняла план и не организовала встречу; это только предложение.",
+                "source_clock_anchor": "Следующий месяц отсчитывается от времени первоначальной записи без даты.",
+                "remaining_clock_qualifications": "Отсчёт ведётся не от времени обработки. Календарный месяц неизвестен."
+              },
+              "evidence_ids": [
+                "E1"
+              ]
+            }
+          ],
+          "missing_concepts": []
+        },
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "reason": null,
+        "value": "{\"record_readings\":[{\"evidence_id\":\"E1\",\"selected_meaning\":\"The original proposal and its unresolved source clock.\",\"clarification_or_ambiguity\":null}],\"blocks\":[{\"rendering_mode\":\"translate\",\"translated_record\":{\"proposition_and_nontemporal_scope\":\"Предложение · Предварительный срок: Ada Marlow предложила рассмотреть смету Zephyr QX-100 в следующем месяце. Ada Marlow не приняла план и не организовала встречу; это только предложение.\",\"source_clock_anchor\":\"Следующий месяц отсчитывается от времени первоначальной записи без даты.\",\"remaining_clock_qualifications\":\"Отсчёт ведётся не от времени обработки. Календарный месяц неизвестен.\"},\"evidence_ids\":[\"E1\"]}],\"missing_concepts\":[]}",
+        "usage": {
+          "inputTokens": 1123,
+          "outputTokens": 208,
+          "totalTokens": 1331,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 20
+        },
+        "callerMaxTokens": 2222
+      }
+    ]
+  },
+  "retention": {
+    "runtimeCommit": "1eb002b84c05927b1ac1c5f69e974908de36c224",
+    "model": "gpt-5.6-luna",
+    "purpose": "Protocol-only constant JSON echo using actual compiled retention-verifier schemas; no semantic usefulness claim or memory writes.",
+    "controls": [
+      {
+        "sizes": [
+          1,
+          2
+        ],
+        "schema": {
+          "type": "object",
+          "properties": {
+            "verdicts": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "candidate_id": {
+                        "type": "string",
+                        "enum": [
+                          "cand_96755812f5cfa50a5a6e6e76"
+                        ]
+                      },
+                      "comparison": {
+                        "type": "object",
+                        "properties": {
+                          "source_meaning": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          },
+                          "candidate_meaning": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          },
+                          "action_arguments": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          },
+                          "qualification_scope": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          }
+                        },
+                        "required": [
+                          "source_meaning",
+                          "candidate_meaning",
+                          "action_arguments",
+                          "qualification_scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "source_selected_polarity": {
+                        "type": "string",
+                        "enum": [
+                          "affirmed",
+                          "negated"
+                        ]
+                      },
+                      "mismatches": {
+                        "maxItems": 3,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "dimension": {
+                              "type": "string",
+                              "enum": [
+                                "proposition_supported",
+                                "action_arguments_preserved",
+                                "qualification_scope_preserved"
+                              ]
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "unsupported_content",
+                                "changed_value",
+                                "changed_action_or_role",
+                                "changed_qualification",
+                                "omitted_scope",
+                                "changed_repair_proposition"
+                              ]
+                            },
+                            "detail": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 240
+                            }
+                          },
+                          "required": [
+                            "dimension",
+                            "kind",
+                            "detail"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "proposition_supported": {
+                        "type": "boolean"
+                      },
+                      "action_arguments_preserved": {
+                        "type": "boolean"
+                      },
+                      "qualification_scope_preserved": {
+                        "type": "boolean"
+                      },
+                      "reason_code": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "source_unavailable",
+                              "discourse_uncertain",
+                              "time_unresolved",
+                              "noncanonical_without_context"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "candidate_id",
+                      "comparison",
+                      "source_selected_polarity",
+                      "mismatches",
+                      "proposition_supported",
+                      "action_arguments_preserved",
+                      "qualification_scope_preserved",
+                      "reason_code"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "candidate_id": {
+                        "type": "string",
+                        "enum": [
+                          "cand_ba621c385f1434bcf6195d61"
+                        ]
+                      },
+                      "span_audit": {
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "frame_id": {
+                              "type": "string",
+                              "enum": [
+                                "F1",
+                                "F2"
+                              ]
+                            },
+                            "interpretation": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 240
+                            },
+                            "relationship": {
+                              "type": "string",
+                              "enum": [
+                                "restatement",
+                                "clarification",
+                                "contrast",
+                                "independent",
+                                "unresolved"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "frame_id",
+                            "interpretation",
+                            "relationship"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "comparison": {
+                        "type": "object",
+                        "properties": {
+                          "source_meaning": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          },
+                          "candidate_meaning": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          },
+                          "action_arguments": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          },
+                          "qualification_scope": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 320
+                          }
+                        },
+                        "required": [
+                          "source_meaning",
+                          "candidate_meaning",
+                          "action_arguments",
+                          "qualification_scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "source_selected_polarity": {
+                        "type": "string",
+                        "enum": [
+                          "affirmed",
+                          "negated"
+                        ]
+                      },
+                      "mismatches": {
+                        "maxItems": 3,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "dimension": {
+                              "type": "string",
+                              "enum": [
+                                "proposition_supported",
+                                "action_arguments_preserved",
+                                "qualification_scope_preserved"
+                              ]
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "unsupported_content",
+                                "changed_value",
+                                "changed_action_or_role",
+                                "changed_qualification",
+                                "omitted_scope",
+                                "changed_repair_proposition"
+                              ]
+                            },
+                            "detail": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 240
+                            }
+                          },
+                          "required": [
+                            "dimension",
+                            "kind",
+                            "detail"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "proposition_supported": {
+                        "type": "boolean"
+                      },
+                      "action_arguments_preserved": {
+                        "type": "boolean"
+                      },
+                      "qualification_scope_preserved": {
+                        "type": "boolean"
+                      },
+                      "reason_code": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "source_unavailable",
+                              "discourse_uncertain",
+                              "time_unresolved",
+                              "noncanonical_without_context"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "candidate_id",
+                      "span_audit",
+                      "comparison",
+                      "source_selected_polarity",
+                      "mismatches",
+                      "proposition_supported",
+                      "action_arguments_preserved",
+                      "qualification_scope_preserved",
+                      "reason_code"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "verdicts"
+          ],
+          "additionalProperties": false
+        },
+        "messages": [
+          {
+            "role": "system",
+            "content": "This is a protocol-only JSON echo control. Copy the supplied constant JSON exactly. Do not interpret claims or make a semantic judgment."
+          },
+          {
+            "role": "user",
+            "content": "{\"verdicts\":[{\"candidate_id\":\"cand_96755812f5cfa50a5a6e6e76\",\"source_selected_polarity\":\"affirmed\",\"comparison\":{\"source_meaning\":\"Invented protocol marker.\",\"candidate_meaning\":\"Invented protocol marker.\",\"action_arguments\":\"Invented protocol marker.\",\"qualification_scope\":\"Invented protocol marker.\"},\"mismatches\":[],\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null},{\"candidate_id\":\"cand_ba621c385f1434bcf6195d61\",\"source_selected_polarity\":\"negated\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented protocol marker.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented protocol marker.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented protocol marker.\",\"candidate_meaning\":\"Invented protocol marker.\",\"action_arguments\":\"Invented protocol marker.\",\"qualification_scope\":\"Invented protocol marker.\"},\"mismatches\":[],\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null}]}"
+          }
+        ],
+        "maxTokens": 3744,
+        "status": "completed",
+        "ok": true,
+        "value": "{\"verdicts\":[{\"candidate_id\":\"cand_96755812f5cfa50a5a6e6e76\",\"comparison\":{\"source_meaning\":\"Invented protocol marker.\",\"candidate_meaning\":\"Invented protocol marker.\",\"action_arguments\":\"Invented protocol marker.\",\"qualification_scope\":\"Invented protocol marker.\"},\"source_selected_polarity\":\"affirmed\",\"mismatches\":[],\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null},{\"candidate_id\":\"cand_ba621c385f1434bcf6195d61\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented protocol marker.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented protocol marker.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented protocol marker.\",\"candidate_meaning\":\"Invented protocol marker.\",\"action_arguments\":\"Invented protocol marker.\",\"qualification_scope\":\"Invented protocol marker.\"},\"source_selected_polarity\":\"negated\",\"mismatches\":[],\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null}]}",
+        "reason": null,
+        "error": null,
+        "latencyMs": 2950.5592500000002,
+        "usage": {
+          "inputTokens": 864,
+          "outputTokens": 272,
+          "totalTokens": 1136,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 17
+        },
+        "schemaValid": true
+      }
+    ]
+  },
+  "retentionEchoes": [
+    {
+      "ok": true,
+      "schemaValid": true,
+      "exact": true
+    }
+  ],
+  "reportRepair": {
+    "runtimeCommit": "1eb002b84c05927b1ac1c5f69e974908de36c224",
+    "model": "gpt-5.6-luna",
+    "purpose": "Separately declared distinct maximum-bound mixed repair transport control; the original repetitive exact echo remains failed. No semantic quality or universal budget claim.",
+    "amendment": "tmp/v73-protocol-validation-amendment.md",
+    "fixture": "tmp/v73-distinct-repair-fixture.json",
+    "initialFailedReceipt": "tmp/v73-report-repair-protocol-control.json",
+    "status": "completed",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "repairs": {
+          "maxItems": 2,
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "candidate_index": {
+                    "type": "number",
+                    "enum": [
+                      0
+                    ]
+                  },
+                  "reported_proposition": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                  },
+                  "relay_attribution": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 78,
+                    "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                  },
+                  "personal_limits": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                  }
+                },
+                "required": [
+                  "candidate_index",
+                  "reported_proposition",
+                  "relay_attribution",
+                  "personal_limits"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "candidate_index": {
+                    "type": "number",
+                    "enum": [
+                      1
+                    ]
+                  },
+                  "candidate": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "claim",
+                          "decision",
+                          "preference",
+                          "plan",
+                          "event",
+                          "question"
+                        ]
+                      },
+                      "attribution": {
+                        "type": "object",
+                        "properties": {
+                          "source_role": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "assistant",
+                              "external",
+                              "unknown"
+                            ]
+                          },
+                          "source_speaker": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "chain": {
+                            "maxItems": 3,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "speaker": {
+                                  "type": "string"
+                                },
+                                "role": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "enum": [
+                                        "user",
+                                        "assistant",
+                                        "external",
+                                        "unknown"
+                                      ]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "speaker",
+                                "role"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "source_role",
+                          "source_speaker",
+                          "chain"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "discourse": {
+                        "type": "object",
+                        "properties": {
+                          "commitment": {
+                            "type": "string",
+                            "enum": [
+                              "asserted",
+                              "tentative",
+                              "hypothetical",
+                              "counterfactual",
+                              "none"
+                            ]
+                          },
+                          "disposition": {
+                            "type": "string",
+                            "enum": [
+                              "active",
+                              "proposed",
+                              "accepted",
+                              "rejected",
+                              "resolved",
+                              "cancelled",
+                              "completed",
+                              "superseded"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "commitment",
+                          "disposition"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "epistemic": {
+                        "type": "object",
+                        "properties": {
+                          "basis": {
+                            "type": "string",
+                            "enum": [
+                              "self_attested",
+                              "source_report"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "basis"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "polarity": {
+                        "type": "string",
+                        "enum": [
+                          "affirmed",
+                          "negated"
+                        ]
+                      },
+                      "support": {
+                        "minItems": 1,
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "quote": {
+                              "type": "string"
+                            },
+                            "item_id": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "quote",
+                            "item_id"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "discourse_frame": {
+                        "minItems": 1,
+                        "maxItems": 16,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "quote": {
+                              "type": "string"
+                            },
+                            "item_id": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "quote",
+                            "item_id"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "relations": {
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "corrects",
+                                "supersedes",
+                                "contradicts",
+                                "fulfills",
+                                "answers",
+                                "caused_by"
+                              ]
+                            },
+                            "target_candidate": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "support": {
+                              "minItems": 1,
+                              "maxItems": 8,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "quote": {
+                                    "type": "string"
+                                  },
+                                  "item_id": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "quote",
+                                  "item_id"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "target_candidate",
+                            "support"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "time": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "start": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "until": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "precision": {
+                                "type": "string",
+                                "enum": [
+                                  "instant",
+                                  "day",
+                                  "month",
+                                  "year",
+                                  "unknown"
+                                ]
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "occurred",
+                                  "valid",
+                                  "scheduled",
+                                  "due"
+                                ]
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "actual",
+                                  "scheduled",
+                                  "planned",
+                                  "tentative"
+                                ]
+                              },
+                              "timezone": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "mentioned_at": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "recurrence": {
+                                "anyOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "frequency": {
+                                        "type": "string",
+                                        "enum": [
+                                          "daily",
+                                          "weekly",
+                                          "monthly",
+                                          "yearly"
+                                        ]
+                                      },
+                                      "interval": {
+                                        "anyOf": [
+                                          {
+                                            "type": "integer",
+                                            "exclusiveMinimum": 0,
+                                            "maximum": 9007199254740991
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "weekdays": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string",
+                                          "enum": [
+                                            "mo",
+                                            "tu",
+                                            "we",
+                                            "th",
+                                            "fr",
+                                            "sa",
+                                            "su"
+                                          ]
+                                        }
+                                      },
+                                      "until": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "frequency",
+                                      "interval",
+                                      "weekdays",
+                                      "until"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "start",
+                              "until",
+                              "precision",
+                              "relation",
+                              "status",
+                              "timezone",
+                              "mentioned_at",
+                              "recurrence"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "text": {
+                        "type": "string"
+                      },
+                      "subject": {
+                        "type": "string"
+                      },
+                      "page": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "attribution",
+                      "discourse",
+                      "epistemic",
+                      "polarity",
+                      "support",
+                      "discourse_frame",
+                      "relations",
+                      "time",
+                      "text",
+                      "subject",
+                      "page"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "candidate_index",
+                  "candidate"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "repairs"
+      ],
+      "additionalProperties": false
+    },
+    "messages": [
+      {
+        "role": "system",
+        "content": "Protocol-only JSON echo. Copy the supplied constant object exactly without interpreting claims or making semantic judgments."
+      },
+      {
+        "role": "user",
+        "content": "{\"repairs\":[{\"candidate_index\":0,\"reported_proposition\":\"Bo Winters reports that the Zephyr QX-100 agreement permits a workshop to measure the latch gap while expressly excluding latch replacement; this account carries the silverpine marker in this dry run.\",\"relay_attribution\":\"Ada Marlow relays Bo Winters's account and labels her full retelling amberfin.\",\"personal_limits\":\"Ada Marlow has not read the agreement or independently checked the account, and tags an unverified retelling quartzleaf.\"},{\"candidate_index\":1,\"candidate\":{\"kind\":\"claim\",\"subject\":\"Zephyr QX-100\",\"text\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"attribution\":{\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"chain\":[]},\"discourse\":{\"commitment\":\"asserted\",\"disposition\":\"active\"},\"epistemic\":{\"basis\":\"self_attested\"},\"polarity\":\"negated\",\"support\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":null}],\"discourse_frame\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":null}],\"relations\":[],\"time\":null,\"page\":null}}]}"
+      }
+    ],
+    "callerMaxTokens": 3200,
+    "roleMaxTokens": 2400,
+    "effectiveInitialOutputLimit": 2400,
+    "outputLanguage": null,
+    "ok": true,
+    "value": "{\"repairs\":[{\"candidate_index\":0,\"reported_proposition\":\"Bo Winters reports that the Zephyr QX-100 agreement permits a workshop to measure the latch gap while expressly excluding latch replacement; this account carries the silverpine marker in this dry run.\",\"relay_attribution\":\"Ada Marlow relays Bo Winters's account and labels her full retelling amberfin.\",\"personal_limits\":\"Ada Marlow has not read the agreement or independently checked the account, and tags an unverified retelling quartzleaf.\"},{\"candidate_index\":1,\"candidate\":{\"kind\":\"claim\",\"attribution\":{\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"chain\":[]},\"discourse\":{\"commitment\":\"asserted\",\"disposition\":\"active\"},\"epistemic\":{\"basis\":\"self_attested\"},\"polarity\":\"negated\",\"support\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":null}],\"discourse_frame\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":null}],\"relations\":[],\"time\":null,\"text\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"subject\":\"Zephyr QX-100\",\"page\":null}}]}",
+    "reason": null,
+    "error": null,
+    "latencyMs": 2852.687542,
+    "usage": {
+      "inputTokens": 1061,
+      "outputTokens": 286,
+      "totalTokens": 1347,
+      "cachedInputTokens": 0,
+      "reasoningOutputTokens": 18
+    },
+    "schemaValid": true,
+    "exact": true
+  },
+  "originalFailedRepair": {
+    "runtimeCommit": "1eb002b84c05927b1ac1c5f69e974908de36c224",
+    "model": "gpt-5.6-luna",
+    "purpose": "New mixed report-text/full-candidate repair schema transport only. No semantic quality or universal budget claim.",
+    "status": "completed",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "repairs": {
+          "maxItems": 2,
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "candidate_index": {
+                    "type": "number",
+                    "enum": [
+                      0
+                    ]
+                  },
+                  "reported_proposition": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                  },
+                  "relay_attribution": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 78,
+                    "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                  },
+                  "personal_limits": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                  }
+                },
+                "required": [
+                  "candidate_index",
+                  "reported_proposition",
+                  "relay_attribution",
+                  "personal_limits"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "candidate_index": {
+                    "type": "number",
+                    "enum": [
+                      1
+                    ]
+                  },
+                  "candidate": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "claim",
+                          "decision",
+                          "preference",
+                          "plan",
+                          "event",
+                          "question"
+                        ]
+                      },
+                      "attribution": {
+                        "type": "object",
+                        "properties": {
+                          "source_role": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "assistant",
+                              "external",
+                              "unknown"
+                            ]
+                          },
+                          "source_speaker": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "chain": {
+                            "maxItems": 3,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "speaker": {
+                                  "type": "string"
+                                },
+                                "role": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "enum": [
+                                        "user",
+                                        "assistant",
+                                        "external",
+                                        "unknown"
+                                      ]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "speaker",
+                                "role"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "source_role",
+                          "source_speaker",
+                          "chain"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "discourse": {
+                        "type": "object",
+                        "properties": {
+                          "commitment": {
+                            "type": "string",
+                            "enum": [
+                              "asserted",
+                              "tentative",
+                              "hypothetical",
+                              "counterfactual",
+                              "none"
+                            ]
+                          },
+                          "disposition": {
+                            "type": "string",
+                            "enum": [
+                              "active",
+                              "proposed",
+                              "accepted",
+                              "rejected",
+                              "resolved",
+                              "cancelled",
+                              "completed",
+                              "superseded"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "commitment",
+                          "disposition"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "epistemic": {
+                        "type": "object",
+                        "properties": {
+                          "basis": {
+                            "type": "string",
+                            "enum": [
+                              "self_attested",
+                              "source_report"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "basis"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "polarity": {
+                        "type": "string",
+                        "enum": [
+                          "affirmed",
+                          "negated"
+                        ]
+                      },
+                      "support": {
+                        "minItems": 1,
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "quote": {
+                              "type": "string"
+                            },
+                            "item_id": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "quote",
+                            "item_id"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "discourse_frame": {
+                        "minItems": 1,
+                        "maxItems": 16,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "quote": {
+                              "type": "string"
+                            },
+                            "item_id": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "quote",
+                            "item_id"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "relations": {
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "corrects",
+                                "supersedes",
+                                "contradicts",
+                                "fulfills",
+                                "answers",
+                                "caused_by"
+                              ]
+                            },
+                            "target_candidate": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "support": {
+                              "minItems": 1,
+                              "maxItems": 8,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "quote": {
+                                    "type": "string"
+                                  },
+                                  "item_id": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "quote",
+                                  "item_id"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "target_candidate",
+                            "support"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "time": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "start": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "until": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "precision": {
+                                "type": "string",
+                                "enum": [
+                                  "instant",
+                                  "day",
+                                  "month",
+                                  "year",
+                                  "unknown"
+                                ]
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "occurred",
+                                  "valid",
+                                  "scheduled",
+                                  "due"
+                                ]
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "actual",
+                                  "scheduled",
+                                  "planned",
+                                  "tentative"
+                                ]
+                              },
+                              "timezone": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "mentioned_at": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "recurrence": {
+                                "anyOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "frequency": {
+                                        "type": "string",
+                                        "enum": [
+                                          "daily",
+                                          "weekly",
+                                          "monthly",
+                                          "yearly"
+                                        ]
+                                      },
+                                      "interval": {
+                                        "anyOf": [
+                                          {
+                                            "type": "integer",
+                                            "exclusiveMinimum": 0,
+                                            "maximum": 9007199254740991
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "weekdays": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string",
+                                          "enum": [
+                                            "mo",
+                                            "tu",
+                                            "we",
+                                            "th",
+                                            "fr",
+                                            "sa",
+                                            "su"
+                                          ]
+                                        }
+                                      },
+                                      "until": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "frequency",
+                                      "interval",
+                                      "weekdays",
+                                      "until"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "start",
+                              "until",
+                              "precision",
+                              "relation",
+                              "status",
+                              "timezone",
+                              "mentioned_at",
+                              "recurrence"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "text": {
+                        "type": "string"
+                      },
+                      "subject": {
+                        "type": "string"
+                      },
+                      "page": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "attribution",
+                      "discourse",
+                      "epistemic",
+                      "polarity",
+                      "support",
+                      "discourse_frame",
+                      "relations",
+                      "time",
+                      "text",
+                      "subject",
+                      "page"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "candidate_index",
+                  "candidate"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "repairs"
+      ],
+      "additionalProperties": false
+    },
+    "messages": [
+      {
+        "role": "system",
+        "content": "Protocol-only JSON echo. Copy the supplied constant object exactly without interpreting claims or making semantic judgments."
+      },
+      {
+        "role": "user",
+        "content": "{\"repairs\":[{\"candidate_index\":0,\"reported_proposition\":\"Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. I.\",\"relay_attribution\":\"Invented protocol sentence only. Invented protocol sentence only. Invented pr.\",\"personal_limits\":\"Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. Invented protocol se.\"},{\"candidate_index\":1,\"candidate\":{\"kind\":\"claim\",\"subject\":\"Zephyr QX-100\",\"text\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"attribution\":{\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"chain\":[]},\"discourse\":{\"commitment\":\"asserted\",\"disposition\":\"active\"},\"epistemic\":{\"basis\":\"self_attested\"},\"polarity\":\"negated\",\"support\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":null}],\"discourse_frame\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":null}],\"relations\":[],\"time\":null,\"page\":null}}]}"
+      }
+    ],
+    "callerMaxTokens": 3200,
+    "roleMaxTokens": 2400,
+    "effectiveInitialOutputLimit": 2400,
+    "outputLanguage": null,
+    "ok": true,
+    "value": "{\"repairs\":[{\"candidate_index\":0,\"reported_proposition\":\"Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. I.\",\"relay_attribution\":\"Invented protocol sentence only. Invented protocol sentence only. Invented pr.\",\"personal_limits\":\"Invented protocol sentence only. Invented protocol sentence only. Invented protocol se.\"},{\"candidate_index\":1,\"candidate\":{\"kind\":\"claim\",\"attribution\":{\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"chain\":[]},\"discourse\":{\"commitment\":\"asserted\",\"disposition\":\"active\"},\"epistemic\":{\"basis\":\"self_attested\"},\"polarity\":\"negated\",\"support\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":null}],\"discourse_frame\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":null}],\"relations\":[],\"time\":null,\"text\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"subject\":\"Zephyr QX-100\",\"page\":null}}]}",
+    "reason": null,
+    "error": null,
+    "latencyMs": 3397.446416,
+    "usage": {
+      "inputTokens": 1058,
+      "outputTokens": 277,
+      "totalTokens": 1335,
+      "cachedInputTokens": 0,
+      "reasoningOutputTokens": 18
+    },
+    "schemaValid": true,
+    "exact": false
+  },
+  "extraAlignmentProtocol": {
+    "runtimeCommit": "1eb002b84c05927b1ac1c5f69e974908de36c224",
+    "purpose": "protocol-only",
+    "answerOutputTokenLimit": 2400,
+    "results": [
+      {
+        "kind": "generation",
+        "status": "completed",
+        "expected": {
+          "record_readings": [
+            {
+              "evidence_id": "E1",
+              "selected_meaning": "Private invented reading of the open return-delivery question.",
+              "clarification_or_ambiguity": null
+            }
+          ],
+          "blocks": [
+            {
+              "text": "The open silverpine question is whether the warranty covers return delivery; its answer remains unknown.",
+              "evidence_ids": [
+                "E1"
+              ]
+            }
+          ],
+          "missing_concepts": []
+        },
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "reason": null
+      },
+      {
+        "kind": "verification",
+        "status": "completed",
+        "expected": {
+          "verdicts": [
+            {
+              "block_id": "B1",
+              "source_alignments": [
+                {
+                  "evidence_id": "E1",
+                  "source_context": "The selected original question concerns return delivery and remains unanswered; an unrelated phrase is unselected.",
+                  "actor": {
+                    "source_anchor": null,
+                    "answer_anchor": null,
+                    "relation": "not_selected",
+                    "detail": "No named action actor."
+                  },
+                  "object_and_operation": {
+                    "source_anchor": "E1_4e08a4be6280_1",
+                    "answer_anchor": "B1_0d044826471a_1",
+                    "source_specifics": "The same coverage question.",
+                    "answer_specifics": "The same coverage question.",
+                    "relation": "preserved"
+                  },
+                  "qualification": {
+                    "source_anchor": "E1_4e08a4be6280_2",
+                    "answer_anchor": "B1_0d044826471a_2",
+                    "relation": "preserved",
+                    "detail": "Unknown answer remains unknown."
+                  },
+                  "tested_property": {
+                    "source_anchor": null,
+                    "answer_anchor": null,
+                    "source_property": null,
+                    "answer_property": null,
+                    "relation": "absent_from_both"
+                  }
+                }
+              ],
+              "comparison": {
+                "source_meaning": "An unanswered return-delivery question.",
+                "candidate_meaning": "An unanswered return-delivery question.",
+                "action_arguments": "The warranty coverage question concerns return delivery.",
+                "qualification_scope": "The question remains open."
+              },
+              "mismatches": [],
+              "proposition_supported": true,
+              "action_arguments_preserved": true,
+              "qualification_scope_preserved": true,
+              "excerpt_selection": {
+                "selected_by_retained_excerpt": true,
+                "unselected_content": null
+              }
+            }
+          ]
+        },
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "reason": null
+      }
+    ]
+  },
+  "validationAmendment": {
+    "declaration": "tmp/v73-protocol-validation-amendment.md",
+    "reviews": [
+      "tmp/language-v73-protocol-failure-review.md",
+      "tmp/language-v73-protocol-design-review.md",
+      "tmp/language-v73-distinct-control-review.md"
+    ],
+    "originalFailurePreserved": true,
+    "extraControlsDoNotFulfillPlan": true,
+    "semanticGateChanged": false
+  },
+  "accounting": {
+    "actualProviderControlInvocations": 8,
+    "amendedPlanFulfilled": 5,
+    "originalFailedRepetitiveRepair": 1,
+    "extraUnplannedAlignmentPassed": 2,
+    "extraAlignmentUsageAvailable": false
+  },
+  "protocolBudget": {
+    "runtimeCommit": "1eb002b84c05927b1ac1c5f69e974908de36c224",
+    "purpose": "Observed transport controls only; not a universal token bound or semantic result.",
+    "controls": [
+      {
+        "receipt": "tmp/v73-protocol-controls.json",
+        "index": 0,
+        "role": "extra_unplanned_alignment",
+        "kind": "generation",
+        "status": "completed",
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "usage": null,
+        "callerMaxTokens": null,
+        "roleMaxTokens": 2400,
+        "effectiveInitialOutputLimit": null,
+        "jsonCharacters": null,
+        "rawValueAvailable": false,
+        "fulfillsAmendedPlan": false
+      },
+      {
+        "receipt": "tmp/v73-protocol-controls.json",
+        "index": 1,
+        "role": "extra_unplanned_alignment",
+        "kind": "verification",
+        "status": "completed",
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "usage": null,
+        "callerMaxTokens": null,
+        "roleMaxTokens": 2400,
+        "effectiveInitialOutputLimit": null,
+        "jsonCharacters": null,
+        "rawValueAvailable": false,
+        "fulfillsAmendedPlan": false
+      },
+      {
+        "receipt": "tmp/v73-declared-protocol-controls.json",
+        "index": 0,
+        "role": "declared_rendering",
+        "kind": "generation",
+        "status": "completed",
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "usage": {
+          "inputTokens": 972,
+          "outputTokens": 116,
+          "totalTokens": 1088,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 33
+        },
+        "callerMaxTokens": 2222,
+        "roleMaxTokens": 2400,
+        "effectiveInitialOutputLimit": 2222,
+        "jsonCharacters": 229,
+        "rawValueAvailable": true,
+        "fulfillsAmendedPlan": true
+      },
+      {
+        "receipt": "tmp/v73-declared-protocol-controls.json",
+        "index": 1,
+        "role": "declared_rendering",
+        "kind": "verification",
+        "status": "completed",
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "usage": {
+          "inputTokens": 5875,
+          "outputTokens": 1075,
+          "totalTokens": 6950,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 43
+        },
+        "callerMaxTokens": 2222,
+        "roleMaxTokens": 2400,
+        "effectiveInitialOutputLimit": 2222,
+        "jsonCharacters": 5078,
+        "rawValueAvailable": true,
+        "fulfillsAmendedPlan": true
+      },
+      {
+        "receipt": "tmp/v73-translation-protocol-control.json",
+        "index": 0,
+        "role": "declared_structured_clock",
+        "kind": "translation-generation",
+        "status": "completed",
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "usage": {
+          "inputTokens": 1123,
+          "outputTokens": 208,
+          "totalTokens": 1331,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 20
+        },
+        "callerMaxTokens": 2222,
+        "roleMaxTokens": 2400,
+        "effectiveInitialOutputLimit": 2222,
+        "jsonCharacters": 688,
+        "rawValueAvailable": true,
+        "fulfillsAmendedPlan": true
+      },
+      {
+        "receipt": "tmp/v73-retention-protocol-controls.json",
+        "index": 0,
+        "role": "declared_retention",
+        "kind": "declared_retention",
+        "status": "completed",
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "usage": {
+          "inputTokens": 864,
+          "outputTokens": 272,
+          "totalTokens": 1136,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 17
+        },
+        "callerMaxTokens": 3744,
+        "roleMaxTokens": 2400,
+        "effectiveInitialOutputLimit": 2400,
+        "jsonCharacters": 1066,
+        "rawValueAvailable": true,
+        "fulfillsAmendedPlan": true
+      },
+      {
+        "receipt": "tmp/v73-report-repair-protocol-control.json",
+        "index": 0,
+        "role": "failed_original_repetitive_repair",
+        "kind": "failed_original_repetitive_repair",
+        "status": "completed",
+        "ok": true,
+        "schemaValid": true,
+        "exact": false,
+        "usage": {
+          "inputTokens": 1058,
+          "outputTokens": 277,
+          "totalTokens": 1335,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 18
+        },
+        "callerMaxTokens": 3200,
+        "roleMaxTokens": 2400,
+        "effectiveInitialOutputLimit": 2400,
+        "jsonCharacters": 1044,
+        "rawValueAvailable": true,
+        "fulfillsAmendedPlan": false
+      },
+      {
+        "receipt": "tmp/v73-report-repair-distinct-protocol-control.json",
+        "index": 0,
+        "role": "amended_distinct_repair",
+        "kind": "amended_distinct_repair",
+        "status": "completed",
+        "ok": true,
+        "schemaValid": true,
+        "exact": true,
+        "usage": {
+          "inputTokens": 1061,
+          "outputTokens": 286,
+          "totalTokens": 1347,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 18
+        },
+        "callerMaxTokens": 3200,
+        "roleMaxTokens": 2400,
+        "effectiveInitialOutputLimit": 2400,
+        "jsonCharacters": 1077,
+        "rawValueAvailable": true,
+        "fulfillsAmendedPlan": true
+      }
+    ],
+    "extraSemanticPasses": 0,
+    "service1024OverlayValidated": false,
+    "originalRepetitiveFailurePreserved": true,
+    "amendment": "tmp/v73-protocol-validation-amendment.md",
+    "ceilingExplanation": "ModelClient uses the minimum of caller and role ceilings. The evaluation role remains 2400. Raw value, usage and caller cap were not saved by the accidental alignment wrapper and remain unavailable."
+  },
+  "modelCompetenceClaimed": false,
+  "freshHeldOutExecuted": false
+}

@@ -1,0 +1,7 @@
+# V76 natural maximum repair fixture amendment
+
+The original once-only protocol suite is preserved as nine of ten exact successes. Its sole failure shortened one artificial cyclic marker in repairs[2].proposition_and_nontemporal_scope from220 to194 UTF-16 units. Transport and local schema were valid; all other fields, including the60-unit explicit processing-reference exclusion, copied exactly. The response used611 output tokens under effective2400. Independent review isolated the copying confound and permitted a separately declared natural-sentence control.
+
+The new declaration changes six artificial clock-repair sentences to complete invented prose at exactly the original195/90/52 and220/110/68 UTF-16 lengths. It preserves the60-unit exclusion, the report and full-repair branches, every key, index, count, nonstring value, strict production schema, three400-unit text assemblies, caller3200/role2400/effective2400 caps, Luna and Responses. It makes no semantic competence claim.
+
+The original declaration and failed receipt are hash-bound. The new declaration, runner, independent design review and one outcome remain separate. Do not overwrite or retry either fixture. Readiness must record eleven logical controls, ten fulfilled requirements only if this new control passes, and one preserved original failure; retain all endpoint requests. No semantic launch until final independent readiness review.

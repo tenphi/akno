@@ -13,6 +13,15 @@ import {
 const clock = resolveTimelineClock('2031-04-12T10:00:00+02:00', 'Europe/Amsterdam');
 
 describe('unified temporal clock', () => {
+  it('keeps an unknown date outside scheduled actions and bounded date queries', () => {
+    const time = retained({ precision: 'unknown', relation: 'scheduled', status: 'planned' });
+    expect(temporalActionable(time, 'accepted')).toBe(false);
+    expect(classifyRetainedTime(time, 'accepted', clock)).toBe('undated');
+    expect(temporalCurrentEligible(time, 'accepted', clock)).toBe(false);
+    expect(temporalOverlapsRange(time, normalizeTimelineRange('2031', '2031'))).toBe(false);
+    expect(temporalOverlapsRange(time, normalizeTimelineRange())).toBe(true);
+  });
+
   it('admits an actual occurrence only on the reader clock day', () => {
     expect(
       temporalCurrentEligible(

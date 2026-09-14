@@ -1,0 +1,540 @@
+{
+  "runtimeCommit": "1eb002b84c05927b1ac1c5f69e974908de36c224",
+  "model": "gpt-5.6-luna",
+  "purpose": "New mixed report-text/full-candidate repair schema transport only. No semantic quality or universal budget claim.",
+  "status": "completed",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "repairs": {
+        "maxItems": 2,
+        "type": "array",
+        "items": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "candidate_index": {
+                  "type": "number",
+                  "enum": [
+                    0
+                  ]
+                },
+                "reported_proposition": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                },
+                "relay_attribution": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 78,
+                  "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                },
+                "personal_limits": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120,
+                  "pattern": "^[^\\r\\n\\u0000]*[.!]$"
+                }
+              },
+              "required": [
+                "candidate_index",
+                "reported_proposition",
+                "relay_attribution",
+                "personal_limits"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "candidate_index": {
+                  "type": "number",
+                  "enum": [
+                    1
+                  ]
+                },
+                "candidate": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "claim",
+                        "decision",
+                        "preference",
+                        "plan",
+                        "event",
+                        "question"
+                      ]
+                    },
+                    "attribution": {
+                      "type": "object",
+                      "properties": {
+                        "source_role": {
+                          "type": "string",
+                          "enum": [
+                            "user",
+                            "assistant",
+                            "external",
+                            "unknown"
+                          ]
+                        },
+                        "source_speaker": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "chain": {
+                          "maxItems": 3,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "speaker": {
+                                "type": "string"
+                              },
+                              "role": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "user",
+                                      "assistant",
+                                      "external",
+                                      "unknown"
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "speaker",
+                              "role"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "source_role",
+                        "source_speaker",
+                        "chain"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "discourse": {
+                      "type": "object",
+                      "properties": {
+                        "commitment": {
+                          "type": "string",
+                          "enum": [
+                            "asserted",
+                            "tentative",
+                            "hypothetical",
+                            "counterfactual",
+                            "none"
+                          ]
+                        },
+                        "disposition": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "proposed",
+                            "accepted",
+                            "rejected",
+                            "resolved",
+                            "cancelled",
+                            "completed",
+                            "superseded"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "commitment",
+                        "disposition"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "epistemic": {
+                      "type": "object",
+                      "properties": {
+                        "basis": {
+                          "type": "string",
+                          "enum": [
+                            "self_attested",
+                            "source_report"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "basis"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "polarity": {
+                      "type": "string",
+                      "enum": [
+                        "affirmed",
+                        "negated"
+                      ]
+                    },
+                    "support": {
+                      "minItems": 1,
+                      "maxItems": 8,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "quote": {
+                            "type": "string"
+                          },
+                          "item_id": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "quote",
+                          "item_id"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "discourse_frame": {
+                      "minItems": 1,
+                      "maxItems": 16,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "quote": {
+                            "type": "string"
+                          },
+                          "item_id": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "quote",
+                          "item_id"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "relations": {
+                      "maxItems": 8,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "corrects",
+                              "supersedes",
+                              "contradicts",
+                              "fulfills",
+                              "answers",
+                              "caused_by"
+                            ]
+                          },
+                          "target_candidate": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "support": {
+                            "minItems": 1,
+                            "maxItems": 8,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "quote": {
+                                  "type": "string"
+                                },
+                                "item_id": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "quote",
+                                "item_id"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "target_candidate",
+                          "support"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "time": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "start": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "until": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "precision": {
+                              "type": "string",
+                              "enum": [
+                                "instant",
+                                "day",
+                                "month",
+                                "year",
+                                "unknown"
+                              ]
+                            },
+                            "relation": {
+                              "type": "string",
+                              "enum": [
+                                "occurred",
+                                "valid",
+                                "scheduled",
+                                "due"
+                              ]
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "actual",
+                                "scheduled",
+                                "planned",
+                                "tentative"
+                              ]
+                            },
+                            "timezone": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "mentioned_at": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "recurrence": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "frequency": {
+                                      "type": "string",
+                                      "enum": [
+                                        "daily",
+                                        "weekly",
+                                        "monthly",
+                                        "yearly"
+                                      ]
+                                    },
+                                    "interval": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "exclusiveMinimum": 0,
+                                          "maximum": 9007199254740991
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "weekdays": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string",
+                                        "enum": [
+                                          "mo",
+                                          "tu",
+                                          "we",
+                                          "th",
+                                          "fr",
+                                          "sa",
+                                          "su"
+                                        ]
+                                      }
+                                    },
+                                    "until": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "frequency",
+                                    "interval",
+                                    "weekdays",
+                                    "until"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "start",
+                            "until",
+                            "precision",
+                            "relation",
+                            "status",
+                            "timezone",
+                            "mentioned_at",
+                            "recurrence"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "text": {
+                      "type": "string"
+                    },
+                    "subject": {
+                      "type": "string"
+                    },
+                    "page": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "attribution",
+                    "discourse",
+                    "epistemic",
+                    "polarity",
+                    "support",
+                    "discourse_frame",
+                    "relations",
+                    "time",
+                    "text",
+                    "subject",
+                    "page"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "candidate_index",
+                "candidate"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      }
+    },
+    "required": [
+      "repairs"
+    ],
+    "additionalProperties": false
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "Protocol-only JSON echo. Copy the supplied constant object exactly without interpreting claims or making semantic judgments."
+    },
+    {
+      "role": "user",
+      "content": "{\"repairs\":[{\"candidate_index\":0,\"reported_proposition\":\"Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. I.\",\"relay_attribution\":\"Invented protocol sentence only. Invented protocol sentence only. Invented pr.\",\"personal_limits\":\"Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. Invented protocol se.\"},{\"candidate_index\":1,\"candidate\":{\"kind\":\"claim\",\"subject\":\"Zephyr QX-100\",\"text\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"attribution\":{\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"chain\":[]},\"discourse\":{\"commitment\":\"asserted\",\"disposition\":\"active\"},\"epistemic\":{\"basis\":\"self_attested\"},\"polarity\":\"negated\",\"support\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":null}],\"discourse_frame\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":null}],\"relations\":[],\"time\":null,\"page\":null}}]}"
+    }
+  ],
+  "callerMaxTokens": 3200,
+  "roleMaxTokens": 2400,
+  "effectiveInitialOutputLimit": 2400,
+  "outputLanguage": null,
+  "ok": true,
+  "value": "{\"repairs\":[{\"candidate_index\":0,\"reported_proposition\":\"Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. Invented protocol sentence only. I.\",\"relay_attribution\":\"Invented protocol sentence only. Invented protocol sentence only. Invented pr.\",\"personal_limits\":\"Invented protocol sentence only. Invented protocol sentence only. Invented protocol se.\"},{\"candidate_index\":1,\"candidate\":{\"kind\":\"claim\",\"attribution\":{\"source_role\":\"user\",\"source_speaker\":\"Ada Marlow\",\"chain\":[]},\"discourse\":{\"commitment\":\"asserted\",\"disposition\":\"active\"},\"epistemic\":{\"basis\":\"self_attested\"},\"polarity\":\"negated\",\"support\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":null}],\"discourse_frame\":[{\"quote\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"item_id\":null}],\"relations\":[],\"time\":null,\"text\":\"Ada Marlow has not arranged delivery of Zephyr QX-100.\",\"subject\":\"Zephyr QX-100\",\"page\":null}}]}",
+  "reason": null,
+  "error": null,
+  "latencyMs": 3397.446416,
+  "usage": {
+    "inputTokens": 1058,
+    "outputTokens": 277,
+    "totalTokens": 1335,
+    "cachedInputTokens": 0,
+    "reasoningOutputTokens": 18
+  },
+  "schemaValid": true,
+  "exact": false
+}

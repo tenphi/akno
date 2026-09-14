@@ -1,6 +1,6 @@
 import type { AnswerOutput, MemoryView, PageRole } from '@tenphi/akno-protocol';
 import { openOptionsFrom, parse } from '../args.ts';
-import { heading, json, line, statusLabel, style } from '../output.ts';
+import { proseLabel, heading, json, line, statusLabel, style } from '../output.ts';
 import { resolveOps } from '../ops-handle.ts';
 
 const ANSWER_HELP = `akno answer <question> [options]
@@ -13,6 +13,7 @@ const ANSWER_HELP = `akno answer <question> [options]
   --limit <n>         Maximum qualified retrieval candidates.
   --memory-view <v>   factual | history | planning | reports | questions |
                       discussion | all. Inferred conservatively by default.
+  --language <en|ru> Answer prose language; defaults to the knowledge language.
   --budget <n>        Internal retrieval evidence budget.
   --include <r,...>   Page roles to include, e.g. source.
   --folder <path>     Restrict to a folder.
@@ -32,6 +33,7 @@ const ANSWER_HELP = `akno answer <question> [options]
 
 export async function answerCommand(argv: string[]): Promise<number> {
   const { values, positionals } = parse<{
+    language?: string;
     limit?: string;
     'memory-view'?: string;
     budget?: string;
@@ -49,6 +51,7 @@ export async function answerCommand(argv: string[]): Promise<number> {
     context: boolean;
     'max-answer-tokens'?: string;
   }>(argv, {
+    language: { type: 'string' },
     limit: { type: 'string' },
     'memory-view': { type: 'string' },
     budget: { type: 'string' },
@@ -83,6 +86,7 @@ export async function answerCommand(argv: string[]): Promise<number> {
   try {
     const result = await handle.ops.answer({
       question: positionals.join(' '),
+      ...(values.language ? { answer_language: values.language as 'en' | 'ru' } : {}),
       ...(values['memory-view'] ? { memory_view: values['memory-view'] as MemoryView } : {}),
       ...(values.limit ? { limit: Number(values.limit) } : {}),
       ...(values.budget ? { retrieval_budget: Number(values.budget) } : {}),
@@ -145,7 +149,8 @@ function printAnswer(result: AnswerOutput): void {
     for (const item of result.context) {
       if (item.type === 'page') {
         line(`  ${item.evidence_id} · ${item.slug} — ${item.title}`);
-        for (const sourceLine of item.lines) line(`    ${sourceLine.n}: ${sourceLine.text}`);
+        for (const sourceLine of item.lines)
+          line(`    ${sourceLine.n}: ${sourceLine.text}${proseLabel(sourceLine)}`);
       } else if (item.type === 'document') {
         const pages = item.pages?.length ? ` pages ${item.pages.join(',')}` : '';
         line(`  ${item.evidence_id} · ${item.document_id}${pages}`);

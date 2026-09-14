@@ -1,0 +1,75 @@
+{
+  "checkedAt": "2026-09-13T14:40:20.725Z",
+  "livePositiveChecks": "passed; source meanings separately reviewed",
+  "initialHarness": "failed_preserved",
+  "offlineSupplement": "passed; generic ordinary-answer verification only",
+  "fullQualityAcceptance": "unmet",
+  "productionCodeUnchangedFrom": "c76c0a0",
+  "frozenManifestUnchangedSha256": "9707dc1a819f754255a2b75fb151ac3b86eaf0599b2902d2091cdbb63ab81618",
+  "observations": [
+    {
+      "profile": "default",
+      "ordinaryGenerationWireTokens": 1024,
+      "reportVerificationRequestedTokens": 3124,
+      "reportVerificationWireTokens": 2400,
+      "retentionVerificationReceiptMatchesTransport": true,
+      "verifiedAnswerBlocks": 2
+    },
+    {
+      "profile": "english",
+      "ordinaryGenerationWireTokens": 1024,
+      "reportVerificationRequestedTokens": 3124,
+      "reportVerificationWireTokens": 2400,
+      "retentionVerificationReceiptMatchesTransport": true,
+      "verifiedAnswerBlocks": 2
+    }
+  ],
+  "initialFailureDisposition": [
+    {
+      "name": "default: ordinary generation requests and sends 1024",
+      "disposition": "Stage label was wrong. Original requested/wire token fields and public verification receipts remain evidence; no original grade or pass flag is rewritten."
+    },
+    {
+      "name": "english: incomplete audit withheld with typed failure",
+      "disposition": "Initial English injection did not execute; preserve as failed. Separate zero-egress ordinary-answer control covers only the shared verifier failure path."
+    },
+    {
+      "name": "english: source verification applies with either language policy",
+      "disposition": "Stage label was wrong. Original requested/wire token fields and public verification receipts remain evidence; no original grade or pass flag is rewritten."
+    },
+    {
+      "name": "english: wire ceiling reaches 2400 for answer verification",
+      "disposition": "Stage label was wrong. Original requested/wire token fields and public verification receipts remain evidence; no original grade or pass flag is rewritten."
+    },
+    {
+      "name": "english: ordinary generation requests and sends 1024",
+      "disposition": "Stage label was wrong. Original requested/wire token fields and public verification receipts remain evidence; no original grade or pass flag is rewritten."
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "benchmarks/language/results/release-profile-smoke/initial-run.json",
+      "sha256": "a084dd054694d3026161d3874abd116aadf180bc7c96aa7255d3cce18e80c68d"
+    },
+    {
+      "file": "benchmarks/language/results/release-profile-smoke/initial-runner.mjs",
+      "sha256": "b33039fe3a29aaf77e3f243557919cf632ec2860b8d488720fd285bc0420e823"
+    },
+    {
+      "file": "benchmarks/language/results/release-profile-smoke/failure-controls.json",
+      "sha256": "2ce5e663432a9d8c37dc2e0de3ff5097ed457072b60239f96c3fbbecbab9389a"
+    },
+    {
+      "file": "scripts/smoke-language-release.mjs",
+      "sha256": "fa3d9bc614df678af5b6cea898909ffe3d42df8a9bdd5edc7c76dbf7270ab89c"
+    },
+    {
+      "file": "scripts/smoke-language-failure-controls.mjs",
+      "sha256": "58db509ac748b0f6f93a42d8425d01740c17fc00b57077b9dc658a4b734353f0"
+    },
+    {
+      "file": "config/default.jsonc",
+      "sha256": "d6da96040202d4412a7b6eee48e17ec27d2ca9c8d5aaecc5f0701790e210d76b"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "runtimeCommit": "a67faa3fd3a6f59450a35c4af1d66baa96fee4e8",
+  "publishedCopiesChecked": 93,
+  "originalCopiesChecked": 91,
+  "publishedGatesRecomputed": true,
+  "originalGatePassed": false,
+  "completionGatePassed": false,
+  "manifestBoundFilesUnchanged": true,
+  "authoredMarkdownLinksChecked": true,
+  "providerCalls": 0,
+  "productionSourceChanged": false,
+  "sourcePrivacyCheck": {
+    "passed": true,
+    "stagedFiles": 97,
+    "productionSourceUnchanged": true,
+    "distUnchanged": true,
+    "sourceDigest": "57e9a780ea0e9c10976d66aa021193961761e6fcdb03515c82a8821c1cf4982c",
+    "distDigest": "2d73b3df3bdc5445913fffcb4e27abba59999e6da99fb1609c64785e2d76ac11",
+    "contentScanFindings": [],
+    "scope": "Changed invented evidence/docs only; no local configuration or personal knowledge-base content inspected."
+  }
+}

@@ -12,16 +12,16 @@ export interface TemporalQueryIntent {
 /** Keep temporal question interpretation identical across context activation and answering. */
 export function temporalQueryIntent(query: string): TemporalQueryIntent {
   return {
-    current: /\b(current|currently|active|now|today)\b/i.test(query),
+    current: /\b(current|currently|active|now|today)\b|сейчас|сегодня|текущ|действующ/iu.test(query),
     future:
-      /\b(next|upcoming|future|due|overdue|schedule|scheduled|scheduling|deadline|plan|plans|planned|planning)\b/i.test(
+      /\b(next|upcoming|future|due|overdue|schedule|scheduled|scheduling|deadline|plan|plans|planned|planning)\b|следующ|предстоящ|будущ|крайний срок|срок\p{L}* (?:оплаты|подачи|выполнения|осмотра)|просроч|расписани|план/iu.test(
         query,
       ),
     history:
-      /\b(past|history|historical|happened|occurred|previously|when did|cancelled|completed|superseded|rejected|resolved|former)\b/i.test(
+      /\b(past|history|historical|happened|occurred|previously|when did|cancelled|completed|superseded|rejected|resolved|former)\b|прошл|истори|произош|ранее|отмен|заверш|отклон|прежн/iu.test(
         query,
       ),
-    sourceReport: /\b(report|reported|said|according to)\b/i.test(query),
+    sourceReport: /\b(report|reported|said|according to)\b|сообщ|сказал|по словам/iu.test(query),
   };
 }
 

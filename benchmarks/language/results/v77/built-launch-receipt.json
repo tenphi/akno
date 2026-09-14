@@ -1,0 +1,70 @@
+{
+  "runtimeCommit": "a67faa3fd3a6f59450a35c4af1d66baa96fee4e8",
+  "inputs": {
+    "selected": {
+      "corpus": "v21",
+      "corpusFingerprint": "208d2ea60ef5f5bcf2158ef56a35e57e1ee6b5c36069ac2fbb606abe1ab1cf44",
+      "inputPath": "tmp/language-v21-blind-inputs.json",
+      "inputSha256": "56c03e076d2a383a8b2e59b2d7001ec928192dd2aa54ca9e81dd67960358d365",
+      "reviewPath": "tmp/language-v21-input-review.json",
+      "reviewSha256": "4a719c22d480ce8c05badf23504777826cb4a66fb7939ead0a80665be52ea3ba",
+      "approvedCases": 22,
+      "thresholds": {
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 0,
+        "sourceByteChanges": 0,
+        "usefulRetentionCoverage": 0.8,
+        "qualifiedRetrievalCoverage": 0.8,
+        "usefulQualifiedAnswerCoverage": 0.9,
+        "availabilityFailureRate": 0.05,
+        "unsupportedRetainedOutputs": 0,
+        "unsupportedNonnullAnswers": 0
+      }
+    },
+    "built": {
+      "corpus": "v20",
+      "corpusFingerprint": "8658f0d00661221cf4e042ffb78f5ed2f3c6b575ab254b81b65ded6e853ea0e9",
+      "inputPath": "tmp/language-v20-blind-inputs.json",
+      "inputSha256": "62e0d7b4f152606e9aab3772532d6760a3b969edde7dc8fa5e8260e37b498986",
+      "reviewPath": "tmp/language-v20-input-review.json",
+      "reviewSha256": "37d3457ebd88f6189b4f9a11b4ce60f0a2d1df776ce9e346f3c146b61611c1bc",
+      "approvedCases": 22,
+      "thresholds": {
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 0,
+        "sourceByteChanges": 0,
+        "usefulRetentionCoverage": 0.8,
+        "qualifiedRetrievalCoverage": 0.8,
+        "usefulQualifiedAnswerCoverage": 0.9,
+        "availabilityFailureRate": 0.05,
+        "unsupportedRetainedOutputs": 0,
+        "unsupportedNonnullAnswers": 0
+      }
+    }
+  },
+  "sourceDigest": "57e9a780ea0e9c10976d66aa021193961761e6fcdb03515c82a8821c1cf4982c",
+  "distDigest": "2d73b3df3bdc5445913fffcb4e27abba59999e6da99fb1609c64785e2d76ac11",
+  "files": {
+    "scripts/bench-language.mjs": "00b56a130df7a5e5d50ad1ccddb19732e011e0bc796253021d27181298502f2b",
+    "tmp/run-v77-selected.sh": "a71b2b696842c6c4b50dded86d5b27a78db67db39372c6679f2d197062b0963c",
+    "tmp/run-v77-built.sh": "eb29629e84f0f8750ba55ba2d071c945f223bf6b3746c20b86751a030934c6a3",
+    "tmp/bench-language-built-v77.mjs": "6aac4040c24da3cd8d1501d414c495754362219fb205027524a114d73c4db16e",
+    "tmp/capture-language-models-v77.mjs": "13c8f43c741fbd8669aa28bcbb9942a16b0ce9f13da42e0c59b5aa8b30995589",
+    "tmp/capture-language-built-v77.mjs": "596876274a678e7c31f0a816ab901cd53689c05a4a2fc3832b5017d842ffa123",
+    "tmp/v77-launch-integrity.mjs": "f71995176d9c06a1ae213c2c5ac65fe1abdda63e33d051294175f01bd7429ce9",
+    "tmp/start-v77-probes.mjs": "7899179e8c47dca654626fa8e9a1895f5a15debebc71b748fd0264f44c379882",
+    "tmp/validate-v77-evidence.mjs": "03c71bb9abdc0d899e7899bd8c3d61c8c3847e2d41f00db9803e9bc9f3b4a026",
+    "tmp/v77-trace-integrity.mjs": "c09c729dc26942feab834d0a0565d69cb224ef10def3e70f70cf565bbba75b2a",
+    "tmp/write-v77-readiness.mjs": "c14176001c51c2cf72f11f0f19905865b44cb24432552bf3dd15bf414e236470",
+    "tmp/v77-input-provenance.mjs": "ec4e21fcc79734f78e9f77c05e9f5bbdd0ebbaf164cb5993b1d4462ce9487cbe",
+    "benchmarks/language/v77-trial-plan.md": "d5e2615f28bc2f3e1addbc9819794d3c691845a0aea5ffb6c75191a3becd0651",
+    "tmp/language-v21-blind-inputs.json": "56c03e076d2a383a8b2e59b2d7001ec928192dd2aa54ca9e81dd67960358d365",
+    "tmp/language-v21-input-review.json": "4a719c22d480ce8c05badf23504777826cb4a66fb7939ead0a80665be52ea3ba",
+    "tmp/language-v20-blind-inputs.json": "62e0d7b4f152606e9aab3772532d6760a3b969edde7dc8fa5e8260e37b498986",
+    "tmp/language-v20-input-review.json": "37d3457ebd88f6189b4f9a11b4ce60f0a2d1df776ce9e346f3c146b61611c1bc"
+  },
+  "mode": "built",
+  "startedAt": "2026-09-12T17:30:08.948Z"
+}

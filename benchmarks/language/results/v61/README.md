@@ -1,0 +1,22 @@
+# V61 completed exposed evaluation
+
+Frozen runtime **0f3357f** follows the [validation plan](../../v61-trial-plan.md). Both declared probes ran once with the isolated 2,400-token answer ceiling. Runtime Luna; independent source-only grading, code review and forensics Sol. No full V61 trial started. Approved fresh V20 held-out remains unexecuted.
+
+| Probe | Complete useful retention | Useful retrieval | Useful answers | Produced answers |
+| --- | --- | --- | --- | --- |
+| Selected six cases | 4/6 | 48/48 | 42/48 | 42/48 |
+| Built-package four cases | 3/4 | 32/32 | 32/32 | 32/32 |
+
+Independent grading finds **74/80 useful answers (92.5%)**, **7/10 complete useful retained sets**, and **80/80 useful retrievals**. Six writable answers are withheld. Every produced answer preserves source entailment, qualification and requested language. Unsafe factual promotion, source-byte changes, case availability failures and answer-operation failures are zero. These exposed diagnostics do not establish the full acceptance gate.
+
+V61 adds a bounded Russian nominal assistant-attribution form, generation guidance for coverage roles and named-source provenance in fiction, and per-record contribution guidance for the existing source verifier. Complete-record support verification omits the user query while preserving memory view, exact answer, complete original frame, excerpt and immutable anchors. Generation and ordinary composed-answer verification retain the query. The two [independent code reviews](code-review-1.md) and [second round](code-review-2.md), including the resolved source-placeholder finding, are preserved. All source-selection, alignment and semantic conditions remain mandatory.
+
+The three incomplete retained sets lose separate propositions. The selected report extracts a faithful passive collection denial but supplies a relational subject and no page proposal; ownership declines the unrelated product destination. The selected hypothesis loses its separate group-relative statement that actual requirements are unknown. The built rejected-offer case loses the independent no-booked-handover assertion after structural repair. Focused questions still retrieve useful evidence and can receive useful answers even when a separate source proposition is missing from the complete retained set. The grading counts that loss independently.
+
+All eight built report answers pass. Its V60 dial/regulator verifier conflict does not recur; the live complete-record payloads omit the query, but this observation does not prove causality. All eight selected exclusion and assistant answers also pass. The six selected nulls occur in report (two), hypothesis (two), fiction (one) and undated proposal (one). Exact held-draft mechanisms and original/repair obligations are recorded in the [selected forensic review](selected-forensic-review.md) and [built forensic review](built-forensic-review.md). The preliminary built report audit is preserved separately.
+
+Final verification passed **2,706 tests across 143 files**, build/typecheck, lint, knip, formatting, documentation doctor/build, smoke, installed-package smoke and repository safety. Freeze/push preceded build/restart/socket deployment. Changed and inherited compiled checks, actual-provider strict-schema controls, CI 34325278405 and documentation CI 34325278338 passed before the probes began. The [postdeploy receipt](postdeploy-check.json) and [protocol controls](protocol-controls.json) bind the frozen runtime.
+
+The [rendering observations](rendering-impact.json) record 19 copies, 21 translations and eight ordinary selected blocks, plus 16 copies and 16 translations in the built probe, with no empty or failed generations. The [budget comparison](budget-impact.json) is descriptive: runtime, retained content and call coverage differ from V60. Median verifier latency is 6.7 seconds selected and 6.2 seconds built. The service's explicit 1,024-token overlay remains unchanged; isolated 2,400-token results do not establish reliability at the lower ceiling.
+
+Full repeated validation is deferred because complete useful retention is **70%, below the 80% target**. Continue with bounded corrections under the same independent review/fix, full checks, freeze, redeploy and declared evaluation workflow. No threshold weakening, model switch, semantic retry, extra semantic pass or issue edit. PR #70 remains open and unmerged.

@@ -1,0 +1,258 @@
+{
+  "schemaVersion": "language-benchmark-v2",
+  "createdAt": "2026-09-12T17:32:58.887Z",
+  "corpusVersion": "language-discourse-v20",
+  "corpusFingerprint": "8658f0d00661221cf4e042ffb78f5ed2f3c6b575ab254b81b65ded6e853ea0e9",
+  "selectedCaseIds": [
+    "v19-held-report",
+    "v19-held-question",
+    "v19-held-rejected",
+    "v19-held-alternatives"
+  ],
+  "runs": 1,
+  "setup": "separate-writable-fidelity-and-read-only-admission",
+  "queryMatrix": [
+    "query_language",
+    "answer_language",
+    "explicit_view"
+  ],
+  "split": "development",
+  "knowledgeLanguage": "en",
+  "proseProjectionVersion": "prose-v1",
+  "memoryViewVersion": "memory-view-v7",
+  "answerPromptVersion": "answer-generation-v68",
+  "answerVerifierVersion": "answer-verifier-v48",
+  "retentionPromptVersion": "retain-extraction-language-v56",
+  "retentionVerifierVersion": "retain-verifier-language-v40",
+  "models": {
+    "retention": "gpt-5.6-luna",
+    "answer": "gpt-5.6-luna",
+    "embedding": "text-embedding-qwen3-embedding-0.6b",
+    "expansion": "llama-3.2-3b-instruct"
+  },
+  "modelOutputTokenLimits": {
+    "answer": 2400,
+    "retention": 2400
+  },
+  "indexModelDerivation": false,
+  "independentlyReviewed": false,
+  "releaseEligible": false,
+  "adjudication": "pending: inspect review material; verifier agreement and typed expectations are not independent truth labels",
+  "thresholds": {
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "usefulQualifiedAnswerCoverage": 0.9,
+    "availabilityFailureRate": 0.05,
+    "unsupportedRetainedOutputs": 0,
+    "unsupportedNonnullAnswers": 0
+  },
+  "metrics": {
+    "availabilityFailures": {
+      "numerator": 4,
+      "denominator": 4,
+      "rate": 1
+    },
+    "answerOperationFailures": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "producedAnswers": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "producedAnswersOverRetained": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "answerReasons": {},
+    "routingReasons": {},
+    "holdStages": {},
+    "independentlyJudgedQualifiedAnswers": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "independentlyJustifiedAbstentions": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "languagePolicyRejections": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0
+    },
+    "acceptedLanguageViolations": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "translationQualificationErrors": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "unsafeFactualPromotion": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "noncanonicalEligibilityFlags": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "usefulRetentionCoverage": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "expectedRetentionMisses": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "falseHolds": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "expectedSafeHolds": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "typedSemanticsMatch": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "qualifiedRetrievalCoverage": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "ordinaryProseQualification": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0
+    },
+    "sourceByteChanges": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    }
+  },
+  "byLanguage": {
+    "en": 1,
+    "ru": 1,
+    "mixed": 2
+  },
+  "byScenario": {
+    "nested-report": 1,
+    "open-question": 1,
+    "rejected-plan": 1,
+    "competing-hypotheses": 1
+  },
+  "cases": [
+    {
+      "id": "v19-held-report",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Preserve outer Ada and inner Bo, permission to send the device to a service bench for return-spring tension measurement rather than spring replacement, and the unread/unconfirmed status. Keep the separate no-collection-booking assertion. The contrast clarifies the same relayed report; permission is not a booking or completed measurement.",
+      "language": "mixed",
+      "scenario": "nested-report",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": true,
+      "availabilityFailure": true,
+      "languageRejected": false,
+      "retention": null,
+      "retainedItems": 0,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": false,
+      "ordinaryCorrect": false,
+      "bytesStable": null,
+      "replayOutcome": null,
+      "queries": [],
+      "reviewKnowledge": [],
+      "error": "evaluation_operation_failed"
+    },
+    {
+      "id": "v19-held-question",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Retain an unresolved question attributed to Ada about preventive coolant refill, with neither inclusion nor exclusion established. Do not answer the embedded coverage question or invent an external asking/writing action.",
+      "language": "ru",
+      "scenario": "open-question",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": true,
+      "availabilityFailure": true,
+      "languageRejected": false,
+      "retention": null,
+      "retainedItems": 0,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": false,
+      "ordinaryCorrect": false,
+      "bytesStable": null,
+      "replayOutcome": null,
+      "queries": [],
+      "reviewKnowledge": [],
+      "error": "evaluation_operation_failed"
+    },
+    {
+      "id": "v19-held-rejected",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Retain Ada’s rejection of sending the device to a laboratory for rotor-balance measurement, her lack of a plan under that offer, and the separate unbooked pickup. The rejected course of action remains kind plan/disposition rejected; that schema does not assert personal intent. No causation or actual measurement/booking may be invented.",
+      "language": "en",
+      "scenario": "rejected-plan",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": true,
+      "availabilityFailure": true,
+      "languageRejected": false,
+      "retention": null,
+      "retainedItems": 0,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": false,
+      "ordinaryCorrect": false,
+      "bytesStable": null,
+      "replayOutcome": null,
+      "queries": [],
+      "reviewKnowledge": [],
+      "error": "evaluation_operation_failed"
+    },
+    {
+      "id": "v19-held-alternatives",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Retain the slipping drive belt and jammed cooling fan as competing tentative hypotheses discussed by Ada. Neither has supporting evidence and Ada has not selected a cause. Preserve the actual discussion activity and personal nonselection; neither alternative becomes an established cause.",
+      "language": "mixed",
+      "scenario": "competing-hypotheses",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": true,
+      "availabilityFailure": true,
+      "languageRejected": false,
+      "retention": null,
+      "retainedItems": 0,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": false,
+      "ordinaryCorrect": false,
+      "bytesStable": null,
+      "replayOutcome": null,
+      "queries": [],
+      "reviewKnowledge": [],
+      "error": "evaluation_operation_failed"
+    }
+  ]
+}

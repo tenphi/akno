@@ -1,0 +1,45 @@
+{
+  "runtimeCommit": "b26c5b8b0386aff8be171593b51299f9c703d64b",
+  "decision": "proceed with unchanged full repeated V20 trial",
+  "decidedAt": "2026-09-09T10:57:11.905593+00:00",
+  "exposed": {
+    "selected": {
+      "usefulRetention": 5,
+      "cases": 6,
+      "usefulRetrieval": 48,
+      "usefulAnswers": 44,
+      "answers": 48
+    },
+    "built": {
+      "usefulRetention": 4,
+      "cases": 4,
+      "usefulRetrieval": 32,
+      "usefulAnswers": 31,
+      "answers": 32
+    },
+    "acceptedErrorsUnderFinalSourceOnlyAdjudication": 0,
+    "writableNulls": 5,
+    "caseAvailabilityFailures": 0
+  },
+  "rationale": "Both exposed probes exceed 90% independently useful answers. Complete useful retention is 9/10 and useful retrieval 80/80. Five transparent writable nulls and one retained-set omission are minor diagnostic losses under the declared plan. No accepted source/qualification/language/promotion/byte error is found by final source-only adjudication. Preserve the independent dissent about report nonverification completeness, the original grade, and two independent contextual scope reviews. This remains evaluation evidence, not a universal reliability claim.",
+  "scopeReviews": [
+    "tmp/language-selected-forensic-review-v65.md",
+    "tmp/language-v65-report-scope-adjudication.md",
+    "tmp/language-v65-report-scope-third-review.md"
+  ],
+  "corpusFingerprint": "8658f0d00661221cf4e042ffb78f5ed2f3c6b575ab254b81b65ded6e853ea0e9",
+  "fullRunsPerSplit": 2,
+  "fullSplits": [
+    "development",
+    "held-out"
+  ],
+  "fullCaseCountsPerSplit": {
+    "writable": 10,
+    "readOnly": 1
+  },
+  "queryCombinations": 8,
+  "answerOutputTokenLimit": 2400,
+  "serviceOverlayChanged": false,
+  "thresholdsChanged": false,
+  "freshHeldOutExecutedBeforeDecision": false
+}

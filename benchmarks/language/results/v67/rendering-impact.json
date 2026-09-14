@@ -1,0 +1,41 @@
+{
+  "note": "Descriptive generated branch counts from the declared one-pass exposed traces; modes are model choices, not independent language or semantic judgments.",
+  "results": [
+    {
+      "probe": "selected",
+      "generatedBlocks": {
+        "copy": 24,
+        "translate": 24,
+        "legacy": 15,
+        "empty": 0,
+        "failed": 1,
+        "invalid": 0
+      },
+      "preLanguageChoices": {
+        "calls": 48,
+        "copy": 24,
+        "translate": 24,
+        "empty": 0,
+        "invalid": 0
+      }
+    },
+    {
+      "probe": "built-reliability",
+      "generatedBlocks": {
+        "copy": 12,
+        "translate": 12,
+        "legacy": 0,
+        "empty": 0,
+        "failed": 0,
+        "invalid": 0
+      },
+      "preLanguageChoices": {
+        "calls": 24,
+        "copy": 12,
+        "translate": 12,
+        "empty": 0,
+        "invalid": 0
+      }
+    }
+  ]
+}

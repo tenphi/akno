@@ -1,0 +1,60 @@
+{
+  "selectedAt": "2026-09-13T10:43:54.532Z",
+  "action": "evaluate-one-integration",
+  "candidateCommit": "963bf68e3cd07c687007dceaadb4ebb0434613e6",
+  "comparisonSha256": "7d9474914344107172a2bb2211749a3b9eab673278bba760b17608d3482cb59f",
+  "postvalidationSha256": "27c15a0b9da358eaeb9338b2b8eef6e43991297cd7c777c1417ed17537c842e9",
+  "caseDeltasSha256": "92690d8b7fefc23b8aad5aec2d1a33ba7469de441e524a0fb01c529b3dd6e516",
+  "impactHypothesesSha256": "264e31814dd33d972bb6292a6e70601df1a131ded64820951a6b6e7efe3818c3",
+  "evidence": [
+    {
+      "label": "V77",
+      "usefulAnswers": 211,
+      "completeRetention": 30,
+      "usefulRetrievals": 118,
+      "worstAnswerRate": 0.45,
+      "acceptedAnswerErrors": 11,
+      "acceptedRetainedSetErrors": 0,
+      "blocks": {
+        "legacy": 122,
+        "recent": 89
+      }
+    },
+    {
+      "label": "V31",
+      "usefulAnswers": 216,
+      "completeRetention": 31,
+      "usefulRetrievals": 134,
+      "worstAnswerRate": 0.6,
+      "acceptedAnswerErrors": 13,
+      "acceptedRetainedSetErrors": 0,
+      "blocks": {
+        "legacy": 117,
+        "recent": 99
+      }
+    },
+    {
+      "label": "V17",
+      "usefulAnswers": 193,
+      "completeRetention": 32,
+      "usefulRetrievals": 122,
+      "worstAnswerRate": 0.3,
+      "acceptedAnswerErrors": 56,
+      "acceptedRetainedSetErrors": 1,
+      "blocks": {
+        "legacy": 139,
+        "recent": 54
+      }
+    }
+  ],
+  "rationale": [
+    "The fixed comparison confirms a real original-scenario regression: V17 has 139/160 useful answers against V77 122/160. Historical percentages also mixed corpora and budgets; both facts must be reported.",
+    "No frozen revision qualifies for rollout. V17 has 56 accepted answer errors and weak recent coverage. V31 improves worst-block coverage but gains only five useful answers overall against V77, loses original-block coverage, and has 13 accepted answer errors. This falls below the declared eight-answer threshold for a large port and provides no consistent block advantage.",
+    "V77 entirely loses the same four source families in both runs: legacy alternatives, legacy personal report, nested report, and assistant speculation. The frozen report-audit and retrieval-unit changes address the observed retention boundaries while preserving existing source/language checks. This is a prospective hypothesis, not a measured recovery.",
+    "V77 publishes three selected-source-name errors and eight open-question qualification omissions. The exact-name guard deterministically addresses the former publication boundary; the shared retrieval-unit instruction targets the latter extraction/selection boundary and remains model-dependent.",
+    "All revisions share six ordinary Markdown classification failures. The isolated category-heading fix and projection migration address this independently demonstrated defect; it receives no managed-answer score credit."
+  ],
+  "evaluation": "Run this one frozen integration on all 22 existing cases twice, with the exact same 352 coordinates, roles, output ceilings, source-first obligations, grader contract, and fixed 80% per-block/run target. Preserve 90% as a separate historical target. No selective rerun or further live tuning follows.",
+  "disposition": "Selection authorizes the final bounded evaluation. It does not declare a reliability pass or approve general rollout. Finish the engineering work in PR #70 with actual results and remaining limits.",
+  "budget": "Conservatively six of the ten allowed iterations: two previously charged, three comparison arms, and this single integration."
+}

@@ -1,0 +1,19 @@
+{
+  "tests": 3661,
+  "testFiles": 151,
+  "logs": {
+    "typecheck": "tmp/v74-round2-typecheck.log",
+    "suite": "tmp/v74-round2-full-suite.log",
+    "lint": "tmp/v74-round2-lint.log",
+    "format": "tmp/v74-round2-format.log",
+    "knip": "tmp/v74-round2-knip.log",
+    "repositorySafety": "tmp/v74-prefreeze-final-repository.log",
+    "smoke": "tmp/v74-round2-smoke.log",
+    "installedPackageSmoke": "tmp/v74-round2-packages.log",
+    "documentationDoctor": "tmp/v74-round2-docs-doctor.log",
+    "documentationBuild": "tmp/v74-round2-docs-build.log"
+  },
+  "allExitCodes": 0,
+  "providerControlsRun": 0,
+  "corpusProbesRun": 0
+}

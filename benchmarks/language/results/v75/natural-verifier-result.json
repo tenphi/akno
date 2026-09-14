@@ -1,0 +1,121 @@
+{
+  "runtimeCommit": "c699916e8f0f8f6537dcb66558ded4f998cf8cfd",
+  "declarationSha256": "40f971a7df17ac739e545339f093071972ccd6e1ff8533f32ca224166ed89703",
+  "status": "completed",
+  "startedAt": "2026-09-09T22:37:50.626Z",
+  "modelId": "gpt-5.6-luna",
+  "api": "responses",
+  "callerCap": 2222,
+  "roleCap": 2400,
+  "effectiveCap": 2222,
+  "expected": {
+    "verdicts": [
+      {
+        "block_id": "B1",
+        "excerpt_selection": {
+          "selected_by_retained_excerpt": false,
+          "unselected_content": "The latch question does not establish coverage within the stated scope. This invented record remains open. The source account is unresolved. The proposed check requires review. The comparison preserves the original uncertainty in this note."
+        },
+        "source_alignments": [
+          {
+            "evidence_id": "E1",
+            "source_context": "The latch question does not select another question in the invented record. This invented record has no recorded answer. The source account requires review. The proposed check remains open. The retained question does not establish coverage.",
+            "actor": {
+              "source_anchor": null,
+              "answer_anchor": null,
+              "detail": "The connector test does not assert a completed test. The spring inspection remains open. The latch question is unresolved. This invented record requires review.",
+              "relation": "not_selected"
+            },
+            "object_and_operation": {
+              "source_anchor": "E1_bf777a9014ca_1",
+              "answer_anchor": "B1_bf777a9014ca_1",
+              "source_specifics": "The spring inspection has no recorded answer here.",
+              "answer_specifics": "The spring inspection does not establish coverage.",
+              "relation": "preserved"
+            },
+            "qualification": {
+              "source_anchor": "E1_bf777a9014ca_1",
+              "answer_anchor": null,
+              "detail": "The spring inspection requires review here. The latch question remains open. This invented record is unresolved. The source account has no recorded answer here.",
+              "relation": "omitted"
+            },
+            "tested_property": {
+              "source_anchor": "E1_bf777a9014ca_1",
+              "answer_anchor": "B1_bf777a9014ca_1",
+              "source_property": "The review is unresolved here.",
+              "answer_property": "The result is unresolved here.",
+              "relation": "preserved"
+            }
+          },
+          {
+            "evidence_id": "E2",
+            "source_context": "The latch question does not assert a completed test. This invented record does not establish coverage. The source account is separate from completed work. The proposed check is unresolved. The comparison has no recorded answer in this note.",
+            "actor": {
+              "source_anchor": null,
+              "answer_anchor": null,
+              "detail": "The spring inspection does not select another question in this note. The latch question requires review. The source account remains open in the invented record.",
+              "relation": "not_selected"
+            },
+            "object_and_operation": {
+              "source_anchor": "E2_bf777a9014ca_1",
+              "answer_anchor": "B1_bf777a9014ca_1",
+              "source_specifics": "The connector test is separate from completed work. The comparison remains open.",
+              "answer_specifics": "The connector test adds no independent confirmation. The result requires review.",
+              "relation": "preserved"
+            },
+            "qualification": {
+              "source_anchor": "E2_bf777a9014ca_1",
+              "answer_anchor": "B1_bf777a9014ca_1",
+              "detail": "The spring inspection adds no independent confirmation for this example. The latch question has no recorded answer. The comparison requires review in this note.",
+              "relation": "preserved"
+            },
+            "tested_property": {
+              "source_anchor": null,
+              "answer_anchor": null,
+              "source_property": null,
+              "answer_property": null,
+              "relation": "absent_from_both"
+            }
+          }
+        ],
+        "comparison": {
+          "source_meaning": "Ada Marlow records two unanswered questions about separate proposed component checks. The source account preserves the original uncertainty for this example. The proposed check is separate from completed work. The comparison does not establish coverage. The selected passage remains open. The draft requires review here.",
+          "candidate_meaning": "The candidate presents the two selected questions without supplying their missing answers. The source account does not assert a completed test within the stated scope. The proposed check does not select another question. The comparison adds no independent confirmation. The selected passage requires review in this note.",
+          "action_arguments": "The connector and the spring remain separate objects of their respective proposed tests. The proposed check adds no independent confirmation in the invented record. The comparison does not select another question. The selected passage is unresolved. The retained question remains open. The separate note requires review.",
+          "qualification_scope": "The invented verdict compares unresolved questions and preserves their lack of a settled result. The selected passage has no recorded answer. The retained question is unresolved. This protocol example remains open. The draft does not establish coverage. The separate note preserves the original uncertainty in this note."
+        },
+        "mismatches": [
+          {
+            "dimension": "action_arguments_preserved",
+            "kind": "changed_action_or_role",
+            "detail": "This invented record does not select another question here. The source account does not establish coverage. The proposed check has no recorded answer. The comparison is unresolved. The selected passage adds no independent confirmation here."
+          },
+          {
+            "dimension": "qualification_scope_preserved",
+            "kind": "changed_qualification",
+            "detail": "This invented record adds no independent confirmation in this note. The source account does not select another question. The proposed check does not establish coverage. The comparison is separate from completed work. The draft remains open."
+          }
+        ],
+        "proposition_supported": true,
+        "action_arguments_preserved": false,
+        "qualification_scope_preserved": false
+      }
+    ]
+  },
+  "ok": true,
+  "schemaValid": true,
+  "exact": true,
+  "value": "{\"verdicts\":[{\"block_id\":\"B1\",\"excerpt_selection\":{\"selected_by_retained_excerpt\":false,\"unselected_content\":\"The latch question does not establish coverage within the stated scope. This invented record remains open. The source account is unresolved. The proposed check requires review. The comparison preserves the original uncertainty in this note.\"},\"source_alignments\":[{\"evidence_id\":\"E1\",\"source_context\":\"The latch question does not select another question in the invented record. This invented record has no recorded answer. The source account requires review. The proposed check remains open. The retained question does not establish coverage.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"The connector test does not assert a completed test. The spring inspection remains open. The latch question is unresolved. This invented record requires review.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"The spring inspection has no recorded answer here.\",\"answer_specifics\":\"The spring inspection does not establish coverage.\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_property\":\"The review is unresolved here.\",\"answer_property\":\"The result is unresolved here.\",\"relation\":\"preserved\"},\"qualification\":{\"source_anchor\":\"E1_bf777a9014ca_1\",\"answer_anchor\":null,\"detail\":\"The spring inspection requires review here. The latch question remains open. This invented record is unresolved. The source account has no recorded answer here.\",\"relation\":\"omitted\"}},{\"evidence_id\":\"E2\",\"source_context\":\"The latch question does not assert a completed test. This invented record does not establish coverage. The source account is separate from completed work. The proposed check is unresolved. The comparison has no recorded answer in this note.\",\"actor\":{\"source_anchor\":null,\"answer_anchor\":null,\"detail\":\"The spring inspection does not select another question in this note. The latch question requires review. The source account remains open in the invented record.\",\"relation\":\"not_selected\"},\"object_and_operation\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"source_specifics\":\"The connector test is separate from completed work. The comparison remains open.\",\"answer_specifics\":\"The connector test adds no independent confirmation. The result requires review.\",\"relation\":\"preserved\"},\"tested_property\":{\"source_anchor\":null,\"answer_anchor\":null,\"source_property\":null,\"answer_property\":null,\"relation\":\"absent_from_both\"},\"qualification\":{\"source_anchor\":\"E2_bf777a9014ca_1\",\"answer_anchor\":\"B1_bf777a9014ca_1\",\"detail\":\"The spring inspection adds no independent confirmation for this example. The latch question has no recorded answer. The comparison requires review in this note.\",\"relation\":\"preserved\"}}],\"comparison\":{\"source_meaning\":\"Ada Marlow records two unanswered questions about separate proposed component checks. The source account preserves the original uncertainty for this example. The proposed check is separate from completed work. The comparison does not establish coverage. The selected passage remains open. The draft requires review here.\",\"candidate_meaning\":\"The candidate presents the two selected questions without supplying their missing answers. The source account does not assert a completed test within the stated scope. The proposed check does not select another question. The comparison adds no independent confirmation. The selected passage requires review in this note.\",\"action_arguments\":\"The connector and the spring remain separate objects of their respective proposed tests. The proposed check adds no independent confirmation in the invented record. The comparison does not select another question. The selected passage is unresolved. The retained question remains open. The separate note requires review.\",\"qualification_scope\":\"The invented verdict compares unresolved questions and preserves their lack of a settled result. The selected passage has no recorded answer. The retained question is unresolved. This protocol example remains open. The draft does not establish coverage. The separate note preserves the original uncertainty in this note.\"},\"mismatches\":[{\"dimension\":\"action_arguments_preserved\",\"kind\":\"changed_action_or_role\",\"detail\":\"This invented record does not select another question here. The source account does not establish coverage. The proposed check has no recorded answer. The comparison is unresolved. The selected passage adds no independent confirmation here.\"},{\"dimension\":\"qualification_scope_preserved\",\"kind\":\"changed_qualification\",\"detail\":\"This invented record adds no independent confirmation in this note. The source account does not select another question. The proposed check does not establish coverage. The comparison is separate from completed work. The draft remains open.\"}],\"proposition_supported\":true,\"action_arguments_preserved\":false,\"qualification_scope_preserved\":false}]}",
+  "reason": null,
+  "error": null,
+  "endpointRequests": 1,
+  "usage": {
+    "inputTokens": 5854,
+    "outputTokens": 1019,
+    "totalTokens": 6873,
+    "cachedInputTokens": 4853,
+    "reasoningOutputTokens": 14
+  },
+  "completedAt": "2026-09-09T22:37:58.629Z",
+  "passed": true
+}

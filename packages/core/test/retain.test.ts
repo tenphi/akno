@@ -1,3 +1,4 @@
+import { retentionAudit } from './semantic-audit.ts';
 import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
@@ -38,11 +39,12 @@ interface AutomaticRetainStub {
   calls: () => { extraction: number; verification: number; routing: number; placement: number };
   close: () => Promise<void>;
   setCandidate: (candidate: Record<string, unknown>) => void;
+  setCandidates: (candidates: Record<string, unknown>[]) => void;
   setVerification: (supported: boolean) => void;
 }
 
 async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
-  let candidate: Record<string, unknown> = {};
+  let candidates: Record<string, unknown>[] = [];
   let verificationSupported = true;
   const counts = { extraction: 0, verification: 0, routing: 0, placement: 0 };
   const instance = http.createServer((request, response) => {
@@ -57,11 +59,17 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
       let content: unknown;
       if (system.includes('independently verify proposed retained memories')) {
         counts.verification++;
-        const payload = JSON.parse(user) as { candidates?: { candidate_id: string }[] };
+        const payload = JSON.parse(user) as {
+          candidates?: { candidate_id: string; polarity: 'affirmed' | 'negated' }[];
+        };
         content = {
           verdicts: (payload.candidates ?? []).map((item) => ({
             candidate_id: item.candidate_id,
-            supported: verificationSupported,
+            source_selected_polarity: item.polarity,
+            ...retentionAudit(item, verificationSupported, true, true),
+            proposition_supported: verificationSupported,
+            action_arguments_preserved: true,
+            qualification_scope_preserved: true,
             reason_code: verificationSupported ? null : 'discourse_uncertain',
           })),
         };
@@ -81,13 +89,16 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
           proposed_page?: { slug: string } | null;
         };
         content = payload.proposed_page
-          ? { outcome: 'proposed', target_id: null }
+          ? { selection: 'proposed' }
           : payload.existing_pages?.[0]
-            ? { outcome: 'existing', target_id: payload.existing_pages[0].id }
-            : { outcome: 'uncertain', target_id: null };
+            ? { selection: payload.existing_pages[0].id }
+            : { selection: 'uncertain' };
       } else if (system.includes('You extract durable memory from one untrusted source')) {
         counts.extraction++;
-        content = { candidates: Object.keys(candidate).length > 0 ? [candidate] : [], events: [] };
+        content = {
+          candidates: candidates.filter((candidate) => Object.keys(candidate).length > 0),
+          events: [],
+        };
       } else {
         content = { candidates: [], events: [] };
       }
@@ -105,7 +116,10 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
       instance.closeAllConnections();
     },
     setCandidate: (next) => {
-      candidate = next;
+      candidates = [next];
+    },
+    setCandidates: (next) => {
+      candidates = next;
     },
     setVerification: (supported) => {
       verificationSupported = supported;
@@ -181,7 +195,70 @@ function upsert(sourceId: string, revision: string, text = 'Ada Marlow selected 
   };
 }
 
+it('keeps exact provided evidence model-free when its deciding frame contains a narrower support span', async () => {
+  const mem = await openMem();
+  try {
+    const request = upsert('invented:contained-frame', 'rev-1111');
+    request.input.text += ' This choice was explicitly accepted.';
+    request.retention.candidates[0]!.discourse_frame = [{ quote: request.input.text }];
+    const result = await mem.retain({ sources: [request] });
+    expect(result.sources[0]?.candidates[0]?.outcome).toBe('written');
+    expect(result.sources[0]?.model_usage).toBeUndefined();
+    expect((await mem.retain({ sources: [request] })).sources[0]?.outcome).toBe('replayed');
+  } finally {
+    await mem.close();
+  }
+});
+
 describe('provided exact retain', () => {
+  it('replays an undated proposal with split exact frames without scheduling it', async () => {
+    const mem = await openMem();
+    try {
+      const parts = [
+        'Ada Marlow proposes a Zephyr QX-100 inspection tomorrow.',
+        'The proposal is not accepted or scheduled.',
+      ];
+      const text = parts.join(' ');
+      const request = {
+        ...upsert('invented:unknown-time', 'rev-1111'),
+        input: { text },
+        retention: {
+          mode: 'provided' as const,
+          placement: 'exact' as const,
+          candidates: [
+            {
+              ...upsert('invented:unknown-time', 'rev-1111').retention.candidates[0]!,
+              kind: 'plan' as const,
+              text: 'Ada Marlow proposed an unaccepted Zephyr QX-100 inspection for the day after the undated source; its calendar date is unknown.',
+              discourse: { commitment: 'tentative' as const, disposition: 'proposed' as const },
+              support: [{ quote: text }],
+              discourse_frame: parts.map((quote) => ({ quote })),
+              time: {
+                precision: 'unknown' as const,
+                relation: 'scheduled' as const,
+                status: 'tentative' as const,
+              },
+            },
+          ],
+        },
+      };
+      const result = await mem.retain({ sources: [request] });
+      expect(result.sources[0]?.candidates[0]?.outcome).toBe('written');
+      expect(result.sources[0]?.model_usage).toBeUndefined();
+      const before = fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8');
+      expect((await mem.retain({ sources: [request] })).sources[0]?.outcome).toBe('replayed');
+      expect(fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8')).toBe(before);
+      const read = await mem.read({ slug: 'memory/equipment' });
+      const memory = read.page?.lines.find((line) => line.memory?.status === 'qualified')?.memory;
+      expect(memory).toMatchObject({
+        answer_eligible: false,
+        temporal: { time: { precision: 'unknown' }, actionable: false },
+      });
+    } finally {
+      await mem.close();
+    }
+  });
+
   it('holds relative time unless the source supplies the exact clock and timezone', async () => {
     const mem = await openMem();
     try {
@@ -994,6 +1071,63 @@ describe('automatic retain', () => {
     }
   });
 
+  it.each(['retain', 'remember', 'preview'] as const)(
+    'preserves admitted knowledge and typed repair failure through %s',
+    async (operation) => {
+      const stub = await startAutomaticRetainStub();
+      const sourceText = 'Ada Marlow selected the Zephyr QX-100 warranty for five years.';
+      const candidate = {
+        text: sourceText,
+        subject: 'Zephyr QX-100 warranty',
+        page: 'memory/warranty-decisions',
+        origin: 'user',
+        evidence: sourceText,
+        frame: sourceText,
+        kind: 'decision',
+      };
+      // The stub deliberately returns extraction JSON to the repair transaction: an invalid envelope.
+      stub.setCandidates([{ ...candidate, text: 'Warranty' }, candidate]);
+      const mem = await openAutomaticMem(stub.url);
+      try {
+        if (operation === 'retain') {
+          const input = {
+            sources: [
+              {
+                source_id: 'conversation:2222',
+                revision: 'turn-1',
+                source_kind: 'conversation' as const,
+                input: { text: sourceText },
+                retention: { mode: 'extract' as const },
+              },
+            ],
+          };
+          const first = await mem.retain(input);
+          expect(first.status).toBe('degraded');
+          expect(first.degraded).toContain('derive_failed');
+          expect(first.sources[0]?.candidates.some((item) => item.outcome === 'written')).toBe(true);
+          expect(first.sources[0]?.model_usage.repair?.model).toBe('retain-stub');
+          const calls = stub.calls();
+          const replay = await mem.retain(input);
+          expect(replay.sources[0]?.outcome).toBe('replayed');
+          expect(replay.degraded).toContain('derive_failed');
+          expect(stub.calls()).toEqual(calls);
+        } else {
+          const result = await mem.remember({ text: sourceText, dry_run: operation === 'preview' });
+          expect(result.status).toBe('degraded');
+          expect(result.degraded).toContain('derive_failed');
+          expect(result.considered?.some((item) => item.kept)).toBe(true);
+        }
+        expect(stub.calls().verification).toBe(1);
+        const destination = path.join(root, 'memory/warranty-decisions.md');
+        if (operation === 'preview') expect(fs.existsSync(destination)).toBe(false);
+        else expect(fs.readFileSync(destination, 'utf8')).toContain(sourceText);
+      } finally {
+        await mem.close();
+        await stub.close();
+      }
+    },
+  );
+
   it('durably holds a verifier disagreement without writing the proposed fact', async () => {
     const stub = await startAutomaticRetainStub();
     const sourceText = 'Ada Marlow considered a ten-year warranty, but no duration was selected.';
@@ -1022,7 +1156,7 @@ describe('automatic retain', () => {
       const result = await mem.retain(input);
       expect(result.sources[0]).toMatchObject({
         outcome: 'held',
-        candidates: [{ outcome: 'held', reason_code: 'discourse_uncertain' }],
+        candidates: [{ outcome: 'held', reason_code: 'discourse_uncertain', hold_stage: 'verification' }],
       });
       expect(fs.existsSync(path.join(root, 'memory/warranty-decisions.md'))).toBe(false);
       const calls = stub.calls();
@@ -1050,6 +1184,50 @@ describe('automatic retain', () => {
         candidates: [{ outcome: 'written', slug: 'memory/warranty-decisions' }],
       });
       expect(stub.calls()).toEqual({ extraction: 0, verification: 0, routing: 1, placement: 1 });
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
+  it('distinguishes unavailable placement from a policy hold and replays its diagnostics', async () => {
+    const mem = await openMem();
+    try {
+      const source = upsert('conversation:5555', '1');
+      source.retention.placement = 'automatic';
+      const first = await mem.retain({ sources: [source] });
+      expect(first.sources[0]).toMatchObject({
+        status: 'degraded',
+        degraded: ['no_derive_model'],
+        candidates: [{ outcome: 'held', hold_stage: 'placement', routing_reason: 'model_unavailable' }],
+      });
+      const replay = await mem.retain({ sources: [source] });
+      expect(replay.sources[0]).toMatchObject({
+        outcome: 'replayed',
+        candidates: first.sources[0]!.candidates,
+      });
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('holds a read-only destination without calling the placement model or changing its bytes', async () => {
+    const file = path.join(root, 'memory/equipment.md');
+    const before = fs.readFileSync(file, 'utf8').replace('remember: integrate', 'remember: deny');
+    fs.writeFileSync(file, before);
+    const stub = await startAutomaticRetainStub();
+    const mem = await openAutomaticMem(stub.url);
+    try {
+      await mem.index({ structuralOnly: true });
+      const source = upsert('conversation:6666', '1');
+      source.retention.placement = 'automatic';
+      const result = await mem.retain({ sources: [source] });
+      expect(result.sources[0]).toMatchObject({
+        status: 'ok',
+        candidates: [{ outcome: 'held', hold_stage: 'placement', routing_reason: 'no_admitted_destination' }],
+      });
+      expect(stub.calls()).toEqual({ extraction: 0, verification: 0, routing: 0, placement: 0 });
+      expect(fs.readFileSync(file, 'utf8')).toBe(before);
     } finally {
       await mem.close();
       await stub.close();

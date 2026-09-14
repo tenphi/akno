@@ -1,0 +1,7 @@
+# V36 pre-execution amendment
+
+Preserve the completed V36 selected and built-package probes and their independent receipts in `results/v36`. Selected coverage is 23/32 useful answers and 2/4 useful retained sets and 24/32 useful retrievals; built-package coverage is 13/16 useful answers with complete retention. Built-package retrieval is complete. The original selected review was corrected after a material rejecting-actor omission was noticed; both receipts and the correction rationale are preserved. All accepted output remains source-entailing, qualified and language compliant. Twelve writable nulls and the absent no-shipment denial remain coverage losses.
+
+The V36 plan's substantial-coverage-failure condition defers fresh execution for these observed defects. No full V36 trial started, no run is discarded or retried unchanged, and no fresh v18 held-out input has executed. Preserve every result before changing runtime code.
+
+The next bounded correction must address the documented grammar, semantic-formulation and placement causes while retaining source authority and independent checking. Models, semantic dimensions, output ceilings, no semantic retry, original v18 input fingerprint, complete two-run/eight-combination matrix and all acceptance thresholds remain unchanged. Complete local checks and separate review/fix rounds, freeze a new version, redeploy and grade exposed probes before fresh execution. Keep PR #70 open and unmerged.

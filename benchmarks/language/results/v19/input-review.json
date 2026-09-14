@@ -1,0 +1,124 @@
+{
+  "schemaVersion": "language-input-review-v1",
+  "corpusFingerprint": "0ac6b0f9d4fd50b077f7bd2404c164d5646d00521587c9ac513f6439c7761d2f",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-5.6-sol",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutOutputs": true
+  },
+  "cases": [
+    {
+      "id": "v10-held-report",
+      "approved": true,
+      "reason": "The source identifies Ada Marlow as recorder and Bo Winters as inner speaker, limits the claim to a technician visit for valve inspection rather than replacement, and explicitly states that it is unverified."
+    },
+    {
+      "id": "v10-held-hypothesis",
+      "approved": true,
+      "reason": "The source supplies the four-month assumed rule, its conditional missed-check consequence, and the absence of evidence for a real obligation. The expectation preserves all three without scheduling dates."
+    },
+    {
+      "id": "v10-held-counterfactual",
+      "approved": true,
+      "reason": "The two turns explicitly preserve the rejected offer and unrealized second-year valve-repair alternative. Allowing query-focused answers while forbidding implied acceptance is fair."
+    },
+    {
+      "id": "v10-held-question",
+      "approved": true,
+      "reason": "Ada Marlow records the replacement-cable question and explicitly says neither inclusion nor exclusion is known. The unresolved-question expectation is entailed."
+    },
+    {
+      "id": "v10-held-exclusion",
+      "approved": true,
+      "reason": "The source narrowly excludes restoration of faded paint and expressly says nothing about other damage. The negative-polarity and scope requirements follow directly."
+    },
+    {
+      "id": "v10-held-assistant",
+      "approved": true,
+      "reason": "The assistant gives a tentative, unchecked claim of two valve inspections per year. Attribution, quantity, recurrence, and unverified status are all explicit."
+    },
+    {
+      "id": "v10-held-fiction",
+      "approved": true,
+      "reason": "Ada Marlow invents the example, places Bo Winters and Vulpine Mutual inside it, and says Bo is not a real reporter. The fictional lifetime promise and roles are supported."
+    },
+    {
+      "id": "v10-held-rejected",
+      "approved": true,
+      "reason": "Ada Marlow says she rejected the preventive-inspection proposal and that sending is not planned. The expectation accurately forbids treating it as completed or current."
+    },
+    {
+      "id": "v10-held-undated",
+      "approved": true,
+      "reason": "The source explicitly makes day after tomorrow relative to an undated note, leaves the calendar date unknown, and denies an appointment. The temporal safeguards are supported."
+    },
+    {
+      "id": "v10-held-alternatives",
+      "approved": true,
+      "reason": "Loose cable and worn valve are explicitly equally unsupported competing hypotheses with no selected cause. Retaining both is entailed."
+    },
+    {
+      "id": "v11-dev-admission",
+      "approved": true,
+      "reason": "The thirty-three-month assertion is assigned to a read-only destination. Holding retention and abstaining over the stipulated empty memory folder are justified."
+    },
+    {
+      "id": "v11-held-report",
+      "approved": true,
+      "reason": "Ada Marlow records Bo Winters’s unverified report about courier collection for lens adjustment, explicitly contrasting adjustment with replacement. All required attribution and uncertainty are supplied."
+    },
+    {
+      "id": "v11-held-hypothesis",
+      "approved": true,
+      "reason": "The source assumes a two-week grille-check rule solely for discussion and gives the conditional consequence of missing a check while saying the real rule is unknown. The expectation is exact."
+    },
+    {
+      "id": "v11-held-counterfactual",
+      "approved": true,
+      "reason": "Ada Marlow explicitly rejected the package and confines fourth-year lens repair to the unrealized accepted-package alternative. Requiring both retained propositions is supported."
+    },
+    {
+      "id": "v11-held-question",
+      "approved": true,
+      "reason": "The source records a loan-device question during repair, says no answer was found, and neither confirms nor denies provision. The expectation faithfully preserves nonresolution."
+    },
+    {
+      "id": "v11-held-exclusion",
+      "approved": true,
+      "reason": "The source directly excludes polishing surface scratches and explicitly limits the statement away from cracks. The narrow asserted denial is supported."
+    },
+    {
+      "id": "v11-held-assistant",
+      "approved": true,
+      "reason": "The assistant explicitly presents three lens adjustments per year as a preliminary, unchecked understanding. Attribution, quantity, recurrence, and nonverification are entailed."
+    },
+    {
+      "id": "v11-held-fiction",
+      "approved": true,
+      "reason": "Ada Marlow invents a Vulpine Mutual promise to fictional participant Bo Winters for grille cleaning during ownership and warns against treating Bo as a reporter. The duration and roles are precise."
+    },
+    {
+      "id": "v11-held-rejected",
+      "approved": true,
+      "reason": "Ada Marlow explicitly rejects the lens-inspection shipping offer and states that shipment is not planned. The expected historical decision and absence of a current plan are supported."
+    },
+    {
+      "id": "v11-held-undated",
+      "approved": true,
+      "reason": "The source makes next week relative to an undated original note, says its calendar dates cannot be recovered, and denies an appointment. The readable-time requirements follow directly."
+    },
+    {
+      "id": "v11-held-alternatives",
+      "approved": true,
+      "reason": "Dirty grille and misaligned lens are explicitly equally unsupported, unconfirmed possibilities with neither selected. Allowing tentative or hypothetical qualification when those semantics remain explicit is fair."
+    },
+    {
+      "id": "v11-held-admission",
+      "approved": true,
+      "reason": "The forty-four-month assertion is assigned to a read-only destination. Holding retention and abstaining over the stipulated empty memory folder without file changes are justified."
+    }
+  ]
+}

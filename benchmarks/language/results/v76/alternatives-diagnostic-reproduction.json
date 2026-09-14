@@ -1,0 +1,34 @@
+{
+  "runtimeCommit": "44e6e714f1758948f306ec90cdae9b0d453e3604",
+  "traceRow": 1358,
+  "callId": 578,
+  "providerOk": true,
+  "semanticBooleans": {
+    "proposition_supported": true,
+    "action_arguments_preserved": true,
+    "qualification_scope_preserved": true
+  },
+  "failingField": "source_alignments[0].qualification.detail",
+  "original": "The answer preserves that neither hypothesis has supporting evidence and that Ada Marlow selected neither cause; the preliminary and tentative scope is alsoret𐄂",
+  "utf16Length": 161,
+  "codePoints": 160,
+  "localMaximum": 160,
+  "originalSchemaValid": false,
+  "originalAlignmentsSupported": false,
+  "lengthIssues": [
+    {
+      "path": [
+        0,
+        "qualification",
+        "detail"
+      ],
+      "maximum": 160,
+      "message": "Too big: expected string to have <=160 characters"
+    }
+  ],
+  "completeShortDiagnosticControlSchemaValid": true,
+  "completeShortDiagnosticControlAlignmentsSupported": true,
+  "providerCalls": 0,
+  "productionMutation": false,
+  "purpose": "Local frozen-parser reproduction only. Changing the private diagnostic in a cloned value isolates the validation cause; it does not replace or retry the original model response and does not establish semantic reliability."
+}

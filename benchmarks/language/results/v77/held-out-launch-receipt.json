@@ -1,0 +1,125 @@
+{
+  "runtimeCommit": "a67faa3fd3a6f59450a35c4af1d66baa96fee4e8",
+  "corpusFingerprint": "b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a",
+  "runs": 2,
+  "splits": [
+    "development",
+    "held-out"
+  ],
+  "casesPerSplit": 11,
+  "coordinatesPerCase": 8,
+  "sourceDigest": "57e9a780ea0e9c10976d66aa021193961761e6fcdb03515c82a8821c1cf4982c",
+  "distDigest": "2d73b3df3bdc5445913fffcb4e27abba59999e6da99fb1609c64785e2d76ac11",
+  "inputReviewSha256": "43cf93d1c76858cdb9421fb013fc3a74497ce185d9ebc7b00359980c529669fb",
+  "completionContract": {
+    "schemaVersion": "pr70-completion-contract-v1",
+    "authorizedBy": "User explicitly allowed a lower success target or a changed approach and required completion within ten further iterations.",
+    "declaredBeforeFullTrial": true,
+    "reviewBasis": "tmp/language-v77-top-level-review.md",
+    "scope": "Frozen invented English/Russian and mixed-source corpus, English generated knowledge, English/Russian requested answers, both memory-view selection modes, isolated 2400-token role ceilings.",
+    "fullTrial": {
+      "corpus": "v22",
+      "corpusFingerprint": "b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a",
+      "splits": [
+        "development",
+        "held-out"
+      ],
+      "runs": 2,
+      "writableCasesPerSplit": 10,
+      "readOnlyCasesPerSplit": 1,
+      "coordinatesPerCase": 8
+    },
+    "completionThresholds": {
+      "usefulQualifiedAnswerCoverage": 0.8,
+      "usefulRetentionCoverage": 0.8,
+      "qualifiedRetrievalCoverage": 0.8,
+      "unsafeFactualPromotion": 0,
+      "acceptedLanguageViolations": 0,
+      "translationQualificationErrors": 0,
+      "sourceByteChanges": 0,
+      "availabilityFailureRate": 0.05,
+      "unsupportedRetainedOutputs": 0,
+      "unsupportedNonnullAnswers": 0
+    },
+    "originalAnswerCoverageThreshold": 0.9,
+    "originalGatePreservedSeparately": true,
+    "applyToEachSplitRunIndependently": true,
+    "readOnlyAnswersExcludedFromWritableCoverage": true,
+    "nullWritableAnswersNeverUseful": true,
+    "pooledPassOverrideAllowed": false,
+    "replacementSemanticRunsAllowed": false,
+    "terminalTrialPolicy": "One full evaluation of the frozen chosen runtime. Publish the result and finish this PR without tuning against that held-out output. Any failure remains a failure; no further threshold decrease or source-safety relaxation.",
+    "maximumFurtherRuntimeRevisionsAfterV77": 1,
+    "revisionCriterion": "A demonstrated accepted safety defect or one source-owned deterministic structural cause of a case-sized coverage loss; not another isolated wording variant.",
+    "finalAction": "Publish reviewed code and evidence in existing PR70; leave open and unmerged; do not edit issues. If all completion gates pass, state the bounded pass. Otherwise state that reliability acceptance remains unmet and identify remaining scope.",
+    "limitations": [
+      "Independent model grading is fallible and is not human validation.",
+      "Correlated finite invented cases do not establish universal multilingual or longitudinal reliability.",
+      "The existing service answer overlay of1024tokens is outside this2400-token trial evidence."
+    ]
+  },
+  "modelPolicy": {
+    "derive": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "maxOutputTokens": 2400,
+      "timeoutMs": 300000,
+      "reasoningEffort": null
+    },
+    "answer": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "maxOutputTokens": 2400,
+      "timeoutMs": 60000,
+      "reasoningEffort": "low"
+    },
+    "embedding": {
+      "id": "text-embedding-qwen3-embedding-0.6b",
+      "enabled": true,
+      "maxOutputTokens": null,
+      "timeoutMs": 60000,
+      "reasoningEffort": null
+    },
+    "expansion": {
+      "id": "llama-3.2-3b-instruct",
+      "enabled": true,
+      "maxOutputTokens": 1024,
+      "timeoutMs": 30000,
+      "reasoningEffort": null
+    }
+  },
+  "files": {
+    "scripts/bench-language.mjs": "00b56a130df7a5e5d50ad1ccddb19732e011e0bc796253021d27181298502f2b",
+    "tmp/capture-language-full-v77.mjs": "b06082c7fd1758671adb1ccfb05a2fce31fd7c9ac50d16379fe4a5e8cabca295",
+    "tmp/v77-full-launch-integrity.mjs": "5d1d0839b93a7dbed6149bbc1561bb24bf6def6eb2013a28c01f7b3d13459b60",
+    "tmp/start-v77-full.mjs": "30a93b10a2519d358d15d8107708100289bc124bff8792e29702c3197c426bf0",
+    "tmp/run-v77-full-development.sh": "6beb8dfbe4e63236d63fca61b4e321a36ec053e27d0ef256ac6893a8def41ca2",
+    "tmp/run-v77-full-held-out.sh": "484e30fbc72080d4bf47942becf51e611698cc61084c11e7cff3dc1f805eccd3",
+    "tmp/validate-v77-full.mjs": "d4e227bf26e26cddc4e8a4148a086d7e112e711c596bf3bcb39fe0d0389f90bc",
+    "tmp/v77-full-trace-integrity.mjs": "8f5aabb680b16755c15bf2bd604763960c9f70e8dd4946e0207ab5e471630b0c",
+    "tmp/v77-full-trial-plan-draft.md": "2f016890c8406a733dc5cf1bfedff31a34483e9ceb14b8bd6cd7eb8d517f93be",
+    "bench-results/language-selected-v77.json": "942723612bcc78556bcc902355bf17d3992af4df6ad07a60f92db5535e697652",
+    "tmp/language-v22-blind-inputs.json": "be3be90774b9464bba8198eb674bb32d3fd55214d63579e9d67dcb82e8353870",
+    "tmp/v77-postdeploy-check.json": "e2f520178119639302e86f9588182dab325bb3a667d7d21112e462122cbec3a5",
+    "tmp/v77-protocol-results.json": "7dd366c9ea51cb625bd23a6ac9bef2a689edbdce45e215b047d7d40f2d343d71",
+    "tmp/v77-completion-contract.json": "d7d70c3cce1c05dddcd01c35ee419912499021797a60dbbcf9537f7ddd2c2efc",
+    "tmp/pr70-completion-budget.json": "4fb8f75e44b75cf5348743525ca53bbe7560a256955733eff7e536a9add079e9",
+    "tmp/v77-full-capture-controls.json": "0145c89206df98a653172ff77c7e8748031652e806b9e7ff4199b34ddd3208af",
+    "tmp/test-v77-full-capture.mjs": "b823466c9b157ab301816613f6779c7a1eaa5a7c0521d56ba48dc92cd3ad2583",
+    "tmp/language-v77-top-level-review.md": "4bc2b41ed1effca2c9333774caa5816e368513ac11022bd04c871e35d703d0b3",
+    "tmp/language-v77-harness-failure-forensics.md": "820f8c83c06ae55c6dd65fed6eab910be174164e3acd42f4dee6d062a0a4d0f8",
+    "tmp/language-v77-source-grading-disposition.md": "d1d6ecae57e74251920d8b385d17a89f03f6e86dbb5a46b9733f0bbc7afc1e1f",
+    "tmp/record-v77-failed-diagnostics.mjs": "6659e86266b67cb6bbaaf8635f805b28e3346cba59354d17640d0f1efab7f10d",
+    "tmp/v77-completion-gate.mjs": "169793cde3d585ed786d8319b21e61a77708dbbb95e9471ee1978b75266ceb9c",
+    "tmp/test-v77-completion-gate.mjs": "e02cebad5e72fa2184b688d6a428731154bdf65556bffa505017ba10735e32b3",
+    "tmp/v77-completion-gate-controls.json": "7004ab80497eeff01adbd64cba7ef53e95b4d38f5713a2a82deb71000a7ffc64",
+    "tmp/prepare-v77-full-review.mjs": "0f1990b89e39ef748be410c0067388b4d6ed045c94917f6a070fd3170358758e",
+    "tmp/adjudicate-v77-full.mjs": "7ef85c8c70bf02b78624c06c7ad6b233e093b09d94d54759ca8768eccbf4a35a",
+    "tmp/v77-full-grading-contract.md": "9130b1ebd8c40cc53ab3123536742cdf30ac5acac36a166f945c680bda92c2e6",
+    "tmp/language-v77-full-harness-review.md": "71c36e26d53d8acd1124264cceafee34d25af8e215fb896342d50a26b427dd84",
+    "tmp/language-v77-full-capture-review.md": "a7eef630a22c4fb46171507153ec3a46807a1362c27b3e21935442e667df0a4a"
+  },
+  "split": "held-out",
+  "startedAt": "2026-09-12T17:52:54.533Z",
+  "approvalSha256": "0246691dbceac63c9869e0551af791e74f3d3e63b409193af82cae73f3e07577"
+}

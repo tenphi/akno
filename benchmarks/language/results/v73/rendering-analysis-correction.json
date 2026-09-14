@@ -1,0 +1,16 @@
+{
+  "runtimeCommit": "1eb002b84c05927b1ac1c5f69e974908de36c224",
+  "kind": "derived-analysis correction only",
+  "initialScript": "tmp/language-rendering-impact-v73-before-repair-hook.mjs",
+  "initialStdout": "tmp/v73-rendering-impact.log",
+  "initialExitCode": 1,
+  "initialError": "TypeError: Cannot read properties of undefined (reading 'length')",
+  "errorEvidence": "Initial exec tool result; stderr was not redirected into the preserved empty stdout log.",
+  "cause": "The existing trace wrapper names every additionalLanguageProse observation rendering-choice. V73 adds a report-text repair hook with a strict repairs object and no answer blocks. The earlier analysis assumed every schema-valid hook observation had blocks.",
+  "correction": "Identify repair_targets with report_text_only in the recorded input, require absent answer blocks, and count/preserve their schema validity and joined prose separately. Answer rendering counts continue to use actual answer-block observations. Reject unclassified non-answer materializations.",
+  "correctedScript": "tmp/language-rendering-impact-v73.mjs",
+  "correctedLog": "tmp/v73-rendering-impact-after-repair-hook.log",
+  "finalReceipt": "tmp/language-rendering-impact-v73.json",
+  "runtimeOrTraceChanged": false,
+  "providerOrSemanticCallRepeated": false
+}

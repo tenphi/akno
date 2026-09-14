@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "language-input-review-v1",
+  "corpusFingerprint": "8658f0d00661221cf4e042ffb78f5ed2f3c6b575ab254b81b65ded6e853ea0e9",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-5.6-sol",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutOutputs": true
+  },
+  "cases": [
+    {
+      "id": "v19-held-report",
+      "approved": true,
+      "reason": "The source and bilingual questions support the nested Ada/Bo attribution, exact permitted service action and component contrast, Ada’s personal verification limits, and the separate absence of arranged collection or delivery. The expectation does not infer completed work."
+    },
+    {
+      "id": "v19-held-hypothesis",
+      "approved": true,
+      "reason": "The source clearly states a hypothetical inspection frequency and its conditional missed-check consequence while denying knowledge of actual requirements and any actual miss. Both questions ask for that qualified rule."
+    },
+    {
+      "id": "v19-held-counterfactual",
+      "approved": true,
+      "reason": "The source explicitly combines actual refusal/nonpurchase with unrealized ordinal-year repair coverage. The questions and expectation preserve the false purchase antecedent and avoid actual coverage or a dated event."
+    },
+    {
+      "id": "v19-held-question",
+      "approved": true,
+      "reason": "The source supports an Ada-attributed unresolved service-coverage question with neither inclusion nor exclusion established. Both questions are answerable by describing the question without answering it or inventing an external act."
+    },
+    {
+      "id": "v19-held-exclusion",
+      "approved": true,
+      "reason": "The narrow asserted exclusion and the separate unresolved repair scope are explicit. The bilingual questions appropriately ask about both, and the expectation distinguishes record-level uncertainty from whole-contract silence and keeps coverage roles correct."
+    },
+    {
+      "id": "v19-held-assistant",
+      "approved": true,
+      "reason": "The assistant source clearly gives a modal, tentative servicing interpretation with exact frequency/action and personal non-reading/nonverification limits. The bilingual questions preserve the generic assistant role and do not turn a contractual term into physical state or fact."
+    },
+    {
+      "id": "v19-held-fiction",
+      "approved": true,
+      "reason": "The source clearly separates Ada’s actual proposal to discuss from the fully invented promise, with promising party, fictional recipient, object, duration, and no real agreement explicit. Both questions target the scoped fictional record."
+    },
+    {
+      "id": "v19-held-rejected",
+      "approved": true,
+      "reason": "The source explicitly identifies Ada as rejector, the offered destination/action/purpose, lack of intent or plan, and the separate absence of collection or pickup. The focused bilingual questions are faithful and do not imply performance."
+    },
+    {
+      "id": "v19-held-undated",
+      "approved": true,
+      "reason": "The source explicitly binds Ada as proposer and defines the relative time against an undated original record, with the calendar period unrecoverable and no adopted plan or meeting. Both questions are answerable without processing-time substitution."
+    },
+    {
+      "id": "v19-held-alternatives",
+      "approved": true,
+      "reason": "The source explicitly provides two tentative competing mechanisms, no evidence for either, and Ada’s personal consideration/discussion and nonselection. The bilingual questions and expectation retain the material mechanisms and agency."
+    },
+    {
+      "id": "v19-held-admission",
+      "approved": true,
+      "reason": "The invented assertion and bilingual questions are clear, while the read-only setup fairly requires a distinct admission hold and no retained evidence or answer."
+    },
+    {
+      "id": "v20-held-report",
+      "approved": true,
+      "reason": "The source and bilingual questions support the nested Ada/Bo attribution, exact permitted service action and component contrast, Ada’s personal verification limits, and the separate absence of arranged collection or delivery. The expectation does not infer completed work."
+    },
+    {
+      "id": "v20-held-hypothesis",
+      "approved": true,
+      "reason": "The source clearly states a hypothetical inspection frequency and its conditional missed-check consequence while denying knowledge of actual requirements and any actual miss. Both questions ask for that qualified rule."
+    },
+    {
+      "id": "v20-held-counterfactual",
+      "approved": true,
+      "reason": "The source explicitly combines actual refusal/nonpurchase with unrealized ordinal-year repair coverage. The questions and expectation preserve the false purchase antecedent and avoid actual coverage or a dated event."
+    },
+    {
+      "id": "v20-held-question",
+      "approved": true,
+      "reason": "The source supports an Ada-attributed unresolved service-coverage question with neither inclusion nor exclusion established. Both questions are answerable by describing the question without answering it or inventing an external act."
+    },
+    {
+      "id": "v20-held-exclusion",
+      "approved": true,
+      "reason": "The narrow asserted exclusion and the separate unresolved repair scope are explicit. The bilingual questions appropriately ask about both, and the expectation distinguishes record-level uncertainty from whole-contract silence and keeps coverage roles correct."
+    },
+    {
+      "id": "v20-held-assistant",
+      "approved": true,
+      "reason": "The assistant source clearly gives a modal, tentative servicing interpretation with exact frequency/action and personal non-reading/nonverification limits. The bilingual questions preserve the generic assistant role and do not turn a contractual term into physical state or fact."
+    },
+    {
+      "id": "v20-held-fiction",
+      "approved": true,
+      "reason": "The source clearly separates Ada’s actual proposal to discuss from the fully invented promise, with promising party, fictional recipient, object, duration, and no real agreement explicit. Both questions target the scoped fictional record."
+    },
+    {
+      "id": "v20-held-rejected",
+      "approved": true,
+      "reason": "The source explicitly identifies Ada as rejector, the offered destination/action/purpose, lack of intent or plan, and the separate absence of collection or pickup. The focused bilingual questions are faithful and do not imply performance."
+    },
+    {
+      "id": "v20-held-undated",
+      "approved": true,
+      "reason": "The source explicitly binds Ada as proposer and defines the relative time against an undated original record, with the calendar period unrecoverable and no adopted plan or meeting. Both questions are answerable without processing-time substitution."
+    },
+    {
+      "id": "v20-held-alternatives",
+      "approved": true,
+      "reason": "The source explicitly provides two tentative competing mechanisms, no evidence for either, and Ada’s personal consideration/discussion and nonselection. The bilingual questions and expectation retain the material mechanisms and agency."
+    },
+    {
+      "id": "v20-held-admission",
+      "approved": true,
+      "reason": "The invented assertion and bilingual questions are clear, while the read-only setup fairly requires a distinct admission hold and no retained evidence or answer."
+    }
+  ],
+  "summary": "Approved all 22 cases. The English, Russian, and mixed sources are understandable; bilingual questions are semantically suitable; expectations follow from the invented sources and preserve attribution, action agency, polarity, uncertainty, fictional/counterfactual scope, conditional consequences, lifecycle state, service specificity, and source-relative unknown time. Both read-only cases fairly require admission holds."
+}

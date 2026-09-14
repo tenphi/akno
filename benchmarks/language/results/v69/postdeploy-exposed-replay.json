@@ -1,0 +1,73 @@
+{
+  "purpose": "Compiled replay of every exposed V68 structurally held report/clock candidate and complete Russian counterfactual draft; no model calls or semantic acceptance.",
+  "records": [
+    {
+      "row": 2,
+      "kind": "report",
+      "text": "Ada Marlow reports that Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch, not to change the latch; Ada has not read the agreement or independently checked Bo’s account and only passes on that meaning without checking it herself.",
+      "reportUncertainty": true,
+      "sourceRelative": false,
+      "unknownClock": false,
+      "structurallyAdmitted": true,
+      "holds": []
+    },
+    {
+      "row": 4,
+      "kind": "report",
+      "text": "Ada Marlow reports that Bo Winters says the agreement permits sending Zephyr QX-100 to the workshop to measure the gap at the latch, not change the latch; Ada has not read the agreement or independently checked Bo Winters’s account, and only passes on this meaning without checking it herself.",
+      "reportUncertainty": true,
+      "sourceRelative": false,
+      "unknownClock": false,
+      "structurallyAdmitted": true,
+      "holds": []
+    },
+    {
+      "row": 168,
+      "kind": "clock",
+      "text": "Ada Marlow proposes reviewing the Zephyr QX-100 repair terms in the month after the initial recording, not after processing, but the calendar month is undetermined because the recording date is unknown; she has not accepted a plan or organized a meeting, and this is only her proposal.",
+      "reportUncertainty": false,
+      "sourceRelative": true,
+      "unknownClock": true,
+      "structurallyAdmitted": true,
+      "holds": []
+    },
+    {
+      "row": 170,
+      "kind": "clock",
+      "text": "Ada Marlow proposes reviewing the Zephyr QX-100 repair terms next month relative to the initial recording, not processing; the recording date and calendar month are unknown, and she has not accepted a plan or organized a meeting because this is only her proposal.",
+      "reportUncertainty": false,
+      "sourceRelative": true,
+      "unknownClock": true,
+      "structurallyAdmitted": true,
+      "holds": []
+    }
+  ],
+  "answers": [
+    {
+      "row": 52,
+      "text": "По словам Ada Marlow, в нереализованном варианте покупка дополнительного продления ремонта для Zephyr QX-100 покрыла бы ремонт ступицы колеса в пятом году. Она не приобрела это продление, поэтому речь не идёт о её действующем покрытии.",
+      "completeCounterfactualRecognized": true,
+      "immediateRetractionRejected": true
+    },
+    {
+      "row": 57,
+      "text": "По словам Ada Marlow, нереализованный вариант состоял в том, что при покупке дополнительного продления ремонта Zephyr QX-100 ремонт ступицы колеса был бы покрыт в пятом году. Покупки не произошло, поэтому это не было её действующим покрытием.",
+      "completeCounterfactualRecognized": true,
+      "immediateRetractionRejected": true
+    },
+    {
+      "row": 62,
+      "text": "По словам Ada Marlow, в нереализованном варианте приобретение дополнительного продления для Zephyr QX-100 покрыло бы ремонт ступицы колеса в пятом году. Продление не было приобретено, поэтому это не её действующее покрытие.",
+      "completeCounterfactualRecognized": true,
+      "immediateRetractionRejected": true
+    },
+    {
+      "row": 67,
+      "text": "По словам Ada Marlow, в нереализованном варианте приобретённое дополнительное продление ремонта Zephyr QX-100 покрывало бы ремонт ступицы колеса в пятом году. Продление не было приобретено, поэтому это не её действующее покрытие.",
+      "completeCounterfactualRecognized": true,
+      "immediateRetractionRejected": true
+    }
+  ],
+  "semanticVerificationStillRequired": true,
+  "modelCompetenceClaimed": false
+}

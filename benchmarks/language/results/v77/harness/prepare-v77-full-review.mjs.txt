@@ -1,0 +1,6 @@
+import fs from 'node:fs';import {languageReviewPacket} from '../packages/core/src/bench/language-review.ts';
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
+const reports=['development','held-out'].map(s=>read(`bench-results/language-full-${s}-v77.json`));
+const packet=languageReviewPacket(reports,read('tmp/language-v22-input-review.json'));
+fs.writeFileSync('tmp/language-v77-full-output-packet.json',JSON.stringify(packet,null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify({packetFingerprint:packet.packetFingerprint,cases:packet.cases.length,answers:packet.cases.reduce((n,c)=>n+c.answers.length,0),sourcesDisplayed:false}));

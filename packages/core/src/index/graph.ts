@@ -272,6 +272,9 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
            JOIN pages p ON p.id = f.page_id
           WHERE p.role = 'knowledge'
             AND p.derived_hash = p.body_hash
+            AND (f.item_id IS NOT NULL OR EXISTS (
+              SELECT 1 FROM prose_entries prose WHERE prose.source_page = f.page_id
+                AND prose.line = f.line_start AND prose.view = 'factual' AND prose.eligible = 1))
           ORDER BY f.id`,
       )
       .all() as FactRow[];

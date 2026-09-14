@@ -1,0 +1,31 @@
+{
+  "passed": true,
+  "providerCalls": 0,
+  "stubCalls": 10,
+  "controls": [
+    "actual lookup expansion",
+    "actual question expansion",
+    "actual explore expansion",
+    "five recognized Luna semantic operations",
+    "recognized Luna placement preserves its separate operation",
+    "wrong semantic model rejected before stub",
+    "wrong expansion model rejected before stub",
+    "unknown model rejected before stub",
+    "unknown Luna operation rejected before stub",
+    "policy exceptions traced",
+    "expansion exception identity preserved and traced",
+    "unknown model invalidates trace",
+    "successful calls preserve result identity",
+    "language transport exactly1024;1023fails"
+  ],
+  "validLifecycle": {
+    "modelCalls": 9,
+    "transports": 9,
+    "modelThrows": 0,
+    "transportThrows": 0,
+    "balanced": true
+  },
+  "validatorSha256": "8f5aabb680b16755c15bf2bd604763960c9f70e8dd4946e0207ab5e471630b0c",
+  "captureSha256": "b06082c7fd1758671adb1ccfb05a2fce31fd7c9ac50d16379fe4a5e8cabca295",
+  "traceSha256": "6e927ee9c9f98a76fb1613ca005de4f1a39b2a6e419864d345f4a5cf6dbcaa6b"
+}

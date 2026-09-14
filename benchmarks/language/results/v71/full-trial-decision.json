@@ -1,0 +1,184 @@
+{
+  "runtimeCommit": "304b2195ae6c34fabab2b6c4106730a7edbf3186",
+  "probes": [
+    {
+      "probe": "selected",
+      "cases": 8,
+      "completeUsefulRetention": 7,
+      "observations": 64,
+      "producedAnswers": 50,
+      "usefulAnswers": 49,
+      "usefulRetrieval": 56,
+      "nullAnswers": 14,
+      "gradeErrors": {
+        "source": 0,
+        "qualification": 0,
+        "language": 0,
+        "promotion": 0
+      },
+      "retainedErrors": [],
+      "caseAvailabilityFailures": 0,
+      "sourceByteChanges": 0,
+      "perCase": [
+        {
+          "id": "v20-held-report",
+          "retention": false,
+          "usefulAnswers": 0,
+          "producedAnswers": 0
+        },
+        {
+          "id": "v20-held-hypothesis",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v20-held-counterfactual",
+          "retention": true,
+          "usefulAnswers": 6,
+          "producedAnswers": 6
+        },
+        {
+          "id": "v20-held-exclusion",
+          "retention": true,
+          "usefulAnswers": 7,
+          "producedAnswers": 7
+        },
+        {
+          "id": "v20-held-assistant",
+          "retention": true,
+          "usefulAnswers": 6,
+          "producedAnswers": 7
+        },
+        {
+          "id": "v20-held-fiction",
+          "retention": true,
+          "usefulAnswers": 7,
+          "producedAnswers": 7
+        },
+        {
+          "id": "v20-held-undated",
+          "retention": true,
+          "usefulAnswers": 7,
+          "producedAnswers": 7
+        },
+        {
+          "id": "v20-held-alternatives",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        }
+      ],
+      "problematicProduced": [
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer preserves attribution, tentative contractual scope, frequency, and personal limits, but тест целостности разъёма denotes a broader connector-integrity test and loses the material continuity-test property. It remains a source-supported generalization rather than an invented contradiction.",
+          "id": "v20-held-assistant",
+          "run": 1,
+          "produced": true
+        }
+      ]
+    },
+    {
+      "probe": "built",
+      "cases": 4,
+      "completeUsefulRetention": 4,
+      "observations": 32,
+      "producedAnswers": 32,
+      "usefulAnswers": 32,
+      "usefulRetrieval": 32,
+      "nullAnswers": 0,
+      "gradeErrors": {
+        "source": 0,
+        "qualification": 0,
+        "language": 0,
+        "promotion": 0
+      },
+      "retainedErrors": [],
+      "caseAvailabilityFailures": 0,
+      "sourceByteChanges": 0,
+      "perCase": [
+        {
+          "id": "v19-held-report",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-question",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-rejected",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-alternatives",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        }
+      ],
+      "problematicProduced": []
+    }
+  ],
+  "decidedAt": "2026-09-09T18:40:53.977Z",
+  "decision": "defer full V21 trial",
+  "executeFullTrial": false,
+  "rationale": "The selected probe retains only 7/8 complete sets and yields 49/64 useful answers, including one published answer with a material tested-property generalization. Preserve both once-only probes and do not expose fresh held-out inputs.",
+  "adoptedUsefulAnswers": 81,
+  "producedAnswers": 82,
+  "nullAnswers": 14,
+  "producedIncompleteAnswers": 1,
+  "completeUsefulRetention": "11/12",
+  "fullyQualifiedRetainedSets": "12/12 (qualification of retained content only; the selected report set is incomplete)",
+  "usefulRetrieval": "88/96",
+  "retainedMetadataErrors": [],
+  "publishedSourceQualificationLanguagePromotionErrors": 0,
+  "publishedUsefulCompletenessErrors": [
+    {
+      "case": "v20-held-assistant",
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "explicitView": false,
+      "description": "Connector continuity is broadened to generic connector integrity."
+    }
+  ],
+  "caseAvailabilityFailures": 0,
+  "sourceByteChanges": 0,
+  "freshHeldOutExecuted": false,
+  "unchangedRuntimeSemanticRerun": false,
+  "fullRunsPerSplit": 2,
+  "fullSplits": [
+    "development",
+    "held-out"
+  ],
+  "answerOutputTokenLimit": 2400,
+  "thresholdsChanged": false,
+  "forensicReview": "Complete; source-only and focused adjudication retain 49/64 selected useful answers. Forensics records a stricter completeness interpretation for four fictional-promise answers. Both interpretations and the retained-record count correction are preserved.",
+  "correctlyQualifiedRetainedRecords": "16/16",
+  "falseLocalHolds": {
+    "counterfactual": 1,
+    "unknownClock": 1
+  },
+  "correctBadDraftHolds": {
+    "counterfactualRejectionDisposition": 1,
+    "coverageRole": 1,
+    "propertyGeneralization": 1,
+    "fictionLanguage": 1
+  },
+  "upstreamReportCoverageLosses": 8
+}

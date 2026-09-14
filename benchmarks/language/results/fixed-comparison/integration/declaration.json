@@ -1,0 +1,59 @@
+{
+  "createdAt": "2026-09-13T09:56:13.732Z",
+  "candidate": {
+    "label": "Integration",
+    "commit": "963bf68e3cd07c687007dceaadb4ebb0434613e6",
+    "packageTreeSha256": "51a4e04a1a62e36ef2a99d1e66de91da9ddad04eaefed486f96b620db0c565d2",
+    "protocol": "packages/protocol/dist/index.js",
+    "node": "v22.22.0",
+    "execPath": "<node-v22.22.0>",
+    "abi": "127",
+    "lockSha256": "5601a0ad49140516bd4c0afb4f346073d68105b86a74472c4f49102854700b22"
+  },
+  "corpusFingerprint": "27bbb05e7bc8089ba133e5723667190106d02e98b635e41328d683bd9700505a",
+  "corpusFileSha256": "2628c651f383bf75419b1e0a2094e638e671dcf86ecc5d2e6f372734be4808b4",
+  "sourceObligationsSha256": "5b8c826c7dca06293b92d2ef9c75e5056ec127155f7ea3e3e63895f6f514b204",
+  "modelPolicy": {
+    "derive": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "maxOutputTokens": 2400,
+      "timeoutMs": 300000,
+      "reasoningEffort": null
+    },
+    "answer": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "maxOutputTokens": 1024,
+      "timeoutMs": 60000,
+      "reasoningEffort": "low"
+    },
+    "embedding": {
+      "id": "text-embedding-qwen3-embedding-0.6b",
+      "enabled": true,
+      "maxOutputTokens": null,
+      "timeoutMs": 60000,
+      "reasoningEffort": null
+    },
+    "expansion": {
+      "id": "llama-3.2-3b-instruct",
+      "enabled": true,
+      "maxOutputTokens": 1024,
+      "timeoutMs": 30000,
+      "reasoningEffort": null
+    }
+  },
+  "runnerSha256": "79901c46e9637130af594ddac44d839168c5737f4bafe75257d24b2f74350e86",
+  "workerSha256": "9d02d199e0aeccfeccf9fb2a68537f14d1c8196b3f4b6ac49c1f39e66f13e798",
+  "commonSha256": "6636f6b23cb6f49da4c19dabfaa4dcf7adfc58db43760d0404bf03fcdb283980",
+  "freezeSha256": "b05c88f85ad2a6aaa4746620226a1b31431c16f7504584d6c013f0cc125ab780",
+  "postvalidatorSha256": "6384cf1ef90bc4b302a975b4f5be433e93cd7e05c5c14b51e9871e6a35189d5c",
+  "publicValidatorSha256": "6be15fb668440cec1901648eb81d6412944b40343624202b64a1ba8edfc6cd82",
+  "scorerSha256": "5fb76fb99cf4c1d3199a8ffe8d03c7c943f0643e50c02e8dc690304cbfed5369",
+  "packetFormatterSha256": "f9fcf58bfc480c7d115aeb0819bb59a0557083b6648fb6fb5fe4853b1c85a7b2",
+  "gradeAssemblerSha256": "99a4a343c15efa752145accd71faef8d6243ae84ab247f7c4a0c1802ec8f97af",
+  "controlSha256": "817a5e796dade280f8c5e55f00fd564e71561eafb7c655cdde40ceffaa52956c",
+  "gradingContractSha256": "508868c679fde67fefc5896b0e0f7e1cb2247ef66f00c9d07b8efba8cc828bd7",
+  "design": "One frozen integration, all 22 comparison cases twice, eight language/view coordinates, no selective retries. Same source-first grading with complete public record metadata; report the original 80% and later 90% targets separately.",
+  "selection": "Zero accepted source/qualification/language/promotion errors and unchanged bytes for rollout. Target80% complete retention, retrieval and useful answers per block/run; case availability<=5%. Report90% separately. Rank worst-block/run answer coverage, then retention/retrieval; less than8 net answers without consistent case advantage does not justify large port. Shared prose defects cannot rank arms but must be fixed."
+}

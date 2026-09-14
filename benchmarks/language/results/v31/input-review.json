@@ -1,0 +1,124 @@
+{
+  "schemaVersion": "language-input-review-v1",
+  "corpusFingerprint": "d874f8abb19195bc31566e57b8b5e46d2541c2e07440d53833028cad884efb1c",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-5.6-sol",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutOutputs": true
+  },
+  "cases": [
+    {
+      "id": "v16-held-report",
+      "approved": true,
+      "reason": "Approved: the bilingual query targets the source-supported unverified nested report, and the expectation faithfully preserves Ada Marlow, Bo Winters, permitted device shipment for measurement rather than replacement, lack of terms inspection/confirmation, and no arranged shipment."
+    },
+    {
+      "id": "v16-held-hypothesis",
+      "approved": true,
+      "reason": "Approved: the source clearly presents the maintenance frequency and missed-check consequence as a discussion assumption, with actual requirements and any actual miss unknown; both queries ask for that same hypothetical rule."
+    },
+    {
+      "id": "v16-held-counterfactual",
+      "approved": true,
+      "reason": "Approved: the expectation and both queries match the source’s settled rejection/nonpurchase and the expressly unrealized conditional repair coverage, without treating it as actual coverage."
+    },
+    {
+      "id": "v16-held-question",
+      "approved": true,
+      "reason": "Approved: the source and bilingual queries consistently concern the recorded unresolved coverage question, and the expectation correctly prohibits answering the embedded question or inferring inclusion or exclusion."
+    },
+    {
+      "id": "v16-held-exclusion",
+      "approved": true,
+      "reason": "Approved: the expectation follows the direct attributed user denial, preserves its narrow action/component scope, and correctly leaves the adjacent repair category unsettled; the English and Russian questions are equivalent."
+    },
+    {
+      "id": "v16-held-assistant",
+      "approved": true,
+      "reason": "Approved: the source supports assistant attribution, tentative unverified interpretation, stated inspection frequency, and lack of contract verification; both queries ask for that qualified report."
+    },
+    {
+      "id": "v16-held-fiction",
+      "approved": true,
+      "reason": "Approved: the expectation preserves the fictional participants, promise, object, ownership-period duration, and nonreal status supported by the source; both queries target the same example."
+    },
+    {
+      "id": "v16-held-rejected",
+      "approved": true,
+      "reason": "Approved: the expectation faithfully retains the rejected workshop-inspection shipment, absence of a shipment plan and scheduled pickup, while allowing the focused bilingual answers to identify the rejected offer."
+    },
+    {
+      "id": "v16-held-undated",
+      "approved": true,
+      "reason": "Approved: the source explicitly supplies the tentative unaccepted proposal, no meeting, source-relative time expression, undated source clock, and unknowable calendar period; the queries and expectation preserve those constraints."
+    },
+    {
+      "id": "v16-held-alternatives",
+      "approved": true,
+      "reason": "Approved: both alternatives, their equal tentative status, lack of evidence, and absence of a selected cause are explicit in the source and consistently requested by the bilingual questions."
+    },
+    {
+      "id": "v16-held-admission",
+      "approved": true,
+      "reason": "Approved: the invented duration assertion is clear and answerable in both languages, while the expectation correctly requires a retention hold and justified abstention because the configured destination is read-only."
+    },
+    {
+      "id": "v17-held-report",
+      "approved": true,
+      "reason": "Approved: the bilingual query targets the source-supported unverified nested report, and the expectation faithfully preserves Ada Marlow, Bo Winters, permitted device shipment for measurement rather than replacement, lack of terms inspection/confirmation, and no arranged shipment."
+    },
+    {
+      "id": "v17-held-hypothesis",
+      "approved": true,
+      "reason": "Approved: the source clearly presents the maintenance frequency and missed-check consequence as a discussion assumption, with actual requirements and any actual miss unknown; both queries ask for that same hypothetical rule."
+    },
+    {
+      "id": "v17-held-counterfactual",
+      "approved": true,
+      "reason": "Approved: the corrected expectation now matches the source’s sixth-year control-button repair counterfactual and faithfully preserves the settled rejection/nonpurchase, unrealized conditional coverage, and nonacceptance in both query languages."
+    },
+    {
+      "id": "v17-held-question",
+      "approved": true,
+      "reason": "Approved: the source and bilingual queries consistently concern the recorded unresolved coverage question, and the expectation correctly prohibits answering the embedded question or inferring inclusion or exclusion."
+    },
+    {
+      "id": "v17-held-exclusion",
+      "approved": true,
+      "reason": "Approved: the expectation follows the direct attributed user denial, preserves its narrow action/component scope, and correctly leaves the adjacent repair category unsettled; the English and Russian questions are equivalent."
+    },
+    {
+      "id": "v17-held-assistant",
+      "approved": true,
+      "reason": "Approved: the source supports assistant attribution, tentative unverified interpretation, stated inspection frequency, and lack of contract verification; both queries ask for that qualified report."
+    },
+    {
+      "id": "v17-held-fiction",
+      "approved": true,
+      "reason": "Approved: the rephrased second turn still explicitly makes Bo Winters a fictional character and the promise part of the fiction rather than a real agreement; the expectation and bilingual queries remain faithful."
+    },
+    {
+      "id": "v17-held-rejected",
+      "approved": true,
+      "reason": "Approved: the rephrased second turn still states that device collection was not booked and that the offer was declined, preserving the expected rejected workshop shipment, no shipment plan, and no scheduled pickup."
+    },
+    {
+      "id": "v17-held-undated",
+      "approved": true,
+      "reason": "Approved: the source explicitly supplies the tentative unaccepted proposal, no meeting, source-relative time expression, undated source clock, and unknowable calendar period; the queries and expectation preserve those constraints."
+    },
+    {
+      "id": "v17-held-alternatives",
+      "approved": true,
+      "reason": "Approved: both alternatives, their equal tentative status, lack of evidence, and absence of a selected cause are explicit in the source and consistently requested by the bilingual questions."
+    },
+    {
+      "id": "v17-held-admission",
+      "approved": true,
+      "reason": "Approved: the invented duration assertion is clear and answerable in both languages, while the expectation correctly requires a retention hold and justified abstention because the configured destination is read-only."
+    }
+  ]
+}

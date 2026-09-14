@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "published-evidence-check-v1",
+  "checkedAt": "2026-09-13T12:15:16.912Z",
+  "target": "benchmarks/language/results/fixed-comparison",
+  "manifestSha256": "9707dc1a819f754255a2b75fb151ac3b86eaf0599b2902d2091cdbb63ab81618",
+  "disposition": "clean",
+  "checks": {
+    "manifestEntries": 143,
+    "publishedFilesIncludingManifest": 144,
+    "manifestMembershipExact": true,
+    "manifestMembersUnique": true,
+    "allPublishedHashesMatch": true,
+    "allOriginalHashesMatch": true,
+    "allPublishedBytesMatchDeclaredTransformation": true,
+    "publicTraceFiles": 4,
+    "publicTraceEvents": 4373,
+    "publicTraceEventTypesRestricted": true,
+    "rawModelTraceEventsAbsent": true,
+    "sourcePacketGradeFilesChecked": 61,
+    "sourcePacketGradeBytesUnchanged": true,
+    "recognizedUnixMachinePathsAbsent": true,
+    "recognizedWindowsMachinePathsAbsent": true,
+    "secretShapedTokensAbsent": true
+  },
+  "transformations": {
+    "none": 129,
+    "machinePathRedaction": 10,
+    "publicOperationProjection": 4
+  },
+  "notes": [
+    "The published directory contains exactly every manifest member plus manifest.json; no unlisted file is present.",
+    "Each public trace was independently reconstructed from its full local trace by retaining only case-start, case-finish, public-result, public-throw, and open-throw events, then applying the declared sanitizer. The reconstructed bytes equal the published projection.",
+    "For ordinary files, published bytes equal the local original after applying only the declared repository, runtime, generic home-example, temporary, workspace, runtime, and mounted-volume path replacements.",
+    "All corpus, source-obligation, packet, and grade artifacts selected by the publication manifest are byte-identical to their local originals; fixture propositions and grading semantics were not changed by publication.",
+    "The earlier failed staging attempt left no material in the final bundle; exact membership and the successful manifest prove only the completed publication is present.",
+    "This approval concerns publication integrity and privacy redaction within the declared bounded checks. It does not independently regrade model outputs or broaden the reliability claims."
+  ]
+}

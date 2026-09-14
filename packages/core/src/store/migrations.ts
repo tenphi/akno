@@ -12,7 +12,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 40;
+export const SCHEMA_VERSION = 41;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -46,6 +46,8 @@ export const OBSERVATION_PROJECTION_MIGRATION_INDEX = 30;
 export const MANAGED_MEMORY_PROJECTION_MIGRATION_INDEX = 31;
 export const RETAIN_SOURCE_LIFETIME_MIGRATION_INDEX = 32;
 export const PAGE_SOURCE_INTEGRITY_MIGRATION_INDEX = 33;
+
+export const PROSE_PROJECTION_MIGRATION_INDEX = 34;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -1224,6 +1226,15 @@ export const MIGRATIONS: string[] = [
   CREATE INDEX page_source_integrity_declared_id ON page_source_integrity(declared_page_id);
   CREATE INDEX page_source_integrity_known_id ON page_source_integrity(known_page_id);
   `,
+  // Rebuildable discourse eligibility; source prose stays in the authoritative Markdown.
+  `CREATE TABLE prose_entries (
+    source_page TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+    line INTEGER NOT NULL,
+    view TEXT NOT NULL,
+    eligible INTEGER NOT NULL,
+    source_hash TEXT NOT NULL,
+    PRIMARY KEY(source_page, line)
+  );`,
 ];
 
 /**

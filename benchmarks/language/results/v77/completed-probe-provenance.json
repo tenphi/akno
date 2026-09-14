@@ -1,0 +1,63 @@
+{
+  "runtimeCommit": "a67faa3fd3a6f59450a35c4af1d66baa96fee4e8",
+  "status": "failed_infrastructure",
+  "cause": "The capture hook incorrectly required Luna for configured non-Luna query expansion before recording its lifecycle.",
+  "results": [
+    {
+      "mode": "selected",
+      "cases": 8,
+      "plannedObservations": 64,
+      "observations": 0,
+      "caseAvailabilityFailures": 8,
+      "retention": "unknown",
+      "sourceBytes": "unknown",
+      "semanticSafety": "not measured",
+      "reportPath": "bench-results/language-selected-v77.json",
+      "reportSha256": "942723612bcc78556bcc902355bf17d3992af4df6ad07a60f92db5535e697652",
+      "tracePath": "bench-results/language-selected-v77-trace.jsonl",
+      "traceSha256": "433ecfa4e1a30d1acd9fe207c139f8cf05e1a814c3366af564d39de96735b3e3",
+      "traceRows": 211,
+      "traceLifecycle": {
+        "modelCalls": 40,
+        "transports": 50,
+        "modelThrows": 0,
+        "transportThrows": 0,
+        "balanced": true
+      },
+      "launchReceiptSha256": "d97fe9a553b183c5c99ad5506b79d823abbe075b9cb007e358b8b80ef3bd6e6e"
+    },
+    {
+      "mode": "built",
+      "cases": 4,
+      "plannedObservations": 32,
+      "observations": 0,
+      "caseAvailabilityFailures": 4,
+      "retention": "unknown",
+      "sourceBytes": "unknown",
+      "semanticSafety": "not measured",
+      "reportPath": "bench-results/language-built-reliability-v77.json",
+      "reportSha256": "6ff310abb216727bae17224444a507f1884ff1e14c98dbb917c2c2e996408de5",
+      "tracePath": "bench-results/language-built-reliability-v77-trace.jsonl",
+      "traceSha256": "b239196f3069c039c90737c08005ca7c366f69ca22ce05deb2d34b2770441f83",
+      "traceRows": 112,
+      "traceLifecycle": {
+        "modelCalls": 21,
+        "transports": 27,
+        "modelThrows": 0,
+        "transportThrows": 0,
+        "balanced": true
+      },
+      "launchReceiptSha256": "425c70785bbb626aad24fedf4c99efa8b9a9b9764cb0c71a0ad27841d42d71e7"
+    }
+  ],
+  "plannedObservations": 96,
+  "observations": 0,
+  "caseAvailabilityFailures": 12,
+  "positiveSemanticReadinessEvidence": false,
+  "sourceBytesVerified": false,
+  "originalValidator": "failed: missing all planned query coordinates",
+  "originalValidatorLogSha256": "52b251d51fee6f83d716658e9af9e745b2879e441b73dd8d8c6df24e86296176",
+  "reviewPath": "tmp/language-v77-harness-failure-forensics.md",
+  "reviewSha256": "820f8c83c06ae55c6dd65fed6eab910be174164e3acd42f4dee6d062a0a4d0f8",
+  "replacementDiagnosticsAllowed": false
+}

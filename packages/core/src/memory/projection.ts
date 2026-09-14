@@ -1,3 +1,5 @@
+import { PROSE_PROJECTION_VERSION } from '../kb/prose.ts';
+import { proseChunkViews } from './prose-projection.ts';
 import type { MemoryView, PageRole } from '@tenphi/akno-protocol';
 import type { ParsedPage } from '../kb/page.ts';
 import { AKNO_ITEM, aknoItemId } from '../kb/page.ts';
@@ -201,6 +203,7 @@ export function managedMemoryProjectionForView(store: Store, view: MemoryView): 
     else memoryChunks.set(row.chunk_id, [row]);
   }
 
+  const proseViews = proseChunkViews(store, view);
   const eligibleChunkIds = new Set<number>();
   const contextualChunkIds = new Set<number>();
   for (const chunkId of allChunks) {
@@ -210,7 +213,8 @@ export function managedMemoryProjectionForView(store: Store, view: MemoryView): 
     }
     const memories = memoryChunks.get(chunkId);
     if (!memories) {
-      eligibleChunkIds.add(chunkId);
+      if (proseViews.get(chunkId) === false) contextualChunkIds.add(chunkId);
+      else eligibleChunkIds.add(chunkId);
       continue;
     }
     const eligible = memories.some(
@@ -229,7 +233,8 @@ export function managedMemoryProjectionForView(store: Store, view: MemoryView): 
           view,
         ),
     );
-    if (eligible) eligibleChunkIds.add(chunkId);
+    // A mixed chunk may also contain useful authored facts; live assembly filters each line.
+    if (eligible || proseViews.get(chunkId) === true) eligibleChunkIds.add(chunkId);
     else contextualChunkIds.add(chunkId);
   }
 
@@ -238,6 +243,7 @@ export function managedMemoryProjectionForView(store: Store, view: MemoryView): 
     contextualChunkIds,
     degraded:
       store.meta('managed_memory_projection_version') !== MANAGED_MEMORY_PROJECTION_VERSION ||
+      store.meta('prose_projection_version') !== PROSE_PROJECTION_VERSION ||
       issueCount > 0 ||
       duplicateIds.size > 0 ||
       rows.some((row) => row.chunk_id === null),

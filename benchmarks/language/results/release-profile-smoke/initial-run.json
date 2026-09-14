@@ -1,0 +1,1462 @@
+{
+  "kind": "bounded-release-smoke",
+  "startedAt": "2026-09-13T14:34:04.682Z",
+  "runtimeCommit": "c76c0a0d1b0964d73424cea70c26c2051a55df5e",
+  "node": "v22.22.0",
+  "runnerSha256": "b33039fe3a29aaf77e3f243557919cf632ec2860b8d488720fd285bc0420e823",
+  "defaultConfigSha256": "d6da96040202d4412a7b6eee48e17ec27d2ca9c8d5aaecc5f0701790e210d76b",
+  "builtCoreSha256": "4c8ea198e353afdd18cf7acc6de2c2d6c32be3eebd027cb4bde373245d572f84",
+  "builtProtocolSha256": "0e3d190ecc3e069c1642c5e77208c4d3ad3743052ecc15678f2432eed5ec1b0a",
+  "frozenManifestSha256": "9707dc1a819f754255a2b75fb151ac3b86eaf0599b2902d2091cdbb63ab81618",
+  "scope": "Two invented sources, one pass per profile, four explicit-English answer requests. No quality score, generalization claim or semantic retry.",
+  "overrides": [
+    "Configured derive/embedding connection and model identities; answer inherits derive identity.",
+    "Isolated paths and invented folder rules; disable summaries/facts to bound unrelated model work.",
+    "Explicit answer language en, explicit factual/reports view, expansion/graph/reranking off.",
+    "Transport retries disabled to bound this smoke; role token limits, reasoning policy and timeouts use committed defaults."
+  ],
+  "controls": "TimeoutError is injected immediately; it does not measure actual deadline expiry. Truncated verification replays exact-input live prefix outcomes and injects an incomplete JSON verdict; no control calls a provider.",
+  "profiles": [
+    {
+      "label": "default",
+      "knowledgeLanguage": null,
+      "modelPolicy": {
+        "derive": {
+          "id": "gpt-5.6-luna",
+          "maxOutputTokens": 2400,
+          "timeoutMs": 120000,
+          "reasoningEffort": null,
+          "knowledgeLanguage": null
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "maxOutputTokens": 2400,
+          "timeoutMs": 60000,
+          "reasoningEffort": null,
+          "knowledgeLanguage": null
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "maxOutputTokens": null,
+          "timeoutMs": 60000,
+          "reasoningEffort": null,
+          "knowledgeLanguage": null
+        }
+      },
+      "ordinary": [
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 case is silver.",
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "5cd9c7ef6edddc5fa6b2f0011cf1cb152bc6642cf2377220e859126f1db5468e",
+            "frame": []
+          }
+        },
+        {
+          "n": 7,
+          "text": "The Zephyr QX-100 handle is blue.",
+          "prose": {
+            "status": "qualified",
+            "view": "reports",
+            "reason": "heading_scope",
+            "answer_eligible": false,
+            "source_hash": "5cd9c7ef6edddc5fa6b2f0011cf1cb152bc6642cf2377220e859126f1db5468e",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 6,
+                "text": "## Assistant report"
+              },
+              {
+                "n": 7,
+                "text": "The Zephyr QX-100 handle is blue."
+              }
+            ]
+          }
+        }
+      ],
+      "source": {
+        "source_id": "invented:release-smoke-report",
+        "revision": "rev-1111",
+        "input": {
+          "items": [
+            {
+              "item_id": "turn-1111",
+              "role": "assistant",
+              "text": "The Zephyr QX-100 warranty lasts five years. This information has not been independently verified."
+            }
+          ]
+        },
+        "retention": {
+          "mode": "extract",
+          "mission": "Retain the report about Zephyr QX-100 in the existing memory folder, preserving its original qualifications."
+        }
+      },
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "degraded": [],
+        "sources": [
+          {
+            "outcome": "ok",
+            "reason": null,
+            "knowledgeLanguage": null,
+            "modelUsage": {
+              "extraction": {
+                "model": "gpt-5.6-luna",
+                "latency_ms": 3567,
+                "input_tokens": 6155,
+                "output_tokens": 317,
+                "total_tokens": 6472
+              },
+              "verification": {
+                "model": "gpt-5.6-luna",
+                "latency_ms": 3516,
+                "input_tokens": 7432,
+                "output_tokens": 263,
+                "total_tokens": 7695
+              },
+              "placement": [
+                {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 1580,
+                  "input_tokens": 352,
+                  "output_tokens": 32,
+                  "total_tokens": 384
+                },
+                {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 1954,
+                  "input_tokens": 225,
+                  "output_tokens": 60,
+                  "total_tokens": 285
+                }
+              ]
+            },
+            "degraded": [],
+            "candidates": [
+              {
+                "candidate_id": "cand_2e1ddb63acdc5edb366968ad",
+                "outcome": "written",
+                "slug": "memory/zephyr-qx-100",
+                "reason": null,
+                "holdStage": null
+              }
+            ]
+          }
+        ]
+      },
+      "knowledge": [
+        {
+          "n": 14,
+          "text": "- **Reported by assistant:** The Zephyr QX-100 warranty lasts five years, but the assistant states that this information has not been independently verified.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_165ef360",
+            "level": 1,
+            "kind": "claim",
+            "subject": "unresolved",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "sourceArchive": [
+        {
+          "evidence": "The Zephyr QX-100 warranty lasts five years. This information has not been independently verified.",
+          "evidence_hash": "b28288267c6cf71b4fa4e358baa5211b0c1881b6fbc3f501ee316fa91f56f3ad"
+        }
+      ],
+      "answers": {
+        "ordinary": {
+          "status": "ok",
+          "outcome": "partial",
+          "reason": "answered",
+          "language": "en",
+          "answer": "The Zephyr QX-100 case is silver. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                4
+              ]
+            }
+          ],
+          "validation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "degraded": [],
+          "modelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3578,
+              "input_tokens": 4746,
+              "output_tokens": 108,
+              "total_tokens": 4854
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2232,
+              "input_tokens": 6581,
+              "output_tokens": 141,
+              "total_tokens": 6722
+            }
+          }
+        },
+        "report": {
+          "status": "ok",
+          "outcome": "partial",
+          "reason": "answered",
+          "language": "en",
+          "answer": "**Reported by assistant:** The Zephyr QX-100 warranty lasts five years, but the assistant states that this information has not been independently verified. [memory/zephyr-qx-100:14]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "lines": [
+                14
+              ]
+            }
+          ],
+          "validation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "degraded": [],
+          "modelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5496,
+              "input_tokens": 6225,
+              "output_tokens": 305,
+              "total_tokens": 6530
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 9662,
+              "input_tokens": 9277,
+              "output_tokens": 661,
+              "total_tokens": 9938
+            }
+          }
+        }
+      },
+      "truncatedVerification": {
+        "status": "degraded",
+        "outcome": "not_answered",
+        "reason": "verification_unavailable",
+        "language": "en",
+        "answer": null,
+        "citations": [],
+        "validation": {
+          "generated_blocks": 1,
+          "passed_guards": 1,
+          "verified_blocks": null,
+          "rejection_counts": {}
+        },
+        "degraded": [
+          "answer_verification_failed"
+        ],
+        "modelUsage": {
+          "generation": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 4,
+            "input_tokens": 6225,
+            "output_tokens": 305,
+            "total_tokens": 6530
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 1,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null
+          }
+        }
+      },
+      "answerTimeout": {
+        "status": "degraded",
+        "outcome": "not_answered",
+        "reason": "generation_failed",
+        "language": "en",
+        "answer": null,
+        "citations": [],
+        "degraded": [
+          "answer_failed"
+        ],
+        "modelUsage": {
+          "generation": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 1,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null
+          },
+          "verification": null
+        }
+      },
+      "retentionTimeout": {
+        "status": "degraded",
+        "outcome": "noop",
+        "degraded": [
+          "derive_failed"
+        ],
+        "sources": [
+          {
+            "outcome": "held",
+            "reason": "apply_failed",
+            "knowledgeLanguage": null,
+            "modelUsage": {
+              "extraction": {
+                "model": "gpt-5.6-luna",
+                "latency_ms": 1,
+                "input_tokens": null,
+                "output_tokens": null,
+                "total_tokens": null
+              },
+              "verification": null,
+              "placement": []
+            },
+            "degraded": [
+              "derive_failed"
+            ],
+            "candidates": []
+          }
+        ]
+      }
+    },
+    {
+      "label": "english",
+      "knowledgeLanguage": "en",
+      "modelPolicy": {
+        "derive": {
+          "id": "gpt-5.6-luna",
+          "maxOutputTokens": 2400,
+          "timeoutMs": 120000,
+          "reasoningEffort": null,
+          "knowledgeLanguage": "en"
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "maxOutputTokens": 2400,
+          "timeoutMs": 60000,
+          "reasoningEffort": null,
+          "knowledgeLanguage": "en"
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "maxOutputTokens": null,
+          "timeoutMs": 60000,
+          "reasoningEffort": null,
+          "knowledgeLanguage": "en"
+        }
+      },
+      "ordinary": [
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 case is silver.",
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "5cd9c7ef6edddc5fa6b2f0011cf1cb152bc6642cf2377220e859126f1db5468e",
+            "frame": []
+          }
+        },
+        {
+          "n": 7,
+          "text": "The Zephyr QX-100 handle is blue.",
+          "prose": {
+            "status": "qualified",
+            "view": "reports",
+            "reason": "heading_scope",
+            "answer_eligible": false,
+            "source_hash": "5cd9c7ef6edddc5fa6b2f0011cf1cb152bc6642cf2377220e859126f1db5468e",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 6,
+                "text": "## Assistant report"
+              },
+              {
+                "n": 7,
+                "text": "The Zephyr QX-100 handle is blue."
+              }
+            ]
+          }
+        }
+      ],
+      "source": {
+        "source_id": "invented:release-smoke-report",
+        "revision": "rev-1111",
+        "input": {
+          "items": [
+            {
+              "item_id": "turn-1111",
+              "role": "assistant",
+              "text": "Гарантия Zephyr QX-100 действует пять лет. Эта информация не проверена независимо."
+            }
+          ]
+        },
+        "retention": {
+          "mode": "extract",
+          "mission": "Retain the report about Zephyr QX-100 in the existing memory folder, preserving its original qualifications."
+        }
+      },
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "degraded": [],
+        "sources": [
+          {
+            "outcome": "ok",
+            "reason": null,
+            "knowledgeLanguage": "en",
+            "modelUsage": {
+              "extraction": {
+                "model": "gpt-5.6-luna",
+                "latency_ms": 4711,
+                "input_tokens": 7300,
+                "output_tokens": 388,
+                "total_tokens": 7688
+              },
+              "verification": {
+                "model": "gpt-5.6-luna",
+                "latency_ms": 5348,
+                "input_tokens": 7613,
+                "output_tokens": 306,
+                "total_tokens": 7919
+              },
+              "placement": [
+                {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 1129,
+                  "input_tokens": 517,
+                  "output_tokens": 34,
+                  "total_tokens": 551
+                },
+                {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 1768,
+                  "input_tokens": 393,
+                  "output_tokens": 66,
+                  "total_tokens": 459
+                }
+              ]
+            },
+            "degraded": [],
+            "candidates": [
+              {
+                "candidate_id": "cand_de3b79fd3f54051d219399df",
+                "outcome": "written",
+                "slug": "memory/zephyr-qx-100",
+                "reason": null,
+                "holdStage": null
+              }
+            ]
+          }
+        ]
+      },
+      "knowledge": [
+        {
+          "n": 14,
+          "text": "- **Reported by assistant:** The Zephyr QX-100 warranty lasts five years, but this information has not been independently verified.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_0dbe95a2",
+            "level": 1,
+            "kind": "claim",
+            "subject": "unresolved",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "sourceArchive": [
+        {
+          "evidence": "Гарантия Zephyr QX-100 действует пять лет. Эта информация не проверена независимо.",
+          "evidence_hash": "5a7a5127116afe2a38e7bd977855d9dba6f7deda5929e23acdbd9e764a83341b"
+        }
+      ],
+      "answers": {
+        "ordinary": {
+          "status": "ok",
+          "outcome": "partial",
+          "reason": "answered",
+          "language": "en",
+          "answer": "The Zephyr QX-100 case is silver. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                4
+              ]
+            }
+          ],
+          "validation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "degraded": [],
+          "modelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3283,
+              "input_tokens": 4746,
+              "output_tokens": 120,
+              "total_tokens": 4866
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2630,
+              "input_tokens": 6750,
+              "output_tokens": 183,
+              "total_tokens": 6933
+            }
+          }
+        },
+        "report": {
+          "status": "ok",
+          "outcome": "partial",
+          "reason": "answered",
+          "language": "en",
+          "answer": "**Reported by assistant:** The Zephyr QX-100 warranty lasts five years, but this information has not been independently verified. [memory/zephyr-qx-100:14]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "lines": [
+                14
+              ]
+            }
+          ],
+          "validation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "degraded": [],
+          "modelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7251,
+              "input_tokens": 6213,
+              "output_tokens": 344,
+              "total_tokens": 6557
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6842,
+              "input_tokens": 9543,
+              "output_tokens": 700,
+              "total_tokens": 10243
+            }
+          }
+        }
+      },
+      "truncatedVerification": {
+        "status": "ok",
+        "outcome": "partial",
+        "reason": "answered",
+        "language": "en",
+        "answer": "**Reported by assistant:** The Zephyr QX-100 warranty lasts five years, but this information has not been independently verified. [memory/zephyr-qx-100:14]",
+        "citations": [
+          {
+            "id": "E1",
+            "type": "page",
+            "slug": "memory/zephyr-qx-100",
+            "lines": [
+              14
+            ]
+          }
+        ],
+        "validation": {
+          "generated_blocks": 1,
+          "passed_guards": 1,
+          "verified_blocks": 1,
+          "rejection_counts": {}
+        },
+        "degraded": [],
+        "modelUsage": {
+          "generation": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 2,
+            "input_tokens": 6213,
+            "output_tokens": 344,
+            "total_tokens": 6557
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 6842,
+            "input_tokens": 9543,
+            "output_tokens": 700,
+            "total_tokens": 10243
+          }
+        }
+      },
+      "answerTimeout": {
+        "status": "degraded",
+        "outcome": "not_answered",
+        "reason": "generation_failed",
+        "language": "en",
+        "answer": null,
+        "citations": [],
+        "degraded": [
+          "answer_failed"
+        ],
+        "modelUsage": {
+          "generation": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 0,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null
+          },
+          "verification": null
+        }
+      },
+      "retentionTimeout": {
+        "status": "degraded",
+        "outcome": "noop",
+        "degraded": [
+          "derive_failed"
+        ],
+        "sources": [
+          {
+            "outcome": "held",
+            "reason": "apply_failed",
+            "knowledgeLanguage": "en",
+            "modelUsage": {
+              "extraction": {
+                "model": "gpt-5.6-luna",
+                "latency_ms": 1,
+                "input_tokens": null,
+                "output_tokens": null,
+                "total_tokens": null
+              },
+              "verification": null,
+              "placement": []
+            },
+            "degraded": [
+              "derive_failed"
+            ],
+            "candidates": []
+          }
+        ]
+      }
+    }
+  ],
+  "telemetry": [
+    {
+      "operation": "default:retain",
+      "phase": "extraction",
+      "requestedTokens": 3200,
+      "wire": [
+        {
+          "maxOutputTokens": 2400,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 3567.0339999999997,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 6155,
+        "outputTokens": 317,
+        "totalTokens": 6472,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 127
+      }
+    },
+    {
+      "operation": "default:retain",
+      "phase": "retention-verification",
+      "requestedTokens": 2224,
+      "wire": [
+        {
+          "maxOutputTokens": 2224,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 3516.3220409999994,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 7432,
+        "outputTokens": 263,
+        "totalTokens": 7695,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 76
+      }
+    },
+    {
+      "operation": "default:retain",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 220,
+      "wire": [
+        {
+          "maxOutputTokens": 220,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 1579.5790419999994,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 352,
+        "outputTokens": 32,
+        "totalTokens": 384,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 15
+      }
+    },
+    {
+      "operation": "default:retain",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 300,
+      "wire": [
+        {
+          "maxOutputTokens": 300,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 1954.1337079999994,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 225,
+        "outputTokens": 60,
+        "totalTokens": 285,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 31
+      }
+    },
+    {
+      "operation": "default:answer-ordinary",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 1024,
+      "wire": [
+        {
+          "maxOutputTokens": 1024,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 1478.7242500000011,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 3789,
+        "outputTokens": 40,
+        "totalTokens": 3829,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 0
+      }
+    },
+    {
+      "operation": "default:answer-ordinary",
+      "phase": "language",
+      "requestedTokens": 1024,
+      "wire": [
+        {
+          "maxOutputTokens": 1024,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 2085.3976249999996,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 957,
+        "outputTokens": 68,
+        "totalTokens": 1025,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 38
+      }
+    },
+    {
+      "operation": "default:answer-ordinary",
+      "phase": "answer-verification",
+      "requestedTokens": 2224,
+      "wire": [
+        {
+          "maxOutputTokens": 2224,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 2231.7445829999997,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 6581,
+        "outputTokens": 141,
+        "totalTokens": 6722,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 37
+      }
+    },
+    {
+      "operation": "default:answer-report",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 1536,
+      "wire": [
+        {
+          "maxOutputTokens": 1536,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 3929.323792000003,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 5248,
+        "outputTokens": 233,
+        "totalTokens": 5481,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 144
+      }
+    },
+    {
+      "operation": "default:answer-report",
+      "phase": "language",
+      "requestedTokens": 1024,
+      "wire": [
+        {
+          "maxOutputTokens": 1024,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 1555.0094170000011,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 977,
+        "outputTokens": 72,
+        "totalTokens": 1049,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 42
+      }
+    },
+    {
+      "operation": "default:answer-report",
+      "phase": "answer-verification",
+      "requestedTokens": 3124,
+      "wire": [
+        {
+          "maxOutputTokens": 2400,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 9661.512042000002,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 9277,
+        "outputTokens": 661,
+        "totalTokens": 9938,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 294
+      }
+    },
+    {
+      "operation": "default:control-truncated-verification",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 1536,
+      "wire": [],
+      "injected": true,
+      "replayedPrefix": true,
+      "ok": true,
+      "failure": null
+    },
+    {
+      "operation": "default:control-truncated-verification",
+      "phase": "language",
+      "requestedTokens": 1024,
+      "wire": [],
+      "injected": true,
+      "replayedPrefix": true,
+      "ok": true,
+      "failure": null
+    },
+    {
+      "operation": "default:control-truncated-verification",
+      "phase": "answer-verification",
+      "requestedTokens": 3124,
+      "wire": [
+        {
+          "maxOutputTokens": 2400,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": true,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 1.3270839999968302,
+      "endpointRequests": 1,
+      "usage": null
+    },
+    {
+      "operation": "default:control-answer-timeout",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 1024,
+      "wire": [
+        {
+          "maxOutputTokens": 1024,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": true,
+      "ok": false,
+      "failure": "timeout",
+      "latencyMs": 0.5690420000028098,
+      "endpointRequests": 1,
+      "usage": null
+    },
+    {
+      "operation": "default:control-retain-timeout",
+      "phase": "extraction",
+      "requestedTokens": 3200,
+      "wire": [
+        {
+          "maxOutputTokens": 2400,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": true,
+      "ok": false,
+      "failure": "timeout",
+      "latencyMs": 0.5849159999997937,
+      "endpointRequests": 1,
+      "usage": null
+    },
+    {
+      "operation": "english:retain",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 3200,
+      "wire": [
+        {
+          "maxOutputTokens": 2400,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 3217.0929169999945,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 6324,
+        "outputTokens": 310,
+        "totalTokens": 6634,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 105
+      }
+    },
+    {
+      "operation": "english:retain",
+      "phase": "language",
+      "requestedTokens": 1024,
+      "wire": [
+        {
+          "maxOutputTokens": 1024,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 1487.853332999999,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 976,
+        "outputTokens": 78,
+        "totalTokens": 1054,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 48
+      }
+    },
+    {
+      "operation": "english:retain",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 2224,
+      "wire": [
+        {
+          "maxOutputTokens": 2224,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 5348.456458000001,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 7613,
+        "outputTokens": 306,
+        "totalTokens": 7919,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 121
+      }
+    },
+    {
+      "operation": "english:retain",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 220,
+      "wire": [
+        {
+          "maxOutputTokens": 220,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 1129.3757079999996,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 517,
+        "outputTokens": 34,
+        "totalTokens": 551,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 17
+      }
+    },
+    {
+      "operation": "english:retain",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 300,
+      "wire": [
+        {
+          "maxOutputTokens": 300,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 1767.6592910000036,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 393,
+        "outputTokens": 66,
+        "totalTokens": 459,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 34
+      }
+    },
+    {
+      "operation": "english:answer-ordinary",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 1024,
+      "wire": [
+        {
+          "maxOutputTokens": 1024,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 1301.8106660000049,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 3789,
+        "outputTokens": 40,
+        "totalTokens": 3829,
+        "cachedInputTokens": 3786,
+        "reasoningOutputTokens": 0
+      }
+    },
+    {
+      "operation": "english:answer-ordinary",
+      "phase": "language",
+      "requestedTokens": 1024,
+      "wire": [
+        {
+          "maxOutputTokens": 1024,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 1978.3378749999974,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 957,
+        "outputTokens": 80,
+        "totalTokens": 1037,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 50
+      }
+    },
+    {
+      "operation": "english:answer-ordinary",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 2224,
+      "wire": [
+        {
+          "maxOutputTokens": 2224,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 2630.0827910000007,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 6750,
+        "outputTokens": 183,
+        "totalTokens": 6933,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 64
+      }
+    },
+    {
+      "operation": "english:answer-report",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 1536,
+      "wire": [
+        {
+          "maxOutputTokens": 1536,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 4273.120667000003,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 5240,
+        "outputTokens": 251,
+        "totalTokens": 5491,
+        "cachedInputTokens": 5007,
+        "reasoningOutputTokens": 128
+      }
+    },
+    {
+      "operation": "english:answer-report",
+      "phase": "language",
+      "requestedTokens": 1024,
+      "wire": [
+        {
+          "maxOutputTokens": 1024,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 2973.3929579999967,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 973,
+        "outputTokens": 93,
+        "totalTokens": 1066,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 63
+      }
+    },
+    {
+      "operation": "english:answer-report",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 3124,
+      "wire": [
+        {
+          "maxOutputTokens": 2400,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": false,
+      "ok": true,
+      "failure": null,
+      "latencyMs": 6841.875790999999,
+      "endpointRequests": 1,
+      "usage": {
+        "inputTokens": 9543,
+        "outputTokens": 700,
+        "totalTokens": 10243,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 294
+      }
+    },
+    {
+      "operation": "english:control-truncated-verification",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 1536,
+      "wire": [],
+      "injected": true,
+      "replayedPrefix": true,
+      "ok": true,
+      "failure": null
+    },
+    {
+      "operation": "english:control-truncated-verification",
+      "phase": "language",
+      "requestedTokens": 1024,
+      "wire": [],
+      "injected": true,
+      "replayedPrefix": true,
+      "ok": true,
+      "failure": null
+    },
+    {
+      "operation": "english:control-truncated-verification",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 3124,
+      "wire": [],
+      "injected": true,
+      "replayedPrefix": true,
+      "ok": true,
+      "failure": null
+    },
+    {
+      "operation": "english:control-answer-timeout",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 1024,
+      "wire": [
+        {
+          "maxOutputTokens": 1024,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": true,
+      "ok": false,
+      "failure": "timeout",
+      "latencyMs": 0.4122500000084983,
+      "endpointRequests": 1,
+      "usage": null
+    },
+    {
+      "operation": "english:control-retain-timeout",
+      "phase": "retention-verification-or-placement",
+      "requestedTokens": 3200,
+      "wire": [
+        {
+          "maxOutputTokens": 2400,
+          "reasoningEffort": null
+        }
+      ],
+      "injected": true,
+      "ok": false,
+      "failure": "timeout",
+      "latencyMs": 0.6497499999968568,
+      "endpointRequests": 1,
+      "usage": null
+    }
+  ],
+  "checks": [
+    {
+      "name": "default: committed default profile",
+      "ok": true
+    },
+    {
+      "name": "default: live budgets inherit committed defaults",
+      "ok": true
+    },
+    {
+      "name": "default: index preserves source bytes and file set",
+      "ok": true
+    },
+    {
+      "name": "default: unconditional Markdown qualification",
+      "ok": true
+    },
+    {
+      "name": "default: discoverable language policy",
+      "ok": true
+    },
+    {
+      "name": "default: rebuild/replay preserves bytes",
+      "ok": true
+    },
+    {
+      "name": "default: generated qualified report retained",
+      "ok": true
+    },
+    {
+      "name": "default: exact source quotation survives English generation and rebuild",
+      "ok": true
+    },
+    {
+      "name": "default: ordinary answer published with verification",
+      "ok": true
+    },
+    {
+      "name": "default: report answer published with verification",
+      "ok": true
+    },
+    {
+      "name": "default: incomplete audit withheld with typed failure",
+      "ok": true
+    },
+    {
+      "name": "default: generation timeout is typed and publishes nothing",
+      "ok": true
+    },
+    {
+      "name": "default: extraction timeout is typed and writes no memory",
+      "ok": true
+    },
+    {
+      "name": "default: answers and injected failures preserve all KB bytes",
+      "ok": true
+    },
+    {
+      "name": "default: each injected transport fault uses exactly one request",
+      "ok": true
+    },
+    {
+      "name": "default: source verification applies with either language policy",
+      "ok": true
+    },
+    {
+      "name": "default: wire ceiling reaches 2400 for answer verification",
+      "ok": true
+    },
+    {
+      "name": "default: ordinary generation requests and sends 1024",
+      "ok": false
+    },
+    {
+      "name": "default: all answer/derive wire limits stay within 2400",
+      "ok": true
+    },
+    {
+      "name": "english: committed default profile",
+      "ok": true
+    },
+    {
+      "name": "english: live budgets inherit committed defaults",
+      "ok": true
+    },
+    {
+      "name": "english: index preserves source bytes and file set",
+      "ok": true
+    },
+    {
+      "name": "english: unconditional Markdown qualification",
+      "ok": true
+    },
+    {
+      "name": "english: discoverable language policy",
+      "ok": true
+    },
+    {
+      "name": "english: rebuild/replay preserves bytes",
+      "ok": true
+    },
+    {
+      "name": "english: generated qualified report retained",
+      "ok": true
+    },
+    {
+      "name": "english: exact source quotation survives English generation and rebuild",
+      "ok": true
+    },
+    {
+      "name": "english: ordinary answer published with verification",
+      "ok": true
+    },
+    {
+      "name": "english: report answer published with verification",
+      "ok": true
+    },
+    {
+      "name": "english: incomplete audit withheld with typed failure",
+      "ok": false
+    },
+    {
+      "name": "english: generation timeout is typed and publishes nothing",
+      "ok": true
+    },
+    {
+      "name": "english: extraction timeout is typed and writes no memory",
+      "ok": true
+    },
+    {
+      "name": "english: answers and injected failures preserve all KB bytes",
+      "ok": true
+    },
+    {
+      "name": "english: each injected transport fault uses exactly one request",
+      "ok": true
+    },
+    {
+      "name": "english: source verification applies with either language policy",
+      "ok": false
+    },
+    {
+      "name": "english: wire ceiling reaches 2400 for answer verification",
+      "ok": false
+    },
+    {
+      "name": "english: ordinary generation requests and sends 1024",
+      "ok": false
+    },
+    {
+      "name": "english: all answer/derive wire limits stay within 2400",
+      "ok": true
+    }
+  ],
+  "finishedAt": "2026-09-13T14:35:11.741Z",
+  "passed": false
+}

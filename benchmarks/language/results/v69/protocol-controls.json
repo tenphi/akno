@@ -1,0 +1,116 @@
+{
+  "runtimeCommit": "bf73549dd0a721b61b3c05bb3e75d89e79a7621e",
+  "purpose": "protocol-only",
+  "answerOutputTokenLimit": 2400,
+  "results": [
+    {
+      "kind": "generation",
+      "status": "completed",
+      "expected": {
+        "record_readings": [
+          {
+            "evidence_id": "E1",
+            "selected_meaning": "The retained coverage question remains unanswered.",
+            "clarification_or_ambiguity": null
+          }
+        ],
+        "blocks": [
+          {
+            "rendering_mode": "copy",
+            "evidence_ids": [
+              "E1"
+            ]
+          }
+        ],
+        "missing_concepts": []
+      },
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "reason": null
+    },
+    {
+      "kind": "verification",
+      "status": "completed",
+      "expected": {
+        "verdicts": [
+          {
+            "block_id": "B1",
+            "excerpt_selection": {
+              "selected_by_retained_excerpt": false,
+              "unselected_content": "Invented protocol-only negative selection."
+            },
+            "source_alignments": [
+              {
+                "evidence_id": "E1",
+                "source_context": "Selected open question; neighboring question excluded.",
+                "actor": {
+                  "source_anchor": null,
+                  "answer_anchor": null,
+                  "detail": "No named actor.",
+                  "relation": "not_selected"
+                },
+                "object_and_mechanism": {
+                  "source_anchor": "E1_6f9f39fdf9b2_1",
+                  "answer_anchor": "B1_6f9f39fdf9b2_1",
+                  "source_specifics": "Return delivery coverage question.",
+                  "answer_specifics": "Return delivery coverage question.",
+                  "relation": "preserved"
+                },
+                "qualification": {
+                  "source_anchor": "E1_6f9f39fdf9b2_1",
+                  "answer_anchor": null,
+                  "detail": "Invented omitted qualification.",
+                  "relation": "omitted"
+                }
+              },
+              {
+                "evidence_id": "E2",
+                "source_context": "Selected open question; neighboring question excluded.",
+                "actor": {
+                  "source_anchor": null,
+                  "answer_anchor": null,
+                  "detail": "No named actor.",
+                  "relation": "not_selected"
+                },
+                "object_and_mechanism": {
+                  "source_anchor": "E2_6f9f39fdf9b2_1",
+                  "answer_anchor": null,
+                  "source_specifics": "Collection coverage question.",
+                  "answer_specifics": null,
+                  "relation": "not_selected"
+                },
+                "qualification": {
+                  "source_anchor": "E2_6f9f39fdf9b2_1",
+                  "answer_anchor": "B1_6f9f39fdf9b2_1",
+                  "detail": "Question remains unanswered.",
+                  "relation": "preserved"
+                }
+              }
+            ],
+            "comparison": {
+              "source_meaning": "Two open coverage questions.",
+              "candidate_meaning": "Two open coverage questions.",
+              "action_arguments": "Coverage questions.",
+              "qualification_scope": "Invented negative protocol control."
+            },
+            "mismatches": [
+              {
+                "dimension": "qualification_scope_preserved",
+                "kind": "changed_qualification",
+                "detail": "Invented protocol-only negative verdict."
+              }
+            ],
+            "proposition_supported": true,
+            "action_arguments_preserved": true,
+            "qualification_scope_preserved": false
+          }
+        ]
+      },
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "reason": null
+    }
+  ]
+}

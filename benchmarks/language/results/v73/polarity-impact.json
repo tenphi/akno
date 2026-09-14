@@ -1,0 +1,219 @@
+{
+  "note": "Descriptive model-decision comparisons only. Source polarity accuracy, complete retention and publication require independent source grading.",
+  "results": [
+    {
+      "probe": "selected",
+      "observations": [
+        {
+          "traceRow": 6,
+          "candidateId": "cand_cba1e86e7079844b79e4d873",
+          "declaredPolarity": "negated",
+          "sourceSelectedPolarity": "negated",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": true,
+            "action": true,
+            "qualification": true
+          }
+        },
+        {
+          "traceRow": 6,
+          "candidateId": "cand_da9dc29d18cd8fc9f00a13f6",
+          "declaredPolarity": "affirmed",
+          "sourceSelectedPolarity": "affirmed",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": true,
+            "action": true,
+            "qualification": true
+          }
+        },
+        {
+          "traceRow": 43,
+          "candidateId": "cand_e09f58c2287ad0e3e20cf6f3",
+          "declaredPolarity": "affirmed",
+          "sourceSelectedPolarity": "affirmed",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": true,
+            "action": true,
+            "qualification": true
+          }
+        },
+        {
+          "traceRow": 80,
+          "candidateId": "cand_24512c6027b21d74a276bc6e",
+          "declaredPolarity": "affirmed",
+          "sourceSelectedPolarity": "affirmed",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": true,
+            "action": true,
+            "qualification": true
+          }
+        },
+        {
+          "traceRow": 80,
+          "candidateId": "cand_6d080f563af890dae267b484",
+          "declaredPolarity": "affirmed",
+          "sourceSelectedPolarity": "affirmed",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": true,
+            "action": true,
+            "qualification": true
+          }
+        },
+        {
+          "traceRow": 107,
+          "candidateId": "cand_42f79430d16850b1a093c764",
+          "declaredPolarity": "negated",
+          "sourceSelectedPolarity": "negated",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": true,
+            "action": true,
+            "qualification": true
+          }
+        },
+        {
+          "traceRow": 142,
+          "candidateId": "cand_e77f3c493b55f130413cb51a",
+          "declaredPolarity": "affirmed",
+          "sourceSelectedPolarity": "affirmed",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": true,
+            "action": true,
+            "qualification": true
+          }
+        },
+        {
+          "traceRow": 178,
+          "candidateId": "cand_5c661979fc522c5b33b590b5",
+          "declaredPolarity": "affirmed",
+          "sourceSelectedPolarity": "affirmed",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": true,
+            "action": true,
+            "qualification": true
+          }
+        },
+        {
+          "traceRow": 178,
+          "candidateId": "cand_2b335a5948c7d55710be3ad7",
+          "declaredPolarity": "affirmed",
+          "sourceSelectedPolarity": "affirmed",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": true,
+            "action": true,
+            "qualification": true
+          }
+        },
+        {
+          "traceRow": 208,
+          "candidateId": "cand_befd98552dd4f1cba73fcee7",
+          "declaredPolarity": "affirmed",
+          "sourceSelectedPolarity": "affirmed",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": true,
+            "action": true,
+            "qualification": false
+          }
+        },
+        {
+          "traceRow": 213,
+          "candidateId": "cand_e572afa6345fb525f23b19a9",
+          "declaredPolarity": "affirmed",
+          "sourceSelectedPolarity": "affirmed",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": true,
+            "action": true,
+            "qualification": true
+          }
+        }
+      ]
+    },
+    {
+      "probe": "built-reliability",
+      "observations": [
+        {
+          "traceRow": 3,
+          "candidateId": "cand_9a15ee724bb10d7e2425285a",
+          "declaredPolarity": "negated",
+          "sourceSelectedPolarity": "negated",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": true,
+            "action": true,
+            "qualification": true
+          }
+        },
+        {
+          "traceRow": 3,
+          "candidateId": "cand_aa4c20f3e093bc42e21f0678",
+          "declaredPolarity": "affirmed",
+          "sourceSelectedPolarity": "affirmed",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": false,
+            "action": true,
+            "qualification": true
+          }
+        },
+        {
+          "traceRow": 7,
+          "candidateId": "cand_83853a2e0c5f18d41a504f45",
+          "declaredPolarity": "affirmed",
+          "sourceSelectedPolarity": "affirmed",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": true,
+            "action": true,
+            "qualification": true
+          }
+        },
+        {
+          "traceRow": 45,
+          "candidateId": "cand_da921fdbceac7bcb7647f34e",
+          "declaredPolarity": "affirmed",
+          "sourceSelectedPolarity": "affirmed",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": true,
+            "action": true,
+            "qualification": true
+          }
+        },
+        {
+          "traceRow": 45,
+          "candidateId": "cand_82f9d9afa09270a8ceb10062",
+          "declaredPolarity": "negated",
+          "sourceSelectedPolarity": "negated",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": true,
+            "action": true,
+            "qualification": true
+          }
+        },
+        {
+          "traceRow": 82,
+          "candidateId": "cand_3a6a41f630552aea31f3ca12",
+          "declaredPolarity": "affirmed",
+          "sourceSelectedPolarity": "affirmed",
+          "polarityMatches": true,
+          "semanticBooleans": {
+            "proposition": true,
+            "action": true,
+            "qualification": true
+          }
+        }
+      ]
+    }
+  ]
+}

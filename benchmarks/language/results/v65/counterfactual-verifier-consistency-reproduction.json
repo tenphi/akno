@@ -1,0 +1,115 @@
+{
+  "runtimeCommit": "b26c5b8b0386aff8be171593b51299f9c703d64b",
+  "traceRow": 422,
+  "purpose": "Read-only frozen consistency replay; synthetic control is not a replacement verdict.",
+  "original": {
+    "verdicts": [
+      {
+        "candidate_id": "cand_be16a47c71f73bd79c5aad27",
+        "comparison": {
+          "source_meaning": "Ada Marlow directly asserts that she rejected the optional service extension for Zephyr QX-100 and did not buy it.",
+          "candidate_meaning": "Ada Marlow rejected the optional service extension for Zephyr QX-100 and did not buy it.",
+          "action_arguments": "Ada Marlow is the actor of both rejecting the extension and not buying it; the extension concerns Zephyr QX-100.",
+          "qualification_scope": "The two actions are Ada Marlow's asserted, self-attested actions; the rejection is represented with rejected disposition."
+        },
+        "mismatches": [],
+        "proposition_supported": true,
+        "action_arguments_preserved": true,
+        "qualification_scope_preserved": true,
+        "reason_code": null
+      },
+      {
+        "candidate_id": "cand_a6d5b49ee912c81bfd8b93c3",
+        "span_audit": [
+          {
+            "frame_id": "F1",
+            "interpretation": "Ada Marlow asserts that she rejected the optional service extension for Zephyr QX-100 and did not buy it. This establishes that the purchase antecedent in the other span did not occur and supplies the contrast with the unrealized scenario.",
+            "relationship": "contrast"
+          },
+          {
+            "frame_id": "F2",
+            "interpretation": "Ada Marlow describes an unrealized conditional in which, if she had bought that extension, repair of the rotary handle in the ninth year would have been covered. She then clarifies that this was not the service she purchased and was not an-",
+            "relationship": "restatement"
+          }
+        ],
+        "comparison": {
+          "source_meaning": "Ada Marlow rejected and did not buy the extension. In an unrealized conditional, if she had bought it, rotary-handle repair in the ninth year would have been covered; she states that this was not the service she purchased and was not active coverage.",
+          "candidate_meaning": "The candidate preserves the unrealized conditional coverage of rotary-handle repair in the ninth year, attributes it to Ada Marlow, and states that the extension was not purchased and is not active coverage.",
+          "action_arguments": "Ada Marlow is the actor of rejecting and not buying the extension, and of the hypothetical purchase. The hypothetical object is the extension; the covered object is rotary-handle repair in the ninth year. No action roles are changed.",
+          "qualification_scope": "The repair coverage remains conditional and unrealized, while the nonpurchase and lack of active coverage are stated as Ada Marlow's direct qualifications. The candidate preserves the contrast between hypothetical coverage and actual coverage."
+        },
+        "mismatches": [
+          {
+            "dimension": "qualification_scope_preserved",
+            "kind": "changed_qualification",
+            "detail": "The F2 interpretation is truncated and does not fully state the source's clarification that the service was not purchased and was not active coverage."
+          }
+        ],
+        "proposition_supported": false,
+        "action_arguments_preserved": true,
+        "qualification_scope_preserved": false,
+        "reason_code": null
+      }
+    ]
+  },
+  "originalConsistency": [
+    true,
+    false
+  ],
+  "syntheticControl": {
+    "verdicts": [
+      {
+        "candidate_id": "cand_be16a47c71f73bd79c5aad27",
+        "comparison": {
+          "source_meaning": "Ada Marlow directly asserts that she rejected the optional service extension for Zephyr QX-100 and did not buy it.",
+          "candidate_meaning": "Ada Marlow rejected the optional service extension for Zephyr QX-100 and did not buy it.",
+          "action_arguments": "Ada Marlow is the actor of both rejecting the extension and not buying it; the extension concerns Zephyr QX-100.",
+          "qualification_scope": "The two actions are Ada Marlow's asserted, self-attested actions; the rejection is represented with rejected disposition."
+        },
+        "mismatches": [],
+        "proposition_supported": true,
+        "action_arguments_preserved": true,
+        "qualification_scope_preserved": true,
+        "reason_code": null
+      },
+      {
+        "candidate_id": "cand_a6d5b49ee912c81bfd8b93c3",
+        "span_audit": [
+          {
+            "frame_id": "F1",
+            "interpretation": "Ada Marlow asserts that she rejected the optional service extension for Zephyr QX-100 and did not buy it. This establishes that the purchase antecedent in the other span did not occur and supplies the contrast with the unrealized scenario.",
+            "relationship": "contrast"
+          },
+          {
+            "frame_id": "F2",
+            "interpretation": "Ada Marlow describes an unrealized conditional in which, if she had bought that extension, repair of the rotary handle in the ninth year would have been covered. She then clarifies that this was not the service she purchased and was not an-",
+            "relationship": "restatement"
+          }
+        ],
+        "comparison": {
+          "source_meaning": "Ada Marlow rejected and did not buy the extension. In an unrealized conditional, if she had bought it, rotary-handle repair in the ninth year would have been covered; she states that this was not the service she purchased and was not active coverage.",
+          "candidate_meaning": "The candidate preserves the unrealized conditional coverage of rotary-handle repair in the ninth year, attributes it to Ada Marlow, and states that the extension was not purchased and is not active coverage.",
+          "action_arguments": "Ada Marlow is the actor of rejecting and not buying the extension, and of the hypothetical purchase. The hypothetical object is the extension; the covered object is rotary-handle repair in the ninth year. No action roles are changed.",
+          "qualification_scope": "The repair coverage remains conditional and unrealized, while the nonpurchase and lack of active coverage are stated as Ada Marlow's direct qualifications. The candidate preserves the contrast between hypothetical coverage and actual coverage."
+        },
+        "mismatches": [
+          {
+            "dimension": "qualification_scope_preserved",
+            "kind": "changed_qualification",
+            "detail": "The F2 interpretation is truncated and does not fully state the source's clarification that the service was not purchased and was not active coverage."
+          }
+        ],
+        "proposition_supported": true,
+        "action_arguments_preserved": true,
+        "qualification_scope_preserved": false,
+        "reason_code": null
+      }
+    ]
+  },
+  "syntheticConsistency": [
+    true,
+    true
+  ],
+  "syntheticSecondCandidateAccepted": false,
+  "note": "The null reason is allowed for negative verdicts and falls back to discourse_uncertain. Missing proposition_supported mismatch causes the original inconsistency; private span truncation is not source evidence."
+}

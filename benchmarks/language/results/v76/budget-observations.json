@@ -1,0 +1,55 @@
+{
+  "note": "Descriptive V76 observations only: this once-only exposed diagnostic is not a causal estimate. Usage receipts are per query and may aggregate several block-verification calls. Receipt count is not provider call count, and observed costs do not establish model quality.",
+  "probes": [
+    {
+      "probe": "selected",
+      "current": {
+        "queries": 64,
+        "producedAnswers": 49,
+        "declaredOutputTokenLimits": {
+          "answer": 2400,
+          "retention": 2400
+        },
+        "generation": {
+          "queriesWithUsageReceipt": 64,
+          "knownOutputTokenReceipts": 64,
+          "outputTokens": 24115,
+          "medianLatencyMs": 5772,
+          "p95LatencyMs": 7420
+        },
+        "verification": {
+          "queriesWithUsageReceipt": 53,
+          "knownOutputTokenReceipts": 53,
+          "outputTokens": 38664,
+          "medianLatencyMs": 8406,
+          "p95LatencyMs": 12063
+        }
+      }
+    },
+    {
+      "probe": "built-reliability",
+      "current": {
+        "queries": 32,
+        "producedAnswers": 32,
+        "declaredOutputTokenLimits": {
+          "answer": 2400,
+          "retention": 2400
+        },
+        "generation": {
+          "queriesWithUsageReceipt": 32,
+          "knownOutputTokenReceipts": 32,
+          "outputTokens": 11660,
+          "medianLatencyMs": 5368,
+          "p95LatencyMs": 7536
+        },
+        "verification": {
+          "queriesWithUsageReceipt": 32,
+          "knownOutputTokenReceipts": 32,
+          "outputTokens": 22929,
+          "medianLatencyMs": 8223,
+          "p95LatencyMs": 11948
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));const digest=s=>createHash('sha256').update(s).digest('hex');
+const split=process.argv[2];assert(['development','held-out'].includes(split));
+const r=read(`bench-results/language-full-${split}-v77.json`),input=read('tmp/language-v22-blind-inputs.json'),manifest=read('tmp/v77-full-launch-manifest.json');
+assert.equal(r.split,split);assert.equal(r.corpusFingerprint,manifest.corpusFingerprint);assert.equal(input.corpusFingerprint,manifest.corpusFingerprint);assert.equal(digest(JSON.stringify(input.cases)),manifest.corpusFingerprint);assert.equal(r.cases.length,22);
+const sources=input.cases.filter(c=>c.split===split);assert.equal(sources.length,11);
+assert.deepEqual(r.cases.map(c=>`${c.id}/${c.run}`).sort(),sources.flatMap(c=>[1,2].map(run=>`${c.id}/${run}`)).sort());
+for(const c of r.cases){assert.equal(c.queries.length,8);assert.equal(new Set(c.queries.map(q=>JSON.stringify([q.queryLanguage,q.requestedAnswerLanguage,q.explicitView]))).size,8);}
+// This fragment starts source-only review early. It cannot satisfy the production two-split packet
+// contract or compute a gate. Its source/output cases must match the later official full packet.
+const packet={schemaVersion:'language-review-fragment-v1',split,corpusFingerprint:r.corpusFingerprint,reportFingerprint:digest(JSON.stringify(r)),notFullGate:true,cases:r.cases.map(c=>({id:c.id,run:c.run,source:sources.find(s=>s.id===c.id),reviewKnowledge:c.reviewKnowledge,answers:c.queries.map(q=>({queryLanguage:q.queryLanguage,answerLanguage:q.requestedAnswerLanguage,explicitView:q.explicitView,retrievedEvidence:q.reviewRetrieval,answer:q.reviewAnswer}))}))};
+const complete={...packet,fragmentFingerprint:digest(JSON.stringify(packet))};
+fs.writeFileSync(`tmp/language-v77-full-${split}-output-packet.json`,JSON.stringify(complete,null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify({split,fragmentFingerprint:complete.fragmentFingerprint,cases:packet.cases.length,answers:packet.cases.reduce((n,c)=>n+c.answers.length,0),sourceContentsDisplayed:false,fullGateComputed:false}));

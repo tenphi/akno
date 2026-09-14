@@ -314,7 +314,8 @@ async function describeImage(absPath: string, vision: ModelClient): Promise<stri
       },
       { role: 'user', content: 'Describe this image.' },
     ],
-    { images, maxTokens: 600 },
+    // This surface can transcribe source documents; knowledge policy must not translate evidence.
+    { images, maxTokens: 600, outputLanguage: null },
   );
   return result.ok && result.value ? result.value.trim() : null;
 }

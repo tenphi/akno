@@ -319,9 +319,35 @@ export type ObservationQualification = z.infer<typeof ObservationQualification>;
  * that the line states a well-formed durable claim, not how sure it is the claim
  * is true.
  */
+/** A bounded reading of authored prose, never managed-memory authorship or a truth certificate. */
+export const ProseQualification = z.object({
+  status: z.enum(['qualified', 'unresolved']),
+  view: z.enum(['factual', 'reports', 'discussion', 'planning', 'questions', 'history']),
+  reason: z.enum([
+    'asserted',
+    'heading',
+    'comment',
+    'heading_scope',
+    'conditional',
+    'tentative',
+    'quotation',
+    'speaker',
+    'question',
+    'plan',
+    'rejected',
+    'example',
+    'context_limit',
+  ]),
+  answer_eligible: z.boolean(),
+  source_hash: z.string(),
+  frame: z.array(z.object({ n: z.number().int().positive(), text: z.string() })).max(12),
+});
+export type ProseQualification = z.infer<typeof ProseQualification>;
+
 export const Line = z.object({
   n: z.number().int().positive(),
   text: z.string(),
+  prose: ProseQualification.optional(),
   confidence: z.number().min(0).max(1).optional(),
   /** Present when this line is the visible payload of an Akno-managed memory item. */
   memory: MemoryQualification.optional(),
@@ -571,6 +597,9 @@ export function isDocumentCard(result: RecallResult): result is DocumentCard {
  * excludes half a knowledge base is worse than no rule — default to visible.
  */
 export const DegradedReason = z.enum([
+  'language_mismatch',
+  'language_check_failed',
+  'prose_discourse_unresolved',
   'no_embedding_model',
   'no_reranker',
   'no_derive_model',

@@ -1,0 +1,21 @@
+{
+  "runtimeCommit": "1eb002b84c05927b1ac1c5f69e974908de36c224",
+  "decision": "deferred",
+  "executeFullTrial": false,
+  "reason": "The once-only exposed diagnostics produced 75 semantically useful answers, of which 74 also satisfy requested language, out of 96 coordinates. One accepted language violation independently fails the zero-error gate. Twenty-one null answers and two incomplete retained sets leave further reliability work. Ten of twelve retained sets are complete and 80/96 retrieval observations are useful. These results do not justify consuming the approved fresh held-out inputs.",
+  "semanticUsefulAnswers": 75,
+  "fullyCompliantUsefulAnswers": 74,
+  "answerCoordinates": 96,
+  "acceptedLanguageErrors": 1,
+  "acceptedSourceOrQualificationOrPromotionErrors": 0,
+  "completeRetainedSets": 10,
+  "retainedSets": 12,
+  "usefulRetrieval": 80,
+  "caseAvailabilityFailures": 0,
+  "sourceByteChanges": 0,
+  "freshHeldOutExecuted": false,
+  "replacementSemanticRunExecuted": false,
+  "acceptanceChanged": false,
+  "runtimeModelChanged": false,
+  "nextAction": "Preserve the initial/final independent grades, adjudications, traces, protocol failures and corrections; finish independent publication review and commit the evidence before declaring the next bounded runtime revision in this same open PR."
+}

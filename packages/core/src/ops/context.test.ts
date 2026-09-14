@@ -16,7 +16,7 @@ describe('auto-recall reference resolution', () => {
       recallResult([credential('Ada Marlow'), credential('Bo Winters')]) as never,
     );
 
-    const result = await context({} as AknoContext, {
+    const result = await context({ config: { knowledgeLanguage: null } } as AknoContext, {
       profile: 'auto_recall',
       query: 'Current credential code (international)?',
       conversation_context: [
@@ -61,7 +61,7 @@ describe('auto-recall reference resolution', () => {
         }) as never,
       );
 
-    const result = await context({} as AknoContext, {
+    const result = await context({ config: { knowledgeLanguage: null } } as AknoContext, {
       profile: 'auto_recall',
       query: 'Current credential code (international)?',
       conversation_context: [{ role: 'user', content: 'The preceding exchange was about Ada Marlow.' }],
@@ -96,7 +96,7 @@ describe('auto-recall reference resolution', () => {
         }) as never,
       );
 
-    const result = await context({} as AknoContext, {
+    const result = await context({ config: { knowledgeLanguage: null } } as AknoContext, {
       profile: 'auto_recall',
       query: 'Current credential code (international)?',
       conversation_context: [{ role: 'user', content: 'The preceding exchange was about Ada Marlow.' }],
@@ -127,7 +127,7 @@ describe('auto-recall reference resolution', () => {
         }) as never,
       );
 
-    const result = await context({} as AknoContext, {
+    const result = await context({ config: { knowledgeLanguage: null } } as AknoContext, {
       profile: 'auto_recall',
       query: 'Current credential code (international)?',
       conversation_context: [{ role: 'user', content: 'Compare Ada Marlow and Bo Winters.' }],
@@ -158,7 +158,7 @@ describe('auto-recall reference resolution', () => {
         }) as never,
       );
 
-    const result = await context({} as AknoContext, {
+    const result = await context({ config: { knowledgeLanguage: null } } as AknoContext, {
       profile: 'auto_recall',
       query: 'Current credential code (international)?',
     });
@@ -175,7 +175,7 @@ describe('auto-recall reference resolution', () => {
   it('does not require conversation when a locally phrased query names the candidate explicitly', async () => {
     mockedRecall.mockResolvedValueOnce(recallResult([credential('Ada Marlow')]) as never);
 
-    const result = await context({} as AknoContext, {
+    const result = await context({ config: { knowledgeLanguage: null } } as AknoContext, {
       profile: 'auto_recall',
       query: 'What about Ada Marlow credential?',
     });

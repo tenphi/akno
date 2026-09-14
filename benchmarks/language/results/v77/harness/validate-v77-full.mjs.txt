@@ -1,0 +1,41 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {validateTrace} from './v77-full-trace-integrity.mjs';
+const read=file=>JSON.parse(fs.readFileSync(file,'utf8'));
+const hash=file=>createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+const start=read('tmp/v77-full-started.json');
+const manifest=read('tmp/v77-full-launch-manifest.json');
+for(const [file,digest] of Object.entries(manifest.files))assert.equal(hash(file),digest);
+assert.equal(hash('tmp/language-v22-input-review.json'),manifest.inputReviewSha256);
+const inputs=read('tmp/language-v22-blind-inputs.json');
+const baseline=read('bench-results/language-selected-v77.json');
+assert.equal(start.runtimeCommit,manifest.runtimeCommit);assert.equal(start.manifestSha256,hash('tmp/v77-full-launch-manifest.json'));assert.equal(start.approvalSha256,hash('tmp/v77-full-preflight-approval.json'));assert.equal(inputs.corpusFingerprint,manifest.corpusFingerprint);
+const summaries=[];
+for(const split of ['development','held-out']){
+ const receipt=read(`tmp/v77-full-${split}-launch-receipt.json`);
+ const {split:receiptSplit,startedAt,approvalSha256,...receiptManifest}=receipt;
+ assert.equal(receiptSplit,split);assert.deepEqual(receiptManifest,manifest);assert(Number.isFinite(Date.parse(startedAt)));assert(Date.parse(startedAt)>=Date.parse(start.startedAt));assert.equal(approvalSha256,start.approvalSha256);
+ const reportFile=`bench-results/language-full-${split}-v77.json`,traceFile=`bench-results/language-full-${split}-v77-trace.jsonl`;
+ const report=read(reportFile),cases=inputs.cases.filter(c=>c.split===split);
+ assert.equal(cases.length,11);assert.equal(cases.filter(c=>c.admission==='writable').length,10);assert.equal(cases.filter(c=>c.admission==='read-only').length,1);
+ assert.equal(report.corpusFingerprint,manifest.corpusFingerprint);assert.equal(report.corpusVersion,'language-discourse-v22');assert.equal(report.split,split);assert.equal(report.runs,2);assert.equal(report.cases.length,22);assert.deepEqual(report.selectedCaseIds,cases.map(c=>c.id));
+ assert.deepEqual(report.models,baseline.models);assert.deepEqual(report.modelOutputTokenLimits,baseline.modelOutputTokenLimits);assert.deepEqual(report.thresholds,baseline.thresholds);
+ for(const field of ['knowledgeLanguage','proseProjectionVersion','memoryViewVersion','answerPromptVersion','answerVerifierVersion','retentionPromptVersion','retentionVerifierVersion'])assert.equal(report[field],baseline[field]);
+ const caseKeys=new Set();
+ for(const c of report.cases){
+  assert([1,2].includes(c.run));const expected=cases.find(x=>x.id===c.id);assert(expected);assert.equal(c.admission,expected.admission);
+  const key=`${c.id}/${c.run}`;assert(!caseKeys.has(key));caseKeys.add(key);assert.equal(c.queries.length,8);
+  const coordinates=new Set(c.queries.map(q=>JSON.stringify([q.queryLanguage,q.requestedAnswerLanguage,q.explicitView])));assert.equal(coordinates.size,8);
+  for(const ql of ['en','ru'])for(const al of ['en','ru'])for(const view of [true,false])assert(coordinates.has(JSON.stringify([ql,al,view])));
+ }
+ const traceRecords=fs.readFileSync(traceFile,'utf8').trim().split('\n').filter(Boolean).map(line=>JSON.parse(line));
+ const traceRows=traceRecords.length,traceLifecycle=validateTrace(traceRecords);
+ for(const run of [1,2]){
+  const subset=report.cases.filter(c=>c.run===run);assert.equal(subset.length,11);
+  const writable=subset.filter(c=>c.admission==='writable'),readOnly=subset.filter(c=>c.admission==='read-only');assert.equal(writable.length,10);assert.equal(readOnly.length,1);
+  summaries.push({split,run,cases:11,writableObservations:writable.reduce((n,c)=>n+c.queries.length,0),readOnlyObservations:readOnly.reduce((n,c)=>n+c.queries.length,0),caseAvailabilityFailures:subset.filter(c=>c.availabilityFailure).length,sourceByteChanges:subset.filter(c=>!c.bytesStable).length,producedWritableAnswers:writable.flatMap(c=>c.queries).filter(q=>q.reviewAnswer!==null).length,producedReadOnlyAnswers:readOnly.flatMap(c=>c.queries).filter(q=>q.reviewAnswer!==null).length,reportSha256:hash(reportFile),traceSha256:hash(traceFile),traceRows,traceLifecycle});
+ }
+}
+assert.equal(summaries.reduce((n,c)=>n+c.writableObservations,0),320);assert.equal(summaries.reduce((n,c)=>n+c.readOnlyObservations,0),32);
+const dest='tmp/v77-full-completed-provenance.json';assert(!fs.existsSync(dest));const result={runtimeCommit:manifest.runtimeCommit,corpusFingerprint:manifest.corpusFingerprint,purpose:'All repeated cells and provenance validated. Model output, independent usefulness grades and acceptance remain separate.',cells:summaries};fs.writeFileSync(dest,JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));

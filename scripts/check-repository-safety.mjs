@@ -45,6 +45,14 @@ for (const file of tracked) {
     if (/\+[0-9]{10,}/.test(line)) add(file, index + 1, 'international-phone shape');
     for (const match of line.matchAll(/(?<![0-9A-Fa-f.])(?:[0-9]{4}[ -]?){3}[0-9]{4}(?![0-9A-Fa-f.])/g)) {
       const digits = match[0].replace(/[ -]/g, '');
+      // Captured strict JSON schemas expose Zod's standard integer ceiling. Recognize only
+      // the numeric maximum property; the same digits in prose, strings or other keys still flag.
+      if (
+        file.endsWith('.json') &&
+        digits === String(Number.MAX_SAFE_INTEGER) &&
+        /^\s*"maximum"\s*:\s*\d+,?\s*$/.test(line)
+      )
+        continue;
       // An all-repeated digit is the repository's documented unmistakable placeholder style.
       if (/^(.)\1+$/.test(digits)) continue;
       add(file, index + 1, 'payment-number shape');
