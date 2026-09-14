@@ -67,6 +67,12 @@ export default defineDocsConfig({
         Visual: {
           inlineSize: { '': 'min(100%, 11rem)', '@mobile': '8rem' },
         },
+        LogoImage: {
+          $: '> .hero-html > img',
+          display: 'block',
+          inlineSize: '100%',
+          blockSize: 'auto',
+        },
       },
     },
   },
