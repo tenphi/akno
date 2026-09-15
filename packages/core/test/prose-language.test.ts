@@ -78,6 +78,65 @@ function request(language?: 'en' | 'ru') {
 }
 
 describe('language and ordinary prose through production operations', () => {
+  it('repairs a v3 list-scope projection and excludes its hypothetical claim from factual answers', async () => {
+    const lines = [
+      '## Hypothesis',
+      '',
+      '- Notes',
+      '',
+      '  ## Details',
+      '',
+      '  The Zephyr QX-100 case is silver.',
+      '',
+      '## Recorded details',
+      'The Zephyr QX-100 case is blue.',
+    ];
+    const target = path.join(root, 'memory/equipment.md');
+    const content = lines.join('\n');
+    fs.writeFileSync(target, content);
+    const mtime = fs.statSync(target).mtimeMs;
+    memory = await start();
+    await memory.index({ structuralOnly: true });
+    await memory.close();
+    const stale = new Database(path.join(state, 'akno.db'));
+    try {
+      stale.prepare("UPDATE meta SET value = 'prose-v3' WHERE key = 'prose_projection_version'").run();
+      stale.prepare("UPDATE prose_entries SET view = 'factual', eligible = 1 WHERE line = 7").run();
+    } finally {
+      stale.close();
+    }
+    memory = await start();
+    await memory.index({ structuralOnly: true });
+    const read = await memory.read({ slug: 'memory/equipment' });
+    expect(read.page?.lines.find((line) => line.n === 7)?.prose).toMatchObject({
+      view: 'discussion',
+      answer_eligible: false,
+    });
+    const answer = await memory.answer({
+      question: 'Zephyr QX-100 case color',
+      memory_view: 'factual',
+      expand: false,
+      graph: false,
+      include_context: true,
+    });
+    const evidence = answer.context?.flatMap((entry) => (entry.type === 'page' ? entry.lines : [])) ?? [];
+    expect(evidence.some((line) => line.n === 7)).toBe(false);
+    expect(evidence.some((line) => line.n === 10)).toBe(true);
+    const db = new Database(path.join(state, 'akno.db'), { readonly: true });
+    try {
+      expect(db.prepare('SELECT view FROM prose_entries WHERE line = 7').get()).toEqual({
+        view: 'discussion',
+      });
+      expect(db.prepare("SELECT value FROM meta WHERE key = 'prose_projection_version'").get()).toEqual({
+        value: PROSE_PROJECTION_VERSION,
+      });
+    } finally {
+      db.close();
+    }
+    expect(fs.readFileSync(target, 'utf8')).toBe(content);
+    expect(fs.statSync(target).mtimeMs).toBe(mtime);
+  });
+
   it('rebuilds stale heading qualifications on an ordinary index pass without editing source files', async () => {
     const content =
       '# Zephyr QX-100\n\n  ## Assistant report\nThe case is silver.\n\n## Recorded details\nThe handle is blue.\n';

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { hash } from './language-comparison-fixtures.mjs';
+import { validateComparison } from './language-comparison-validation.mjs';
 
 const root = path.resolve(process.argv[2] ?? '');
 const read = (name) => JSON.parse(fs.readFileSync(path.join(root, name)));
@@ -16,12 +17,11 @@ const results = resultIndex.pairs.map(({ file, sha256 }) => {
 const fixtures = read('fixtures.json');
 const manifest = read('manifest.json');
 const completion = read('completion.json');
-assert(completion.runtimeUnchanged && completion.pairs === completion.expected);
-assert.equal(
-  completion.failedPairs,
-  0,
-  'Partial/failed pairs must not be summarized as a complete experiment.',
-);
+const receiptsPath = path.join(root, 'network-receipts.jsonl');
+const receipts = fs.existsSync(receiptsPath)
+  ? fs.readFileSync(receiptsPath, 'utf8').split('\n').filter(Boolean).map(JSON.parse)
+  : [];
+validateComparison({ plan: read('plan.json'), manifest, fixtures, results, completion, receipts });
 const evidence = (answer) =>
   (answer.context ?? [])
     .flatMap((item) => (item.type === 'page' ? item.lines : []))
@@ -69,8 +69,8 @@ for (const pair of results) {
   const before = pair.arms.baseline;
   const after = pair.arms.candidate;
   if (pair.upgrade) {
-    assert.equal(pair.upgrade.baselineVersion, 'prose-v2');
-    assert.equal(pair.upgrade.candidateVersion, 'prose-v3');
+    assert.equal(pair.upgrade.baselineVersion, manifest.arms.baseline.proseProjectionVersion ?? 'prose-v2');
+    assert.equal(pair.upgrade.candidateVersion, manifest.arms.candidate.proseProjectionVersion ?? 'prose-v3');
     assert.deepEqual(pair.upgrade.candidate, after.read);
     assert(pair.upgrade.bytesStable);
     for (const expected of fixture.projections)
@@ -112,10 +112,6 @@ for (const pair of results) {
     }
   }
 }
-const receiptsPath = path.join(root, 'network-receipts.jsonl');
-const receipts = fs.existsSync(receiptsPath)
-  ? fs.readFileSync(receiptsPath, 'utf8').trim().split('\n').map(JSON.parse)
-  : [];
 const physical = receipts.filter((item) => item.reusedFrom === null);
 const sourceBySequence = new Map(receipts.map((item) => [item.sequence, item]));
 for (const receipt of receipts.filter((item) => item.reusedFrom !== null)) {

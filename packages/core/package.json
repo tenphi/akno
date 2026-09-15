@@ -20,6 +20,7 @@
   "dependencies": {
     "@tenphi/akno-protocol": "workspace:*",
     "better-sqlite3": "^12.4.1",
+    "mdast-util-from-markdown": "2.0.3",
     "sqlite-vec": "^0.1.9",
     "yaml": "^2.9.0",
     "zod": "catalog:"

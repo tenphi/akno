@@ -1,8 +1,182 @@
 import { describe, expect, it } from 'vitest';
-import { proseQualifications, qualifyProseLines, hasNonfactualProse } from './prose.ts';
+import { proseQualifications, qualifyProseLines, hasNonfactualProse, proseEligibleForView } from './prose.ts';
 import { sha256 } from '../store/ids.ts';
 
 describe('ordinary Markdown discourse', () => {
+  it.each([
+    ['- ```md', '  ## Details', '  The case is blue.'],
+    ['- <!-- invented comment', '  ## Details', '  The case is blue. -->'],
+  ])('does not apply headings inside a list-contained code or comment block', (...block) => {
+    const q = proseQualifications(['## Hypothesis', '', ...block, '', 'The case is silver.']);
+    expect(q.get(5)?.answer_eligible).toBe(false);
+    expect(q.get(7)).toMatchObject({ view: 'discussion', answer_eligible: false });
+  });
+
+  it('preserves unchecked task semantics when normalizing a list with a heading', () => {
+    const q = proseQualifications([
+      '- [ ] Inspect the Zephyr QX-100.',
+      '',
+      '  ## Details',
+      '',
+      '  The case is silver.',
+    ]);
+    expect(q.get(1)).toMatchObject({ view: 'planning', answer_eligible: false });
+  });
+
+  it('keeps an enclosing hypothetical heading ahead of a list task cue', () => {
+    const q = proseQualifications([
+      '## Hypothesis',
+      '',
+      '- [ ] Inspect the Zephyr QX-100.',
+      '',
+      '  ## Details',
+      '',
+      '  The case is silver.',
+    ]);
+    expect(q.get(3)).toMatchObject({ view: 'discussion', answer_eligible: false });
+  });
+
+  it('does not manufacture a managed marker by removing a list bullet', () => {
+    const lines = [
+      '## Hypothesis',
+      '',
+      '- <!-- akno:item mem_invented v=2 -->',
+      '  The case is silver.',
+      '',
+      '  ## Details',
+      '',
+      '  The handle is blue.',
+    ];
+    const q = proseQualifications(lines);
+    expect(q.get(4)).toMatchObject({ view: 'discussion', answer_eligible: false });
+    expect(qualifyProseLines([{ n: 4, text: lines[3]! }], lines)[0]?.prose?.answer_eligible).toBe(false);
+  });
+
+  it('applies a following qualification to the trailing paragraph inside a list', () => {
+    const lines = [
+      '- Notes',
+      '',
+      '  ## Details',
+      '',
+      '  The case is silver.',
+      '',
+      'This is only hypothetical.',
+    ];
+    const q = proseQualifications(lines);
+    expect(q.get(5)).toMatchObject({ view: 'discussion', answer_eligible: false });
+    expect(q.get(5)?.frame).toContainEqual({ n: 7, text: lines[6] });
+  });
+
+  it.each(['  ---', '  ***', '      code sample', '  <!-- invented comment -->'])(
+    'does not extend a list with lazy continuation after a nonparagraph block: %s',
+    (block) => {
+      const q = proseQualifications(['- Notes', '', '  ## Hypothesis', '', block, 'The case is silver.']);
+      expect(q.get(6)).toMatchObject({ view: 'factual', answer_eligible: true });
+    },
+  );
+
+  it('keeps nested list headings local and preserves the outer qualifier', () => {
+    const lines = [
+      '## Hypothesis',
+      '',
+      '- Notes',
+      '',
+      '  - Details',
+      '',
+      '    ## Recorded',
+      '',
+      '    The case is blue.',
+      '',
+      'The lid is silver.',
+    ];
+    const q = proseQualifications(lines);
+    expect(q.get(9)).toMatchObject({ view: 'discussion', answer_eligible: false });
+    expect(q.get(11)).toMatchObject({ view: 'discussion', answer_eligible: false });
+    expect(q.get(9)?.frame).toContainEqual({ n: 1, text: lines[0] });
+  });
+
+  it.each(['- Notes', '1. Notes'])(
+    'keeps a list-contained heading from closing an outer hypothesis: %s',
+    (item) => {
+      const indent = item.startsWith('1.') ? '   ' : '  ';
+      const lines = [
+        '## Hypothesis',
+        '',
+        item,
+        '',
+        `${indent}## Details`,
+        '',
+        `${indent}The case is silver.`,
+        '',
+        'The case is blue.',
+      ];
+      const q = proseQualifications(lines);
+      for (const n of [7, 9]) {
+        expect(q.get(n)).toMatchObject({ view: 'discussion', answer_eligible: false });
+        expect(q.get(n)?.frame).toContainEqual({ n: 1, text: lines[0] });
+      }
+    },
+  );
+
+  it('treats an indented heading after an empty list and blank as a document sibling', () => {
+    const q = proseQualifications(['## Hypothesis', '', '-', '', '  ## Details', '', 'The case is silver.']);
+    expect(q.get(7)).toMatchObject({ view: 'factual', answer_eligible: true });
+  });
+
+  it('keeps a heading directly following an empty list marker inside that item', () => {
+    const q = proseQualifications([
+      '## Hypothesis',
+      '',
+      '-',
+      '  ## Details',
+      '',
+      '  The case is silver.',
+      '',
+      'The lid is blue.',
+    ]);
+    expect(q.get(6)?.answer_eligible).toBe(false);
+    expect(q.get(8)?.answer_eligible).toBe(false);
+  });
+
+  it('ends list-local heading scope before an independent paragraph and preserves exact frame bytes', () => {
+    const lines = ['- Notes', '', '  ## Hypothesis', '', '  The case is blue.', '', 'The case is silver.'];
+    const q = proseQualifications(lines);
+    expect(q.get(5)).toMatchObject({ view: 'discussion', answer_eligible: false });
+    expect(q.get(5)?.frame).toContainEqual({ n: 3, text: '  ## Hypothesis' });
+    expect(q.get(7)).toMatchObject({ view: 'factual', answer_eligible: true, frame: [] });
+  });
+
+  it('keeps a lazy paragraph continuation within a list-local hypothesis', () => {
+    const q = proseQualifications([
+      '- Notes',
+      '',
+      '  ## Hypothesis',
+      '',
+      '  The case is blue.',
+      'The handle is silver.',
+      '',
+      'The case is green.',
+    ]);
+    expect(q.get(6)).toMatchObject({ view: 'discussion', answer_eligible: false });
+    expect(q.get(8)?.answer_eligible).toBe(true);
+  });
+
+  it('recognizes a list interrupting an ordinary paragraph before its indented heading', () => {
+    const q = proseQualifications([
+      '## Hypothesis',
+      'The case is silver.',
+      '- Notes',
+      '',
+      '  ## Details',
+      '',
+      '  The handle is blue.',
+      '',
+      'The lid is green.',
+    ]);
+    expect(q.get(7)?.answer_eligible).toBe(false);
+    expect(q.get(9)?.answer_eligible).toBe(false);
+  });
+
   it.each([
     [' ## Hypothesis', 'discussion'],
     ['  ## Гипотеза', 'discussion'],
@@ -175,6 +349,26 @@ describe('ordinary Markdown discourse', () => {
       reason: 'context_limit',
       frame: [],
     });
+  });
+
+  it('rechecks the frame limit after inheriting context around a list item', () => {
+    const q = proseQualifications([
+      '## Hypothesis ' + 'x'.repeat(2380),
+      '',
+      '- Notes',
+      '',
+      '  ## Details',
+      '',
+      '  The case is silver.',
+    ]).get(7)!;
+    expect(q).toMatchObject({
+      status: 'unresolved',
+      reason: 'context_limit',
+      frame: [],
+      answer_eligible: false,
+    });
+    expect(proseEligibleForView(q, 'discussion')).toBe(false);
+    expect(proseEligibleForView(q, 'all')).toBe(true);
   });
 
   it('binds the result to heading and neighbor bytes, not just the selected line', () => {

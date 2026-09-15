@@ -11,6 +11,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import { comparisonFixtures, hash } from './language-comparison-fixtures.mjs';
 import { coupledTransport } from './language-comparison-transport.mjs';
+import { assertComparisonComplete } from './language-comparison-validation.mjs';
 
 const { values } = parseArgs({
   options: {
@@ -56,6 +57,8 @@ for (const name of ['baseline', 'candidate']) {
     core: tree(path.join(root, 'packages/core/dist')),
     protocol: tree(path.join(root, 'packages/protocol/dist')),
     api: await import(pathToFileURL(path.join(root, 'packages/core/dist/index.js'))),
+    proseProjectionVersion: (await import(pathToFileURL(path.join(root, 'packages/core/dist/kb/prose.js'))))
+      .PROSE_PROJECTION_VERSION,
   };
   const require = createRequire(path.join(root, 'packages/core/package.json'));
   assert.equal(
@@ -147,12 +150,13 @@ write('manifest.json', {
       'compare-language-reliability.mjs',
       'language-comparison-fixtures.mjs',
       'language-comparison-transport.mjs',
+      'language-comparison-validation.mjs',
     ].map((file) => [file, hash(fs.readFileSync(path.join(repo, 'scripts', file)))]),
   ),
   arms: Object.fromEntries(
-    Object.entries(arms).map(([name, { head, sourceDiff, core, protocol }]) => [
+    Object.entries(arms).map(([name, { head, sourceDiff, core, protocol, proseProjectionVersion }]) => [
       name,
-      { head, sourceDiff, core, protocol },
+      { head, sourceDiff, core, protocol, proseProjectionVersion },
     ]),
   ),
   differentModules,
@@ -418,7 +422,7 @@ try {
       JSON.stringify(arm.core) === JSON.stringify(tree(path.join(arm.root, 'packages/core/dist'))) &&
       JSON.stringify(arm.protocol) === JSON.stringify(tree(path.join(arm.root, 'packages/protocol/dist'))),
   );
-  write('completion.json', {
+  const completion = {
     pairs: results.length,
     expected: jobs.length,
     runtimeUnchanged: unchanged,
@@ -430,9 +434,10 @@ try {
       results.length,
     unstartedPairs: jobs.length - attempted,
     fatalErrors: fatalErrors.map((error) => ({ type: error.name })),
-  });
-  assert(unchanged, 'A frozen runtime changed during execution.');
+  };
+  write('completion.json', completion);
   if (fatalErrors.length) throw fatalErrors[0];
+  assertComparisonComplete(completion);
 } finally {
   globalThis.fetch = realFetch;
 }

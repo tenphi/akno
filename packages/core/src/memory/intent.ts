@@ -1,7 +1,7 @@
 import type { MemoryQualification, MemoryView, RecallMode } from '@tenphi/akno-protocol';
 
 export type QualifiedMemory = Extract<MemoryQualification, { status: 'qualified' }>;
-export const MEMORY_VIEW_VERSION = 'memory-view-v11';
+export const MEMORY_VIEW_VERSION = 'memory-view-v12';
 
 /** The subset shared by protocol qualifications and the rebuildable SQL projection. */
 export interface MemorySemantics {
@@ -28,7 +28,12 @@ export function inferMemoryView(query: string, mode: RecallMode = 'lookup'): Mem
     ENGLISH_ASSISTANT_SPECULATION.test(query)
   )
     return 'reports';
-  if (/\b(report|reported|reports|said|says|according to|told|claimed|claims)\b/i.test(query)) {
+  // A document title such as "Report 1111" must not override a Russian question request.
+  // Across languages, require the English report cue to belong to an explicit request.
+  if (
+    /\b(report|reported|reports|said|says|according to|told|claimed|claims)\b/i.test(query) &&
+    (!russian || ENGLISH_REPORT_REQUEST.test(query))
+  ) {
     return 'reports';
   }
   if (
@@ -124,6 +129,10 @@ function declinedOffer(query: string): boolean {
 // Binding the phrase and predicate by word distance excludes an unrelated predicate in a
 // following clause. These patterns are precision-oriented cues, not a general discourse parser.
 const DISCOURSE_WORD = String.raw`(?!(?:and|or|but|while|whereas|because|although|if|when|и|а|но|или|пока|когда|если|что|потому)(?![\p{L}\p{N}-]))[\p{L}\p{N}-]+`;
+const ENGLISH_REPORT_REQUEST = new RegExp(
+  String.raw`^\s*(?:(?:what|which|who|how|show|find|list)(?:[ \t]+${DISCOURSE_WORD}){0,8}[ \t]+(?:report(?:ed|s)?|said|says|told|claimed|claims)\b|according to\b)`,
+  'iu',
+);
 const ENGLISH_FICTION_CONTENT = new RegExp(
   String.raw`\bfictional (?:${DISCOURSE_WORD} ){0,3}(?:examples?|promises?)\b`,
   'iu',
@@ -159,7 +168,11 @@ const RUSSIAN_FICTIONAL_DISCUSSION = boundedDiscoursePhrase(
 );
 const RUSSIAN_RELAYED_REPORT = boundedDiscoursePhrase(
   String.raw`сообщени\p{L}*`,
-  String.raw`(?:пересказал[аи]?|пересказыва(?:ет|ют)|передал[аи]?|переда[её]т)`,
+  String.raw`(?:пересказал[аи]?|пересказыва(?:ет|ют))`,
+);
+const RUSSIAN_TRANSFERRED_MESSAGE = boundedDiscoursePhrase(
+  String.raw`сообщени\p{L}*`,
+  String.raw`(?:передал[аи]?|переда[её]т)`,
 );
 const RUSSIAN_COMPETING_DISCUSSION = boundedDiscoursePhrase(
   String.raw`конкурирующ\p{L}* (?:${DISCOURSE_WORD} ){0,3}(?:верси|объяснени)\p{L}*`,
@@ -171,8 +184,10 @@ const ENGLISH_TENTATIVE_ASSISTANT_REPORT = new RegExp(
   String.raw`\b(?:(?:tentative|preliminary|unverified) (?:${DISCOURSE_WORD} ){0,5}(?:did|does) (?:the )?assistant (?:suggest|indicate|estimate) (?:may|might|could)\b|(?:the )?assistant (?:tentatively|provisionally) (?:suggests?|suggested|indicates?|indicated) that (?:${DISCOURSE_WORD} ){0,5}(?:may|might|could)\b)`,
   'iu',
 );
-const ENGLISH_ASSISTANT_SPECULATION =
-  /\bassistant(?: (?:has|had))? (?:speculat(?:e[sd]?|ing)|conjectur(?:e[sd]?|ing))\b/iu;
+const ENGLISH_ASSISTANT_SPECULATION = new RegExp(
+  String.raw`^\s*(?:(?:what|which)(?:[ \t]+${DISCOURSE_WORD}){0,8}[ \t]+)?(?:the )?assistant(?: (?:has|had))? (?:speculat(?:e[sd]?|ing)|conjectur(?:e[sd]?|ing))\b`,
+  'iu',
+);
 const RUSSIAN_ASSISTANT_SPECULATION = boundedDiscoursePhrase(
   String.raw`(?:предположени|догадк)\p{L}*`,
   String.raw`(?:(?:высказал[аи]?|предложил[аи]?) ассистент|ассистент (?:высказал[аи]?|предложил[аи]?))`,
@@ -188,7 +203,7 @@ const RUSSIAN_FICTIONAL_PROMISE = boundedDiscoursePhrase(
 
 const RUSSIAN_REJECTED_PROPOSAL = boundedDiscoursePhrase(
   String.raw`(?:предложени(?:е|я|ю|ем|и|й|ям|ями|ях)|(?:план|вариант)(?:а|у|ом|е|ы|ов|ам|ами|ах)?)`,
-  String.raw`(?<!(?:^|[^\p{L}\p{N}-])(?:не|бы?)(?:[ \t]+${DISCOURSE_WORD}){0,8}[ \t]+)отверг(?:ла|ло|ли)?(?!(?:[ \t]+${DISCOURSE_WORD}){0,8}[ \t]+бы?(?![\p{L}\p{N}-]))`,
+  String.raw`(?<!(?:^|[^\p{L}\p{N}-])(?:не|бы?|если|if)(?:[ \t]+${DISCOURSE_WORD}){0,8}[ \t]+)отверг(?:ла|ло|ли)?(?!(?:[ \t]+${DISCOURSE_WORD}){0,8}[ \t]+бы?(?![\p{L}\p{N}-]))`,
   String.raw`(?!(?:не|бы?)(?![\p{L}\p{N}-]))${DISCOURSE_WORD}`,
 );
 
@@ -196,6 +211,8 @@ function russianMemoryView(query: string): MemoryView | null {
   if (
     RUSSIAN_QUALIFIED_REPORT.test(query) ||
     RUSSIAN_RELAYED_REPORT.test(query) ||
+    // Transfer can describe machine output; retelling and explicit attribution remain reports.
+    (RUSSIAN_TRANSFERRED_MESSAGE.test(query) && !/сообщени\p{L}*[ \t]+об[ \t]+ошибк\p{L}*/iu.test(query)) ||
     RUSSIAN_ASSISTANT_READING.test(query) ||
     RUSSIAN_ASSISTANT_SPECULATION.test(query)
   )

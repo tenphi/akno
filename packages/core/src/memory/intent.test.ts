@@ -11,6 +11,28 @@ const factual: MemorySemantics = {
 
 describe('memory-view inference', () => {
   it.each([
+    ['Какое сообщение об ошибке передаёт дисплей Zephyr QX-100?', 'factual'],
+    ['Какое сообщение об\tошибке передаёт дисплей Zephyr QX-100?', 'factual'],
+    ['Какое сообщение  об  ошибке передаёт дисплей Zephyr QX-100?', 'factual'],
+    ['Дисплей передаёт сообщение об ошибке Zephyr QX-100.', 'factual'],
+    ['Какое сообщение об ошибке пересказала Ada Marlow?', 'reports'],
+    ['Какое неподтверждённое сообщение об ошибке передала Ada Marlow?', 'reports'],
+    ['What color is Zephyr QX-100? The assistant speculated about its warranty.', 'factual'],
+    ['What color is Zephyr QX-100 when the assistant speculates about its warranty?', 'factual'],
+    ['Which plan applies when the assistant speculates about the warranty?', 'planning'],
+    ['Какой план Ada Marlow выберет, если Bo Winters отверг предложение об осмотре?', 'planning'],
+    ['Какой план выбрать, если предложение об осмотре отверг Bo Winters?', 'planning'],
+    ['Какой план выбрать, if Bo Winters отверг предложение об осмотре?', 'planning'],
+    ['Если корпус синий, какой план отвергла Ada Marlow?', 'history'],
+    ['Какой открытый вопрос остаётся по документу Report 1111?', 'questions'],
+    ['Какой план связан с документом Report 1111?', 'planning'],
+    ['What did Ada Marlow report about открытый вопрос?', 'reports'],
+    ['Which reports concern план осмотра?', 'reports'],
+  ] as const)('keeps the requested subject separate from incidental discourse: %s', (query, view) => {
+    expect(inferMemoryView(query)).toBe(view);
+  });
+
+  it.each([
     ['Какой план Ada Marlow не отвергла?', 'planning'],
     ['Какое предложение Ada Marlow не отвергла?', 'planning'],
     ['Какой план отвергла бы Ada Marlow?', 'planning'],
