@@ -1,12 +1,20 @@
 # Language and discourse evaluation
 
-## Terminal V77 result
+## PR 73 scope and routing comparison
+
+The [paired comparison procedure](paired-comparison.md) compares PR 73 with its actual base on identical
+retained artifacts and ordinary Markdown bytes. Its primary endpoints are projection and evidence routing;
+the optional repeated Luna run is a coupled downstream integration diagnostic. It does not replace the
+[full Luna result](results/pr73-luna-final/README.md): 233/320 useful answers and a failed quality gate.
+Historical percentages below use different corpora and profiles and must not be read as one learning curve.
+
+## Historical V77 result
 
 The [terminal V77/V22 evaluation](results/v77/README.md) fails both the original 90% useful-answer gate and the separately predeclared 80% completion target. The final independent grade is **220/320 useful writable answers** and **30/40 complete retained sets**. All 44 source-byte/replay checks pass, but coverage, availability and ordinary-prose requirements remain unmet. PR #70 finishes this bounded evaluation with explicit reliability limits and no further tuning against its held-out outputs. Both verdicts, initial/corrected reviews, diagnostic failures and execution receipts are preserved.
 
 ## Historical checkpoints
 
-The entries below describe their recorded trial boundary; this section does not supersede the terminal result.
+The entries below describe their recorded trial boundaries; they are preserved historical measurements.
 
 The [V41 exposed probes](results/v41/README.md) yielded 26/32 useful selected answers and 8/16 built-package answers, with no accepted errors. Fourteen writable nulls and incomplete retention defer full execution under the [amendment](v41-trial-amendment.md). Approved v19 held-out inputs remain unexecuted.
 

@@ -1,0 +1,23 @@
+{
+  "version": "pr73-paired-v1",
+  "baseline": "ce8fbe4ed0d529bec35dd154e8bbfec79eefb0eb",
+  "purpose": "Compare Markdown projection and evidence routing on identical bytes, without re-extracting retained knowledge.",
+  "offline": "All 44 frozen V23 retained sets, including empty and incomplete sets, plus all four original ordinary Markdown fixtures. Every original query, inferred and explicit views; factual safety and byte preservation are separate checks.",
+  "live": "Two repetitions, English and Russian answers, inferred and explicit views. Exactly equal requests within a case/repetition/stage share the first real response across arms; different requests make fresh calls. Alternate arm order. This coupled replay experiment is not an independent end-to-end accuracy estimate.",
+  "selection": "First archived held-out executions sampling relayed reports, unrealized benefits, assistant speculation, fiction and rejected proposals; factual and open-question controls, an empty development set, and three ordinary Markdown fixes. Competing-version wording and other language variants are covered only by the broader offline matrix. Each pair also runs explicit factual answer and auto-context controls. Existing exposed diagnostics, selected before execution.",
+  "runs": 2,
+  "liveCases": [
+    { "id": "ordinary-english-report", "language": "mixed" },
+    { "id": "ordinary-mixed-hypothesis", "language": "en" },
+    { "id": "ordinary-empty-heading-fact", "language": "en" },
+    { "id": "v23-held-relayed-service/run-1", "language": "ru" },
+    { "id": "v23-held-declined-extension/run-1", "language": "en" },
+    { "id": "v23-held-assistant-reading/run-1", "language": "en" },
+    { "id": "v23-held-fictional-key/run-1", "language": "en" },
+    { "id": "v23-held-rejected-inspection/run-1", "language": "ru" },
+    { "id": "v23-held-scoped-exclusion/run-1", "language": "ru" },
+    { "id": "v23-held-open-renewal/run-1", "language": "en" },
+    { "id": "v22-held-nested-report/run-1", "language": "ru" }
+  ],
+  "decision": "Keep the narrow runtime changes only if changed projections/views improve, unchanged retained explicit-view evidence is identical, no eligible evidence regresses in the offline matrix, and no new factual promotion or byte mutation occurs. Review all live public answers against original source and frozen available evidence separately. Any source error or stochastic regression remains visible; no overall accuracy or noninferiority claim from this diagnostic. The existing end-to-end acceptance gate remains unchanged."
+}
