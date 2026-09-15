@@ -1,0 +1,124 @@
+{
+  "schemaVersion": "paired-output-review-v1",
+  "packetSha256": "56cf26f34f12c78f8445917dbec25de94c7501cc1adce26ceb245138004534ff",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutArmMapping": true
+  },
+  "cases": [
+    {
+      "id": "0282e5a906976ec7cba1",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Faithfully identifies Ada's unanswered question about a new paper inspection certificate for renewal and preserves the coupled distinction between her lack of an answer and contract silence. Omitting the independent no-submission assertion is acceptable for this focused question. Original and supplied equipment:4 support the answer in the requested language."
+    },
+    {
+      "id": "1a34e9bbf100a3a37b1f",
+      "useful": false,
+      "sourceEntailed": true,
+      "qualificationPreserved": false,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "The stated open question and Ada's personal lack of an answer are entailed, but the answer omits the governing qualification that this lack of an answer does not establish agreement silence. That coupled epistemic limit is explicit in both original and available equipment:4 and is required by the rubric. This is an incomplete qualified answer, not an unsupported assertion of silence; omission of the independent no-submission fact alone would be acceptable."
+    },
+    {
+      "id": "34ae9f222cc285f33e7c",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Preserves the open renewal-certificate question, new paper inspection certificate, Ada's personal unknown, the non-inference of agreement silence and her lack of a renewal submission. No requirement or exemption is asserted. Original and supplied equipment:4 fully support this Russian answer."
+    },
+    {
+      "id": "55140632bfdf0bb087f0",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Faithfully identifies Ada's unanswered question about a new paper inspection certificate for renewal and preserves the coupled distinction between her lack of an answer and contract silence. Omitting the independent no-submission assertion is acceptable for this focused question. Original and supplied equipment:4 support the answer in the requested language."
+    },
+    {
+      "id": "71d25388103bd9193da8",
+      "useful": false,
+      "sourceEntailed": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsValid": null,
+      "supportedByAvailableEvidence": null,
+      "justifiedNull": true,
+      "reason": "The explicit factual restriction excludes the requested open-question record with no commitment to either answer. Null is justified for that control; it does not imply the source lacks the question or establish a certificate requirement/exemption."
+    },
+    {
+      "id": "71d81b774f27549c1da9",
+      "useful": false,
+      "sourceEntailed": true,
+      "qualificationPreserved": false,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "The stated open question and Ada's personal lack of an answer are entailed, but the answer omits the governing qualification that this lack of an answer does not establish agreement silence. That coupled epistemic limit is explicit in both original and available equipment:4 and is required by the rubric. This is an incomplete qualified answer, not an unsupported assertion of silence; omission of the independent no-submission fact alone would be acceptable."
+    },
+    {
+      "id": "95fe99bc569fe00b7139",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Preserves the open renewal-certificate question, new paper inspection certificate, Ada's personal unknown, the non-inference of agreement silence and her lack of a renewal submission. No requirement or exemption is asserted. Original and supplied equipment:4 fully support this Russian answer."
+    },
+    {
+      "id": "b6abfbcfb587e778e805",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Faithfully identifies Ada's unanswered question about a new paper inspection certificate for renewal and preserves the coupled distinction between her lack of an answer and contract silence. Omitting the independent no-submission assertion is acceptable for this focused question. Original and supplied equipment:4 support the answer in the requested language."
+    },
+    {
+      "id": "c8e24a94706a262f9e92",
+      "useful": false,
+      "sourceEntailed": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsValid": null,
+      "supportedByAvailableEvidence": null,
+      "justifiedNull": true,
+      "reason": "The explicit factual restriction excludes the requested open-question record with no commitment to either answer. Null is justified for that control; it does not imply the source lacks the question or establish a certificate requirement/exemption."
+    },
+    {
+      "id": "dfb1fabc3b3357482f68",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Faithfully identifies Ada's unanswered question about a new paper inspection certificate for renewal and preserves the coupled distinction between her lack of an answer and contract silence. Omitting the independent no-submission assertion is acceptable for this focused question. Original and supplied equipment:4 support the answer in the requested language."
+    }
+  ]
+}

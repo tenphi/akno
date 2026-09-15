@@ -1,0 +1,1268 @@
+{
+  "id": "v23-held-scoped-exclusion/run-1",
+  "run": 1,
+  "order": [
+    "candidate",
+    "baseline"
+  ],
+  "arms": {
+    "candidate": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What does Ada Marlow’s Zephyr QX-100 exclusion record establish about the fabric seal and hinge?",
+          "explicit": false,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "ada marlow": true,
+                "zephyr qx-100": true,
+                "exclusion record": false,
+                "establish fabric": false,
+                "seal": true,
+                "hinge": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_c525e28e",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_07f691343007e67b30b131ae",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "active",
+                        "polarity": "negated",
+                        "basis": "self_attested",
+                        "answer_eligible": true,
+                        "current_eligible": true
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What does Ada Marlow’s Zephyr QX-100 exclusion record establish about the fabric seal",
+                "hinge?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 95,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What does Ada Marlow’s Zephyr QX-100 exclusion record establish about the fabric seal and hinge?",
+          "explicit": true,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "ada marlow": true,
+                "zephyr qx-100": true,
+                "exclusion record": false,
+                "establish fabric": false,
+                "seal": true,
+                "hinge": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_c525e28e",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_07f691343007e67b30b131ae",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "active",
+                        "polarity": "negated",
+                        "basis": "self_attested",
+                        "answer_eligible": true,
+                        "current_eligible": true
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What does Ada Marlow’s Zephyr QX-100 exclusion record establish about the fabric seal",
+                "hinge?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 95,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+          "explicit": false,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "что запись": false,
+                "ada marlow": true,
+                "исключении гарантии": false,
+                "zephyr qx-100": true,
+                "устанавливает тканевом": false
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_c525e28e",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_07f691343007e67b30b131ae",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "active",
+                        "polarity": "negated",
+                        "basis": "self_attested",
+                        "answer_eligible": true,
+                        "current_eligible": true
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 95,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+          "explicit": true,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "что запись": false,
+                "ada marlow": true,
+                "исключении гарантии": false,
+                "zephyr qx-100": true,
+                "устанавливает тканевом": false
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_c525e28e",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_07f691343007e67b30b131ae",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "active",
+                        "polarity": "negated",
+                        "basis": "self_attested",
+                        "answer_eligible": true,
+                        "current_eligible": true
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 95,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "42082e7d1e89c2f3dfdc515798676773d48230bb687c8fc55787b2c1608af266",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_c525e28e v=2 supports=6054ff36c5e203a621d9c898@5feceb66ffc86f38d952786c@9cb52e62454297267d8f5ad5@provided level=1 kind=claim subject=ent_07f691343007e67b30b131ae source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+        },
+        {
+          "n": 4,
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_c525e28e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_07f691343007e67b30b131ae",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "projections": [],
+      "factualEvidence": [
+        {
+          "n": 4,
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_c525e28e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_07f691343007e67b30b131ae",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          },
+          "prose": null
+        }
+      ],
+      "factualControl": {
+        "query": "What does Ada Marlow’s Zephyr QX-100 exclusion record establish about the fabric seal and hinge?",
+        "context": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "note": "automatic injection requires calibrated qualification for ambiguous evidence",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "What does Ada Marlow’s Zephyr QX-100 exclusion record establish about the fabric seal and hinge?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index",
+            "no_answer_model"
+          ],
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "ada marlow": true,
+            "zephyr qx-100": true,
+            "exclusion record": false,
+            "establish fabric": false,
+            "seal": true,
+            "hinge": true
+          },
+          "citations": [],
+          "context": [
+            {
+              "type": "page",
+              "slug": "equipment",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_c525e28e",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_07f691343007e67b30b131ae",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "What does Ada Marlow’s Zephyr QX-100 exclusion record establish about the fabric seal",
+            "hinge?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 95,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "reason_code": "generation_unavailable",
+          "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    },
+    "baseline": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What does Ada Marlow’s Zephyr QX-100 exclusion record establish about the fabric seal and hinge?",
+          "explicit": false,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "ada marlow": true,
+                "zephyr qx-100": true,
+                "exclusion record": false,
+                "establish fabric": false,
+                "seal": true,
+                "hinge": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_c525e28e",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_07f691343007e67b30b131ae",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "active",
+                        "polarity": "negated",
+                        "basis": "self_attested",
+                        "answer_eligible": true,
+                        "current_eligible": true
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What does Ada Marlow’s Zephyr QX-100 exclusion record establish about the fabric seal",
+                "hinge?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 95,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What does Ada Marlow’s Zephyr QX-100 exclusion record establish about the fabric seal and hinge?",
+          "explicit": true,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "ada marlow": true,
+                "zephyr qx-100": true,
+                "exclusion record": false,
+                "establish fabric": false,
+                "seal": true,
+                "hinge": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_c525e28e",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_07f691343007e67b30b131ae",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "active",
+                        "polarity": "negated",
+                        "basis": "self_attested",
+                        "answer_eligible": true,
+                        "current_eligible": true
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What does Ada Marlow’s Zephyr QX-100 exclusion record establish about the fabric seal",
+                "hinge?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 95,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+          "explicit": false,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "что запись": false,
+                "ada marlow": true,
+                "исключении гарантии": false,
+                "zephyr qx-100": true,
+                "устанавливает тканевом": false
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_c525e28e",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_07f691343007e67b30b131ae",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "active",
+                        "polarity": "negated",
+                        "basis": "self_attested",
+                        "answer_eligible": true,
+                        "current_eligible": true
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 95,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+          "explicit": true,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "что запись": false,
+                "ada marlow": true,
+                "исключении гарантии": false,
+                "zephyr qx-100": true,
+                "устанавливает тканевом": false
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_c525e28e",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_07f691343007e67b30b131ae",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "active",
+                        "polarity": "negated",
+                        "basis": "self_attested",
+                        "answer_eligible": true,
+                        "current_eligible": true
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 95,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "42082e7d1e89c2f3dfdc515798676773d48230bb687c8fc55787b2c1608af266",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_c525e28e v=2 supports=6054ff36c5e203a621d9c898@5feceb66ffc86f38d952786c@9cb52e62454297267d8f5ad5@provided level=1 kind=claim subject=ent_07f691343007e67b30b131ae source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+        },
+        {
+          "n": 4,
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_c525e28e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_07f691343007e67b30b131ae",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "projections": [],
+      "factualEvidence": [
+        {
+          "n": 4,
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_c525e28e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_07f691343007e67b30b131ae",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          },
+          "prose": null
+        }
+      ],
+      "factualControl": {
+        "query": "What does Ada Marlow’s Zephyr QX-100 exclusion record establish about the fabric seal and hinge?",
+        "context": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "note": "automatic injection requires calibrated qualification for ambiguous evidence",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "What does Ada Marlow’s Zephyr QX-100 exclusion record establish about the fabric seal and hinge?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index",
+            "no_answer_model"
+          ],
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "ada marlow": true,
+            "zephyr qx-100": true,
+            "exclusion record": false,
+            "establish fabric": false,
+            "seal": true,
+            "hinge": true
+          },
+          "citations": [],
+          "context": [
+            {
+              "type": "page",
+              "slug": "equipment",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_c525e28e",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_07f691343007e67b30b131ae",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "What does Ada Marlow’s Zephyr QX-100 exclusion record establish about the fabric seal",
+            "hinge?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 95,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "reason_code": "generation_unavailable",
+          "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    }
+  }
+}

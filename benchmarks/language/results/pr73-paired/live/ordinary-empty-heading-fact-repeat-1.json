@@ -1,0 +1,1669 @@
+{
+  "id": "ordinary-empty-heading-fact",
+  "run": 1,
+  "order": [
+    "baseline",
+    "candidate"
+  ],
+  "arms": {
+    "baseline": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What color is the Zephyr QX-100 case?",
+          "explicit": false,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts eleven years.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            },
+            {
+              "n": 6,
+              "text": "##",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            },
+            {
+              "n": 7,
+              "text": "The Zephyr QX-100 case is silver.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "ok",
+          "context": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts eleven years.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            },
+            {
+              "n": 6,
+              "text": "##",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            },
+            {
+              "n": 7,
+              "text": "The Zephyr QX-100 case is silver.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            }
+          ],
+          "contextDegraded": [],
+          "answers": [
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "The Zephyr QX-100 case is silver. [equipment:4,6,7]",
+              "answer_language": "en",
+              "coverage": {
+                "color zephyr": false,
+                "qx-100 case": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    4,
+                    6,
+                    7
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 warranty lasts eleven years.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                        "frame": []
+                      }
+                    },
+                    {
+                      "n": 6,
+                      "text": "##",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                        "frame": []
+                      }
+                    },
+                    {
+                      "n": 7,
+                      "text": "The Zephyr QX-100 case is silver.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What color is the Zephyr QX-100 case?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 185,
+                "evidence_tokens": 29,
+                "answer_tokens": 13
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 4482,
+                  "input_tokens": 4768,
+                  "output_tokens": 100,
+                  "total_tokens": 4868
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 2705,
+                  "input_tokens": 6772,
+                  "output_tokens": 148,
+                  "total_tokens": 6920
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            },
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "Корпус Zephyr QX-100 серебристого цвета. [equipment:4,6,7]",
+              "answer_language": "ru",
+              "coverage": {
+                "color zephyr": false,
+                "qx-100 case": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    4,
+                    6,
+                    7
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 warranty lasts eleven years.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                        "frame": []
+                      }
+                    },
+                    {
+                      "n": 6,
+                      "text": "##",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                        "frame": []
+                      }
+                    },
+                    {
+                      "n": 7,
+                      "text": "The Zephyr QX-100 case is silver.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What color is the Zephyr QX-100 case?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 185,
+                "evidence_tokens": 29,
+                "answer_tokens": 15
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3313,
+                  "input_tokens": 4771,
+                  "output_tokens": 124,
+                  "total_tokens": 4895
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 1967,
+                  "input_tokens": 6775,
+                  "output_tokens": 150,
+                  "total_tokens": 6925
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What color is the Zephyr QX-100 case?",
+          "explicit": true,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts eleven years.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            },
+            {
+              "n": 6,
+              "text": "##",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            },
+            {
+              "n": 7,
+              "text": "The Zephyr QX-100 case is silver.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "ok",
+          "context": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts eleven years.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            },
+            {
+              "n": 6,
+              "text": "##",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            },
+            {
+              "n": 7,
+              "text": "The Zephyr QX-100 case is silver.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            }
+          ],
+          "contextDegraded": [],
+          "answers": [
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "The Zephyr QX-100 case is silver. [equipment:4,6,7]",
+              "answer_language": "en",
+              "coverage": {
+                "color zephyr": false,
+                "qx-100 case": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    4,
+                    6,
+                    7
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 warranty lasts eleven years.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                        "frame": []
+                      }
+                    },
+                    {
+                      "n": 6,
+                      "text": "##",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                        "frame": []
+                      }
+                    },
+                    {
+                      "n": 7,
+                      "text": "The Zephyr QX-100 case is silver.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What color is the Zephyr QX-100 case?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 185,
+                "evidence_tokens": 29,
+                "answer_tokens": 13
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 2898,
+                  "input_tokens": 4768,
+                  "output_tokens": 104,
+                  "total_tokens": 4872
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 2738,
+                  "input_tokens": 6772,
+                  "output_tokens": 143,
+                  "total_tokens": 6915
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            },
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "Корпус Zephyr QX-100 серебристый. [equipment:4,6,7]",
+              "answer_language": "ru",
+              "coverage": {
+                "color zephyr": false,
+                "qx-100 case": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    4,
+                    6,
+                    7
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 warranty lasts eleven years.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                        "frame": []
+                      }
+                    },
+                    {
+                      "n": 6,
+                      "text": "##",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                        "frame": []
+                      }
+                    },
+                    {
+                      "n": 7,
+                      "text": "The Zephyr QX-100 case is silver.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What color is the Zephyr QX-100 case?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 185,
+                "evidence_tokens": 29,
+                "answer_tokens": 13
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 2579,
+                  "input_tokens": 4770,
+                  "output_tokens": 107,
+                  "total_tokens": 4877
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3460,
+                  "input_tokens": 6774,
+                  "output_tokens": 155,
+                  "total_tokens": 6929
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "  ## Hypothesis"
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 warranty lasts eleven years.",
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": []
+          }
+        },
+        {
+          "n": 6,
+          "text": "##",
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": []
+          }
+        },
+        {
+          "n": 7,
+          "text": "The Zephyr QX-100 case is silver.",
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": []
+          }
+        }
+      ],
+      "projections": [
+        {
+          "n": 4,
+          "view": "discussion",
+          "actual": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": []
+          }
+        },
+        {
+          "n": 7,
+          "view": "factual",
+          "actual": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": []
+          }
+        }
+      ],
+      "factualEvidence": [
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 warranty lasts eleven years.",
+          "memory": null,
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": []
+          }
+        },
+        {
+          "n": 6,
+          "text": "##",
+          "memory": null,
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": []
+          }
+        },
+        {
+          "n": 7,
+          "text": "The Zephyr QX-100 case is silver.",
+          "memory": null,
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": []
+          }
+        }
+      ],
+      "factualControl": {
+        "query": "What color is the Zephyr QX-100 case?",
+        "context": {
+          "status": "ok",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [
+            {
+              "type": "page",
+              "slug": "equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts eleven years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "##",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                },
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-01-11",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "timeline": [],
+          "searched": [
+            "What color is the Zephyr QX-100 case?"
+          ],
+          "memory_view": "factual",
+          "qualification": {
+            "model": "llm",
+            "model_id": "gpt-5.6-luna",
+            "latency_ms": 2628.030624999985,
+            "input_tokens": 573,
+            "output_tokens": 134,
+            "total_tokens": 707,
+            "applied": true,
+            "judged": 1,
+            "rejected": 0,
+            "unjudged": 0,
+            "basis": "llm_grade",
+            "threshold": null
+          },
+          "budget_used": 185,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "ok",
+          "outcome": "partial",
+          "answer": "The Zephyr QX-100 case is silver. [equipment:4,6,7]",
+          "answer_language": "en",
+          "coverage": {
+            "color zephyr": false,
+            "qx-100 case": true
+          },
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "equipment",
+              "lines": [
+                4,
+                6,
+                7
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "equipment",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts eleven years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "##",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                },
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "What color is the Zephyr QX-100 case?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 185,
+            "evidence_tokens": 29,
+            "answer_tokens": 13
+          },
+          "model_usage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3460,
+              "input_tokens": 4768,
+              "output_tokens": 123,
+              "total_tokens": 4891
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2409,
+              "input_tokens": 6772,
+              "output_tokens": 161,
+              "total_tokens": 6933
+            }
+          },
+          "validation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "reason_code": "answered",
+          "note": "memory evidence did not cover every requested detail"
+        }
+      },
+      "unsafeFactualProjections": [
+        {
+          "n": 4,
+          "view": "discussion",
+          "actual": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": []
+          }
+        }
+      ],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    },
+    "candidate": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What color is the Zephyr QX-100 case?",
+          "explicit": false,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "evidence": [
+            {
+              "n": 7,
+              "text": "The Zephyr QX-100 case is silver.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "ok",
+          "context": [
+            {
+              "n": 7,
+              "text": "The Zephyr QX-100 case is silver.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            }
+          ],
+          "contextDegraded": [],
+          "answers": [
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "The Zephyr QX-100 case is silver. [equipment:7]",
+              "answer_language": "en",
+              "coverage": {
+                "color zephyr": false,
+                "qx-100 case": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    7
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 7,
+                      "text": "The Zephyr QX-100 case is silver.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What color is the Zephyr QX-100 case?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 86,
+                "evidence_tokens": 15,
+                "answer_tokens": 12
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 1960,
+                  "input_tokens": 4746,
+                  "output_tokens": 100,
+                  "total_tokens": 4846
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 2361,
+                  "input_tokens": 6750,
+                  "output_tokens": 113,
+                  "total_tokens": 6863
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            },
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "Корпус Zephyr QX-100 серебристого цвета. [equipment:7]",
+              "answer_language": "ru",
+              "coverage": {
+                "color zephyr": false,
+                "qx-100 case": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    7
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 7,
+                      "text": "The Zephyr QX-100 case is silver.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What color is the Zephyr QX-100 case?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 86,
+                "evidence_tokens": 15,
+                "answer_tokens": 14
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 1572,
+                  "input_tokens": 4749,
+                  "output_tokens": 124,
+                  "total_tokens": 4873
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 1909,
+                  "input_tokens": 6753,
+                  "output_tokens": 149,
+                  "total_tokens": 6902
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What color is the Zephyr QX-100 case?",
+          "explicit": true,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "evidence": [
+            {
+              "n": 7,
+              "text": "The Zephyr QX-100 case is silver.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "ok",
+          "context": [
+            {
+              "n": 7,
+              "text": "The Zephyr QX-100 case is silver.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            }
+          ],
+          "contextDegraded": [],
+          "answers": [
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "The Zephyr QX-100 case is silver. [equipment:7]",
+              "answer_language": "en",
+              "coverage": {
+                "color zephyr": false,
+                "qx-100 case": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    7
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 7,
+                      "text": "The Zephyr QX-100 case is silver.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What color is the Zephyr QX-100 case?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 86,
+                "evidence_tokens": 15,
+                "answer_tokens": 12
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 1379,
+                  "input_tokens": 4746,
+                  "output_tokens": 104,
+                  "total_tokens": 4850
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 1564,
+                  "input_tokens": 6750,
+                  "output_tokens": 115,
+                  "total_tokens": 6865
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            },
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "Корпус Zephyr QX-100 серебристого цвета. [equipment:7]",
+              "answer_language": "ru",
+              "coverage": {
+                "color zephyr": false,
+                "qx-100 case": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    7
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 7,
+                      "text": "The Zephyr QX-100 case is silver.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What color is the Zephyr QX-100 case?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 86,
+                "evidence_tokens": 15,
+                "answer_tokens": 14
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3223,
+                  "input_tokens": 4749,
+                  "output_tokens": 112,
+                  "total_tokens": 4861
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 2079,
+                  "input_tokens": 6753,
+                  "output_tokens": 161,
+                  "total_tokens": 6914
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "  ## Hypothesis",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": [
+              {
+                "n": 3,
+                "text": "  ## Hypothesis"
+              }
+            ]
+          }
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 warranty lasts eleven years.",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading_scope",
+            "answer_eligible": false,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 3,
+                "text": "  ## Hypothesis"
+              },
+              {
+                "n": 4,
+                "text": "The Zephyr QX-100 warranty lasts eleven years."
+              }
+            ]
+          }
+        },
+        {
+          "n": 6,
+          "text": "##",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": [
+              {
+                "n": 6,
+                "text": "##"
+              }
+            ]
+          }
+        },
+        {
+          "n": 7,
+          "text": "The Zephyr QX-100 case is silver.",
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": []
+          }
+        }
+      ],
+      "projections": [
+        {
+          "n": 4,
+          "view": "discussion",
+          "actual": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading_scope",
+            "answer_eligible": false,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 3,
+                "text": "  ## Hypothesis"
+              },
+              {
+                "n": 4,
+                "text": "The Zephyr QX-100 warranty lasts eleven years."
+              }
+            ]
+          }
+        },
+        {
+          "n": 7,
+          "view": "factual",
+          "actual": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": []
+          }
+        }
+      ],
+      "factualEvidence": [
+        {
+          "n": 7,
+          "text": "The Zephyr QX-100 case is silver.",
+          "memory": null,
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": []
+          }
+        }
+      ],
+      "factualControl": {
+        "query": "What color is the Zephyr QX-100 case?",
+        "context": {
+          "status": "ok",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [
+            {
+              "type": "page",
+              "slug": "equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-01-11",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "timeline": [],
+          "searched": [
+            "What color is the Zephyr QX-100 case?"
+          ],
+          "memory_view": "factual",
+          "qualification": {
+            "model": "llm",
+            "model_id": "gpt-5.6-luna",
+            "latency_ms": 0.689209000003757,
+            "input_tokens": 573,
+            "output_tokens": 134,
+            "total_tokens": 707,
+            "applied": true,
+            "judged": 1,
+            "rejected": 0,
+            "unjudged": 0,
+            "basis": "llm_grade",
+            "threshold": null
+          },
+          "budget_used": 86,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "ok",
+          "outcome": "partial",
+          "answer": "The Zephyr QX-100 case is silver. [equipment:7]",
+          "answer_language": "en",
+          "coverage": {
+            "color zephyr": false,
+            "qx-100 case": true
+          },
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "equipment",
+              "lines": [
+                7
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "equipment",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "What color is the Zephyr QX-100 case?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 86,
+            "evidence_tokens": 15,
+            "answer_tokens": 12
+          },
+          "model_usage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2006,
+              "input_tokens": 4746,
+              "output_tokens": 123,
+              "total_tokens": 4869
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1848,
+              "input_tokens": 6750,
+              "output_tokens": 113,
+              "total_tokens": 6863
+            }
+          },
+          "validation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "reason_code": "answered",
+          "note": "memory evidence did not cover every requested detail"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    }
+  }
+}

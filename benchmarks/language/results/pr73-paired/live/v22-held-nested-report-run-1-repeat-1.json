@@ -1,0 +1,522 @@
+{
+  "id": "v22-held-nested-report/run-1",
+  "run": 1,
+  "order": [
+    "baseline",
+    "candidate"
+  ],
+  "arms": {
+    "baseline": {
+      "queries": [
+        {
+          "language": "ru",
+          "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+          "explicit": false,
+          "expectedView": "reports",
+          "view": "factual",
+          "recallStatus": "empty",
+          "recallDegraded": [],
+          "evidence": [],
+          "contextView": "factual",
+          "contextStatus": "empty",
+          "context": [],
+          "contextDegraded": [],
+          "answers": [
+            {
+              "status": "ok",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какое сообщение": false,
+                "winters заземляющем": false,
+                "контакте zephyr": false,
+                "qx-100 пересказала": false,
+                "ada marlow": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 34,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "no_eligible_evidence",
+              "note": "related memory was found, but it contained no exact lines or document quotes to ground an answer"
+            },
+            {
+              "status": "ok",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "ru",
+              "coverage": {
+                "какое сообщение": false,
+                "winters заземляющем": false,
+                "контакте zephyr": false,
+                "qx-100 пересказала": false,
+                "ada marlow": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 34,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "no_eligible_evidence",
+              "note": "related memory was found, but it contained no exact lines or document quotes to ground an answer"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+          "explicit": true,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "empty",
+          "recallDegraded": [],
+          "evidence": [],
+          "contextView": "reports",
+          "contextStatus": "empty",
+          "context": [],
+          "contextDegraded": [],
+          "answers": [
+            {
+              "status": "ok",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какое сообщение": false,
+                "winters заземляющем": false,
+                "контакте zephyr": false,
+                "qx-100 пересказала": false,
+                "ada marlow": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 34,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "no_eligible_evidence",
+              "note": "related memory was found, but it contained no exact lines or document quotes to ground an answer"
+            },
+            {
+              "status": "ok",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "ru",
+              "coverage": {
+                "какое сообщение": false,
+                "winters заземляющем": false,
+                "контакте zephyr": false,
+                "qx-100 пересказала": false,
+                "ada marlow": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 34,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "no_eligible_evidence",
+              "note": "related memory was found, but it contained no exact lines or document quotes to ground an answer"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "4b0ac2c242bdbc263ed1a7a4ce39f03146e9853f93f211052f447988b670d33a",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        }
+      ],
+      "projections": [],
+      "factualEvidence": [],
+      "factualControl": {
+        "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+        "context": {
+          "status": "empty",
+          "note": "no memory evidence was strong enough for automatic injection",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "ok",
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "какое сообщение": false,
+            "winters заземляющем": false,
+            "контакте zephyr": false,
+            "qx-100 пересказала": false,
+            "ada marlow": false
+          },
+          "citations": [],
+          "context": [],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 34,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "reason_code": "no_eligible_evidence",
+          "note": "related memory was found, but it contained no exact lines or document quotes to ground an answer"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    },
+    "candidate": {
+      "queries": [
+        {
+          "language": "ru",
+          "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+          "explicit": false,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "empty",
+          "recallDegraded": [],
+          "evidence": [],
+          "contextView": "reports",
+          "contextStatus": "empty",
+          "context": [],
+          "contextDegraded": [],
+          "answers": [
+            {
+              "status": "ok",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какое сообщение": false,
+                "winters заземляющем": false,
+                "контакте zephyr": false,
+                "qx-100 пересказала": false,
+                "ada marlow": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 34,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "no_eligible_evidence",
+              "note": "related memory was found, but it contained no exact lines or document quotes to ground an answer"
+            },
+            {
+              "status": "ok",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "ru",
+              "coverage": {
+                "какое сообщение": false,
+                "winters заземляющем": false,
+                "контакте zephyr": false,
+                "qx-100 пересказала": false,
+                "ada marlow": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 34,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "no_eligible_evidence",
+              "note": "related memory was found, but it contained no exact lines or document quotes to ground an answer"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+          "explicit": true,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "empty",
+          "recallDegraded": [],
+          "evidence": [],
+          "contextView": "reports",
+          "contextStatus": "empty",
+          "context": [],
+          "contextDegraded": [],
+          "answers": [
+            {
+              "status": "ok",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какое сообщение": false,
+                "winters заземляющем": false,
+                "контакте zephyr": false,
+                "qx-100 пересказала": false,
+                "ada marlow": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 34,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "no_eligible_evidence",
+              "note": "related memory was found, but it contained no exact lines or document quotes to ground an answer"
+            },
+            {
+              "status": "ok",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "ru",
+              "coverage": {
+                "какое сообщение": false,
+                "winters заземляющем": false,
+                "контакте zephyr": false,
+                "qx-100 пересказала": false,
+                "ada marlow": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 34,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "no_eligible_evidence",
+              "note": "related memory was found, but it contained no exact lines or document quotes to ground an answer"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "4b0ac2c242bdbc263ed1a7a4ce39f03146e9853f93f211052f447988b670d33a",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        }
+      ],
+      "projections": [],
+      "factualEvidence": [],
+      "factualControl": {
+        "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+        "context": {
+          "status": "empty",
+          "note": "no memory evidence was strong enough for automatic injection",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "ok",
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "какое сообщение": false,
+            "winters заземляющем": false,
+            "контакте zephyr": false,
+            "qx-100 пересказала": false,
+            "ada marlow": false
+          },
+          "citations": [],
+          "context": [],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 34,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "reason_code": "no_eligible_evidence",
+          "note": "related memory was found, but it contained no exact lines or document quotes to ground an answer"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    }
+  }
+}

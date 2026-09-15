@@ -1,0 +1,234 @@
+{
+  "schemaVersion": "paired-output-review-v1",
+  "packetSha256": "b10cf770d14d37dc67b1d6054ef6e1f63911f7df50cce909ee3ba37ef96880df",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutArmMapping": true
+  },
+  "cases": [
+    {
+      "id": "057eee1aac86715ad24d",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Faithful Russian rendering of the assistant report: same device, case inspection and eleven-month recurrence. The supplied frame includes the assistant heading. Citation equipment:4 exists and identifies the reported proposition."
+    },
+    {
+      "id": "1f8d95c6a251fce43d8d",
+      "useful": false,
+      "sourceEntailed": false,
+      "qualificationPreserved": false,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Publishes the five-year warranty and housing replacement as recorded warranty facts, dropping the governing hypothetical heading. This also violates the explicit factual restriction. The stripped supplied evidence supports its wording, but the original source does not establish these actual terms. Citation coordinates 4 and 5 are real."
+    },
+    {
+      "id": "28596201ed98186d0246",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Preserves the assistant attribution, device, case inspection and eleven-month interval in Russian. The supplied source frame and equipment:4 support the answer."
+    },
+    {
+      "id": "2e988cb988305677e15e",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "The passive reported frame retains the claim as a report; the assistant is the question's referent, and no other actor or actual-plan claim is introduced. Device, housing inspection and interval are exact. The unframed supplied record supports the reported content, although it does not independently identify the assistant. Citation equipment:4 is valid."
+    },
+    {
+      "id": "34f2e94b214161c6dbe6",
+      "useful": false,
+      "sourceEntailed": false,
+      "qualificationPreserved": false,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Saying that five-year warranty and housing replacement coverage are recorded does not preserve their hypothetical status. The original places both under the hypothesis heading; the answer presents recorded coverage without that condition. Both coordinates are valid and the stripped supplied body supports the emitted wording."
+    },
+    {
+      "id": "49f244aea62b21dc848b",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Both warranty duration and housing replacement remain within one explicitly hypothetical scenario; Russian, device and cited lines 4/5 are correct. Supplied framing includes the hypothesis heading."
+    },
+    {
+      "id": "4a73007ff3652247a027",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Faithful attributed assistant report with the exact device, case inspection and eleven-month interval. Supplied heading/frame and equipment:4 support it."
+    },
+    {
+      "id": "55f4118ee812470c01c5",
+      "useful": false,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": false,
+      "justifiedNull": null,
+      "reason": "The answer itself faithfully attributes the inspection claim to the assistant and does not assert the embedded plan as true. Nevertheless this factual-only control publishes content available solely as an assistant report. The supplied unframed line lacks the attribution; the original heading establishes it. Citation equipment:4 resolves correctly."
+    },
+    {
+      "id": "6175ba385c90ad2fb8b7",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "The English answer preserves both propositions, the device and the governing hypothetical scope. Casing is a faithful equivalent of корпус. Supplied frame and coordinates 4/5 support it."
+    },
+    {
+      "id": "7061ce96fb958a3c8c61",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": false,
+      "justifiedNull": null,
+      "reason": "The answer describes a recorded warranty scenario, responding to the explicitly hypothetical scenario question, rather than asserting actual coverage. Both propositions and housing specificity survive. This is an acceptable contextual paraphrase of hypothetical status. The supplied unframed assertions omit evidence of that scenario status; coordinates 4/5 remain valid."
+    },
+    {
+      "id": "827f010906503ad56194",
+      "useful": false,
+      "sourceEntailed": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsValid": null,
+      "supportedByAvailableEvidence": null,
+      "justifiedNull": true,
+      "reason": "Justified factual-only exclusion: the original provides an assistant report, not an actual maintenance requirement. Empty supplied factual evidence is appropriate for this explicit restriction."
+    },
+    {
+      "id": "83b3481d37d72233361c",
+      "useful": false,
+      "sourceEntailed": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsValid": null,
+      "supportedByAvailableEvidence": null,
+      "justifiedNull": false,
+      "reason": "The original fully answers what the assistant reported. The null is a missed useful answer, not justified source abstention. Supplied body retains the content but omits its assistant frame; the published reason reports verification rejection without establishing any original-source contradiction."
+    },
+    {
+      "id": "87a27e290a971bff1c3a",
+      "useful": false,
+      "sourceEntailed": false,
+      "qualificationPreserved": false,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Converts an assistant-reported maintenance claim into an unqualified actual plan requirement. Case inspection, interval and Russian are correct, but attribution is material and lost. The stripped supplied line supports the wording; the original heading does not support factual promotion. Citation equipment:4 is real."
+    },
+    {
+      "id": "a7d985d0e53c4eab3e4a",
+      "useful": false,
+      "sourceEntailed": false,
+      "qualificationPreserved": false,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Publishes the maintenance plan assertion without assistant-report qualification, despite the report question and explicit reports view. The original establishes the report only. Supplied unframed text matches the emitted factual wording, and equipment:4 is valid."
+    },
+    {
+      "id": "ae48f9cbcad7032e10a1",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": false,
+      "justifiedNull": null,
+      "reason": "The claim is expressly what the recorded warranty scenario states, answering the question about that hypothetical scenario. Both five-year duration and housing replacement stay within the scenario; no actual warranty claim is asserted. The supplied unframed body lacks evidence of scenario status, although citation coordinates 4/5 are valid."
+    },
+    {
+      "id": "af7e01127066c794fe41",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Explicit hypothetical framing governs the full five-year warranty and casing-replacement conjunction. Faithful English rendering, same device and valid coordinates 4/5, supported by the supplied hypothesis frame."
+    },
+    {
+      "id": "b998547063903d3e76a8",
+      "useful": false,
+      "sourceEntailed": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsValid": null,
+      "supportedByAvailableEvidence": null,
+      "justifiedNull": false,
+      "reason": "A complete qualified scenario answer is supported by the original source. The null marked generation_failed is an availability miss, not justified source abstention. Supplied body contains both propositions but omits the governing hypothesis heading."
+    },
+    {
+      "id": "c3e8650f82af08befb07",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Exact useful assistant-report paraphrase, preserving device, case inspection and eleven-month recurrence. Heading/frame is present in supplied evidence; equipment:4 is correct."
+    },
+    {
+      "id": "d608b051ed4e37427ca2",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Faithful Russian answer with both warranty propositions explicitly inside the hypothetical scenario. Supplied heading/frame and valid lines 4/5 support the complete focused answer."
+    },
+    {
+      "id": "ffd94df37038a4c4a235",
+      "useful": false,
+      "sourceEntailed": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsValid": null,
+      "supportedByAvailableEvidence": null,
+      "justifiedNull": true,
+      "reason": "Justified factual-only exclusion: both original warranty propositions are hypothetical. They cannot establish actual duration or coverage under the explicit factual restriction."
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';import path from 'node:path';import {createHash} from 'node:crypto';
+const root=process.argv[2], count=Number(process.argv[3]);
+const sha=x=>createHash('sha256').update(x).digest('hex');
+const all=[]; const seen=new Set(); const batches=[];
+for(let i=1;i<=count;i++){
+ const suffix=String(i).padStart(2,'0');
+ const packetPath=`/tmp/akno-pr73-paired-review-${suffix}.json`;
+ const gradePath=`/tmp/akno-pr73-paired-grades-${suffix}.json`;
+ const packetBytes=fs.readFileSync(packetPath); const packet=JSON.parse(packetBytes);
+ const grades=JSON.parse(fs.readFileSync(gradePath));
+ assert.equal(grades.packetSha256,sha(packetBytes));
+ const mapping=JSON.parse(fs.readFileSync(packetPath+'.mapping.json')).mapping;
+ assert.equal(grades.cases.length,packet.cases.length);
+ const batchSeen=new Set();
+ for(const grade of grades.cases){
+  assert(!seen.has(grade.id)&&!batchSeen.has(grade.id));seen.add(grade.id);batchSeen.add(grade.id);
+  const item=packet.cases.find(x=>x.id===grade.id), logical=mapping.find(x=>x.id===grade.id); assert(item&&logical);
+  assert.equal(typeof grade.useful,'boolean');
+  const flags=['sourceEntailed','qualificationPreserved','languageCompliant','citationsValid','supportedByAvailableEvidence'];
+  if(item.answer===null){assert.equal(grade.useful,false);for(const key of flags)assert.equal(grade[key],null);assert.equal(typeof grade.justifiedNull,'boolean');}
+  else{for(const key of flags)assert.equal(typeof grade[key],'boolean');assert.equal(grade.justifiedNull,null);}
+  assert.equal(typeof grade.reason,'string');
+  const useful=grade.useful&&flags.every(key=>grade[key]);
+  all.push({grade,item,logical,useful});
+ }
+ batches.push({packet:'reviews/'+path.basename(packetPath),packetSha256:sha(packetBytes),review:'reviews/'+path.basename(gradePath),reviewSha256:sha(fs.readFileSync(gradePath)),cases:grades.cases.length});
+}
+const index=JSON.parse(fs.readFileSync(path.join(root,'live/results.json')));
+const expected=[];
+for(const row of index.pairs){
+ const pair=JSON.parse(fs.readFileSync(path.join(root,'live',row.file)));
+ for(const arm of ['baseline','candidate'])for(const [kind,queries] of [['main',pair.arms[arm].queries],['factual-control',[{query:pair.arms[arm].factualControl.query,explicit:true,answers:[pair.arms[arm].factualControl.answer]}]]])
+  for(const query of queries)for(const answer of query.answers){const logical={file:row.file,arm,kind,query:query.query,explicit:query.explicit,language:answer.answer_language};expected.push(sha(JSON.stringify(logical)).slice(0,20));}
+}
+assert.equal(seen.size,expected.length);for(const id of expected)assert(seen.has(id));
+const summarize=rows=>({operations:rows.length,sourceUseful:rows.filter(r=>r.grade.useful).length,groundedUseful:rows.filter(r=>r.useful).length,published:rows.filter(r=>r.item.answer!==null).length,
+ sourceErrors:rows.filter(r=>r.grade.sourceEntailed===false).length,qualificationErrors:rows.filter(r=>r.grade.qualificationPreserved===false).length,
+ languageErrors:rows.filter(r=>r.grade.languageCompliant===false).length,citationErrors:rows.filter(r=>r.grade.citationsValid===false).length,
+ unsupportedByAvailableEvidence:rows.filter(r=>r.grade.supportedByAvailableEvidence===false).length,
+ justifiedNulls:rows.filter(r=>r.grade.justifiedNull===true).length,nulls:rows.filter(r=>r.item.answer===null).length});
+const results={schemaVersion:'paired-source-summary-v1',metricDefinitions:{sourceUseful:'Independent source-usefulness judgment.',groundedUseful:'Source-useful AND source-entailed, qualification-preserving, language-compliant, validly cited, and supported by supplied evidence.'},batches,main:{},factualControls:{},byRun:{},byFixture:{},groundedGains:[],groundedLosses:[],sourceGains:[],sourceLosses:[],limitations:['Exposed downstream coupled experiment, not independent arm samples.','All frozen artifacts including an empty set remain in the main denominator.','Original full end-to-end gate remains failed; no new retention measurement.']};
+for(const arm of ['baseline','candidate']){
+ const armRows=all.filter(r=>r.logical.arm===arm);results.main[arm]=summarize(armRows.filter(r=>r.logical.kind==='main'));
+ results.factualControls[arm]=summarize(armRows.filter(r=>r.logical.kind==='factual-control'));
+ for(const run of [1,2]){results.byRun[run]??={};results.byRun[run][arm]=summarize(armRows.filter(r=>r.logical.run===run&&r.logical.kind==='main'));}
+ for(const id of new Set(all.map(r=>r.item.fixtureId))){results.byFixture[id]??={};results.byFixture[id][arm]=summarize(armRows.filter(r=>r.item.fixtureId===id&&r.logical.kind==='main'));}
+}
+for(const before of all.filter(r=>r.logical.arm==='baseline'&&r.logical.kind==='main')){
+ const after=all.find(r=>r.logical.arm==='candidate'&&r.logical.file===before.logical.file&&r.logical.kind===before.logical.kind&&r.logical.query===before.logical.query&&r.logical.explicit===before.logical.explicit&&r.logical.language===before.logical.language);assert(after);
+ const row={fixture:before.item.fixtureId,run:before.logical.run,explicit:before.logical.explicit,language:before.logical.language,beforeId:before.grade.id,afterId:after.grade.id};
+ if(!before.useful&&after.useful)results.groundedGains.push(row);if(before.useful&&!after.useful)results.groundedLosses.push(row);if(!before.grade.useful&&after.grade.useful)results.sourceGains.push(row);if(before.grade.useful&&!after.grade.useful)results.sourceLosses.push(row);
+}
+fs.writeFileSync(path.join(root,'source-review-summary.json'),JSON.stringify(results,null,2)+'\n',{flag:'wx'});
+fs.writeFileSync(path.join(root,'source-failure-ledger.json'),JSON.stringify(all.filter(r=>!r.useful&&!(r.logical.kind==='factual-control'&&r.grade.justifiedNull)).map(({grade,item,logical})=>({id:grade.id,...logical,answer:item.answer,...grade})),null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify({main:results.main,controls:results.factualControls,byRun:results.byRun,groundedGains:results.groundedGains.length,groundedLosses:results.groundedLosses.length,sourceGains:results.sourceGains.length,sourceLosses:results.sourceLosses.length},null,2));

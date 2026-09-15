@@ -200,9 +200,35 @@ is required. The scanner does not understand arbitrary implicit discourse, every
 language. Unsupported implicit qualifications may be missed; conservative false holds and bounded supported
 cases must be assessed separately from model quality.
 
-## Current evaluated scope
+## What PR 73 demonstrates
 
-The [full Luna evaluation for PR 73](../benchmarks/language/results/pr73-luna-final/README.md) runs
+PR 73 fixes Markdown heading scope and English/Russian query-view selection. It does not change the
+retention, answer-generation or answer-verification prompts from its base revision. Those boundaries
+matter: the historical answer percentages come from different corpora, profiles and model executions.
+They do not demonstrate an overall accuracy improvement attributable to this PR.
+
+The [paired comparison](../benchmarks/language/paired-comparison.md) gives the actual base and PR revision
+identical ordinary Markdown and all 44 frozen retained sets, including incomplete and empty sets. Across
+48 input fixtures, correct inferred views improve from **66/100 to 100/100**, and answer operations supplied
+with eligible evidence improve from **153/200 to 172/200**. All **88 retained explicit-view controls**
+preserve identical evidence. Five incorrect factual projections are corrected; all four ordinary fixtures
+upgrade a real base-created index to the new projection without changing source bytes.
+
+These are deterministic scope and routing measurements, not generated-answer grades. Model-free
+auto-context remains inactive or degraded on many coordinates. The separate repeated Luna experiment
+uses active embeddings and reranking, and couples exact matching requests across revisions. Its reviewed
+results and limitations are reported with the [comparison evidence](../benchmarks/language/results/pr73-paired/README.md).
+
+In that live comparison, independently source-useful answers improve from **43/88 to 68/88**. Requiring
+support in the supplied evidence as well as source fidelity, qualifications, language and citations gives
+**38/88 to 68/88 fully grounded useful answers**. Both repetitions improve, with no paired useful-answer
+losses. Eight component/word-sense errors and one qualification omission remain. This bounded downstream
+measurement does not replace the full retention-and-answer evaluation below.
+Neither experiment replaces the full language/discourse quality gate below.
+
+## Full Luna baseline and remaining limits
+
+The earlier [full Luna evaluation for PR 73](../benchmarks/language/results/pr73-luna-final/README.md) runs
 22 invented V23 sources twice: 44 case-runs and 352 answer coordinates, including 32 expected read-only
 abstentions. English knowledge, English/Russian queries and independently requested answer languages use
 an active vector index, Luna reranking, and independent review against original sources. The runtime,

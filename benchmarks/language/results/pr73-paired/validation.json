@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "paired-validation-v1",
+  "evaluatedCandidate": "f23c0dae204bef561a5e1eb3c3a64767f8bd0452",
+  "productionUnchangedAfterEvaluation": true,
+  "checks": {
+    "typecheck": {
+      "command": "pnpm typecheck",
+      "passed": true
+    },
+    "build": {
+      "command": "pnpm akno redeploy --no-restart --json",
+      "passed": true,
+      "isolatedFixture": true
+    },
+    "lint": {
+      "command": "pnpm lint",
+      "passed": true
+    },
+    "knip": {
+      "command": "pnpm knip",
+      "passed": true
+    },
+    "format": {
+      "command": "pnpm format:check",
+      "passed": true
+    },
+    "suite": {
+      "command": "pnpm test",
+      "passed": true,
+      "tests": 4071,
+      "files": 155
+    },
+    "smoke": {
+      "command": "pnpm smoke",
+      "passed": true,
+      "checks": 34
+    },
+    "repository": {
+      "command": "pnpm check:repository",
+      "passed": true
+    },
+    "diff": {
+      "command": "git diff --check",
+      "passed": true
+    }
+  },
+  "builtCheck": "built-check/built-check.json",
+  "existingLiveServiceRestarted": false,
+  "limitation": "Build-only redeploy and isolated CLI/socket start/restart; no configured pre-existing live service."
+}

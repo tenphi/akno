@@ -1,0 +1,234 @@
+{
+  "schemaVersion": "paired-output-review-v1",
+  "packetSha256": "97c68cc7aaa25b5720076ea7d4ad0c36562fcaf8ea7852de6438e8b35866fda5",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutArmMapping": true
+  },
+  "cases": [
+    {
+      "id": "03a704c70b8232aba249",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Faithfully preserves Ada's unaccepted cable-protection extension and its unrealized benefit of free connector repair after twenty-two months of use. Acceptance remains counterfactual and current coverage is explicitly denied. No replacement, performed repair or calendar event is invented. Equipment:7 and the original support the complete focused answer."
+    },
+    {
+      "id": "13a4d388b300f77db4d0",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Preserves Ada as the outer relayer, Bo as inner reporter, sending the whole device to a workshop for indicator-brightness measurement rather than replacement, and Ada's personal unread/unchecked limits. The replacement contrast stays with this reported service purpose, not a universal prohibition. Omitting her independent protective-cover fact is appropriate to the focused question. Original source and equipment:4 support the answer."
+    },
+    {
+      "id": "1caea753c5bafe9bd8f7",
+      "useful": false,
+      "sourceEntailed": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsValid": null,
+      "supportedByAvailableEvidence": null,
+      "justifiedNull": false,
+      "reason": "The original and frozen equipment:4 fully support the requested nested service report. Supplying only the unrelated protective-cover fact misses that report; no explicit factual restriction was requested, so an empty draft is not justified by the source."
+    },
+    {
+      "id": "2ecc31551837f42c5ea0",
+      "useful": false,
+      "sourceEntailed": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsValid": null,
+      "supportedByAvailableEvidence": null,
+      "justifiedNull": false,
+      "reason": "The original and frozen equipment:4 fully support the requested nested service report. Supplying only the unrelated protective-cover fact misses that report; no explicit factual restriction was requested, so an empty draft is not justified by the source."
+    },
+    {
+      "id": "3f3493b942d33777788b",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Preserves Ada as the outer relayer, Bo as inner reporter, sending the whole device to a workshop for indicator-brightness measurement rather than replacement, and Ada's personal unread/unchecked limits. The replacement contrast stays with this reported service purpose, not a universal prohibition. Omitting her independent protective-cover fact is appropriate to the focused question. Original source and equipment:4 support the answer."
+    },
+    {
+      "id": "434ad20a67aed0d9857a",
+      "useful": false,
+      "sourceEntailed": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsValid": null,
+      "supportedByAvailableEvidence": null,
+      "justifiedNull": true,
+      "reason": "The explicit factual restriction excludes the requested unrealized benefit. Original source and retained record deny actual current connector-repair coverage; the counterfactual remains answerable only with the appropriate discussion scope."
+    },
+    {
+      "id": "635026f82253fe0dc05f",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Preserves Ada as the outer relayer, Bo as inner reporter, sending the whole device to a workshop for indicator-brightness measurement rather than replacement, and Ada's personal unread/unchecked limits. The replacement contrast stays with this reported service purpose, not a universal prohibition. Omitting her independent protective-cover fact is appropriate to the focused question. Original source and equipment:4 support the answer."
+    },
+    {
+      "id": "70f2266dc01d52598a72",
+      "useful": false,
+      "sourceEntailed": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsValid": null,
+      "supportedByAvailableEvidence": null,
+      "justifiedNull": false,
+      "reason": "The discussion question is answerable from the original and complete frozen counterfactual record, including the free connector repair, use interval, nonacceptance and absence of current coverage. Empty supplied evidence under an inferred view does not justify withholding that qualified answer."
+    },
+    {
+      "id": "7fe4d5dda39f0d2aa23d",
+      "useful": false,
+      "sourceEntailed": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsValid": null,
+      "supportedByAvailableEvidence": null,
+      "justifiedNull": true,
+      "reason": "The explicit factual restriction excludes Ada's unchecked report of Bo's service-permission claim. The remaining factual protective-cover assertion is independent and cannot answer which message was relayed. Null is justified for this restriction, not because the original lacks the report."
+    },
+    {
+      "id": "8d143424edc506b5f08e",
+      "useful": false,
+      "sourceEntailed": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsValid": null,
+      "supportedByAvailableEvidence": null,
+      "justifiedNull": false,
+      "reason": "The discussion question is answerable from the original and complete frozen counterfactual record, including the free connector repair, use interval, nonacceptance and absence of current coverage. Empty supplied evidence under an inferred view does not justify withholding that qualified answer."
+    },
+    {
+      "id": "8f3a195c87d65ed220f0",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Faithfully preserves Ada's unaccepted cable-protection extension and its unrealized benefit of free connector repair after twenty-two months of use. Acceptance remains counterfactual and current coverage is explicitly denied. No replacement, performed repair or calendar event is invented. Equipment:7 and the original support the complete focused answer."
+    },
+    {
+      "id": "9144a9954250a0b4e836",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Preserves Ada as the outer relayer, Bo as inner reporter, sending the whole device to a workshop for indicator-brightness measurement rather than replacement, and Ada's personal unread/unchecked limits. The replacement contrast stays with this reported service purpose, not a universal prohibition. Omitting her independent protective-cover fact is appropriate to the focused question. Original source and equipment:4 support the answer."
+    },
+    {
+      "id": "9190fdb1df73f25f477b",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Faithfully preserves Ada's unaccepted cable-protection extension and its unrealized benefit of free connector repair after twenty-two months of use. Acceptance remains counterfactual and current coverage is explicitly denied. No replacement, performed repair or calendar event is invented. Equipment:7 and the original support the complete focused answer."
+    },
+    {
+      "id": "9eb83d4e7c515f126ac3",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Preserves Ada as the outer relayer, Bo as inner reporter, sending the whole device to a workshop for indicator-brightness measurement rather than replacement, and Ada's personal unread/unchecked limits. The replacement contrast stays with this reported service purpose, not a universal prohibition. Omitting her independent protective-cover fact is appropriate to the focused question. Original source and equipment:4 support the answer."
+    },
+    {
+      "id": "be4c64fbea264ecc3c50",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Faithfully preserves Ada's unaccepted cable-protection extension and its unrealized benefit of free connector repair after twenty-two months of use. Acceptance remains counterfactual and current coverage is explicitly denied. No replacement, performed repair or calendar event is invented. Equipment:7 and the original support the complete focused answer."
+    },
+    {
+      "id": "c38735b3f5b7f02ab58d",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Preserves the exact connector repair, twenty-two-month use interval, false acceptance condition, nonacceptance and no-current-coverage qualification. The final Russian clause is grammatically awkward, but its unrealized-benefit meaning is clear and it remains in the requested language. Original and supplied equipment:7 support the material claims."
+    },
+    {
+      "id": "d50a7523f257b776fc8a",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Faithfully preserves Ada's unaccepted cable-protection extension and its unrealized benefit of free connector repair after twenty-two months of use. Acceptance remains counterfactual and current coverage is explicitly denied. No replacement, performed repair or calendar event is invented. Equipment:7 and the original support the complete focused answer."
+    },
+    {
+      "id": "d9c9056c5c204802a3fc",
+      "useful": false,
+      "sourceEntailed": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsValid": null,
+      "supportedByAvailableEvidence": null,
+      "justifiedNull": true,
+      "reason": "The explicit factual restriction excludes the requested unrealized benefit. Original source and retained record deny actual current connector-repair coverage; the counterfactual remains answerable only with the appropriate discussion scope."
+    },
+    {
+      "id": "e7f38ccf21c812250ab0",
+      "useful": false,
+      "sourceEntailed": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsValid": null,
+      "supportedByAvailableEvidence": null,
+      "justifiedNull": true,
+      "reason": "The explicit factual restriction excludes Ada's unchecked report of Bo's service-permission claim. The remaining factual protective-cover assertion is independent and cannot answer which message was relayed. Null is justified for this restriction, not because the original lacks the report."
+    },
+    {
+      "id": "f875f2daa62d1c08cc8b",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Preserves Ada as the outer relayer, Bo as inner reporter, sending the whole device to a workshop for indicator-brightness measurement rather than replacement, and Ada's personal unread/unchecked limits. The replacement contrast stays with this reported service purpose, not a universal prohibition. Omitting her independent protective-cover fact is appropriate to the focused question. Original source and equipment:4 support the answer."
+    }
+  ]
+}

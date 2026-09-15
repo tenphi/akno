@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "paired-publication-audit-v1",
+  "checks": 9111,
+  "casePairs": 70,
+  "oldArchivesByteIdentical": true,
+  "runnerHashesMatchIndependentFreeze": true,
+  "credentialsExcluded": true,
+  "filesScanned": 122
+}

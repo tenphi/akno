@@ -1,0 +1,940 @@
+{
+  "schemaVersion": "paired-source-summary-v1",
+  "metricDefinitions": {
+    "sourceUseful": "Independent source-usefulness judgment.",
+    "groundedUseful": "Source-useful AND source-entailed, qualification-preserving, language-compliant, validly cited, and supported by supplied evidence."
+  },
+  "batches": [
+    {
+      "packet": "reviews/akno-pr73-paired-review-01.json",
+      "packetSha256": "b10cf770d14d37dc67b1d6054ef6e1f63911f7df50cce909ee3ba37ef96880df",
+      "review": "reviews/akno-pr73-paired-grades-01.json",
+      "reviewSha256": "c4d974f067683fef0cbe44b63eff9112a100861fcaf384b151ce10c26f563743",
+      "cases": 20
+    },
+    {
+      "packet": "reviews/akno-pr73-paired-review-02.json",
+      "packetSha256": "acff723127f815b655c9367dee8ab960376cb78e4d96894f04426ab320efe54f",
+      "review": "reviews/akno-pr73-paired-grades-02.json",
+      "reviewSha256": "22623bfde6ec7b394e8fd782b0875fae8670ee62c137970bcad89cd09b1720b9",
+      "cases": 40
+    },
+    {
+      "packet": "reviews/akno-pr73-paired-review-03.json",
+      "packetSha256": "c465ef28050765cb1491010cb7ec55df8a1a985af639a6b92cf2b3f3a5d32335",
+      "review": "reviews/akno-pr73-paired-grades-03.json",
+      "reviewSha256": "d88cba20654c158edd360c718d45367c4c55ede58c99acb487b1de1507b9d5fa",
+      "cases": 30
+    },
+    {
+      "packet": "reviews/akno-pr73-paired-review-04.json",
+      "packetSha256": "710a858a25ab2fe1fe3fc100e177272f2ecce7bcb7755b811748fa67ca5fe36f",
+      "review": "reviews/akno-pr73-paired-grades-04.json",
+      "reviewSha256": "f77ef1d9ab86f20a7baff18f33a8ea917d56b6627baa6bbf08ff1575ff74c484",
+      "cases": 30
+    },
+    {
+      "packet": "reviews/akno-pr73-paired-review-05.json",
+      "packetSha256": "2ffc88745eef68946978d173d2fb40e87f9d43237969d8d97157546cdf93bad0",
+      "review": "reviews/akno-pr73-paired-grades-05.json",
+      "reviewSha256": "4a54f95c29bbe7b76aed2e88aaedb90fe91ed1bb3756d0bc90c36056b13dae5a",
+      "cases": 20
+    },
+    {
+      "packet": "reviews/akno-pr73-paired-review-06.json",
+      "packetSha256": "97c68cc7aaa25b5720076ea7d4ad0c36562fcaf8ea7852de6438e8b35866fda5",
+      "review": "reviews/akno-pr73-paired-grades-06.json",
+      "reviewSha256": "69ed031fe197fc8405c7183c0333bcda9a72e0004a393b4a841211fa36cae481",
+      "cases": 20
+    },
+    {
+      "packet": "reviews/akno-pr73-paired-review-07.json",
+      "packetSha256": "67902a33439ac777660460fdd343eeb99dcb30964fc1ff908fb4ab7f1d5a6ee6",
+      "review": "reviews/akno-pr73-paired-grades-07.json",
+      "reviewSha256": "8d9c971176e39db4116de4d6dfcc3de462729cf8cbc1dd1cc72bfb37b2ca15d8",
+      "cases": 50
+    },
+    {
+      "packet": "reviews/akno-pr73-paired-review-08.json",
+      "packetSha256": "56cf26f34f12c78f8445917dbec25de94c7501cc1adce26ceb245138004534ff",
+      "review": "reviews/akno-pr73-paired-grades-08.json",
+      "reviewSha256": "465b0c7d528c1834434372fbb2b59ef6c166e0834bf6158a756613c1d88fb2ac",
+      "cases": 10
+    }
+  ],
+  "main": {
+    "baseline": {
+      "operations": 88,
+      "sourceUseful": 43,
+      "groundedUseful": 38,
+      "published": 56,
+      "sourceErrors": 12,
+      "qualificationErrors": 8,
+      "languageErrors": 0,
+      "citationErrors": 0,
+      "unsupportedByAvailableEvidence": 10,
+      "justifiedNulls": 0,
+      "nulls": 32
+    },
+    "candidate": {
+      "operations": 88,
+      "sourceUseful": 68,
+      "groundedUseful": 68,
+      "published": 77,
+      "sourceErrors": 8,
+      "qualificationErrors": 1,
+      "languageErrors": 0,
+      "citationErrors": 0,
+      "unsupportedByAvailableEvidence": 8,
+      "justifiedNulls": 0,
+      "nulls": 11
+    }
+  },
+  "factualControls": {
+    "baseline": {
+      "operations": 22,
+      "sourceUseful": 4,
+      "groundedUseful": 4,
+      "published": 7,
+      "sourceErrors": 2,
+      "qualificationErrors": 2,
+      "languageErrors": 0,
+      "citationErrors": 0,
+      "unsupportedByAvailableEvidence": 1,
+      "justifiedNulls": 14,
+      "nulls": 15
+    },
+    "candidate": {
+      "operations": 22,
+      "sourceUseful": 4,
+      "groundedUseful": 4,
+      "published": 4,
+      "sourceErrors": 0,
+      "qualificationErrors": 0,
+      "languageErrors": 0,
+      "citationErrors": 0,
+      "unsupportedByAvailableEvidence": 0,
+      "justifiedNulls": 18,
+      "nulls": 18
+    }
+  },
+  "byRun": {
+    "1": {
+      "baseline": {
+        "operations": 44,
+        "sourceUseful": 21,
+        "groundedUseful": 19,
+        "published": 27,
+        "sourceErrors": 6,
+        "qualificationErrors": 3,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 5,
+        "justifiedNulls": 0,
+        "nulls": 17
+      },
+      "candidate": {
+        "operations": 44,
+        "sourceUseful": 34,
+        "groundedUseful": 34,
+        "published": 38,
+        "sourceErrors": 4,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 4,
+        "justifiedNulls": 0,
+        "nulls": 6
+      }
+    },
+    "2": {
+      "baseline": {
+        "operations": 44,
+        "sourceUseful": 22,
+        "groundedUseful": 19,
+        "published": 29,
+        "sourceErrors": 6,
+        "qualificationErrors": 5,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 5,
+        "justifiedNulls": 0,
+        "nulls": 15
+      },
+      "candidate": {
+        "operations": 44,
+        "sourceUseful": 34,
+        "groundedUseful": 34,
+        "published": 39,
+        "sourceErrors": 4,
+        "qualificationErrors": 1,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 4,
+        "justifiedNulls": 0,
+        "nulls": 5
+      }
+    }
+  },
+  "byFixture": {
+    "ordinary-english-report": {
+      "baseline": {
+        "operations": 8,
+        "sourceUseful": 3,
+        "groundedUseful": 2,
+        "published": 7,
+        "sourceErrors": 4,
+        "qualificationErrors": 4,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 1,
+        "justifiedNulls": 0,
+        "nulls": 1
+      },
+      "candidate": {
+        "operations": 8,
+        "sourceUseful": 8,
+        "groundedUseful": 8,
+        "published": 8,
+        "sourceErrors": 0,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 0,
+        "justifiedNulls": 0,
+        "nulls": 0
+      }
+    },
+    "ordinary-mixed-hypothesis": {
+      "baseline": {
+        "operations": 8,
+        "sourceUseful": 4,
+        "groundedUseful": 0,
+        "published": 7,
+        "sourceErrors": 3,
+        "qualificationErrors": 3,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 4,
+        "justifiedNulls": 0,
+        "nulls": 1
+      },
+      "candidate": {
+        "operations": 8,
+        "sourceUseful": 8,
+        "groundedUseful": 8,
+        "published": 8,
+        "sourceErrors": 0,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 0,
+        "justifiedNulls": 0,
+        "nulls": 0
+      }
+    },
+    "v23-held-assistant-reading/run-1": {
+      "baseline": {
+        "operations": 8,
+        "sourceUseful": 4,
+        "groundedUseful": 4,
+        "published": 4,
+        "sourceErrors": 0,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 0,
+        "justifiedNulls": 0,
+        "nulls": 4
+      },
+      "candidate": {
+        "operations": 8,
+        "sourceUseful": 8,
+        "groundedUseful": 8,
+        "published": 8,
+        "sourceErrors": 0,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 0,
+        "justifiedNulls": 0,
+        "nulls": 0
+      }
+    },
+    "v23-held-relayed-service/run-1": {
+      "baseline": {
+        "operations": 8,
+        "sourceUseful": 3,
+        "groundedUseful": 3,
+        "published": 4,
+        "sourceErrors": 1,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 1,
+        "justifiedNulls": 0,
+        "nulls": 4
+      },
+      "candidate": {
+        "operations": 8,
+        "sourceUseful": 7,
+        "groundedUseful": 7,
+        "published": 8,
+        "sourceErrors": 1,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 1,
+        "justifiedNulls": 0,
+        "nulls": 0
+      }
+    },
+    "v23-held-declined-extension/run-1": {
+      "baseline": {
+        "operations": 8,
+        "sourceUseful": 3,
+        "groundedUseful": 3,
+        "published": 3,
+        "sourceErrors": 0,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 0,
+        "justifiedNulls": 0,
+        "nulls": 5
+      },
+      "candidate": {
+        "operations": 8,
+        "sourceUseful": 7,
+        "groundedUseful": 7,
+        "published": 7,
+        "sourceErrors": 0,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 0,
+        "justifiedNulls": 0,
+        "nulls": 1
+      }
+    },
+    "ordinary-empty-heading-fact": {
+      "baseline": {
+        "operations": 8,
+        "sourceUseful": 8,
+        "groundedUseful": 8,
+        "published": 8,
+        "sourceErrors": 0,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 0,
+        "justifiedNulls": 0,
+        "nulls": 0
+      },
+      "candidate": {
+        "operations": 8,
+        "sourceUseful": 8,
+        "groundedUseful": 8,
+        "published": 8,
+        "sourceErrors": 0,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 0,
+        "justifiedNulls": 0,
+        "nulls": 0
+      }
+    },
+    "v23-held-open-renewal/run-1": {
+      "baseline": {
+        "operations": 8,
+        "sourceUseful": 7,
+        "groundedUseful": 7,
+        "published": 8,
+        "sourceErrors": 0,
+        "qualificationErrors": 1,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 0,
+        "justifiedNulls": 0,
+        "nulls": 0
+      },
+      "candidate": {
+        "operations": 8,
+        "sourceUseful": 7,
+        "groundedUseful": 7,
+        "published": 8,
+        "sourceErrors": 0,
+        "qualificationErrors": 1,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 0,
+        "justifiedNulls": 0,
+        "nulls": 0
+      }
+    },
+    "v23-held-fictional-key/run-1": {
+      "baseline": {
+        "operations": 8,
+        "sourceUseful": 2,
+        "groundedUseful": 2,
+        "published": 4,
+        "sourceErrors": 2,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 2,
+        "justifiedNulls": 0,
+        "nulls": 4
+      },
+      "candidate": {
+        "operations": 8,
+        "sourceUseful": 4,
+        "groundedUseful": 4,
+        "published": 7,
+        "sourceErrors": 3,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 3,
+        "justifiedNulls": 0,
+        "nulls": 1
+      }
+    },
+    "v23-held-rejected-inspection/run-1": {
+      "baseline": {
+        "operations": 8,
+        "sourceUseful": 2,
+        "groundedUseful": 2,
+        "published": 4,
+        "sourceErrors": 2,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 2,
+        "justifiedNulls": 0,
+        "nulls": 4
+      },
+      "candidate": {
+        "operations": 8,
+        "sourceUseful": 4,
+        "groundedUseful": 4,
+        "published": 8,
+        "sourceErrors": 4,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 4,
+        "justifiedNulls": 0,
+        "nulls": 0
+      }
+    },
+    "v22-held-nested-report/run-1": {
+      "baseline": {
+        "operations": 8,
+        "sourceUseful": 0,
+        "groundedUseful": 0,
+        "published": 0,
+        "sourceErrors": 0,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 0,
+        "justifiedNulls": 0,
+        "nulls": 8
+      },
+      "candidate": {
+        "operations": 8,
+        "sourceUseful": 0,
+        "groundedUseful": 0,
+        "published": 0,
+        "sourceErrors": 0,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 0,
+        "justifiedNulls": 0,
+        "nulls": 8
+      }
+    },
+    "v23-held-scoped-exclusion/run-1": {
+      "baseline": {
+        "operations": 8,
+        "sourceUseful": 7,
+        "groundedUseful": 7,
+        "published": 7,
+        "sourceErrors": 0,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 0,
+        "justifiedNulls": 0,
+        "nulls": 1
+      },
+      "candidate": {
+        "operations": 8,
+        "sourceUseful": 7,
+        "groundedUseful": 7,
+        "published": 7,
+        "sourceErrors": 0,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 0,
+        "justifiedNulls": 0,
+        "nulls": 1
+      }
+    }
+  },
+  "groundedGains": [
+    {
+      "fixture": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "34f2e94b214161c6dbe6",
+      "afterId": "49f244aea62b21dc848b"
+    },
+    {
+      "fixture": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "explicit": true,
+      "language": "ru",
+      "beforeId": "7061ce96fb958a3c8c61",
+      "afterId": "d608b051ed4e37427ca2"
+    },
+    {
+      "fixture": "ordinary-english-report",
+      "run": 1,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "83b3481d37d72233361c",
+      "afterId": "c3e8650f82af08befb07"
+    },
+    {
+      "fixture": "ordinary-english-report",
+      "run": 1,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "87a27e290a971bff1c3a",
+      "afterId": "057eee1aac86715ad24d"
+    },
+    {
+      "fixture": "ordinary-english-report",
+      "run": 1,
+      "explicit": true,
+      "language": "en",
+      "beforeId": "a7d985d0e53c4eab3e4a",
+      "afterId": "4a73007ff3652247a027"
+    },
+    {
+      "fixture": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "ae48f9cbcad7032e10a1",
+      "afterId": "af7e01127066c794fe41"
+    },
+    {
+      "fixture": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "explicit": true,
+      "language": "en",
+      "beforeId": "b998547063903d3e76a8",
+      "afterId": "6175ba385c90ad2fb8b7"
+    },
+    {
+      "fixture": "v23-held-declined-extension/run-1",
+      "run": 1,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "18b835c646c43fbcdf7a",
+      "afterId": "9131a1c5e1e6e1af1c24"
+    },
+    {
+      "fixture": "v23-held-assistant-reading/run-1",
+      "run": 1,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "416f1e6e4ef8c4471da1",
+      "afterId": "49f289b77236fc22b00f"
+    },
+    {
+      "fixture": "v23-held-assistant-reading/run-1",
+      "run": 1,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "6eabe0068c5a00d5783a",
+      "afterId": "16ee605877e8d18bb2ee"
+    },
+    {
+      "fixture": "v23-held-declined-extension/run-1",
+      "run": 1,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "6fda9263f51431e4bd88",
+      "afterId": "e57fb9bd0f1601eba48a"
+    },
+    {
+      "fixture": "v23-held-relayed-service/run-1",
+      "run": 1,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "c92abc35471f2f69fce3",
+      "afterId": "44764b1d75cadd2f4759"
+    },
+    {
+      "fixture": "v23-held-relayed-service/run-1",
+      "run": 1,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "d0f7e13898d138b6c402",
+      "afterId": "0a72b1e8e318fc21c739"
+    },
+    {
+      "fixture": "v23-held-fictional-key/run-1",
+      "run": 1,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "2a19b944749ea55f0b56",
+      "afterId": "981fa936125a7503cff7"
+    },
+    {
+      "fixture": "v23-held-rejected-inspection/run-1",
+      "run": 1,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "3688ef0d0551a5f94cee",
+      "afterId": "e5f252aa8027d14d4693"
+    },
+    {
+      "fixture": "ordinary-english-report",
+      "run": 2,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "3665531f898d38bd134a",
+      "afterId": "ee24932b828964f6d89c"
+    },
+    {
+      "fixture": "ordinary-english-report",
+      "run": 2,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "3c420b77c56eae289075",
+      "afterId": "cca8295d2d1dead2aa2d"
+    },
+    {
+      "fixture": "ordinary-english-report",
+      "run": 2,
+      "explicit": true,
+      "language": "en",
+      "beforeId": "e7d221af930cd03bfd81",
+      "afterId": "5b1b53f4ba13daa30e3f"
+    },
+    {
+      "fixture": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "658fffd9289b7e671165",
+      "afterId": "bae8cb53a299ebd54a01"
+    },
+    {
+      "fixture": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "explicit": true,
+      "language": "en",
+      "beforeId": "b1d132c4ad0a7c3631b4",
+      "afterId": "ae9fba5b3223f631e32b"
+    },
+    {
+      "fixture": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "explicit": true,
+      "language": "ru",
+      "beforeId": "bf375e170ae764e71cf8",
+      "afterId": "6eec17854922a1e0fff5"
+    },
+    {
+      "fixture": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "e6dbf539e46f9eb27db6",
+      "afterId": "9a7ad943728569dced63"
+    },
+    {
+      "fixture": "v23-held-relayed-service/run-1",
+      "run": 2,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "1caea753c5bafe9bd8f7",
+      "afterId": "13a4d388b300f77db4d0"
+    },
+    {
+      "fixture": "v23-held-relayed-service/run-1",
+      "run": 2,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "2ecc31551837f42c5ea0",
+      "afterId": "635026f82253fe0dc05f"
+    },
+    {
+      "fixture": "v23-held-declined-extension/run-1",
+      "run": 2,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "70f2266dc01d52598a72",
+      "afterId": "be4c64fbea264ecc3c50"
+    },
+    {
+      "fixture": "v23-held-declined-extension/run-1",
+      "run": 2,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "8d143424edc506b5f08e",
+      "afterId": "c38735b3f5b7f02ab58d"
+    },
+    {
+      "fixture": "v23-held-fictional-key/run-1",
+      "run": 2,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "5e49687dc1b7bd1dd15d",
+      "afterId": "ea1e867db5debea4d2ac"
+    },
+    {
+      "fixture": "v23-held-assistant-reading/run-1",
+      "run": 2,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "a6c8ac29521d7ba8ae7f",
+      "afterId": "26f8c77518b7b9bd3a1e"
+    },
+    {
+      "fixture": "v23-held-assistant-reading/run-1",
+      "run": 2,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "c36fe228711042eb7dcb",
+      "afterId": "21b0dcc0c3dc92f89291"
+    },
+    {
+      "fixture": "v23-held-rejected-inspection/run-1",
+      "run": 2,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "fc82e59199c303dcfc27",
+      "afterId": "3efe31ad5534ea091d45"
+    }
+  ],
+  "groundedLosses": [],
+  "sourceGains": [
+    {
+      "fixture": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "34f2e94b214161c6dbe6",
+      "afterId": "49f244aea62b21dc848b"
+    },
+    {
+      "fixture": "ordinary-english-report",
+      "run": 1,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "83b3481d37d72233361c",
+      "afterId": "c3e8650f82af08befb07"
+    },
+    {
+      "fixture": "ordinary-english-report",
+      "run": 1,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "87a27e290a971bff1c3a",
+      "afterId": "057eee1aac86715ad24d"
+    },
+    {
+      "fixture": "ordinary-english-report",
+      "run": 1,
+      "explicit": true,
+      "language": "en",
+      "beforeId": "a7d985d0e53c4eab3e4a",
+      "afterId": "4a73007ff3652247a027"
+    },
+    {
+      "fixture": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "explicit": true,
+      "language": "en",
+      "beforeId": "b998547063903d3e76a8",
+      "afterId": "6175ba385c90ad2fb8b7"
+    },
+    {
+      "fixture": "v23-held-declined-extension/run-1",
+      "run": 1,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "18b835c646c43fbcdf7a",
+      "afterId": "9131a1c5e1e6e1af1c24"
+    },
+    {
+      "fixture": "v23-held-assistant-reading/run-1",
+      "run": 1,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "416f1e6e4ef8c4471da1",
+      "afterId": "49f289b77236fc22b00f"
+    },
+    {
+      "fixture": "v23-held-assistant-reading/run-1",
+      "run": 1,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "6eabe0068c5a00d5783a",
+      "afterId": "16ee605877e8d18bb2ee"
+    },
+    {
+      "fixture": "v23-held-declined-extension/run-1",
+      "run": 1,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "6fda9263f51431e4bd88",
+      "afterId": "e57fb9bd0f1601eba48a"
+    },
+    {
+      "fixture": "v23-held-relayed-service/run-1",
+      "run": 1,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "c92abc35471f2f69fce3",
+      "afterId": "44764b1d75cadd2f4759"
+    },
+    {
+      "fixture": "v23-held-relayed-service/run-1",
+      "run": 1,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "d0f7e13898d138b6c402",
+      "afterId": "0a72b1e8e318fc21c739"
+    },
+    {
+      "fixture": "v23-held-fictional-key/run-1",
+      "run": 1,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "2a19b944749ea55f0b56",
+      "afterId": "981fa936125a7503cff7"
+    },
+    {
+      "fixture": "v23-held-rejected-inspection/run-1",
+      "run": 1,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "3688ef0d0551a5f94cee",
+      "afterId": "e5f252aa8027d14d4693"
+    },
+    {
+      "fixture": "ordinary-english-report",
+      "run": 2,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "3665531f898d38bd134a",
+      "afterId": "ee24932b828964f6d89c"
+    },
+    {
+      "fixture": "ordinary-english-report",
+      "run": 2,
+      "explicit": true,
+      "language": "en",
+      "beforeId": "e7d221af930cd03bfd81",
+      "afterId": "5b1b53f4ba13daa30e3f"
+    },
+    {
+      "fixture": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "658fffd9289b7e671165",
+      "afterId": "bae8cb53a299ebd54a01"
+    },
+    {
+      "fixture": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "explicit": true,
+      "language": "ru",
+      "beforeId": "bf375e170ae764e71cf8",
+      "afterId": "6eec17854922a1e0fff5"
+    },
+    {
+      "fixture": "v23-held-relayed-service/run-1",
+      "run": 2,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "1caea753c5bafe9bd8f7",
+      "afterId": "13a4d388b300f77db4d0"
+    },
+    {
+      "fixture": "v23-held-relayed-service/run-1",
+      "run": 2,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "2ecc31551837f42c5ea0",
+      "afterId": "635026f82253fe0dc05f"
+    },
+    {
+      "fixture": "v23-held-declined-extension/run-1",
+      "run": 2,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "70f2266dc01d52598a72",
+      "afterId": "be4c64fbea264ecc3c50"
+    },
+    {
+      "fixture": "v23-held-declined-extension/run-1",
+      "run": 2,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "8d143424edc506b5f08e",
+      "afterId": "c38735b3f5b7f02ab58d"
+    },
+    {
+      "fixture": "v23-held-fictional-key/run-1",
+      "run": 2,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "5e49687dc1b7bd1dd15d",
+      "afterId": "ea1e867db5debea4d2ac"
+    },
+    {
+      "fixture": "v23-held-assistant-reading/run-1",
+      "run": 2,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "a6c8ac29521d7ba8ae7f",
+      "afterId": "26f8c77518b7b9bd3a1e"
+    },
+    {
+      "fixture": "v23-held-assistant-reading/run-1",
+      "run": 2,
+      "explicit": false,
+      "language": "ru",
+      "beforeId": "c36fe228711042eb7dcb",
+      "afterId": "21b0dcc0c3dc92f89291"
+    },
+    {
+      "fixture": "v23-held-rejected-inspection/run-1",
+      "run": 2,
+      "explicit": false,
+      "language": "en",
+      "beforeId": "fc82e59199c303dcfc27",
+      "afterId": "3efe31ad5534ea091d45"
+    }
+  ],
+  "sourceLosses": [],
+  "limitations": [
+    "Exposed downstream coupled experiment, not independent arm samples.",
+    "All frozen artifacts including an empty set remain in the main denominator.",
+    "Original full end-to-end gate remains failed; no new retention measurement."
+  ]
+}

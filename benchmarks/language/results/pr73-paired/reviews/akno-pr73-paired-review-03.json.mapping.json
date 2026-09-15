@@ -1,0 +1,305 @@
+{
+  "packetSha256": "c465ef28050765cb1491010cb7ec55df8a1a985af639a6b92cf2b3f3a5d32335",
+  "mapping": [
+    {
+      "id": "2a19b944749ea55f0b56",
+      "file": "v23-held-fictional-key-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "3cb03532bf44f7e3e744",
+      "file": "v23-held-fictional-key-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "c048eaab3a34f6a4a8df",
+      "file": "v23-held-fictional-key-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "f2b0a5f245768d5fa59a",
+      "file": "v23-held-fictional-key-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "843639f2dbc190741449",
+      "file": "v23-held-fictional-key-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "981fa936125a7503cff7",
+      "file": "v23-held-fictional-key-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "f3bf869596604fe3baa7",
+      "file": "v23-held-fictional-key-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "757dd9782bed8643ceac",
+      "file": "v23-held-fictional-key-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "eaef47e963016d605c43",
+      "file": "v23-held-fictional-key-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "e62bcc7a4f843493ec8b",
+      "file": "v23-held-fictional-key-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "2ae7bfe8b4a2f7dffc77",
+      "file": "v23-held-open-renewal-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "11116b6209ff7281d400",
+      "file": "v23-held-open-renewal-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "1a8293b79bf328ddab67",
+      "file": "v23-held-open-renewal-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "eba0c20bcd0fed30c994",
+      "file": "v23-held-open-renewal-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "ddc9474e2aaf39def24c",
+      "file": "v23-held-open-renewal-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "39bb60b746b4233f9811",
+      "file": "v23-held-open-renewal-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "f8a270a79de59ef4a8f6",
+      "file": "v23-held-open-renewal-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "6a2768dc8227d833beb8",
+      "file": "v23-held-open-renewal-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "3b10949848bec4fb5413",
+      "file": "v23-held-open-renewal-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "ee071c397e438e8d61f3",
+      "file": "v23-held-open-renewal-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "3688ef0d0551a5f94cee",
+      "file": "v23-held-rejected-inspection-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "c04da3387fcd0c2a5fe9",
+      "file": "v23-held-rejected-inspection-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "5e76a7f6de4e687f3617",
+      "file": "v23-held-rejected-inspection-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "f2de268040ebe3b4077a",
+      "file": "v23-held-rejected-inspection-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "67c8577daa80b834126f",
+      "file": "v23-held-rejected-inspection-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "e5f252aa8027d14d4693",
+      "file": "v23-held-rejected-inspection-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "a1b4583034e8b69ba65f",
+      "file": "v23-held-rejected-inspection-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "7ed381df6615c3203d48",
+      "file": "v23-held-rejected-inspection-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "d9916383bb207d453938",
+      "file": "v23-held-rejected-inspection-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "48d5eec275bc5dc2c90f",
+      "file": "v23-held-rejected-inspection-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    }
+  ]
+}

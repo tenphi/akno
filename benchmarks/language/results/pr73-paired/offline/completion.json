@@ -1,0 +1,10 @@
+{
+  "pairs": 48,
+  "expected": 48,
+  "runtimeUnchanged": true,
+  "requests": 0,
+  "attemptedPairs": 48,
+  "failedPairs": 0,
+  "unstartedPairs": 0,
+  "fatalErrors": []
+}

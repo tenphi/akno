@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "paired-results-index-v1",
+  "pairs": [
+    {
+      "file": "ordinary-empty-heading-fact-repeat-1.json",
+      "sha256": "0becc2d3c29d6798dd09bf0a7ae5a5062ce604c57ef5313bdcc2eb191042fd65"
+    },
+    {
+      "file": "ordinary-empty-heading-fact-repeat-2.json",
+      "sha256": "e757ecc12474c8785cd8fb4dada6f841179fbe4ff33a5113e3a9af6470c4e94d"
+    },
+    {
+      "file": "ordinary-english-report-repeat-1.json",
+      "sha256": "a57a37f49992f2eb1d402de1dca46e8cfab0d6fa1d10649496c598eb1debc24c"
+    },
+    {
+      "file": "ordinary-english-report-repeat-2.json",
+      "sha256": "2796773f392f9930eb81f7aabceca216a3a3b6e68f14cbfe31f240d2300f52db"
+    },
+    {
+      "file": "ordinary-mixed-hypothesis-repeat-1.json",
+      "sha256": "502d2c6d6958f5ffa07d5c5a92fafece2aad7c50c82c0cc863eec44b9fe62ffd"
+    },
+    {
+      "file": "ordinary-mixed-hypothesis-repeat-2.json",
+      "sha256": "b4bb7d3242bffa61129a44db96a4e9beec2ffb17e9faba2c8aafe1a10d058711"
+    },
+    {
+      "file": "v22-held-nested-report-run-1-repeat-1.json",
+      "sha256": "5d462b4959caa6b3d5cfd3c72e14ada383874eaac2ab1b3b71e4e5c851aad895"
+    },
+    {
+      "file": "v22-held-nested-report-run-1-repeat-2.json",
+      "sha256": "e43a245ef7a8cdf1d269b0e6a91ef0c03f92c9166c80108209730659bcbdc7aa"
+    },
+    {
+      "file": "v23-held-assistant-reading-run-1-repeat-1.json",
+      "sha256": "49fe0447ab31b8bf326a3b37c303920f7eba9f599e798084b3cdb73c2c418628"
+    },
+    {
+      "file": "v23-held-assistant-reading-run-1-repeat-2.json",
+      "sha256": "f93cc7ac439730287e1175e4b25c9fbd1549d6c921fc4408bde9f2e38295bffc"
+    },
+    {
+      "file": "v23-held-declined-extension-run-1-repeat-1.json",
+      "sha256": "2e530ea4515f0db6fbd34442860fa286f0f821ccbfd66062ad735cb9c6e4b472"
+    },
+    {
+      "file": "v23-held-declined-extension-run-1-repeat-2.json",
+      "sha256": "96d46086fcd542edb3e2186a65acfcfc944301d8093d8f8086f4db6c9730ca6e"
+    },
+    {
+      "file": "v23-held-fictional-key-run-1-repeat-1.json",
+      "sha256": "113ab78974aeec0fbcfd13344c5e6b257dd2eeb5fe4d728ab62011e8549ef722"
+    },
+    {
+      "file": "v23-held-fictional-key-run-1-repeat-2.json",
+      "sha256": "015289aefa472f55a46bb4ba4bffb6e23e9e44c1011c1a9e5971a6663b6e9bfb"
+    },
+    {
+      "file": "v23-held-open-renewal-run-1-repeat-1.json",
+      "sha256": "3c3434334094623f5f516c67c672988b9570953e2448f0a545d653bd6dba91d0"
+    },
+    {
+      "file": "v23-held-open-renewal-run-1-repeat-2.json",
+      "sha256": "5dd8b57d081a3b48a663908101150c2e1e0a34c62c31ae73199088aedf417c4c"
+    },
+    {
+      "file": "v23-held-rejected-inspection-run-1-repeat-1.json",
+      "sha256": "b1268ef61cd586a21d1d1eeb93ebdbd754ebd5ad8f40ce23c476a30ee0d21f45"
+    },
+    {
+      "file": "v23-held-rejected-inspection-run-1-repeat-2.json",
+      "sha256": "596de43355012a318f9605e63bfa636baa6fa4e3634dcf2f171104a7184c6b78"
+    },
+    {
+      "file": "v23-held-relayed-service-run-1-repeat-1.json",
+      "sha256": "059ae1aa67b620f9ce4bb176de504e58f2c954095232c5ae36cda5ef686a73e1"
+    },
+    {
+      "file": "v23-held-relayed-service-run-1-repeat-2.json",
+      "sha256": "fd6af524ecc0d1b436a4d2b2b2e9d7f2406fcb7f25ebebef33b2cb6b72c71c10"
+    },
+    {
+      "file": "v23-held-scoped-exclusion-run-1-repeat-1.json",
+      "sha256": "11f0280d7de3569b669d19ee869756736e7d16cfdfdf1f82f6c1fbbe006ba81d"
+    },
+    {
+      "file": "v23-held-scoped-exclusion-run-1-repeat-2.json",
+      "sha256": "83a949a3648905584a5fec3029d4a500e5c5d80bb0f11243068d3f257e14fafa"
+    }
+  ]
+}

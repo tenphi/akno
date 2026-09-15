@@ -1,0 +1,205 @@
+{
+  "packetSha256": "2ffc88745eef68946978d173d2fb40e87f9d43237969d8d97157546cdf93bad0",
+  "mapping": [
+    {
+      "id": "b5bf1b2846b83700ae78",
+      "file": "ordinary-empty-heading-fact-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "b89876247eca69f421d2",
+      "file": "ordinary-empty-heading-fact-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "b480c1d2907d7c0db652",
+      "file": "ordinary-empty-heading-fact-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "6aff92a020cd28c3b8ce",
+      "file": "ordinary-empty-heading-fact-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "f8ee2117fe02ecbd0a79",
+      "file": "ordinary-empty-heading-fact-repeat-2.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "09d2aac447c1299839f6",
+      "file": "ordinary-empty-heading-fact-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "1ae54af241593cdf1fdf",
+      "file": "ordinary-empty-heading-fact-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "4d24e7056a7ad27788a6",
+      "file": "ordinary-empty-heading-fact-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "a4cafe5d0118006cbd6b",
+      "file": "ordinary-empty-heading-fact-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "81802918035343d21c35",
+      "file": "ordinary-empty-heading-fact-repeat-2.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "e6dbf539e46f9eb27db6",
+      "file": "ordinary-mixed-hypothesis-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "658fffd9289b7e671165",
+      "file": "ordinary-mixed-hypothesis-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "b1d132c4ad0a7c3631b4",
+      "file": "ordinary-mixed-hypothesis-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "bf375e170ae764e71cf8",
+      "file": "ordinary-mixed-hypothesis-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "4639bcb6f313ccf9f2ee",
+      "file": "ordinary-mixed-hypothesis-repeat-2.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "9a7ad943728569dced63",
+      "file": "ordinary-mixed-hypothesis-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "bae8cb53a299ebd54a01",
+      "file": "ordinary-mixed-hypothesis-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "ae9fba5b3223f631e32b",
+      "file": "ordinary-mixed-hypothesis-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "6eec17854922a1e0fff5",
+      "file": "ordinary-mixed-hypothesis-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "2bb2bdccae1110d854b6",
+      "file": "ordinary-mixed-hypothesis-repeat-2.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    }
+  ]
+}

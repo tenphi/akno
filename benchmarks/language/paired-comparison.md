@@ -73,3 +73,8 @@ evidence, keeping source fidelity, qualification, usefulness and citation correc
 retained artifact can explain a downstream null without making abstention justified by the original source.
 The historical full quality gate remains unchanged and failed; the new experiment supports only the
 declared scope and routing claims.
+
+The [completed comparison](results/pr73-paired/README.md) reports source-useful answers separately from
+fully grounded useful answers. The latter additionally require source entailment, preserved qualifications,
+language compliance, valid citations and support in the supplied evidence. Both retain every scheduled
+main-answer operation in their denominator, including nulls caused by empty retained artifacts.

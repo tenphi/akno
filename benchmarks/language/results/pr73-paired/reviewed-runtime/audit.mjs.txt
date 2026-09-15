@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';import {createHash} from 'node:crypto';import {execFileSync} from 'node:child_process';
+const root='benchmarks/language/results/pr73-paired';const sha=x=>createHash('sha256').update(x).digest('hex');let checks=0;const check=(condition,message)=>{assert(condition,message);checks++;};
+const read=file=>JSON.parse(fs.readFileSync(file));
+for(const mode of ['offline','live']){
+ const dir=path.join(root,mode), manifest=read(dir+'/manifest.json'), fixtures=read(dir+'/fixtures.json'), index=read(dir+'/results.json'), completion=read(dir+'/completion.json');
+ check(completion.runtimeUnchanged&&completion.failedPairs===0&&completion.unstartedPairs===0&&completion.pairs===completion.expected,'complete run');
+ check(sha(JSON.stringify(fixtures))===manifest.fixturesSha256,'fixture hash');
+ for(const [file,hash] of Object.entries(manifest.runners))check(sha(fs.readFileSync('scripts/'+file))===hash,'runner unchanged');
+ for(const row of index.pairs){
+  const bytes=fs.readFileSync(dir+'/'+row.file);check(sha(bytes)===row.sha256,'pair hash');const pair=JSON.parse(bytes), fixture=fixtures.find(f=>f.id===pair.id), lines=fixture.markdown.split('\n');
+  for(const arm of ['baseline','candidate']){
+   const item=pair.arms[arm];check(item.bytesStable,'stable source bytes');
+   if(fixture.records)check(JSON.stringify(item.read.filter(l=>l.memory?.status==='qualified').map(l=>({text:l.text,qualification:l.memory})))===JSON.stringify(fixture.records),'public records unchanged');
+   for(const line of item.read){check(lines[line.n-1]===line.text,'read line coordinates');for(const frame of line.prose?.frame??[])check(lines[frame.n-1]===frame.text,'frame original bytes');}
+   for(const q of item.queries)for(const a of q.answers){check(a.memory_view===q.view,'actual answer view');if(q.explicit)check(a.memory_view===q.expectedView,'explicit override');}
+   const answers=[...item.queries.flatMap(q=>q.answers),item.factualControl.answer];
+   check(item.factualControl.answer.memory_view==='factual'&&item.factualControl.context.memory_view==='factual','executed factual controls');
+   for(const a of answers){for(const c of a.citations){check(c.type==='page'&&c.slug==='equipment','citation destination');for(const n of c.lines)check(Number.isInteger(n)&&n>0&&n<=lines.length,'citation line');}}
+  }
+ }
+ if(mode==='live'){
+  const receipts=fs.readFileSync(dir+'/network-receipts.jsonl','utf8').trim().split('\n').map(JSON.parse);const map=new Map(receipts.map(r=>[r.sequence,r]));check(map.size===receipts.length&&receipts.length===completion.requests,'all requests');
+  for(let i=1;i<=receipts.length;i++)check(map.has(i),'sequence coverage');
+  for(const r of receipts){if(r.reusedFrom!==null){const p=map.get(r.reusedFrom);check(p&&p.arm!==r.arm&&p.reusedFrom===null,'opposite-arm physical source');for(const k of ['id','run','stage','occurrence','requestSha256','model','status','failure'])check(r[k]===p[k],'exact coupled coordinate');check(!('usage' in r),'usage once');}}
+ }
+}
+const freeze=read(root+'/freeze-review.json');for(const [file,hash] of Object.entries(freeze.reviewedFiles))check(sha(fs.readFileSync(file==='scripts/summarize-language-comparison.mjs'?root+'/reviewed-runtime/summarize-language-comparison.mjs.txt':file))===hash,'independently reviewed code preserved');
+execFileSync(process.execPath,['/tmp/akno-luna-verify-artifacts.mjs']);
+execFileSync('git',['diff','--exit-code','49819819e77837722415eb55d67cb1c13f64cf81','--','benchmarks/language/results/pr73-luna-final','benchmarks/language/results/pr73-acceptance','benchmarks/language/results/pr73-live','benchmarks/language/results/fixed-comparison']);
+const credential=fs.readFileSync('/tmp/akno-acceptance-provider-key','utf8').trim();
+const names=fs.readdirSync(root,{recursive:true}).filter(n=>fs.statSync(path.join(root,n)).isFile());
+for(const name of names){const bytes=fs.readFileSync(path.join(root,name),'utf8');check(!bytes.includes(credential),'no credential');check(!/sk-proj-[A-Za-z0-9_-]{16,}|Bearer s[k]-|\/Users\//.test(bytes),'no credential or home path');}
+const result={schemaVersion:'paired-publication-audit-v1',checks,casePairs:70,oldArchivesByteIdentical:true,runnerHashesMatchIndependentFreeze:true,credentialsExcluded:true,filesScanned:names.length};
+fs.writeFileSync(root+'/publication-audit.json',JSON.stringify(result,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify(result));

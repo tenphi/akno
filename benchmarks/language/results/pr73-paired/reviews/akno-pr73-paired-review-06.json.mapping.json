@@ -1,0 +1,205 @@
+{
+  "packetSha256": "97c68cc7aaa25b5720076ea7d4ad0c36562fcaf8ea7852de6438e8b35866fda5",
+  "mapping": [
+    {
+      "id": "70f2266dc01d52598a72",
+      "file": "v23-held-declined-extension-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "8d143424edc506b5f08e",
+      "file": "v23-held-declined-extension-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "8f3a195c87d65ed220f0",
+      "file": "v23-held-declined-extension-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "d50a7523f257b776fc8a",
+      "file": "v23-held-declined-extension-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "d9c9056c5c204802a3fc",
+      "file": "v23-held-declined-extension-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "be4c64fbea264ecc3c50",
+      "file": "v23-held-declined-extension-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "c38735b3f5b7f02ab58d",
+      "file": "v23-held-declined-extension-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "03a704c70b8232aba249",
+      "file": "v23-held-declined-extension-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "9190fdb1df73f25f477b",
+      "file": "v23-held-declined-extension-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "434ad20a67aed0d9857a",
+      "file": "v23-held-declined-extension-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "2ecc31551837f42c5ea0",
+      "file": "v23-held-relayed-service-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "1caea753c5bafe9bd8f7",
+      "file": "v23-held-relayed-service-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "f875f2daa62d1c08cc8b",
+      "file": "v23-held-relayed-service-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "9eb83d4e7c515f126ac3",
+      "file": "v23-held-relayed-service-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "7fe4d5dda39f0d2aa23d",
+      "file": "v23-held-relayed-service-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "635026f82253fe0dc05f",
+      "file": "v23-held-relayed-service-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "13a4d388b300f77db4d0",
+      "file": "v23-held-relayed-service-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "9144a9954250a0b4e836",
+      "file": "v23-held-relayed-service-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "3f3493b942d33777788b",
+      "file": "v23-held-relayed-service-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "e7f38ccf21c812250ab0",
+      "file": "v23-held-relayed-service-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    }
+  ]
+}

@@ -1,0 +1,832 @@
+[
+  {
+    "id": "ordinary-english-report",
+    "path": "ordinary",
+    "sourceLanguage": "en",
+    "view": "reports",
+    "markdown": "# Zephyr QX-100\n\n  ## Assistant ###\nThe Zephyr QX-100 maintenance plan includes a case inspection every eleven months.\n",
+    "focusLine": 4,
+    "queries": {
+      "mixed": "What did the assistant report about the Zephyr QX-100 план обслуживания?"
+    },
+    "expectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity.",
+    "originalSource": "# Zephyr QX-100\n\n  ## Assistant ###\nThe Zephyr QX-100 maintenance plan includes a case inspection every eleven months.\n",
+    "records": null,
+    "projections": [
+      {
+        "n": 4,
+        "view": "reports"
+      }
+    ]
+  },
+  {
+    "id": "ordinary-mixed-hypothesis",
+    "path": "ordinary",
+    "sourceLanguage": "mixed",
+    "view": "discussion",
+    "markdown": "# Zephyr QX-100\n\n  ## Гипотеза ###\nThe Zephyr QX-100 warranty lasts five years.\nЗамена корпуса покрывается гарантией.\n",
+    "focusLine": 4,
+    "queries": {
+      "en": "What hypothetical warranty scenario is recorded for Zephyr QX-100?"
+    },
+    "expectation": "Both the five-year warranty duration and housing replacement coverage belong to one hypothetical scenario. A useful answer preserves both propositions and their hypothetical status. Neither proposition establishes actual warranty coverage.",
+    "originalSource": "# Zephyr QX-100\n\n  ## Гипотеза ###\nThe Zephyr QX-100 warranty lasts five years.\nЗамена корпуса покрывается гарантией.\n",
+    "records": null,
+    "projections": [
+      {
+        "n": 4,
+        "view": "discussion"
+      },
+      {
+        "n": 5,
+        "view": "discussion"
+      }
+    ]
+  },
+  {
+    "id": "ordinary-empty-heading-fact",
+    "path": "ordinary",
+    "sourceLanguage": "en",
+    "view": "factual",
+    "markdown": "# Zephyr QX-100\n\n  ## Hypothesis\nThe Zephyr QX-100 warranty lasts eleven years.\n\n##\nThe Zephyr QX-100 case is silver.\n",
+    "focusLine": 7,
+    "queries": {
+      "en": "What color is the Zephyr QX-100 case?"
+    },
+    "expectation": "The case is silver as an ordinary authored assertion. The empty sibling heading ends the hypothetical section. Do not describe the case color as hypothetical or add the hypothetical eleven-year warranty to the answer.",
+    "originalSource": "# Zephyr QX-100\n\n  ## Hypothesis\nThe Zephyr QX-100 warranty lasts eleven years.\n\n##\nThe Zephyr QX-100 case is silver.\n",
+    "records": null,
+    "projections": [
+      {
+        "n": 4,
+        "view": "discussion"
+      },
+      {
+        "n": 7,
+        "view": "factual"
+      }
+    ]
+  },
+  {
+    "id": "v23-held-relayed-service/run-1",
+    "path": "retained",
+    "sourceLanguage": "ru",
+    "admission": "writable",
+    "view": "reports",
+    "queries": {
+      "ru": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?"
+    },
+    "expectation": "Preserve Ada as outer recorder, Bo as the inner reporter, the alleged permission to send the device to a workshop to measure indicator brightness, and Ada’s clarification that the reported action was measurement rather than replacement. This does not prohibit all replacement or establish real permission. Keep her personal unread/unverified limits and separately her asserted fact that she has not removed her device’s protective cover.",
+    "originalSource": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Я, Ada Marlow, записываю сообщение Bo Winters об обслуживании Zephyr QX-100 компанией Vulpine Mutual. Я не читала условия и не проверяла это сообщение."
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Bo Winters сказал, что Vulpine Mutual разрешает отправить Zephyr QX-100 в мастерскую для измерения яркости индикатора."
+      },
+      {
+        "item_id": "turn-3333",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Уточняю содержание его сообщения: речь шла об измерении яркости, а не о замене индикатора. Отдельно: я ещё не сняла защитную крышку со своего Zephyr QX-100."
+      }
+    ],
+    "records": [
+      {
+        "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+        "qualification": {
+          "status": "qualified",
+          "id": "mem_63b1a51b",
+          "level": 1,
+          "kind": "claim",
+          "subject": "ent_fb91b22cf8950f6c9ed00e24",
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "commitment": "asserted",
+          "disposition": "active",
+          "polarity": "affirmed",
+          "basis": "source_report",
+          "answer_eligible": false,
+          "current_eligible": false
+        }
+      },
+      {
+        "text": "- Ada Marlow has not yet removed the protective cover from her Zephyr QX-100.",
+        "qualification": {
+          "status": "qualified",
+          "id": "mem_95de9eb4",
+          "level": 1,
+          "kind": "claim",
+          "subject": "ent_fb91b22cf8950f6c9ed00e24",
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "commitment": "asserted",
+          "disposition": "active",
+          "polarity": "negated",
+          "basis": "self_attested",
+          "answer_eligible": true,
+          "current_eligible": true
+        }
+      }
+    ],
+    "originalSupports": [
+      {
+        "memory_id": "mem_95de9eb4",
+        "source_ref": "invented:v23-held-relayed-service",
+        "input_hash": "965b01704f3b062161573a9d5f735b04cf17b3678d9810297ee211be05f7a935",
+        "evidence": "Отдельно: я ещё не сняла защитную крышку со своего Zephyr QX-100.",
+        "evidence_hash": "e85d9f0e9d095077dd5513783bd974d6ba057af8169acc1743c634d0929a1fec",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "Отдельно: я ещё не сняла защитную крышку со своего Zephyr QX-100.",
+            "matchingSourceItems": [
+              "turn-3333"
+            ]
+          }
+        ]
+      },
+      {
+        "memory_id": "mem_63b1a51b",
+        "source_ref": "invented:v23-held-relayed-service",
+        "input_hash": "965b01704f3b062161573a9d5f735b04cf17b3678d9810297ee211be05f7a935",
+        "evidence": "Я, Ada Marlow, записываю сообщение Bo Winters об обслуживании Zephyr QX-100 компанией Vulpine Mutual. Я не читала условия и не проверяла это сообщение.\n…\nBo Winters сказал, что Vulpine Mutual разрешает отправить Zephyr QX-100 в мастерскую для измерения яркости индикатора.\n…\nУточняю содержание его сообщения: речь шла об измерении яркости, а не о замене индикатора.",
+        "evidence_hash": "7e599c751def8c042dde9f9cf8d4cb2df5478b4fa8c63bd527b621606b85aa21",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "Я, Ada Marlow, записываю сообщение Bo Winters об обслуживании Zephyr QX-100 компанией Vulpine Mutual. Я не читала условия и не проверяла это сообщение.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          },
+          {
+            "quote": "Bo Winters сказал, что Vulpine Mutual разрешает отправить Zephyr QX-100 в мастерскую для измерения яркости индикатора.",
+            "matchingSourceItems": [
+              "turn-2222"
+            ]
+          },
+          {
+            "quote": "Уточняю содержание его сообщения: речь шла об измерении яркости, а не о замене индикатора.",
+            "matchingSourceItems": [
+              "turn-3333"
+            ]
+          }
+        ]
+      }
+    ],
+    "originalRetentionReview": {
+      "complete": true,
+      "justifiedHold": false,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "reason": "The complete retained set preserves the qualified report and the separate asserted fact. Ada remains the outer recorder/relayer and Bo the inner reporter of Vulpine’s alleged permission to send the whole device to a workshop to measure indicator brightness. The measurement/replacement contrast describes the reported service purpose, not a universal ban on replacement. Ada’s personal unread terms and unchecked report are explicit. A second, negatively polarized self-attested record separately preserves that Ada has not yet removed the protective cover from her device. Both records are in English and source-entailed; asserted source_report metadata does not promote the embedded permission to verified fact."
+    },
+    "archive": {
+      "path": "benchmarks/language/results/pr73-luna-final/held-out/report.json",
+      "sha256": "ba3e09ba59f9ae232a4ca214102ebbeabfa156e816c58943e62afbcfc91f5f4c",
+      "caseId": "v23-held-relayed-service",
+      "run": 1
+    },
+    "markdown": "# Zephyr QX-100\n\n<!-- akno:item mem_63b1a51b v=2 supports=2aa38bb235dda1cb622c11c1@5feceb66ffc86f38d952786c@897f6195991e0654e70de844@provided level=1 kind=claim subject=ent_fb91b22cf8950f6c9ed00e24 source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=affirmed basis=source_report -->\n- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.\n\n<!-- akno:item mem_95de9eb4 v=2 supports=2aa38bb235dda1cb622c11c1@6b86b273ff34fce19d6b804e@0dd2ca01210143be14a4ae3d@provided level=1 kind=claim subject=ent_fb91b22cf8950f6c9ed00e24 source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->\n- Ada Marlow has not yet removed the protective cover from her Zephyr QX-100.\n"
+  },
+  {
+    "id": "v23-held-declined-extension/run-1",
+    "path": "retained",
+    "sourceLanguage": "en",
+    "admission": "writable",
+    "view": "discussion",
+    "queries": {
+      "en": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?"
+    },
+    "expectation": "Preserve Ada’s actual rejection and the unrealized free connector repair after twenty-two months of use, dependent on accepting the extension. The counterfactual remains available for discussion; it is neither actual coverage nor a completed repair, replacement promise, calendar event or canceled fact.",
+    "originalSource": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "I, Ada Marlow, declined the optional Zephyr QX-100 cable-protection extension."
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Had I accepted that extension, repair of the connector after twenty-two months of use would have been free. I did not accept it; this is the unrealized benefit, not coverage I currently have."
+      }
+    ],
+    "records": [
+      {
+        "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+        "qualification": {
+          "status": "qualified",
+          "id": "mem_1683ffb1",
+          "level": 1,
+          "kind": "decision",
+          "subject": "ent_25ea2398b5ff33247882221d",
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "commitment": "asserted",
+          "disposition": "rejected",
+          "polarity": "affirmed",
+          "basis": "self_attested",
+          "answer_eligible": false,
+          "current_eligible": false
+        }
+      },
+      {
+        "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+        "qualification": {
+          "status": "qualified",
+          "id": "mem_fe6bd624",
+          "level": 1,
+          "kind": "claim",
+          "subject": "ent_25ea2398b5ff33247882221d",
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "commitment": "counterfactual",
+          "disposition": "active",
+          "polarity": "affirmed",
+          "basis": "self_attested",
+          "answer_eligible": false,
+          "current_eligible": false
+        }
+      }
+    ],
+    "originalSupports": [
+      {
+        "memory_id": "mem_1683ffb1",
+        "source_ref": "invented:v23-held-declined-extension",
+        "input_hash": "bf039f2dee5f8a3b5deab6f770678a07b3a8cd5af0f2ce5b93eff5afc3a7e44f",
+        "evidence": "I, Ada Marlow, declined the optional Zephyr QX-100 cable-protection extension.",
+        "evidence_hash": "f5f7786b7ebbd5e9b0cf8e5e0df059dd633bb851cae107103a62eb38cc473535",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "I, Ada Marlow, declined the optional Zephyr QX-100 cable-protection extension.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          }
+        ]
+      },
+      {
+        "memory_id": "mem_fe6bd624",
+        "source_ref": "invented:v23-held-declined-extension",
+        "input_hash": "bf039f2dee5f8a3b5deab6f770678a07b3a8cd5af0f2ce5b93eff5afc3a7e44f",
+        "evidence": "Had I accepted that extension, repair of the connector after twenty-two months of use would have been free. I did not accept it; this is the unrealized benefit, not coverage I currently have.\n…\nI, Ada Marlow, declined the optional Zephyr QX-100 cable-protection extension.",
+        "evidence_hash": "c224d04600ffffa11dda28d0b31cef24bd97f379b82a4da8cb2d629e07d53cc7",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "Had I accepted that extension, repair of the connector after twenty-two months of use would have been free. I did not accept it; this is the unrealized benefit, not coverage I currently have.",
+            "matchingSourceItems": [
+              "turn-2222"
+            ]
+          },
+          {
+            "quote": "I, Ada Marlow, declined the optional Zephyr QX-100 cable-protection extension.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          }
+        ]
+      }
+    ],
+    "originalRetentionReview": {
+      "complete": true,
+      "justifiedHold": false,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "reason": "The retained set preserves both Ada’s actual rejection of the optional cable-protection extension and the separate unrealized consequence of acceptance: free connector repair after twenty-two months of use. English prose and counterfactual metadata retain the false antecedent and explicit absence of current coverage. The rejected decision does not erase the discussion-eligible counterfactual, and neither row asserts a performed repair, replacement, or current entitlement."
+    },
+    "archive": {
+      "path": "benchmarks/language/results/pr73-luna-final/held-out/report.json",
+      "sha256": "ba3e09ba59f9ae232a4ca214102ebbeabfa156e816c58943e62afbcfc91f5f4c",
+      "caseId": "v23-held-declined-extension",
+      "run": 1
+    },
+    "markdown": "# Zephyr QX-100\n\n<!-- akno:item mem_1683ffb1 v=2 supports=6f69821c19187f694f7d3cce@5feceb66ffc86f38d952786c@cb7d6da52cf3b3b2c4e488e9@provided level=1 kind=decision subject=ent_25ea2398b5ff33247882221d source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=rejected polarity=affirmed basis=self_attested -->\n- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.\n\n<!-- akno:item mem_fe6bd624 v=2 supports=6f69821c19187f694f7d3cce@6b86b273ff34fce19d6b804e@6396bada146403267a4045b6@provided level=1 kind=claim subject=ent_25ea2398b5ff33247882221d source-role=user speaker=Ada%20Marlow reports=0 commitment=counterfactual disposition=active polarity=affirmed basis=self_attested -->\n- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.\n"
+  },
+  {
+    "id": "v23-held-assistant-reading/run-1",
+    "path": "retained",
+    "sourceLanguage": "mixed",
+    "admission": "writable",
+    "view": "reports",
+    "queries": {
+      "en": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?"
+    },
+    "expectation": "Preserve tentative assistant attribution, the possibility that Vulpine Mutual supplies a return label for servicing, and the assistant’s personal lack of reading and verification. A possible service provision is not an arranged return, scheduled shipment, completed dispatch, or established contractual duty.",
+    "originalSource": [
+      {
+        "item_id": "turn-1111",
+        "role": "assistant",
+        "text": "My tentative reading is that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. Я не читал условия и не проверял это предположение. Наличие такой возможности не означает, что возврат уже оформлен или отправка назначена."
+      }
+    ],
+    "records": [
+      {
+        "text": "- **Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled.",
+        "qualification": {
+          "status": "qualified",
+          "id": "mem_f43fbb19",
+          "level": 1,
+          "kind": "claim",
+          "subject": "ent_1f863300088680a9be301b5a",
+          "source_role": "assistant",
+          "commitment": "tentative",
+          "disposition": "active",
+          "polarity": "affirmed",
+          "basis": "source_report",
+          "answer_eligible": false,
+          "current_eligible": false
+        }
+      }
+    ],
+    "originalSupports": [
+      {
+        "memory_id": "mem_f43fbb19",
+        "source_ref": "invented:v23-held-assistant-reading",
+        "input_hash": "81d27dcc283daffb694bf02e84e112ca8e611b0dc772ba0277e8f1236f561e13",
+        "evidence": "My tentative reading is that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. Я не читал условия и не проверял это предположение. Наличие такой возможности не означает, что возврат уже оформлен или отправка назначена.",
+        "evidence_hash": "cec556e86ae01c5f80defe9890b48de7bbb1eeb4f06d3c7d7fcb2d5a0782f23c",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "My tentative reading is that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. Я не читал условия и не проверял это предположение. Наличие такой возможности не означает, что возврат уже оформлен или отправка назначена.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          }
+        ]
+      }
+    ],
+    "originalRetentionReview": {
+      "complete": true,
+      "justifiedHold": false,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "reason": "The retained English record keeps the assistant as the tentative source of the possibility that Vulpine Mutual supplies a return label for Zephyr QX-100 servicing. It preserves the assistant’s own failure to read the terms or verify the assumption, and explicitly blocks inference of an arranged return or scheduled shipment. Source-report metadata and tentative commitment agree with the complete prose; no contractual duty or completed dispatch is established."
+    },
+    "archive": {
+      "path": "benchmarks/language/results/pr73-luna-final/held-out/report.json",
+      "sha256": "ba3e09ba59f9ae232a4ca214102ebbeabfa156e816c58943e62afbcfc91f5f4c",
+      "caseId": "v23-held-assistant-reading",
+      "run": 1
+    },
+    "markdown": "# Zephyr QX-100\n\n<!-- akno:item mem_f43fbb19 v=2 supports=60617aa9edb04998d5f247f4@5feceb66ffc86f38d952786c@8549d69c7f2a9244ff89f441@provided level=1 kind=claim subject=ent_1f863300088680a9be301b5a source-role=assistant reports=0 commitment=tentative disposition=active polarity=affirmed basis=source_report -->\n- **Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled.\n"
+  },
+  {
+    "id": "v23-held-fictional-key/run-1",
+    "path": "retained",
+    "sourceLanguage": "ru",
+    "admission": "writable",
+    "view": "discussion",
+    "queries": {
+      "en": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?"
+    },
+    "expectation": "Retain Ada’s real proposal to discuss an invented example separately from its hypothetical payload. Preserve the fictional lender, borrower, spare physical metal cover key rather than an access code, first thirty-three days after fictional inspection, and absence of a real agreement. Neither discussion, inspection nor loan is established as completed in the real world.",
+    "originalSource": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Я, Ada Marlow, предлагаю обсудить вымышленный пример о Zephyr QX-100. Это не реальное соглашение."
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "В этой истории вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасной металлический ключ для крышки Zephyr QX-100 на первые тридцать три дня после вымышленного осмотра. Это физический ключ, не код доступа. Заём существует только внутри истории."
+      }
+    ],
+    "records": [
+      {
+        "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+        "qualification": {
+          "status": "qualified",
+          "id": "mem_ae33b4c0",
+          "level": 1,
+          "kind": "plan",
+          "subject": "ent_b2939f033c45ab12d54fa0d4",
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "commitment": "asserted",
+          "disposition": "proposed",
+          "polarity": "affirmed",
+          "basis": "self_attested",
+          "answer_eligible": false,
+          "current_eligible": false
+        }
+      },
+      {
+        "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+        "qualification": {
+          "status": "qualified",
+          "id": "mem_8dd93dd0",
+          "level": 1,
+          "kind": "claim",
+          "subject": "ent_b2939f033c45ab12d54fa0d4",
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "commitment": "hypothetical",
+          "disposition": "active",
+          "polarity": "affirmed",
+          "basis": "self_attested",
+          "answer_eligible": false,
+          "current_eligible": false
+        }
+      }
+    ],
+    "originalSupports": [
+      {
+        "memory_id": "mem_8dd93dd0",
+        "source_ref": "invented:v23-held-fictional-key",
+        "input_hash": "e69391e223c3602b84e07eb9bb8bdd30ce5a731be4eb8827116ba0cf8dce6cba",
+        "evidence": "Я, Ada Marlow, предлагаю обсудить вымышленный пример о Zephyr QX-100. Это не реальное соглашение.\n…\nВ этой истории вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасной металлический ключ для крышки Zephyr QX-100 на первые тридцать три дня после вымышленного осмотра. Это физический ключ, не код доступа. Заём существует только внутри истории.",
+        "evidence_hash": "e1097e08d1099fb8e6650b01be9933e2e80d0c923d6b5881db2a373d2c5b7c2b",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "Я, Ada Marlow, предлагаю обсудить вымышленный пример о Zephyr QX-100. Это не реальное соглашение.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          },
+          {
+            "quote": "В этой истории вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасной металлический ключ для крышки Zephyr QX-100 на первые тридцать три дня после вымышленного осмотра. Это физический ключ, не код доступа. Заём существует только внутри истории.",
+            "matchingSourceItems": [
+              "turn-2222"
+            ]
+          }
+        ]
+      },
+      {
+        "memory_id": "mem_ae33b4c0",
+        "source_ref": "invented:v23-held-fictional-key",
+        "input_hash": "e69391e223c3602b84e07eb9bb8bdd30ce5a731be4eb8827116ba0cf8dce6cba",
+        "evidence": "Я, Ada Marlow, предлагаю обсудить вымышленный пример о Zephyr QX-100. Это не реальное соглашение.",
+        "evidence_hash": "8c0eaaa648f0994b78752ca8c171cc900c6e4297a5ade78926d7a8f684a56db7",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "Я, Ada Marlow, предлагаю обсудить вымышленный пример о Zephyr QX-100. Это не реальное соглашение.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          }
+        ]
+      }
+    ],
+    "originalRetentionReview": {
+      "complete": true,
+      "justifiedHold": false,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "reason": "The complete retained set separately records Ada’s actual proposal to discuss an invented example and its hypothetical payload. The payload preserves fictional lender and borrower, the spare physical metal cover key rather than an access code, and the first thirty-three days after a fictional inspection. Story framing plus the separate no-real-agreement statement preserve the loan’s fictional scope. Neither the discussion nor the inspection or loan becomes a completed real-world event."
+    },
+    "archive": {
+      "path": "benchmarks/language/results/pr73-luna-final/held-out/report.json",
+      "sha256": "ba3e09ba59f9ae232a4ca214102ebbeabfa156e816c58943e62afbcfc91f5f4c",
+      "caseId": "v23-held-fictional-key",
+      "run": 1
+    },
+    "markdown": "# Zephyr QX-100\n\n<!-- akno:item mem_ae33b4c0 v=2 supports=52b1e9a765639d1efba59f3b@5feceb66ffc86f38d952786c@47f1171a1fb55f39ae49e885@provided level=1 kind=plan subject=ent_b2939f033c45ab12d54fa0d4 source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=proposed polarity=affirmed basis=self_attested -->\n- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.\n\n<!-- akno:item mem_8dd93dd0 v=2 supports=52b1e9a765639d1efba59f3b@6b86b273ff34fce19d6b804e@4a5d06211ac8e7d7df87b2c5@provided level=1 kind=claim subject=ent_b2939f033c45ab12d54fa0d4 source-role=user speaker=Ada%20Marlow reports=0 commitment=hypothetical disposition=active polarity=affirmed basis=self_attested -->\n- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.\n"
+  },
+  {
+    "id": "v23-held-rejected-inspection/run-1",
+    "path": "retained",
+    "sourceLanguage": "en",
+    "admission": "writable",
+    "view": "history",
+    "queries": {
+      "ru": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?"
+    },
+    "expectation": "Preserve Ada as rejecting agent, the rejected offer to take the entire device to the workshop for a check of its alignment gauge, and the separate no-plan, no-appointment and no-transport assertions. Do not turn taking the device into transporting just the gauge, checking the gauge into measuring a specific unmentioned property, or a rejected offer into an active plan or completed inspection.",
+    "originalSource": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "I, Ada Marlow, rejected the offer to take my Zephyr QX-100 to the workshop so that its alignment gauge could be checked."
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "I have no plan to take it there. No inspection appointment has been made, and I have not transported the device."
+      }
+    ],
+    "records": [
+      {
+        "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+        "qualification": {
+          "status": "qualified",
+          "id": "mem_b4dc3b63",
+          "level": 1,
+          "kind": "plan",
+          "subject": "ent_0d3330b36f3f1255e1ed4219",
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "commitment": "asserted",
+          "disposition": "rejected",
+          "polarity": "affirmed",
+          "basis": "self_attested",
+          "answer_eligible": false,
+          "current_eligible": false
+        }
+      },
+      {
+        "text": "- No inspection appointment has been made, and Ada Marlow has not transported her Zephyr QX-100.",
+        "qualification": {
+          "status": "qualified",
+          "id": "mem_b6c814b0",
+          "level": 1,
+          "kind": "event",
+          "subject": "ent_0d3330b36f3f1255e1ed4219",
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "commitment": "asserted",
+          "disposition": "active",
+          "polarity": "negated",
+          "basis": "self_attested",
+          "answer_eligible": true,
+          "current_eligible": true
+        }
+      }
+    ],
+    "originalSupports": [
+      {
+        "memory_id": "mem_b6c814b0",
+        "source_ref": "invented:v23-held-rejected-inspection",
+        "input_hash": "b56888aac97dab5feafe9eaf7e618b9ac9cc038772e999fefb0bb907640e17db",
+        "evidence": "No inspection appointment has been made, and I have not transported the device.\n…\nI, Ada Marlow, rejected the offer to take my Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+        "evidence_hash": "81538f6df99c450c2a24eb20b917f5bf036c9f64c344c6b098a1538fceeadccc",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "No inspection appointment has been made, and I have not transported the device.",
+            "matchingSourceItems": [
+              "turn-2222"
+            ]
+          },
+          {
+            "quote": "I, Ada Marlow, rejected the offer to take my Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          }
+        ]
+      },
+      {
+        "memory_id": "mem_b4dc3b63",
+        "source_ref": "invented:v23-held-rejected-inspection",
+        "input_hash": "b56888aac97dab5feafe9eaf7e618b9ac9cc038772e999fefb0bb907640e17db",
+        "evidence": "I, Ada Marlow, rejected the offer to take my Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+        "evidence_hash": "a012e23942d599d81002da164af32e52b234b938c805368d0e92768fa887be9e",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "I, Ada Marlow, rejected the offer to take my Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          }
+        ]
+      }
+    ],
+    "originalRetentionReview": {
+      "complete": false,
+      "justifiedHold": false,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "reason": "The retained set preserves the rejected offer to take Ada’s entire device to the workshop for checking its alignment gauge, plus the separate absence of an inspection appointment and of transported-device action. It omits Ada’s explicit statement that she has no plan to take the device there. Rejection of one offer, no appointment, and no past transport do not entail absence of all current plans to go there. This is incomplete retention, while both surviving rows preserve their own source meaning, rejection and negative-event polarity without an invented measurement property or completed inspection."
+    },
+    "archive": {
+      "path": "benchmarks/language/results/pr73-luna-final/held-out/report.json",
+      "sha256": "ba3e09ba59f9ae232a4ca214102ebbeabfa156e816c58943e62afbcfc91f5f4c",
+      "caseId": "v23-held-rejected-inspection",
+      "run": 1
+    },
+    "markdown": "# Zephyr QX-100\n\n<!-- akno:item mem_b4dc3b63 v=2 supports=deb58f936e4e31e8378551db@5feceb66ffc86f38d952786c@ee41fa8b5fbb6e9adf21b0b9@provided level=1 kind=plan subject=ent_0d3330b36f3f1255e1ed4219 source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=rejected polarity=affirmed basis=self_attested -->\n- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.\n\n<!-- akno:item mem_b6c814b0 v=2 supports=deb58f936e4e31e8378551db@6b86b273ff34fce19d6b804e@5a6663212922a5c5fc4652db@provided level=1 kind=event subject=ent_0d3330b36f3f1255e1ed4219 source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->\n- No inspection appointment has been made, and Ada Marlow has not transported her Zephyr QX-100.\n"
+  },
+  {
+    "id": "v23-held-scoped-exclusion/run-1",
+    "path": "retained",
+    "sourceLanguage": "ru",
+    "admission": "writable",
+    "view": "factual",
+    "queries": {
+      "ru": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?"
+    },
+    "expectation": "Retain the specific exclusion of wax-caused fabric-seal damage, with negative polarity, and separately the limit that this exclusion does not settle hinge-replacement coverage or prove contract silence. Do not exclude all seal damage, assert inclusion/exclusion of hinge replacement, or change damage coverage into a replacement benefit.",
+    "originalSource": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Я, Ada Marlow, записываю: гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском."
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Это исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли. Оно также не означает, что договор ничего не говорит об этой шарнирной петле."
+      }
+    ],
+    "records": [
+      {
+        "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+        "qualification": {
+          "status": "qualified",
+          "id": "mem_c525e28e",
+          "level": 1,
+          "kind": "claim",
+          "subject": "ent_07f691343007e67b30b131ae",
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "commitment": "asserted",
+          "disposition": "active",
+          "polarity": "negated",
+          "basis": "self_attested",
+          "answer_eligible": true,
+          "current_eligible": true
+        }
+      }
+    ],
+    "originalSupports": [
+      {
+        "memory_id": "mem_c525e28e",
+        "source_ref": "invented:v23-held-scoped-exclusion",
+        "input_hash": "e0a8942f50b5e9b06948965035ca80cd5a0ca5601c90fb9b266e947b5f968a14",
+        "evidence": "Я, Ada Marlow, записываю: гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском.\n…\nЭто исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли. Оно также не означает, что договор ничего не говорит об этой шарнирной петле.",
+        "evidence_hash": "76ce18a7a4408a3d8d79c2d06a6315b65e1d0247bb5fb4fc54d9f789fbb9d85e",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "Я, Ada Marlow, записываю: гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          },
+          {
+            "quote": "Это исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли. Оно также не означает, что договор ничего не говорит об этой шарнирной петле.",
+            "matchingSourceItems": [
+              "turn-2222"
+            ]
+          }
+        ]
+      }
+    ],
+    "originalRetentionReview": {
+      "complete": true,
+      "justifiedHold": false,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "reason": "The complete retained claim preserves Ada’s wax-caused fabric-seal damage exclusion and both coupled limits: it alone settles neither hinge-replacement coverage nor whether the contract discusses the hinge. The revised source expressly identifies a mechanical hinge, so English hinge preserves its component meaning. Negative polarity and self-attested attribution match the source; no wider seal exclusion or hinge entitlement is asserted."
+    },
+    "archive": {
+      "path": "benchmarks/language/results/pr73-luna-final/held-out/report.json",
+      "sha256": "ba3e09ba59f9ae232a4ca214102ebbeabfa156e816c58943e62afbcfc91f5f4c",
+      "caseId": "v23-held-scoped-exclusion",
+      "run": 1
+    },
+    "markdown": "# Zephyr QX-100\n\n<!-- akno:item mem_c525e28e v=2 supports=6054ff36c5e203a621d9c898@5feceb66ffc86f38d952786c@9cb52e62454297267d8f5ad5@provided level=1 kind=claim subject=ent_07f691343007e67b30b131ae source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->\n- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.\n"
+  },
+  {
+    "id": "v23-held-open-renewal/run-1",
+    "path": "retained",
+    "sourceLanguage": "mixed",
+    "admission": "writable",
+    "view": "questions",
+    "queries": {
+      "en": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?"
+    },
+    "expectation": "Retain the unanswered question about a new paper inspection certificate being required for service-plan renewal, with question kind and no commitment to either answer. Preserve Ada’s personal lack of an answer, the distinction from contract silence, and separately her assertion that she has not submitted a renewal request. Do not establish a requirement, exemption, renewal or submission.",
+    "originalSource": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Для Zephyr QX-100 у меня, Ada Marlow, остаётся открытый вопрос: does renewing the service plan require a new paper inspection certificate?"
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "I do not yet have an answer. My unanswered question does not establish that the agreement is silent, and I have not submitted a renewal request."
+      }
+    ],
+    "records": [
+      {
+        "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+        "qualification": {
+          "status": "qualified",
+          "id": "mem_1c532ef2",
+          "level": 1,
+          "kind": "question",
+          "subject": "ent_346873427fe35a3ad4b453e5",
+          "source_role": "user",
+          "source_speaker": "Ada Marlow",
+          "commitment": "none",
+          "disposition": "active",
+          "polarity": "affirmed",
+          "basis": "self_attested",
+          "answer_eligible": false,
+          "current_eligible": false
+        }
+      }
+    ],
+    "originalSupports": [
+      {
+        "memory_id": "mem_1c532ef2",
+        "source_ref": "invented:v23-held-open-renewal",
+        "input_hash": "267dd461d68770ed17aeb21eda25549bb4c3499e80789d6771f163cbb1c16585",
+        "evidence": "Для Zephyr QX-100 у меня, Ada Marlow, остаётся открытый вопрос: does renewing the service plan require a new paper inspection certificate?\n…\nI do not yet have an answer. My unanswered question does not establish that the agreement is silent, and I have not submitted a renewal request.",
+        "evidence_hash": "a32b39a3ae939e2da183cfdaa1c46b1df35a7046f477047d1e48605e8ee309b7",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "Для Zephyr QX-100 у меня, Ada Marlow, остаётся открытый вопрос: does renewing the service plan require a new paper inspection certificate?",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          },
+          {
+            "quote": "I do not yet have an answer. My unanswered question does not establish that the agreement is silent, and I have not submitted a renewal request.",
+            "matchingSourceItems": [
+              "turn-2222"
+            ]
+          }
+        ]
+      }
+    ],
+    "originalRetentionReview": {
+      "complete": true,
+      "justifiedHold": false,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "reason": "The retained set preserves the unresolved question about a new paper inspection certificate for renewing the service plan, Ada’s own lack of an answer, the limit against inferring contract silence, and her separate assertion that she has not submitted a renewal request. The question framing applies to the certificate requirement rather than erasing the explicit non-submission statement. No requirement, exemption, renewal, or submission is established."
+    },
+    "archive": {
+      "path": "benchmarks/language/results/pr73-luna-final/held-out/report.json",
+      "sha256": "ba3e09ba59f9ae232a4ca214102ebbeabfa156e816c58943e62afbcfc91f5f4c",
+      "caseId": "v23-held-open-renewal",
+      "run": 1
+    },
+    "markdown": "# Zephyr QX-100\n\n<!-- akno:item mem_1c532ef2 v=2 supports=b8f7b3c4fe4826664f53aee6@5feceb66ffc86f38d952786c@e1f5b52d2f007cae93ebbfdc@provided level=1 kind=question subject=ent_346873427fe35a3ad4b453e5 source-role=user speaker=Ada%20Marlow reports=0 commitment=none disposition=active polarity=affirmed basis=self_attested -->\n- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.\n"
+  },
+  {
+    "id": "v22-held-nested-report/run-1",
+    "path": "retained",
+    "sourceLanguage": "ru",
+    "admission": "writable",
+    "view": "reports",
+    "queries": {
+      "ru": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+    },
+    "expectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established.",
+    "originalSource": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+      },
+      {
+        "item_id": "turn-3333",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+      }
+    ],
+    "records": [],
+    "originalSupports": [],
+    "originalRetentionReview": {
+      "complete": false,
+      "justifiedHold": false,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "reason": "No knowledge is retained from this writable, understandable development source. A complete retained set would preserve Ada relaying Bo’s alleged Vulpine permission to bring the device to a workshop for a grounding-contact resistance check rather than replacement, Ada’s personal lack of seeing the rules and verifying Bo’s report, and her separate not-yet-packed-device assertion. An unverified attributed report remains legitimate qualified knowledge; the source does not require a read-only or interpretive hold. Complete retention therefore fails. Empty saved knowledge is vacuously source-entailed and contains no generated-language violation, stripped qualification on an emitted claim, or factual promotion; those neutral flags do not turn absence into useful retention. The packet gives no source-based basis for attributing the miss to a particular runtime cause."
+    },
+    "archive": {
+      "path": "benchmarks/language/results/pr73-luna-final/development/report.json",
+      "sha256": "8a6b1911177f5471c64af9157b5316194e7fa4989d49cf4915aca94bde36b27a",
+      "caseId": "v22-held-nested-report",
+      "run": 1
+    },
+    "markdown": "# Zephyr QX-100\n"
+  }
+]

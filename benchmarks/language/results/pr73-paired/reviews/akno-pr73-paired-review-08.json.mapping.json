@@ -1,0 +1,105 @@
+{
+  "packetSha256": "56cf26f34f12c78f8445917dbec25de94c7501cc1adce26ceb245138004534ff",
+  "mapping": [
+    {
+      "id": "71d81b774f27549c1da9",
+      "file": "v23-held-open-renewal-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "34ae9f222cc285f33e7c",
+      "file": "v23-held-open-renewal-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "0282e5a906976ec7cba1",
+      "file": "v23-held-open-renewal-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "55140632bfdf0bb087f0",
+      "file": "v23-held-open-renewal-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "71d25388103bd9193da8",
+      "file": "v23-held-open-renewal-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "1a34e9bbf100a3a37b1f",
+      "file": "v23-held-open-renewal-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "95fe99bc569fe00b7139",
+      "file": "v23-held-open-renewal-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "dfb1fabc3b3357482f68",
+      "file": "v23-held-open-renewal-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "b6abfbcfb587e778e805",
+      "file": "v23-held-open-renewal-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "c8e24a94706a262f9e92",
+      "file": "v23-held-open-renewal-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    }
+  ]
+}

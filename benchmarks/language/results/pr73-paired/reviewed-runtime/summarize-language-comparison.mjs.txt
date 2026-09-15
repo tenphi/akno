@@ -6,9 +6,9 @@ import { hash } from './language-comparison-fixtures.mjs';
 
 const root = path.resolve(process.argv[2] ?? '');
 const read = (name) => JSON.parse(fs.readFileSync(path.join(root, name)));
-const resultIndex = read('results.json');
-assert.equal(resultIndex.schemaVersion, 'paired-results-index-v1');
-const results = resultIndex.pairs.map(({ file, sha256 }) => {
+const index = read('results.json');
+assert.equal(index.schemaVersion, 'paired-results-index-v1');
+const results = index.pairs.map(({ file, sha256 }) => {
   const bytes = fs.readFileSync(path.join(root, file));
   assert.equal(hash(bytes), sha256);
   return JSON.parse(bytes);

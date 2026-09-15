@@ -1,0 +1,9 @@
+{
+  "change": "Rename local result-index variable to satisfy no-shadow lint rule; no measurement logic changes.",
+  "summariesByteIdentical": {
+    "offline": true,
+    "live": true
+  },
+  "currentSha256": "c1b2e2ce0526a6e2ae723562bc9b029ac53deaf36d318c67e2ed82d2e7e39813",
+  "measuredSha256": "b26827a8f926e2c06857a42be4fe5102f0cc7ddf1cfedd51e11096c5bc94be43"
+}

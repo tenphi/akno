@@ -8,9 +8,13 @@ the optional repeated Luna run is a coupled downstream integration diagnostic. I
 [full Luna result](results/pr73-luna-final/README.md): 233/320 useful answers and a failed quality gate.
 Historical percentages below use different corpora and profiles and must not be read as one learning curve.
 
+The [completed paired result](results/pr73-paired/README.md) improves inferred views from 66/100 to 100/100.
+With Luna, independently source-useful answers rise from 43/88 to 68/88; the stricter fully grounded count
+rises from 38/88 to 68/88. Eight component/word-sense errors and one qualification omission remain.
+
 ## Historical V77 result
 
-The [terminal V77/V22 evaluation](results/v77/README.md) fails both the original 90% useful-answer gate and the separately predeclared 80% completion target. The final independent grade is **220/320 useful writable answers** and **30/40 complete retained sets**. All 44 source-byte/replay checks pass, but coverage, availability and ordinary-prose requirements remain unmet. PR #70 finishes this bounded evaluation with explicit reliability limits and no further tuning against its held-out outputs. Both verdicts, initial/corrected reviews, diagnostic failures and execution receipts are preserved.
+The [terminal V77/V22 evaluation](results/v77/README.md) fails both its then-current 90% useful-answer gate and the separately predeclared 80% completion target. The final independent grade is **220/320 useful writable answers** and **30/40 complete retained sets**. All 44 source-byte/replay checks pass, but coverage, availability and ordinary-prose requirements remain unmet. PR #70 finishes this bounded evaluation with explicit reliability limits and no further tuning against its held-out outputs. Both verdicts, initial/corrected reviews, diagnostic failures and execution receipts are preserved.
 
 ## Historical checkpoints
 
