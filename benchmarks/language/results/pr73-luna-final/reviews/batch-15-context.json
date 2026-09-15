@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "e028157b1966a934d2cb0f68af99b38c726c4eba128f5a674cfdc54313d7b4a7",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the complete hypothetical six-week clearing assumption and conditional seven-week breach, with Ada’s personal real-rule uncertainty and no report of actual omission. Hypothetical metadata agrees with the prose and prevents the assumed schedule from being presented as established duty. English stored knowledge is appropriate for both query languages; this is useful discussion evidence."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the complete hypothetical six-week clearing assumption and conditional seven-week breach, with Ada’s personal real-rule uncertainty and no report of actual omission. Hypothetical metadata agrees with the prose and prevents the assumed schedule from being presented as established duty. English stored knowledge is appropriate for both query languages; this is useful discussion evidence."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the complete hypothetical six-week clearing assumption and conditional seven-week breach, with Ada’s personal real-rule uncertainty and no report of actual omission. Hypothetical metadata agrees with the prose and prevents the assumed schedule from being presented as established duty. English stored knowledge is appropriate for both query languages; this is useful discussion evidence."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the complete hypothetical six-week clearing assumption and conditional seven-week breach, with Ada’s personal real-rule uncertainty and no report of actual omission. Hypothetical metadata agrees with the prose and prevents the assumed schedule from being presented as established duty. English stored knowledge is appropriate for both query languages; this is useful discussion evidence."
+        }
+      ]
+    }
+  ]
+}

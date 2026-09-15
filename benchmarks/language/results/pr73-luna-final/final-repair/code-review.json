@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "bounded-routing-code-review-v1",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "baseCommit": "60db7e3a962d4e4d6a42f559f223ab0e9392807d",
+  "reviewedVersion": "memory-view-v11",
+  "scope": [
+    "packages/core/src/memory/intent.ts",
+    "packages/core/src/memory/intent.test.ts",
+    ".changeset/russian-rejected-proposal-history.md"
+  ],
+  "reviewedFileSha256": {
+    "packages/core/src/memory/intent.ts": "fc1e28f296d4011e4e6f1afec1d02033995e51d0feff2be758fa2c54ee2d2f74",
+    "packages/core/src/memory/intent.test.ts": "f93cfa20f90842fa6d6a2730d807501047115584b5edb2b33beef576844b3d79",
+    ".changeset/russian-rejected-proposal-history.md": "b4f553fd85f36010808a7062b84f7923db7d0f7548aa080eec0cb8a525f8e984"
+  },
+  "status": "no_actionable_findings",
+  "findings": [],
+  "resolvedFindings": [
+    {
+      "priorReview": "/tmp/akno-luna-routing-code-review.json",
+      "issue": "Negated and conditional finite-past rejection incorrectly inferred actual history.",
+      "resolution": "The rejected-proposal cue now guards preceding negation and both conditional forms, blocks those particles within its noun/predicate gap, and guards a following conditional particle. The original не and бы examples return planning and keep representative proposed plans eligible."
+    },
+    {
+      "priorReview": "/tmp/akno-luna-v11-code-review.json",
+      "issue": "Short conditional particle б bypassed the new guards.",
+      "resolution": "The prefix, suffix and connecting-span guards all recognize бы?, covering both б and бы. All three exact reported short-particle probes now return planning, including both noun/verb orders. A representative proposed counterfactual plan remains eligible instead of being filtered by history."
+    }
+  ],
+  "verification": {
+    "declaredRoutingProbes": 29,
+    "declaredRoutingProbesPassed": 29,
+    "additionalFocusedProbes": 10,
+    "additionalFocusedProbesPassed": 10,
+    "method": "Read the final current diff versus committed v10. Imported the production pure inference and eligibility functions. Independently replayed the first routing test table directly from its literal data without modifying tests, and replayed the focused regression, affirmative-target, discourse-precedence and independent-clause controls. No source, test, benchmark, runtime or prior review file was edited.",
+    "eligibilityChecks": {
+      "negatedRejectionProposedPlanEligible": true,
+      "shortConditionalProposedPlanEligible": true
+    },
+    "scopeIsolation": "The optional word matcher defaults to the original DISCOURSE_WORD for all other bounded discourse patterns. Only the rejected-proposal cue supplies the extra particle exclusions. Report/question/discussion precedence is preserved in the reviewed branch and focused controls.",
+    "reportedSuite": "Parent reports all 145 intent tests passing and is rerunning broader validation. This review independently replayed the 29 new routing rows and focused probes; it did not rerun the full test suite or inspect live v11 outputs."
+  },
+  "limitations": [
+    "The code now explicitly documents conservative exclusions when nearby negation modifies timing or the subject rather than rejection. Не сразу отвергла can describe delayed actual rejection, and subject-focus Не Bo Winters отверг can preserve the rejection while denying its actor. Such queries can still fall back to planning. These are acknowledged coverage limitations, not proof that those Russian expressions negate the rejection.",
+    "This bounded lexical repair avoids inferring history for the reviewed negated and conditional constructions. It does not provide general Russian negation, focus or modality parsing, nor does planning fallback claim to be the optimal semantic view for every conditional query.",
+    "No live v11 performance claim follows from this code review. The frozen baseline and intermediate v10 results remain separate; the pending final exposed-case runs must be graded independently under the unchanged rubric."
+  ],
+  "evidenceSeparation": {
+    "priorReviewsPreserved": true,
+    "baselineGradesChanged": false,
+    "v10OutputGradesChanged": false,
+    "corpusChangedByReviewer": false
+  }
+}

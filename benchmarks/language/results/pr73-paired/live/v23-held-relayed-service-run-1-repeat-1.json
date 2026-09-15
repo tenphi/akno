@@ -1,0 +1,1321 @@
+{
+  "id": "v23-held-relayed-service/run-1",
+  "run": 1,
+  "order": [
+    "candidate",
+    "baseline"
+  ],
+  "arms": {
+    "candidate": {
+      "queries": [
+        {
+          "language": "ru",
+          "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+          "explicit": false,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_63b1a51b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "ok",
+          "context": [
+            {
+              "n": 4,
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_63b1a51b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextDegraded": [],
+          "answers": [
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "According to Ada Marlow, Bo Winters said that Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator’s brightness, but not to replace the indicator. Ada Marlow has not read the terms or checked this message. [equipment:4]",
+              "answer_language": "en",
+              "coverage": {
+                "какое сообщение": false,
+                "winters индикаторе": false,
+                "zephyr qx-100": true,
+                "пересказала ada": false,
+                "marlow": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    4
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_63b1a51b",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "source_report",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 98,
+                "evidence_tokens": 174,
+                "answer_tokens": 64
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 4834,
+                  "input_tokens": 4952,
+                  "output_tokens": 263,
+                  "total_tokens": 5215
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 2917,
+                  "input_tokens": 6969,
+                  "output_tokens": 281,
+                  "total_tokens": 7250
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            },
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "По словам Ada Marlow, Bo Winters сообщил, что Vulpine Mutual разрешает отправить Zephyr QX-100 в мастерскую, чтобы измерить яркость индикатора, но не для его замены. Ada Marlow не читала условия и не проверяла это сообщение. [equipment:4]",
+              "answer_language": "ru",
+              "coverage": {
+                "какое сообщение": false,
+                "winters индикаторе": false,
+                "zephyr qx-100": true,
+                "пересказала ada": false,
+                "marlow": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    4
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_63b1a51b",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "source_report",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 98,
+                "evidence_tokens": 175,
+                "answer_tokens": 60
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 5552,
+                  "input_tokens": 4963,
+                  "output_tokens": 288,
+                  "total_tokens": 5251
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3141,
+                  "input_tokens": 6975,
+                  "output_tokens": 282,
+                  "total_tokens": 7257
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+          "explicit": true,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_63b1a51b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "ok",
+          "context": [
+            {
+              "n": 4,
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_63b1a51b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextDegraded": [],
+          "answers": [
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "According to Ada Marlow, Bo Winters said that Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator’s brightness, but not to replace the indicator. Ada Marlow has not read the terms or checked this message. [equipment:4]",
+              "answer_language": "en",
+              "coverage": {
+                "какое сообщение": false,
+                "winters индикаторе": false,
+                "zephyr qx-100": true,
+                "пересказала ada": false,
+                "marlow": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    4
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_63b1a51b",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "source_report",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 98,
+                "evidence_tokens": 174,
+                "answer_tokens": 64
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 4433,
+                  "input_tokens": 4952,
+                  "output_tokens": 267,
+                  "total_tokens": 5219
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3026,
+                  "input_tokens": 6969,
+                  "output_tokens": 303,
+                  "total_tokens": 7272
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            },
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "По словам Ada Marlow, Bo Winters сообщил, что Vulpine Mutual разрешает отправить индикатор Zephyr QX-100 в мастерскую для измерения его яркости, но не для замены индикатора. Ada Marlow не читала условия и не проверяла это сообщение. [equipment:4]",
+              "answer_language": "ru",
+              "coverage": {
+                "какое сообщение": false,
+                "winters индикаторе": false,
+                "zephyr qx-100": true,
+                "пересказала ada": false,
+                "marlow": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    4
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_63b1a51b",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "source_report",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 98,
+                "evidence_tokens": 175,
+                "answer_tokens": 62
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 4556,
+                  "input_tokens": 4965,
+                  "output_tokens": 256,
+                  "total_tokens": 5221
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3040,
+                  "input_tokens": 6977,
+                  "output_tokens": 287,
+                  "total_tokens": 7264
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "0e4ca738e3848271f8538f5c8e21a1f2600ac71df33c2a264947c6e53245c63f",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_63b1a51b v=2 supports=2aa38bb235dda1cb622c11c1@5feceb66ffc86f38d952786c@897f6195991e0654e70de844@provided level=1 kind=claim subject=ent_fb91b22cf8950f6c9ed00e24 source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=affirmed basis=source_report -->"
+        },
+        {
+          "n": 4,
+          "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_63b1a51b",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_fb91b22cf8950f6c9ed00e24",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "n": 6,
+          "text": "<!-- akno:item mem_95de9eb4 v=2 supports=2aa38bb235dda1cb622c11c1@6b86b273ff34fce19d6b804e@0dd2ca01210143be14a4ae3d@provided level=1 kind=claim subject=ent_fb91b22cf8950f6c9ed00e24 source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+        },
+        {
+          "n": 7,
+          "text": "- Ada Marlow has not yet removed the protective cover from her Zephyr QX-100.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_95de9eb4",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_fb91b22cf8950f6c9ed00e24",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "projections": [],
+      "factualEvidence": [
+        {
+          "n": 7,
+          "text": "- Ada Marlow has not yet removed the protective cover from her Zephyr QX-100.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_95de9eb4",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_fb91b22cf8950f6c9ed00e24",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          },
+          "prose": null
+        }
+      ],
+      "factualControl": {
+        "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+        "context": {
+          "status": "empty",
+          "note": "qualification found no evidence strong enough for automatic injection",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?"
+          ],
+          "memory_view": "factual",
+          "qualification": {
+            "model": "llm",
+            "model_id": "gpt-5.6-luna",
+            "latency_ms": 2224.2529579999973,
+            "input_tokens": 711,
+            "output_tokens": 125,
+            "total_tokens": 836,
+            "applied": true,
+            "judged": 1,
+            "rejected": 0,
+            "unjudged": 0,
+            "basis": "llm_grade",
+            "threshold": null
+          },
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "ok",
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "какое сообщение": false,
+            "winters индикаторе": false,
+            "zephyr qx-100": true,
+            "пересказала ada": false,
+            "marlow": true
+          },
+          "citations": [],
+          "context": [
+            {
+              "type": "page",
+              "slug": "equipment",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- Ada Marlow has not yet removed the protective cover from her Zephyr QX-100.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_95de9eb4",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 53,
+            "evidence_tokens": 109,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2116,
+              "input_tokens": 3889,
+              "output_tokens": 91,
+              "total_tokens": 3980
+            },
+            "verification": null
+          },
+          "validation": {
+            "generated_blocks": 0,
+            "passed_guards": 0,
+            "verified_blocks": null,
+            "rejection_counts": {}
+          },
+          "reason_code": "empty_draft",
+          "note": "memory evidence did not resolve every requested detail"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    },
+    "baseline": {
+      "queries": [
+        {
+          "language": "ru",
+          "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+          "explicit": false,
+          "expectedView": "reports",
+          "view": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_63b1a51b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "empty",
+          "context": [],
+          "contextDegraded": [],
+          "answers": [
+            {
+              "status": "ok",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какое сообщение": false,
+                "winters индикаторе": false,
+                "zephyr qx-100": true,
+                "пересказала ada": false,
+                "marlow": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 7,
+                      "text": "- Ada Marlow has not yet removed the protective cover from her Zephyr QX-100.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_95de9eb4",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "active",
+                        "polarity": "negated",
+                        "basis": "self_attested",
+                        "answer_eligible": true,
+                        "current_eligible": true
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 53,
+                "evidence_tokens": 109,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3065,
+                  "input_tokens": 3889,
+                  "output_tokens": 89,
+                  "total_tokens": 3978
+                },
+                "verification": null
+              },
+              "validation": {
+                "generated_blocks": 0,
+                "passed_guards": 0,
+                "verified_blocks": null,
+                "rejection_counts": {}
+              },
+              "reason_code": "empty_draft",
+              "note": "memory evidence did not resolve every requested detail"
+            },
+            {
+              "status": "ok",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "ru",
+              "coverage": {
+                "какое сообщение": false,
+                "winters индикаторе": false,
+                "zephyr qx-100": true,
+                "пересказала ada": false,
+                "marlow": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 7,
+                      "text": "- Ada Marlow has not yet removed the protective cover from her Zephyr QX-100.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_95de9eb4",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "active",
+                        "polarity": "negated",
+                        "basis": "self_attested",
+                        "answer_eligible": true,
+                        "current_eligible": true
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 53,
+                "evidence_tokens": 111,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 1623,
+                  "input_tokens": 3894,
+                  "output_tokens": 90,
+                  "total_tokens": 3984
+                },
+                "verification": null
+              },
+              "validation": {
+                "generated_blocks": 0,
+                "passed_guards": 0,
+                "verified_blocks": null,
+                "rejection_counts": {}
+              },
+              "reason_code": "empty_draft",
+              "note": "memory evidence did not resolve every requested detail"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+          "explicit": true,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_63b1a51b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "ok",
+          "context": [
+            {
+              "n": 4,
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_63b1a51b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextDegraded": [],
+          "answers": [
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "According to Ada Marlow, Bo Winters said that Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator’s brightness, but not to replace the indicator. Ada Marlow has not read the terms or checked this message. [equipment:4]",
+              "answer_language": "en",
+              "coverage": {
+                "какое сообщение": false,
+                "winters индикаторе": false,
+                "zephyr qx-100": true,
+                "пересказала ada": false,
+                "marlow": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    4
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_63b1a51b",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "source_report",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 98,
+                "evidence_tokens": 174,
+                "answer_tokens": 64
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 4,
+                  "input_tokens": 4952,
+                  "output_tokens": 267,
+                  "total_tokens": 5219
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 1,
+                  "input_tokens": 6969,
+                  "output_tokens": 303,
+                  "total_tokens": 7272
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            },
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "По словам Ada Marlow, Bo Winters сообщил, что Vulpine Mutual разрешает отправить индикатор Zephyr QX-100 в мастерскую для измерения его яркости, но не для замены индикатора. Ada Marlow не читала условия и не проверяла это сообщение. [equipment:4]",
+              "answer_language": "ru",
+              "coverage": {
+                "какое сообщение": false,
+                "winters индикаторе": false,
+                "zephyr qx-100": true,
+                "пересказала ada": false,
+                "marlow": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    4
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_63b1a51b",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "source_report",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 98,
+                "evidence_tokens": 175,
+                "answer_tokens": 62
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 1,
+                  "input_tokens": 4965,
+                  "output_tokens": 256,
+                  "total_tokens": 5221
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 1,
+                  "input_tokens": 6977,
+                  "output_tokens": 287,
+                  "total_tokens": 7264
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "0e4ca738e3848271f8538f5c8e21a1f2600ac71df33c2a264947c6e53245c63f",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_63b1a51b v=2 supports=2aa38bb235dda1cb622c11c1@5feceb66ffc86f38d952786c@897f6195991e0654e70de844@provided level=1 kind=claim subject=ent_fb91b22cf8950f6c9ed00e24 source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=affirmed basis=source_report -->"
+        },
+        {
+          "n": 4,
+          "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_63b1a51b",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_fb91b22cf8950f6c9ed00e24",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "n": 6,
+          "text": "<!-- akno:item mem_95de9eb4 v=2 supports=2aa38bb235dda1cb622c11c1@6b86b273ff34fce19d6b804e@0dd2ca01210143be14a4ae3d@provided level=1 kind=claim subject=ent_fb91b22cf8950f6c9ed00e24 source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+        },
+        {
+          "n": 7,
+          "text": "- Ada Marlow has not yet removed the protective cover from her Zephyr QX-100.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_95de9eb4",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_fb91b22cf8950f6c9ed00e24",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "projections": [],
+      "factualEvidence": [
+        {
+          "n": 7,
+          "text": "- Ada Marlow has not yet removed the protective cover from her Zephyr QX-100.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_95de9eb4",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_fb91b22cf8950f6c9ed00e24",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          },
+          "prose": null
+        }
+      ],
+      "factualControl": {
+        "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+        "context": {
+          "status": "empty",
+          "note": "qualification found no evidence strong enough for automatic injection",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?"
+          ],
+          "memory_view": "factual",
+          "qualification": {
+            "model": "llm",
+            "model_id": "gpt-5.6-luna",
+            "latency_ms": 0.8059580000117421,
+            "input_tokens": 711,
+            "output_tokens": 125,
+            "total_tokens": 836,
+            "applied": true,
+            "judged": 1,
+            "rejected": 0,
+            "unjudged": 0,
+            "basis": "llm_grade",
+            "threshold": null
+          },
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "ok",
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "какое сообщение": false,
+            "winters индикаторе": false,
+            "zephyr qx-100": true,
+            "пересказала ada": false,
+            "marlow": true
+          },
+          "citations": [],
+          "context": [
+            {
+              "type": "page",
+              "slug": "equipment",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- Ada Marlow has not yet removed the protective cover from her Zephyr QX-100.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_95de9eb4",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 53,
+            "evidence_tokens": 109,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1,
+              "input_tokens": 3889,
+              "output_tokens": 91,
+              "total_tokens": 3980
+            },
+            "verification": null
+          },
+          "validation": {
+            "generated_blocks": 0,
+            "passed_guards": 0,
+            "verified_blocks": null,
+            "rejection_counts": {}
+          },
+          "reason_code": "empty_draft",
+          "note": "memory evidence did not resolve every requested detail"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    }
+  }
+}

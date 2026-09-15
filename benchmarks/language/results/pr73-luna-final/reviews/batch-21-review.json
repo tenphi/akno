@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "afeaf9079f0ba657f34415441ec7262b3b12f006d9794c1a5967fb270e4f8940",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-assumed-interval",
+      "run": 2,
+      "retentionUseful": true,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The complete retained record preserves the hypothetical latch-lubrication interval after every eleven operating cycles together with the conditional twelve-cycle breach. Ada’s personal lack of knowledge of the real rule and her not asserting an actual missed lubrication are explicit. Hypothetical metadata matches the English prose; neither a real duty nor a dated or day-counted event is established.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the exact hypothetical latch-lubrication scenario: every eleven operating cycles, a twelve-cycle gap breaching only that conditional interval, Ada’s personal lack of knowledge of the real rule, and no assertion that maintenance was actually missed. The answer uses the requested language without turning operating cycles into days, a date, or an established duty."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the exact hypothetical latch-lubrication scenario: every eleven operating cycles, a twelve-cycle gap breaching only that conditional interval, Ada’s personal lack of knowledge of the real rule, and no assertion that maintenance was actually missed. The answer uses the requested language without turning operating cycles into days, a date, or an established duty."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the exact hypothetical latch-lubrication scenario: every eleven operating cycles, a twelve-cycle gap breaching only that conditional interval, Ada’s personal lack of knowledge of the real rule, and no assertion that maintenance was actually missed. The answer uses the requested language without turning operating cycles into days, a date, or an established duty."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The Russian «следовало бы» remains governed by the explicitly hypothetical example and conditional interval, so it expresses the assumed rule rather than a real obligation. The answer preserves eleven operating cycles, the conditional twelve-cycle breach, Ada’s personal real-rule uncertainty, and no assertion of an actual omission. The requested language and complete retrieved evidence support a useful qualified answer."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the exact hypothetical latch-lubrication scenario: every eleven operating cycles, a twelve-cycle gap breaching only that conditional interval, Ada’s personal lack of knowledge of the real rule, and no assertion that maintenance was actually missed. The answer uses the requested language without turning operating cycles into days, a date, or an established duty."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the exact hypothetical latch-lubrication scenario: every eleven operating cycles, a twelve-cycle gap breaching only that conditional interval, Ada’s personal lack of knowledge of the real rule, and no assertion that maintenance was actually missed. The answer uses the requested language without turning operating cycles into days, a date, or an established duty."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the exact hypothetical latch-lubrication scenario: every eleven operating cycles, a twelve-cycle gap breaching only that conditional interval, Ada’s personal lack of knowledge of the real rule, and no assertion that maintenance was actually missed. The answer uses the requested language without turning operating cycles into days, a date, or an established duty."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The Russian «у Ada Marlow» remains inside the explicitly hypothetical example and does not assert actual device ownership or an actual lubrication event. The exact latch, eleven operating cycles, twelve-cycle conditional breach, personal real-rule ignorance, and denial of asserting an actual missed lubrication are preserved. The requested language is used, and retrieved evidence supports the complete focused answer."
+        }
+      ]
+    }
+  ]
+}

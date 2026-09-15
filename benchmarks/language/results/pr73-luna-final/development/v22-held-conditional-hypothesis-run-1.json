@@ -1,0 +1,991 @@
+{
+  "id": "v22-held-conditional-hypothesis",
+  "run": 1,
+  "admission": "writable",
+  "reviewExpectation": "Keep the assumed six-week clearing schedule and its conditional seven-week breach together. Ada does not know the real rule and reports no actual omission. The interval is a recurring property, not a dated event or established obligation.",
+  "language": "en",
+  "scenario": "conditional-hypothesis",
+  "expectedHold": false,
+  "nonfactualExpected": true,
+  "retentionAvailabilityFailure": false,
+  "availabilityFailure": false,
+  "languageRejected": false,
+  "retention": {
+    "status": "ok",
+    "outcome": "ok",
+    "reason": null,
+    "candidates": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "usage": {
+      "extraction": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 7815,
+        "input_tokens": 7416,
+        "output_tokens": 552,
+        "total_tokens": 7968
+      },
+      "verification": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 5401,
+        "input_tokens": 8035,
+        "output_tokens": 378,
+        "total_tokens": 8413
+      },
+      "placement": [
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1867,
+          "input_tokens": 604,
+          "output_tokens": 89,
+          "total_tokens": 693
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1664,
+          "input_tokens": 429,
+          "output_tokens": 64,
+          "total_tokens": 493
+        }
+      ]
+    },
+    "degraded": []
+  },
+  "retainedItems": 1,
+  "noncanonicalEligibilityFlag": false,
+  "semanticsMatch": true,
+  "ordinaryCorrect": true,
+  "ordinaryInspection": {
+    "status": "ok",
+    "results": 1
+  },
+  "bytesStable": true,
+  "replayOutcome": "replayed",
+  "sourceArchive": {
+    "stableAcrossRebuildReplay": true,
+    "supports": [
+      {
+        "memory_id": "mem_a09be1e2",
+        "source_ref": "invented:v22-held-conditional-hypothesis",
+        "input_hash": "d80dfbcebf2ab6081dfe91d3b644854256ef16d996b2edbed6fd415fd11131ed",
+        "evidence": "For this hypothetical analysis, assume the Zephyr QX-100 drain channel is cleared every six weeks.\n…\nOnly under that assumption, leaving the channel uncleared for seven weeks would breach the assumed schedule. I do not know the real maintenance rule, and I am not reporting an actual missed clearing.",
+        "evidence_hash": "e935d6ba50eaa1b94e630b63d2e2cb09793e5f2365f6363adeea64536599576b",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "For this hypothetical analysis, assume the Zephyr QX-100 drain channel is cleared every six weeks.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          },
+          {
+            "quote": "Only under that assumption, leaving the channel uncleared for seven weeks would breach the assumed schedule. I do not know the real maintenance rule, and I am not reporting an actual missed clearing.",
+            "matchingSourceItems": [
+              "turn-2222"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "queries": [
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_a09be1e2",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_e3757f35d805034ea4cc193c",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_a09be1e2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3757f35d805034ea4cc193c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Hypothetical Maintenance Assumption",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5287,
+          "input_tokens": 6389,
+          "output_tokens": 271,
+          "total_tokens": 6660
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7484,
+          "input_tokens": 10558,
+          "output_tokens": 625,
+          "total_tokens": 11183
+        }
+      },
+      "reviewAnswer": "**Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_a09be1e2",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_e3757f35d805034ea4cc193c",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_a09be1e2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3757f35d805034ea4cc193c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Hypothetical Maintenance Assumption",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6189,
+          "input_tokens": 6377,
+          "output_tokens": 500,
+          "total_tokens": 6877
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8982,
+          "input_tokens": 10515,
+          "output_tokens": 732,
+          "total_tokens": 11247
+        }
+      },
+      "reviewAnswer": "**Гипотетический сценарий:** Ada Marlow гипотетически предполагает, что канал слива Zephyr QX-100 очищают каждые шесть недель; только при этом допущении оставление его неочищенным в течение семи недель нарушило бы предполагаемый график. Ada Marlow не знает фактическое правило технического обслуживания и не сообщает о реально пропущенной очистке. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_a09be1e2",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_e3757f35d805034ea4cc193c",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_a09be1e2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3757f35d805034ea4cc193c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Hypothetical Maintenance Assumption",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5064,
+          "input_tokens": 6389,
+          "output_tokens": 276,
+          "total_tokens": 6665
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6059,
+          "input_tokens": 10558,
+          "output_tokens": 580,
+          "total_tokens": 11138
+        }
+      },
+      "reviewAnswer": "**Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_a09be1e2",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_e3757f35d805034ea4cc193c",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_a09be1e2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3757f35d805034ea4cc193c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Hypothetical Maintenance Assumption",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 4917,
+          "input_tokens": 6369,
+          "output_tokens": 371,
+          "total_tokens": 6740
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7149,
+          "input_tokens": 10540,
+          "output_tokens": 583,
+          "total_tokens": 11123
+        }
+      },
+      "reviewAnswer": "**Гипотетически:** Ada Marlow предполагает, что канал слива Zephyr QX-100 очищают каждые шесть недель; только при этом допущении оставление его неочищенным в течение семи недель нарушило бы предполагаемый график. Ada Marlow не знает реальное правило обслуживания и не сообщает о фактически пропущенной очистке. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_a09be1e2",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_e3757f35d805034ea4cc193c",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_a09be1e2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3757f35d805034ea4cc193c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Hypothetical Maintenance Assumption",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5830,
+          "input_tokens": 6394,
+          "output_tokens": 322,
+          "total_tokens": 6716
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8126,
+          "input_tokens": 10558,
+          "output_tokens": 663,
+          "total_tokens": 11221
+        }
+      },
+      "reviewAnswer": "**Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_a09be1e2",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_e3757f35d805034ea4cc193c",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_a09be1e2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3757f35d805034ea4cc193c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Hypothetical Maintenance Assumption",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7277,
+          "input_tokens": 6383,
+          "output_tokens": 602,
+          "total_tokens": 6985
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6424,
+          "input_tokens": 10516,
+          "output_tokens": 597,
+          "total_tokens": 11113
+        }
+      },
+      "reviewAnswer": "**Гипотетический контекст:** Ada Marlow гипотетически предполагает, что дренажный канал Zephyr QX-100 очищается каждые шесть недель; только при этом допущении оставление его неочищенным в течение семи недель нарушило бы предполагаемый график. Ada Marlow не знает фактическое правило обслуживания и не сообщает о фактически пропущенной очистке. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_a09be1e2",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_e3757f35d805034ea4cc193c",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_a09be1e2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3757f35d805034ea4cc193c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Hypothetical Maintenance Assumption",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5002,
+          "input_tokens": 6394,
+          "output_tokens": 295,
+          "total_tokens": 6689
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6096,
+          "input_tokens": 10558,
+          "output_tokens": 567,
+          "total_tokens": 11125
+        }
+      },
+      "reviewAnswer": "**Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_a09be1e2",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_e3757f35d805034ea4cc193c",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_a09be1e2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3757f35d805034ea4cc193c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Hypothetical Maintenance Assumption",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 11077,
+          "input_tokens": 6378,
+          "output_tokens": 428,
+          "total_tokens": 6806
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8059,
+          "input_tokens": 10610,
+          "output_tokens": 673,
+          "total_tokens": 11283
+        }
+      },
+      "reviewAnswer": "**Гипотетический контекст:** Ada Marlow гипотетически предполагает, что дренажный канал Zephyr QX-100 очищают каждые шесть недель; только при этом предположении отсутствие очистки в течение семи недель нарушило бы предполагаемый график. Ada Marlow не знает фактическое правило обслуживания и не сообщает о реально пропущенной очистке. [memory/equipment:7]"
+    }
+  ],
+  "reviewKnowledge": [
+    {
+      "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+      "qualification": {
+        "status": "qualified",
+        "id": "mem_a09be1e2",
+        "level": 1,
+        "kind": "claim",
+        "subject": "ent_e3757f35d805034ea4cc193c",
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "commitment": "hypothetical",
+        "disposition": "active",
+        "polarity": "affirmed",
+        "basis": "self_attested",
+        "answer_eligible": false,
+        "current_eligible": false
+      }
+    }
+  ],
+  "error": null
+}

@@ -1,0 +1,124 @@
+{
+  "schemaVersion": "language-input-review-v1",
+  "corpusFingerprint": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutOutputs": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-nested-report",
+      "approved": true,
+      "reason": "Transferred without regrading from the original pre-output /tmp/akno-pr73-independent-v22-input-review.json, corpus fingerprint b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a. This development case is identical to that reviewed source except for its split label. The approval and all original caveats below are preserved; later V22 outputs did not inform or revise this judgment. Original reason: Approved for conversation retention: Ada relays Bo’s report about Vulpine Mutual permitting workshop delivery for a grounding-contact resistance check, with a clarification that Bo discussed checking rather than replacement. Ada personally has not seen the rules, verified his report, or packed her device. Both queries and the expectation preserve attribution and limits. The ordinary report is correctly nonfactual, but its wording “но не для его замены” can suggest that replacement delivery is forbidden, whereas the conversation only limits what Bo discussed. That separate control must not be treated as an equivalent source or as evidence of a replacement prohibition."
+    },
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "approved": true,
+      "reason": "Transferred without regrading from the original pre-output /tmp/akno-pr73-independent-v22-input-review.json, corpus fingerprint b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a. This development case is identical to that reviewed source except for its split label. The approval and all original caveats below are preserved; later V22 outputs did not inform or revise this judgment. Original reason: Coherent and complete: the six-week drain-channel clearing schedule is assumed solely for analysis, and seven weeks uncleared would breach only that assumed schedule. Ada does not know the real rule and reports no actual missed clearing. Both queries and the expectation retain the full conditional and its scope. The ordinary source preserves hypothetical status, so ordinaryFactual=false is appropriate."
+    },
+    {
+      "id": "v22-held-counterfactual",
+      "approved": true,
+      "reason": "Transferred without regrading from the original pre-output /tmp/akno-pr73-independent-v22-input-review.json, corpus fingerprint b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a. This development case is identical to that reviewed source except for its split label. The approval and all original caveats below are preserved; later V22 outputs did not inform or revise this judgment. Original reason: Coherent: actual non-enrollment in the optional corrosion plan is paired with the unrealized benefit of free internal-spring replacement after thirty-three months of use if enrollment had occurred. Queries target that benefit, and the expectation correctly requires the false antecedent and relative usage interval without asserting current coverage. The ordinary source is explicitly counterfactual and correctly nonfactual for the scoped benefit."
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "approved": true,
+      "reason": "Transferred without regrading from the original pre-output /tmp/akno-pr73-independent-v22-input-review.json, corpus fingerprint b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a. This development case is identical to that reviewed source except for its split label. The approval and all original caveats below are preserved; later V22 outputs did not inform or revise this judgment. Original reason: Coherent and complete: the asserted exclusion is specifically sand-caused damage to the ceramic spacer. This exclusion alone establishes neither the status of intake-sleeve replacement coverage nor silence in the agreement. Both queries cover both components, and the expectation preserves damage cause, polarity, and evidentiary scope. The ordinary source has the same factual exclusion, making ordinaryFactual=true appropriate."
+    },
+    {
+      "id": "v22-held-assistant-speculation",
+      "approved": true,
+      "reason": "Transferred without regrading from the original pre-output /tmp/akno-pr73-independent-v22-input-review.json, corpus fingerprint b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a. This development case is identical to that reviewed source except for its split label. The approval and all original caveats below are preserved; later V22 outputs did not inform or revise this judgment. Original reason: Coherent: the assistant’s mixed-language statement is a tentative guess about an optical-shutter check every eleven operating cycles as a possible service term, not an established duty or device condition. The assistant personally has neither read the agreement nor verified the guess. Both queries and the expectation preserve all material qualifications. The ordinary assistant report is correctly nonfactual."
+    },
+    {
+      "id": "v22-held-fictional-example",
+      "approved": true,
+      "reason": "Transferred without regrading from the original pre-output /tmp/akno-pr73-independent-v22-input-review.json, corpus fingerprint b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a. This development case is identical to that reviewed source except for its split label. The approval and all original caveats below are preserved; later V22 outputs did not inform or revise this judgment. Original reason: Coherent: Ada actually introduces an invented example for discussion, while the story alone contains fictional Vulpine Mutual lending fictional Bo a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. Both queries identify that fictional loan, and the expectation retains actors, object, duration, and fictional repair anchor. The Russian query is a broad paraphrase of introducing the example for discussion; it must not require an additional external proposal event. The ordinary fictional example is correctly nonfactual."
+    },
+    {
+      "id": "v22-held-relative-unknown-date",
+      "approved": true,
+      "reason": "Transferred without regrading from the original pre-output /tmp/akno-pr73-independent-v22-input-review.json, corpus fingerprint b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a. This development case is identical to that reviewed source except for its split label. The approval and all original caveats below are preserved; later V22 outputs did not inform or revise this judgment. Original reason: Coherent and complete: Ada proposes comparison of cleaning instructions two weeks after the original undated record, with no agreed meeting. The missing source date prevents a calendar date, and processing time is expressly not the anchor. Both queries and the expectation target this actual proposal with unresolved temporal placement. The ordinary proposal is correctly nonfactual for proposed future work."
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "approved": true,
+      "reason": "Transferred without regrading from the original pre-output /tmp/akno-pr73-independent-v22-input-review.json, corpus fingerprint b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a. This development case is identical to that reviewed source except for its split label. The approval and all original caveats below are preserved; later V22 outputs did not inform or revise this judgment. Original reason: Coherent: Ada considers a deformed washer and an inadequately secured filter cover as competing tentative explanations, chooses neither, and says neither has supporting evidence. The record also does not confirm that rattling occurred. Queries and expectation preserve both hypotheses and that additional event-level uncertainty. The ordinary source is appropriately nonfactual, though its shorthand “не подтверждена” does not by itself express the conversation’s stronger absence-of-supporting-data qualification; original conversation items remain the fidelity source."
+    },
+    {
+      "id": "v22-held-open-question",
+      "approved": true,
+      "reason": "Transferred without regrading from the original pre-output /tmp/akno-pr73-independent-v22-input-review.json, corpus fingerprint b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a. This development case is identical to that reviewed source except for its split label. The approval and all original caveats below are preserved; later V22 outputs did not inform or revise this judgment. Original reason: Coherent: Ada has no answer to her question whether the service plan includes annual folding-handle alignment, and this note establishes neither inclusion nor exclusion. Both queries ask for her unresolved question, and the expectation preserves personal knowledge and note-level evidentiary scope. The ordinary source is correctly nonfactual; its “asks whether” should be understood as presenting the open question, not evidence of an external asking action."
+    },
+    {
+      "id": "v22-held-rejected-plan",
+      "approved": true,
+      "reason": "Transferred without regrading from the original pre-output /tmp/akno-pr73-independent-v22-input-review.json, corpus fingerprint b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a. This development case is identical to that reviewed source except for its split label. The approval and all original caveats below are preserved; later V22 outputs did not inform or revise this judgment. Original reason: Coherent and complete: Ada rejects taking the device to a calibration room to measure its rotation-stop angle, lacks intent to proceed under that proposal, and independently reports no reserved appointment or arranged transport. The bilingual queries identify the proposal; the expectation properly requires the angle measurement even though their shorter wording does not repeat “angle.” The ordinary rejected proposal is correctly nonfactual for the proposed action."
+    },
+    {
+      "id": "v22-held-read-only-admission",
+      "approved": true,
+      "reason": "Transferred without regrading from the original pre-output /tmp/akno-pr73-independent-v22-input-review.json, corpus fingerprint b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a. This development case is identical to that reviewed source except for its split label. The approval and all original caveats below are preserved; later V22 outputs did not inform or revise this judgment. Original reason: Coherent: the source explicitly requests retention in a folder that denies writes and supplies a fifty-five-month protective-ring replacement interval by Vulpine Mutual. Both queries target that request. The typed admission hold and preservation of source bytes are consistent with the declared read-only destination and must not be confused with absent knowledge, empty retrieval, or unavailability. The ordinary maintenance statement is correctly factual as a separate eligibility control."
+    },
+    {
+      "id": "v23-held-relayed-service",
+      "approved": true,
+      "reason": "The Russian source, both queries, reports view, and expectation are coherent. Ada records Bo’s report that Vulpine permits workshop shipment of the device for indicator-brightness measurement; Ada explicitly limits the reported action to measurement rather than replacement without establishing a general replacement prohibition. Her unread conditions, unverified report, and separate assertion that she has not removed her device’s protective cover must all survive complete retention. The focused report question can be answered with its coupled report qualifications without repeating an unrelated cover-removal fact, but that fact remains mandatory for full retained-set completeness. The ordinary control is correctly report-scoped and nonfactual for its embedded permission; it omits the clarification and separate cover fact and is not an equivalent retention source. This exercises nested attribution, action specificity, and a separate factual clause with explicit signposting, largely following the established report template rather than introducing a new structural difficulty."
+    },
+    {
+      "id": "v23-held-assumed-interval",
+      "approved": true,
+      "reason": "The mixed-language source and bilingual queries coherently specify one hypothetical unit: latch lubrication after every eleven operating cycles, and a twelve-cycle unlubricated interval breaching only that assumed rule. Ada personally does not know the real rule and does not report an actual omission; the latter must not become a factual assertion that no omission ever happened. The expectation preserves component, process, cycle units, conditional force, and personal knowledge without imposing calendar time or actual obligations. The ordinary hypothetical control is appropriately nonfactual. This tests cross-language coupling and unit fidelity, but its governing qualifications are explicit and its conditional structure is already represented in development."
+    },
+    {
+      "id": "v23-held-declined-extension",
+      "approved": true,
+      "reason": "The source asserts Ada’s actual refusal/nonacceptance of the optional cable-protection extension and a counterfactual benefit of free connector repair after twenty-two months of use if accepted. Both queries reasonably ask for that unrealized benefit, and the expectation requires its false antecedent and the actual refusal without changing repair to replacement or turning the usage interval into a date. No-current-coverage must remain scoped to this unrealized extension benefit, not all possible coverage. The discussion view and nonfactual ordinary counterfactual control are appropriate for the embedded benefit. This is a clear, explicitly signposted variant of the existing counterfactual scenario; different component and interval alone do not establish greater difficulty."
+    },
+    {
+      "id": "v23-held-scoped-exclusion",
+      "approved": true,
+      "reason": "Re-reviewed before any V23 execution after the original rejected draft. The only source revision makes the second component explicit as “шарнирной петли” and refers back to “этой шарнирной петле,” identifying a mechanical hinge rather than an unspecified loop. This resolves the original hinge-versus-loop ambiguity and now supports the English query and expectation without adding an interpretation from the ordinary control. The source coherently limits the factual exclusion to wax-caused fabric-seal damage and separately establishes only that this exclusion does not settle hinge-replacement coverage or show agreement silence. The queries reasonably cover both components; the expectation preserves damage cause, negative coverage polarity, and evidentiary scope without inferring hinge inclusion/exclusion or all-seal damage exclusion. The ordinary factual annotation is appropriate for the separately authored control. Approval changes solely because the never-executed source now disambiguates the component; the original rejection and draft remain preserved in /tmp/akno-pr73-independent-v23-input-review.json, fingerprint 027f723ec9becd66bb22ffffe02e4c15e83f0e74aac04a0ded5583f3695f2577. This remains a new wording/content variant of the established exclusion structure, not evidence of greater structural difficulty."
+    },
+    {
+      "id": "v23-held-assistant-reading",
+      "approved": true,
+      "reason": "The tentative assistant interpretation, possible Vulpine supply of a return label for servicing, and assistant’s personal unread/unverified limits align with both queries, reports view, and expectation. “My tentative reading” can mean interpretation and does not require a claim that the conditions were literally read; the explicit lack of reading governs. The source says possibility does not establish an arranged return or scheduled shipment, not that neither arrangement exists, and the expectation must retain that inferential limit rather than manufacture separate factual denials. No prepayment, dispatch, label issuance, or contractual duty is established. The ordinary assistant report is appropriately nonfactual. This introduces a different possible service provision while retaining familiar explicit report and epistemic-scope structure."
+    },
+    {
+      "id": "v23-held-fictional-key",
+      "approved": true,
+      "reason": "The source coherently separates Ada’s actual proposal to discuss from the story-only loan. Queries and expectation preserve fictional Vulpine as lender, fictional Bo as borrower, a spare physical metal key for the device cover rather than an access code, the first thirty-three days after a fictional inspection, and no real agreement. The physical clarification supports translation as a key but does not license an invented lock type, key shape, or cover-opening mechanism. Full retention requires the real proposal separately; a focused loan answer must preserve all material story facts and their common scope. The ordinary story is appropriately nonfactual for the loan, but omits the actual proposal and cannot stand in for the complete conversation. This tests an actual act plus a fictional payload; explicit key disambiguation reduces lexical ambiguity, so difficulty beyond the existing fictional template is not established."
+    },
+    {
+      "id": "v23-held-undated-review",
+      "approved": true,
+      "reason": "The source asserts Ada’s proposal to discuss service conditions eleven days after an utterance whose date is unknown, expressly excluding processing time as the anchor; the proposal is unaccepted and no meeting is scheduled. The English query asks directly for the proposal and time, and Russian “план ... предложила” can coherently mean a proposed plan without implying acceptance. The expectation preserves the known eleven-day offset and unknown calendar placement, with an asserted proposing act rather than uncertainty that a proposal occurred. The ordinary proposal control is appropriately nonfactual for future discussion. This is answerable by a relative-time qualified answer and tests a known anchoring pattern; it does not require or support any calendar calculation."
+    },
+    {
+      "id": "v23-held-competing-clicks",
+      "approved": true,
+      "reason": "The English source, bilingual questions, discussion view, and expectation agree on Ada considering two preliminary explanations for clicking: a cracked guide rail or a locking pin seated at an angle. Her personal nonselection, absence of supporting observations for both, and this record’s inability to confirm clicking are explicit and complete. The angled seating must not become a bent or damaged pin, and uncertainty about clicking must not become nonoccurrence. The ordinary control is appropriately nonfactual, but “an angled locking pin” is less exact than “a locking pin seated at an angle” and cannot replace the original source for mechanism fidelity. This tests exact mechanisms plus event-level uncertainty within the already exposed competing-hypotheses structure; the source provides explicit guards."
+    },
+    {
+      "id": "v23-held-open-renewal",
+      "approved": true,
+      "reason": "The source and questions coherently ask whether renewal requires a new paper inspection certificate, with no answer from Ada. The expectation correctly preserves the unanswered question, Ada’s personal knowledge limit, the lack of any inference of contract silence, and her separate assertion that she has not submitted a renewal request. It must not infer an exemption, a requirement, someone else’s ignorance, or a submission by any actor. A focused answer can identify the qualified open question, while full retention also requires the distinct personal non-submission fact. The ordinary control is question-scoped and appropriately nonfactual for the requirement; its explicit non-submission clause is a factual side assertion, so the false annotation must not be generalized into a claim that every clause is nonfactual. This combines the established open-question pattern with separate factual retention and explicit paper/new qualifiers."
+    },
+    {
+      "id": "v23-held-rejected-inspection",
+      "approved": true,
+      "reason": "The source, bilingual queries, history view, and expectation are coherent: Ada rejected taking her whole device to the workshop for a check of its alignment gauge, has no plan to take it there, reports no inspection appointment, and personally has not transported the device. The source gives no specific measurement property or narrower gauge technology; translations and answers must preserve that breadth. Her personal non-transport must not become a universal claim that nobody transported it. The expectation correctly retains the rejected act and independent negative facts without inventing an active plan or completed check. The ordinary control is appropriately nonfactual for the proposed inspection, with factual rejection and negative side assertions. This exercises scope and component/action fidelity within the existing rejected-offer pattern, not an independently established increase in difficulty."
+    },
+    {
+      "id": "v23-held-read-only",
+      "approved": true,
+      "reason": "The source straightforwardly asserts an eleven-year support period, and both queries ask for that exact duration. The declared read-only admission and memory-folder query constraint make the expectation coherent: preserve source bytes, hold retention for permission reasons, and avoid fabricated retained evidence or unsupported claims of absent support or unavailable interpretation. Read-only does not make the source semantically unintelligible. The ordinary statement is correctly factual as a separate eligibility control. This is a simple duration statement with an operational admission exception; it is useful as a policy control but is not a difficult linguistic or discourse inference case."
+    }
+  ]
+}

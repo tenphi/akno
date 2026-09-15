@@ -1,0 +1,2392 @@
+{
+  "kind": "exposed-diagnostic-public-output-review",
+  "cases": [
+    {
+      "id": "v22-held-fictional-example",
+      "run": 1,
+      "source": {
+        "id": "v22-held-fictional-example",
+        "split": "held-out",
+        "language": "en",
+        "scenario": "fictional-example",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "In the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story."
+          }
+        ],
+        "view": "discussion",
+        "commitment": "hypothetical",
+        "admission": "writable",
+        "ordinary": "## Fictional example\nAda Marlow introduces a story, not a real agreement. In it, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "What fictional control-dial loan did Ada Marlow introduce for discussion?",
+          "ru": "Какой вымышленный заём ручки управления Ada Marlow предложила обсудить?"
+        },
+        "reviewExpectation": "Preserve Ada’s actual introduction of an invented example and the story-scoped loan: fictional Vulpine Mutual lends fictional Bo a spare control dial for forty-four days after a fictional repair. No real agreement, repair, loan, or elapsed calendar period is established."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_57004a45",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_187b506e3ea537c12efea510",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_57004a45",
+            "source_ref": "invented:v22-held-fictional-example",
+            "input_hash": "24d64bc9c3f446a67de8247ef24c56294d5fa34d2840e614707fe02c7a8c28e5",
+            "evidence": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement.\n…\nIn the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story.",
+            "evidence_hash": "1bd106b6e23ce545837e998265619d2c400f381606b1b915e6757e50493a1218",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "In the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57004a45",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_187b506e3ea537c12efea510",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 control dial loan in fictional example",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_57004a45",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_187b506e3ea537c12efea510",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 control dial loan in fictional example › Fictional Loan Terms",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57004a45",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_187b506e3ea537c12efea510",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 control dial loan in fictional example",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_57004a45",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_187b506e3ea537c12efea510",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 control dial loan in fictional example › Fictional Loan Terms",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Гипотетический контекст:** В придуманной Ada Marlow истории вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасной регуляторный диск Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта; этот заём существует только в истории и не описывает реального соглашения. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57004a45",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_187b506e3ea537c12efea510",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 control dial loan in fictional example",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_57004a45",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_187b506e3ea537c12efea510",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 control dial loan in fictional example › Fictional Loan Terms",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57004a45",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_187b506e3ea537c12efea510",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 control dial loan in fictional example",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_57004a45",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_187b506e3ea537c12efea510",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 control dial loan in fictional example › Fictional Loan Terms",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Гипотетический контекст:** В вымышленной истории Ada Marlow вымышленная Vulpine Mutual предоставляет вымышленному Bo Winters запасной диск управления Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта; заём существует только в этой истории и не описывает никакого реального соглашения. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57004a45",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_187b506e3ea537c12efea510",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 control dial loan in fictional example",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_57004a45",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_187b506e3ea537c12efea510",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 control dial loan in fictional example › Fictional Loan Terms",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57004a45",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_187b506e3ea537c12efea510",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 control dial loan in fictional example",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_57004a45",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_187b506e3ea537c12efea510",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 control dial loan in fictional example › Fictional Loan Terms",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Гипотетически:** В вымышленной истории Ada Marlow вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасной регулятор Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта; заём существует только в этой истории и не описывает никакого реального соглашения. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57004a45",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_187b506e3ea537c12efea510",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 control dial loan in fictional example",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_57004a45",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_187b506e3ea537c12efea510",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 control dial loan in fictional example › Fictional Loan Terms",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57004a45",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_187b506e3ea537c12efea510",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 control dial loan in fictional example",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_57004a45",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_187b506e3ea537c12efea510",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 control dial loan in fictional example › Fictional Loan Terms",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Гипотетический контекст:** В вымышленной истории Ada Marlow вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасную ручку управления Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта; заём существует только в этой истории и не описывает никакого реального соглашения. [memory/zephyr-qx-100:14]"
+        }
+      ]
+    },
+    {
+      "id": "v22-held-nested-report",
+      "run": 1,
+      "source": {
+        "id": "v22-held-nested-report",
+        "split": "held-out",
+        "language": "ru",
+        "scenario": "nested-report",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+          },
+          {
+            "item_id": "turn-3333",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+          }
+        ],
+        "view": "reports",
+        "basis": "source_report",
+        "admission": "writable",
+        "ordinary": "## Пересказ\nAda Marlow передаёт непроверенное сообщение Bo Winters: правила Vulpine Mutual разрешают принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, но не для его замены. Ada не видела правила, не проверяла сообщение и ещё не упаковала своё устройство.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?",
+          "ru": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+        },
+        "reviewExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ce7d46fb",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_ce7d46fb",
+            "source_ref": "invented:v22-held-nested-report",
+            "input_hash": "c995dce45037c637c0c15eedfd04a28a40c2869869fdc4c6a171c2cf5946b55d",
+            "evidence": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.\n…\nПо словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.\n…\nОн говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+            "evidence_hash": "ec2e72f76ae09433a92ddaceca1546ec73e3b91d7959bd069d442cffb0b30415",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              },
+              {
+                "quote": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+                "matchingSourceItems": [
+                  "turn-3333"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ce7d46fb",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ce7d46fb",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "По словам Ada Marlow: По словам Bo Winters, Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, а не для замены контакта. Ada Marlow не видела правил и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ce7d46fb",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ce7d46fb",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "По словам Ada Marlow: По словам Bo Winters, Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, а не для замены контакта. Ada Marlow не видела правила и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ce7d46fb",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ce7d46fb",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "По словам Ada Marlow, Bo Winters сообщил, что Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую, чтобы проверить сопротивление заземляющего контакта, а не заменить контакт. Ada Marlow не видела правил и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ce7d46fb",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ce7d46fb",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "По словам Ada Marlow: По словам Bo Winters, Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую, чтобы проверить сопротивление заземляющего контакта, а не заменить контакт. Ada Marlow не видела правил и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+        }
+      ]
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "run": 1,
+      "source": {
+        "id": "v22-held-competing-hypotheses",
+        "split": "held-out",
+        "language": "ru",
+        "scenario": "competing-hypotheses",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Я, Ada Marlow, рассматриваю две конкурирующие предварительные причины дребезга Zephyr QX-100: деформированная шайба или плохо закреплённая крышка фильтра."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Я не выбрала ни одну причину. Для обеих версий пока нет подтверждающих данных; сам дребезг этой записью также не подтверждается."
+          }
+        ],
+        "view": "discussion",
+        "commitment": "tentative",
+        "admission": "writable",
+        "ordinary": "## Предварительные версии\nAda Marlow рассматривает деформированную шайбу и плохо закреплённую крышку фильтра как конкурирующие причины возможного дребезга Zephyr QX-100. Ни одна причина не выбрана и не подтверждена; сам дребезг записью не подтверждён.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "Which competing rattle hypotheses did Ada Marlow consider for Zephyr QX-100?",
+          "ru": "Какие конкурирующие версии причины дребезга Zephyr QX-100 рассматривала Ada Marlow?"
+        },
+        "reviewExpectation": "Keep both tentative competing causes: a deformed washer and an inadequately secured filter cover. Ada selected neither, evidence supports neither, and the record does not itself confirm the rattle. Do not establish either fault or collapse them into one cause."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_17349143",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_17349143",
+            "source_ref": "invented:v22-held-competing-hypotheses",
+            "input_hash": "c6b6a6b79ec9458cd20fdd0109a3989d38ece5cf3131fc7bfa065687a6d2365a",
+            "evidence": "Я, Ada Marlow, рассматриваю две конкурирующие предварительные причины дребезга Zephyr QX-100: деформированная шайба или плохо закреплённая крышка фильтра.\n…\nЯ не выбрала ни одну причину. Для обеих версий пока нет подтверждающих данных; сам дребезг этой записью также не подтверждается.",
+            "evidence_hash": "3b18a976667127dd95bd8bdb50464353f98d9bf34ed3de5a5cb0daf2172c120b",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "Я, Ada Marlow, рассматриваю две конкурирующие предварительные причины дребезга Zephyr QX-100: деформированная шайба или плохо закреплённая крышка фильтра.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "Я не выбрала ни одну причину. Для обеих версий пока нет подтверждающих данных; сам дребезг этой записью также не подтверждается.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_17349143",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_17349143",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Предварительно:** Ada Marlow рассматривает два конкурирующих предварительных объяснения дребезга Zephyr QX-100: деформированную шайбу или плохо закреплённую крышку фильтра. Она не выбрала ни одно из них; ни одно объяснение пока не имеет подтверждающих данных, и эта запись не подтверждает, что сам дребезг произошёл. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_17349143",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_17349143",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Предварительный статус:** Ada Marlow рассматривает два конкурирующих предварительных объяснения дребезга Zephyr QX-100: деформированную шайбу или плохо закреплённую крышку фильтра. Она не выбрала ни одно из них; для обоих объяснений пока нет подтверждающих данных, и эта запись не подтверждает, что сам дребезг имел место. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_17349143",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_17349143",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "Предварительно: Ada Marlow рассматривает две конкурирующие предварительные версии причины дребезга Zephyr QX-100: деформированную шайбу или плохо закреплённую крышку фильтра. Она не выбрала ни одну из них; ни одна версия пока не имеет подтверждающих данных, и эта запись также не подтверждает, что сам дребезг произошёл. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_17349143",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_17349143",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "**Предварительно:** Ada Marlow рассматривает два конкурирующих предварительных объяснения дребезга Zephyr QX-100: деформированная шайба или плохо закреплённая крышка фильтра. Она не выбрала ни одно из них; пока ни одно из объяснений не имеет подтверждающих данных, и эта запись не подтверждает, что сам дребезг имел место. [memory/equipment:7]"
+        }
+      ]
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "run": 1,
+      "source": {
+        "id": "v22-held-coverage-exclusion",
+        "split": "held-out",
+        "language": "en",
+        "scenario": "coverage-exclusion",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "I, Ada Marlow, record that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "This exclusion alone does not answer whether replacement of the intake sleeve is covered. It also does not say that the agreement is silent about that sleeve."
+          }
+        ],
+        "view": "factual",
+        "polarity": "negated",
+        "admission": "writable",
+        "ordinary": "## Coverage\nThe Zephyr QX-100 warranty excludes sand damage to the ceramic spacer. This record does not settle coverage for replacing the intake sleeve and does not establish that the agreement is silent about it.",
+        "ordinaryFactual": true,
+        "queries": {
+          "en": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?",
+          "ru": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+        },
+        "reviewExpectation": "Retain the asserted exclusion of sand damage to the ceramic spacer with negative polarity. Separately preserve that this record does not settle intake-sleeve replacement coverage and does not establish agreement silence. Do not infer inclusion or exclusion for the sleeve."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_e1780cf6",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_9ef753e0f0c91292de56a7e6",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_e1780cf6",
+            "source_ref": "invented:v22-held-coverage-exclusion",
+            "input_hash": "05814d9abdd25f26a23e34b707d4755db85cc90a02459883580313a4ddb2192c",
+            "evidence": "I, Ada Marlow, record that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+            "evidence_hash": "113213a3d0ee2bac34ea800591f176f48cc87e4e1835719b8dd72f2a09c6f18a",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "I, Ada Marlow, record that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e1780cf6",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9ef753e0f0c91292de56a7e6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 warranty",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e1780cf6",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9ef753e0f0c91292de56a7e6",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 warranty › Warranty exclusions",
+              "updated": "2026-09-15",
+              "relevance": 0.6667,
+              "summary": null
+            }
+          ],
+          "answer": "Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e1780cf6",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9ef753e0f0c91292de56a7e6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 warranty",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e1780cf6",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9ef753e0f0c91292de56a7e6",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 warranty › Warranty exclusions",
+              "updated": "2026-09-15",
+              "relevance": 0.6667,
+              "summary": null
+            }
+          ],
+          "answer": "Ada Marlow фиксирует, что гарантия на Zephyr QX-100 не покрывает повреждение керамической распорки, вызванное песком. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e1780cf6",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9ef753e0f0c91292de56a7e6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 warranty",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e1780cf6",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9ef753e0f0c91292de56a7e6",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 warranty › Warranty exclusions",
+              "updated": "2026-09-15",
+              "relevance": 0.6667,
+              "summary": null
+            }
+          ],
+          "answer": "Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e1780cf6",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9ef753e0f0c91292de56a7e6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 warranty",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e1780cf6",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9ef753e0f0c91292de56a7e6",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 warranty › Warranty exclusions",
+              "updated": "2026-09-15",
+              "relevance": 0.6667,
+              "summary": null
+            }
+          ],
+          "answer": "Ada Marlow фиксирует, что гарантия Zephyr QX-100 не покрывает повреждение керамической проставки, вызванное песком. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e1780cf6",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9ef753e0f0c91292de56a7e6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 warranty",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e1780cf6",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9ef753e0f0c91292de56a7e6",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 warranty › Warranty exclusions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e1780cf6",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9ef753e0f0c91292de56a7e6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 warranty",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e1780cf6",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9ef753e0f0c91292de56a7e6",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 warranty › Warranty exclusions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "Ada Marlow записывает, что гарантия Zephyr QX-100 не покрывает повреждение керамической проставки, вызванное песком. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e1780cf6",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9ef753e0f0c91292de56a7e6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 warranty",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e1780cf6",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9ef753e0f0c91292de56a7e6",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 warranty › Warranty exclusions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e1780cf6",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9ef753e0f0c91292de56a7e6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextEvidence": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 warranty",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e1780cf6",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9ef753e0f0c91292de56a7e6",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 warranty › Warranty exclusions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "answer": "Ada Marlow фиксирует, что гарантия Zephyr QX-100 не распространяется на повреждение керамической проставки, вызванное песком. [memory/zephyr-qx-100:14]"
+        }
+      ]
+    }
+  ],
+  "packetFingerprint": "3a2fd3cc453c4fbeb556ea678c3ba6e6e2c1a17e802c0e125a14c2798431d9c0"
+}

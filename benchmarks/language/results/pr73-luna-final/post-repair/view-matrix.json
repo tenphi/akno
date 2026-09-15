@@ -1,0 +1,363 @@
+{
+  "legacyV22Correct": 44,
+  "legacyV22Total": 44,
+  "beforeVersion": "memory-view-v9",
+  "afterVersion": "memory-view-v10",
+  "beforeCorrect": 43,
+  "afterCorrect": 44,
+  "total": 44,
+  "views": [
+    {
+      "id": "v22-held-nested-report",
+      "language": "en",
+      "query": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?",
+      "expected": "reports",
+      "before": "reports",
+      "after": "reports"
+    },
+    {
+      "id": "v22-held-nested-report",
+      "language": "ru",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "expected": "reports",
+      "before": "reports",
+      "after": "reports"
+    },
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "language": "en",
+      "query": "What conditional drain-channel maintenance scenario did Ada Marlow set out for Zephyr QX-100?",
+      "expected": "discussion",
+      "before": "discussion",
+      "after": "discussion"
+    },
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "language": "ru",
+      "query": "Какой условный сценарий обслуживания дренажного канала Zephyr QX-100 описала Ada Marlow?",
+      "expected": "discussion",
+      "before": "discussion",
+      "after": "discussion"
+    },
+    {
+      "id": "v22-held-counterfactual",
+      "language": "en",
+      "query": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?",
+      "expected": "discussion",
+      "before": "discussion",
+      "after": "discussion"
+    },
+    {
+      "id": "v22-held-counterfactual",
+      "language": "ru",
+      "query": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?",
+      "expected": "discussion",
+      "before": "discussion",
+      "after": "discussion"
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "language": "en",
+      "query": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?",
+      "expected": "factual",
+      "before": "factual",
+      "after": "factual"
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "language": "ru",
+      "query": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?",
+      "expected": "factual",
+      "before": "factual",
+      "after": "factual"
+    },
+    {
+      "id": "v22-held-assistant-speculation",
+      "language": "en",
+      "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?",
+      "expected": "reports",
+      "before": "reports",
+      "after": "reports"
+    },
+    {
+      "id": "v22-held-assistant-speculation",
+      "language": "ru",
+      "query": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?",
+      "expected": "reports",
+      "before": "reports",
+      "after": "reports"
+    },
+    {
+      "id": "v22-held-fictional-example",
+      "language": "en",
+      "query": "What fictional control-dial loan did Ada Marlow introduce for discussion?",
+      "expected": "discussion",
+      "before": "discussion",
+      "after": "discussion"
+    },
+    {
+      "id": "v22-held-fictional-example",
+      "language": "ru",
+      "query": "Какой вымышленный заём ручки управления Ada Marlow предложила обсудить?",
+      "expected": "discussion",
+      "before": "discussion",
+      "after": "discussion"
+    },
+    {
+      "id": "v22-held-relative-unknown-date",
+      "language": "en",
+      "query": "What relative-time cleaning-instructions proposal did Ada Marlow make for Zephyr QX-100?",
+      "expected": "planning",
+      "before": "planning",
+      "after": "planning"
+    },
+    {
+      "id": "v22-held-relative-unknown-date",
+      "language": "ru",
+      "query": "Какое предложение со временем относительно записи сделала Ada Marlow об инструкциях Zephyr QX-100?",
+      "expected": "planning",
+      "before": "planning",
+      "after": "planning"
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "language": "en",
+      "query": "Which competing rattle hypotheses did Ada Marlow consider for Zephyr QX-100?",
+      "expected": "discussion",
+      "before": "discussion",
+      "after": "discussion"
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "language": "ru",
+      "query": "Какие конкурирующие версии причины дребезга Zephyr QX-100 рассматривала Ada Marlow?",
+      "expected": "discussion",
+      "before": "discussion",
+      "after": "discussion"
+    },
+    {
+      "id": "v22-held-open-question",
+      "language": "en",
+      "query": "What open service-plan question does Ada Marlow have about the folding handle of Zephyr QX-100?",
+      "expected": "questions",
+      "before": "questions",
+      "after": "questions"
+    },
+    {
+      "id": "v22-held-open-question",
+      "language": "ru",
+      "query": "Какой открытый вопрос о складной ручке Zephyr QX-100 остаётся у Ada Marlow?",
+      "expected": "questions",
+      "before": "questions",
+      "after": "questions"
+    },
+    {
+      "id": "v22-held-rejected-plan",
+      "language": "en",
+      "query": "Which rotation-stop measurement proposal did Ada Marlow reject for Zephyr QX-100?",
+      "expected": "history",
+      "before": "history",
+      "after": "history"
+    },
+    {
+      "id": "v22-held-rejected-plan",
+      "language": "ru",
+      "query": "Какое предложение об измерении ограничителя вращения Zephyr QX-100 отклонила Ada Marlow?",
+      "expected": "history",
+      "before": "history",
+      "after": "history"
+    },
+    {
+      "id": "v22-held-read-only-admission",
+      "language": "en",
+      "query": "What maintenance interval did Ada Marlow ask to remember in the read-only folder?",
+      "expected": "factual",
+      "before": "factual",
+      "after": "factual"
+    },
+    {
+      "id": "v22-held-read-only-admission",
+      "language": "ru",
+      "query": "Какой интервал обслуживания Ada Marlow попросила запомнить в папке с запретом на запись?",
+      "expected": "factual",
+      "before": "factual",
+      "after": "factual"
+    },
+    {
+      "id": "v23-held-relayed-service",
+      "language": "en",
+      "query": "What service report did Ada Marlow relay from Bo Winters about the Zephyr QX-100 indicator?",
+      "expected": "reports",
+      "before": "reports",
+      "after": "reports"
+    },
+    {
+      "id": "v23-held-relayed-service",
+      "language": "ru",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "expected": "reports",
+      "before": "reports",
+      "after": "reports"
+    },
+    {
+      "id": "v23-held-assumed-interval",
+      "language": "en",
+      "query": "What hypothetical latch-lubrication scenario did Ada Marlow describe for Zephyr QX-100?",
+      "expected": "discussion",
+      "before": "discussion",
+      "after": "discussion"
+    },
+    {
+      "id": "v23-held-assumed-interval",
+      "language": "ru",
+      "query": "Какой гипотетический сценарий смазки защёлки Zephyr QX-100 описала Ada Marlow?",
+      "expected": "discussion",
+      "before": "discussion",
+      "after": "discussion"
+    },
+    {
+      "id": "v23-held-declined-extension",
+      "language": "en",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "expected": "discussion",
+      "before": "discussion",
+      "after": "discussion"
+    },
+    {
+      "id": "v23-held-declined-extension",
+      "language": "ru",
+      "query": "Какую нереализованную льготу по ремонту разъёма Zephyr QX-100 описала Ada Marlow?",
+      "expected": "discussion",
+      "before": "discussion",
+      "after": "discussion"
+    },
+    {
+      "id": "v23-held-scoped-exclusion",
+      "language": "en",
+      "query": "What does Ada Marlow’s Zephyr QX-100 exclusion record establish about the fabric seal and hinge?",
+      "expected": "factual",
+      "before": "factual",
+      "after": "factual"
+    },
+    {
+      "id": "v23-held-scoped-exclusion",
+      "language": "ru",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "expected": "factual",
+      "before": "factual",
+      "after": "factual"
+    },
+    {
+      "id": "v23-held-assistant-reading",
+      "language": "en",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "expected": "reports",
+      "before": "reports",
+      "after": "reports"
+    },
+    {
+      "id": "v23-held-assistant-reading",
+      "language": "ru",
+      "query": "Какое предположение о возвратной этикетке для обслуживания Zephyr QX-100 высказал ассистент?",
+      "expected": "reports",
+      "before": "reports",
+      "after": "reports"
+    },
+    {
+      "id": "v23-held-fictional-key",
+      "language": "en",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "expected": "discussion",
+      "before": "discussion",
+      "after": "discussion"
+    },
+    {
+      "id": "v23-held-fictional-key",
+      "language": "ru",
+      "query": "Какой вымышленный заём ключа для Zephyr QX-100 Ada Marlow предложила обсудить?",
+      "expected": "discussion",
+      "before": "discussion",
+      "after": "discussion"
+    },
+    {
+      "id": "v23-held-undated-review",
+      "language": "en",
+      "query": "What unaccepted proposal did Ada Marlow make for discussing Zephyr QX-100 service conditions, and when?",
+      "expected": "planning",
+      "before": "planning",
+      "after": "planning"
+    },
+    {
+      "id": "v23-held-undated-review",
+      "language": "ru",
+      "query": "Какой план обсуждения условий обслуживания Zephyr QX-100 предложила Ada Marlow и к какому времени он относится?",
+      "expected": "planning",
+      "before": "planning",
+      "after": "planning"
+    },
+    {
+      "id": "v23-held-competing-clicks",
+      "language": "en",
+      "query": "What competing hypotheses did Ada Marlow consider for clicking in Zephyr QX-100?",
+      "expected": "discussion",
+      "before": "discussion",
+      "after": "discussion"
+    },
+    {
+      "id": "v23-held-competing-clicks",
+      "language": "ru",
+      "query": "Какие конкурирующие гипотезы щелчков в Zephyr QX-100 рассматривала Ada Marlow?",
+      "expected": "discussion",
+      "before": "discussion",
+      "after": "discussion"
+    },
+    {
+      "id": "v23-held-open-renewal",
+      "language": "en",
+      "query": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+      "expected": "questions",
+      "before": "questions",
+      "after": "questions"
+    },
+    {
+      "id": "v23-held-open-renewal",
+      "language": "ru",
+      "query": "Какой открытый вопрос остаётся у Ada Marlow о продлении плана обслуживания Zephyr QX-100?",
+      "expected": "questions",
+      "before": "questions",
+      "after": "questions"
+    },
+    {
+      "id": "v23-held-rejected-inspection",
+      "language": "en",
+      "query": "Which inspection offer did Ada Marlow reject for Zephyr QX-100?",
+      "expected": "history",
+      "before": "history",
+      "after": "history"
+    },
+    {
+      "id": "v23-held-rejected-inspection",
+      "language": "ru",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "expected": "history",
+      "before": "planning",
+      "after": "history"
+    },
+    {
+      "id": "v23-held-read-only",
+      "language": "en",
+      "query": "What is the Zephyr QX-100 support period?",
+      "expected": "factual",
+      "before": "factual",
+      "after": "factual"
+    },
+    {
+      "id": "v23-held-read-only",
+      "language": "ru",
+      "query": "Каков срок поддержки Zephyr QX-100?",
+      "expected": "factual",
+      "before": "factual",
+      "after": "factual"
+    }
+  ]
+}

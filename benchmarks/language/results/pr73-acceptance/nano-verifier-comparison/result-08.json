@@ -1,0 +1,20 @@
+{
+  "index": 7,
+  "id": "v22-held-nested-report/ru/ru/true",
+  "variant": "before",
+  "expectedSupported": true,
+  "available": true,
+  "accepted": true,
+  "outcome": {
+    "ok": true,
+    "reason": null,
+    "latencyMs": 69207.839167,
+    "usage": {
+      "inputTokens": 22238,
+      "outputTokens": 8881,
+      "totalTokens": 31119,
+      "cachedInputTokens": 11008,
+      "reasoningOutputTokens": 8352
+    }
+  }
+}

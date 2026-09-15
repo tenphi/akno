@@ -1,0 +1,13 @@
+{
+  "case": "v23-held-undated-review",
+  "run": 1,
+  "extractionReceiptSequence": 412,
+  "modelFreeReproduction": true,
+  "cleanedCandidates": 2,
+  "clockReadabilityHolds": 0,
+  "unknownDateReadable": false,
+  "sourceAnchorRecognized": false,
+  "classification": "bounded lexical coverage gap plus accepted incomplete model output",
+  "finding": "The local clock-readability guard is activated by the bounded RELATIVE_TIME source recognizer. A spelled-out numeric interval after an utterance does not activate it. The model also omits the unknown-date source sentence from its selected frame, then the semantic verifier accepts incomplete readable timing. Metadata remains unknown and nonactionable, so no resolved date or actual appointment is invented.",
+  "disposition": "Preserve as a known pipeline limitation and regression input under issue 66. The completion round repairs query routing; it does not claim exhaustive date-language recognition or relax any verifier contract."
+}

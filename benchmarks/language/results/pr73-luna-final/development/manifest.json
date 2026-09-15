@@ -1,0 +1,82 @@
+{
+  "kind": "complete-corpus",
+  "corpusVersion": "v23",
+  "createdAt": "2026-09-15T11:03:51.633Z",
+  "head": "05bf09fdd23a1f30af2f8096a78ecd193ffa9b4b",
+  "sourceDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "runnerSha256": "9902a05c5137743c79f3e7c4b2c026d656fef83711227c5edfcb69a5a61f41e2",
+  "runtime": {
+    "core": "a88a34fb1957308dbedc2cddfd75bb48e73f6b65de08cb39ec622da01b9d55ff",
+    "protocol": "0e3d190ecc3e069c1642c5e77208c4d3ad3743052ecc15678f2432eed5ec1b0a"
+  },
+  "corpusFingerprint": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+  "split": "development",
+  "runs": 2,
+  "selectedCaseIds": [
+    "v22-held-nested-report",
+    "v22-held-conditional-hypothesis",
+    "v22-held-counterfactual",
+    "v22-held-coverage-exclusion",
+    "v22-held-assistant-speculation",
+    "v22-held-fictional-example",
+    "v22-held-relative-unknown-date",
+    "v22-held-competing-hypotheses",
+    "v22-held-open-question",
+    "v22-held-rejected-plan",
+    "v22-held-read-only-admission"
+  ],
+  "models": {
+    "derive": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "timeoutMs": 120000,
+      "maxOutputTokens": 2400,
+      "reasoningEffort": "low",
+      "api": "responses",
+      "providerRetries": 0
+    },
+    "answer": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "timeoutMs": 60000,
+      "maxOutputTokens": 2400,
+      "reasoningEffort": "low",
+      "api": "responses",
+      "providerRetries": 0
+    },
+    "embedding": {
+      "id": "text-embedding-3-small",
+      "enabled": true,
+      "timeoutMs": 60000,
+      "dimensions": 1536,
+      "api": "responses",
+      "providerRetries": 0
+    },
+    "expansion": {
+      "id": null,
+      "enabled": false,
+      "timeoutMs": 30000,
+      "maxOutputTokens": 1024
+    },
+    "reranker": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "timeoutMs": 30000,
+      "maxOutputTokens": 1600,
+      "reasoningEffort": "low",
+      "rerankerMode": "llm",
+      "topK": 8,
+      "maxChars": 2400,
+      "excludeIrrelevant": true,
+      "scoreOffset": "auto",
+      "api": "responses",
+      "providerRetries": 0
+    }
+  },
+  "fullRetrieval": true,
+  "limitations": [
+    "Previously exposed sources; this is not fresh held-out generalization.",
+    "Published text requires independent source-based review.",
+    "Summaries/facts and expansion disabled; graph expansion disabled."
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "c19c338a8e9eb590b096e3636548721f380eb3ba51f488cd6e687f03f1433329",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-competing-hypotheses",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context retains both tentative causes and every coupled epistemic limit: personal nonselection by Ada, no supporting data, and nonconfirmation of the rattle by this record. It is useful discussion evidence for either query language and does not promote a possible fault or symptom to fact."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context retains both tentative causes and every coupled epistemic limit: personal nonselection by Ada, no supporting data, and nonconfirmation of the rattle by this record. It is useful discussion evidence for either query language and does not promote a possible fault or symptom to fact."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context retains both tentative causes and every coupled epistemic limit: personal nonselection by Ada, no supporting data, and nonconfirmation of the rattle by this record. It is useful discussion evidence for either query language and does not promote a possible fault or symptom to fact."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context retains both tentative causes and every coupled epistemic limit: personal nonselection by Ada, no supporting data, and nonconfirmation of the rattle by this record. It is useful discussion evidence for either query language and does not promote a possible fault or symptom to fact."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "schemaVersion": "paired-experiment-freeze-review-v1",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "decision": "clear to freeze the declared bounded coupled live downstream experiment",
+  "reviewedFiles": {
+    "scripts/compare-language-reliability.mjs": "952360f77da78ce60dfa6288205abda74b3f515507a6a3751b1d063c37d926ec",
+    "scripts/language-comparison-transport.mjs": "bc8984ecdf7914dc3b31ebd3efdc3cbbfa9aed534dbab7e9eb9be3aaeb14f8c1",
+    "scripts/language-comparison-fixtures.mjs": "acf5a942dab67d11ef1a76dd71a0ff7c25f1910e7d7c91b36414dfa604d0ba34",
+    "scripts/summarize-language-comparison.mjs": "b26827a8f926e2c06857a42be4fe5102f0cc7ddf1cfedd51e11096c5bc94be43",
+    "packages/core/test/language-comparison.test.ts": "b514ea47e8402419dbc46de4b35e33f73777ef99862451208e2fcb5c0a053a4e",
+    "benchmarks/language/pr73-paired-plan.json": "aa1df132d543e82d8cc2eec80e3ea212a9ce8e2e78a81721c81e0493ad1fa499"
+  },
+  "verification": {
+    "transportTests": {
+      "files": 1,
+      "tests": 3,
+      "passed": true
+    },
+    "preflight": {
+      "path": "/tmp/akno-pr73-paired-preflight-4",
+      "completion": {
+        "pairs": 48,
+        "expected": 48,
+        "runtimeUnchanged": true,
+        "requests": 0,
+        "attemptedPairs": 48,
+        "failedPairs": 0,
+        "unstartedPairs": 0,
+        "fatalErrors": []
+      },
+      "summarySha256": "b1c7bbb9c50a8a98994ed89060dee7ce0c8a990a12b233e185cd7b1932060128",
+      "counts": {
+        "baseline": {
+          "correctInferredViews": 66,
+          "inferredViews": 100,
+          "correctExplicitViews": 100,
+          "explicitViews": 100,
+          "correctProjections": 1,
+          "projections": 6,
+          "answersWithEligibleEvidence": 153,
+          "answerOperations": 200,
+          "publishedAnswers": 0,
+          "automaticContexts": 10,
+          "unsafeFactualProjections": 5,
+          "unsafeFactualAnswerLines": 0,
+          "unsafeFactualContextLines": 0,
+          "factualAnswerControls": 48,
+          "bytesStable": 48,
+          "reasons": {
+            "generation_unavailable": 153,
+            "no_eligible_evidence": 39,
+            "retrieval_incomplete": 8
+          }
+        },
+        "candidate": {
+          "correctInferredViews": 100,
+          "inferredViews": 100,
+          "correctExplicitViews": 100,
+          "explicitViews": 100,
+          "correctProjections": 6,
+          "projections": 6,
+          "answersWithEligibleEvidence": 172,
+          "answerOperations": 200,
+          "publishedAnswers": 0,
+          "automaticContexts": 10,
+          "unsafeFactualProjections": 0,
+          "unsafeFactualAnswerLines": 0,
+          "unsafeFactualContextLines": 0,
+          "factualAnswerControls": 48,
+          "bytesStable": 48,
+          "reasons": {
+            "generation_unavailable": 172,
+            "no_eligible_evidence": 20,
+            "retrieval_incomplete": 8
+          }
+        }
+      },
+      "retainedExplicitControls": 88,
+      "retainedExplicitEqual": 88,
+      "projectionUpgrades": 4,
+      "regressions": 0,
+      "physicalRequests": 0
+    },
+    "independentChecks": [
+      "No mismatch between recall view and actual answer memory_view across all 200 primary operations per arm.",
+      "All 48 explicit factual answer and context controls per arm returned factual memory_view.",
+      "Four reused base indexes upgraded prose-v2 to prose-v3 with source bytes stable.",
+      "Set-level comparison of answer evidence under already-correct baseline views loses only the intentionally excluded fictional eleven-year warranty and empty heading in ordinary-empty-heading-fact; no other line loss."
+    ]
+  },
+  "remainingBlockers": [],
+  "limitations": [
+    "This is common-input downstream projection/routing measurement, with reconstructed public records. It does not reproduce original provenance-backed answer verification, lineage, retention, source archive or replay.",
+    "Exact JSON provider responses are coupled across corresponding opposite-arm request occurrences within one case/repetition/stage; these are not independent arm samples or an overall accuracy/noninferiority estimate. Physical versus coupled usage must remain separate.",
+    "The summarizer automatic evidence-loss guard detects nonempty-to-empty, not every partial line loss. The stronger no-eligible-content-loss conclusion is independently checked on this fixed offline matrix.",
+    "Preserved failed/partial experiments must remain visible and cannot be summarized as complete. Completed main answers are checkpointed immediately; a preceding recall or factual context can still be absent from its partial checkpoint if the next suboperation throws.",
+    "Live source-based semantic adjudication is still required. Eligible-context availability must not be represented as answer correctness. Original failed full gate and archived grades remain unchanged."
+  ]
+}

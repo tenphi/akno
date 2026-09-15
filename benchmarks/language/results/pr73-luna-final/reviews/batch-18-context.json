@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "e7af6ae490c02c28a4d439a26ec98728def793a4a7785f73253ec5ef28ee62c6",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-counterfactual",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the entire focused counterfactual: Ada did not enroll; if she had, internal-spring replacement after thirty-three months of use would have been free; the consequence remains unrealized. Counterfactual metadata agrees with the prose. It is useful discussion evidence in English for either query language, with no actual coverage, calendar date, or completed replacement introduced."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the entire focused counterfactual: Ada did not enroll; if she had, internal-spring replacement after thirty-three months of use would have been free; the consequence remains unrealized. Counterfactual metadata agrees with the prose. It is useful discussion evidence in English for either query language, with no actual coverage, calendar date, or completed replacement introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the entire focused counterfactual: Ada did not enroll; if she had, internal-spring replacement after thirty-three months of use would have been free; the consequence remains unrealized. Counterfactual metadata agrees with the prose. It is useful discussion evidence in English for either query language, with no actual coverage, calendar date, or completed replacement introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the entire focused counterfactual: Ada did not enroll; if she had, internal-spring replacement after thirty-three months of use would have been free; the consequence remains unrealized. Counterfactual metadata agrees with the prose. It is useful discussion evidence in English for either query language, with no actual coverage, calendar date, or completed replacement introduced."
+        }
+      ]
+    }
+  ]
+}

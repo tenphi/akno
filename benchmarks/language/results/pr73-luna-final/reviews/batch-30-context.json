@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "d7341ff2a33e4ff50543e1f9c193c4ac4fa5c95915037bc3d10dd20ec6c30ec4",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-fictional-key",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual context includes both pages: the complete fictional physical-metal-cover-key loan and the separate real discussion proposal. Exact actors, duration after fictional inspection, no access code, and no real agreement are retained with appropriate hypothetical versus asserted/proposed metadata. English stored knowledge is appropriate for either query language and provides useful source-supported context."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual context includes both pages: the complete fictional physical-metal-cover-key loan and the separate real discussion proposal. Exact actors, duration after fictional inspection, no access code, and no real agreement are retained with appropriate hypothetical versus asserted/proposed metadata. English stored knowledge is appropriate for either query language and provides useful source-supported context."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual context includes both pages: the complete fictional physical-metal-cover-key loan and the separate real discussion proposal. Exact actors, duration after fictional inspection, no access code, and no real agreement are retained with appropriate hypothetical versus asserted/proposed metadata. English stored knowledge is appropriate for either query language and provides useful source-supported context."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual context includes both pages: the complete fictional physical-metal-cover-key loan and the separate real discussion proposal. Exact actors, duration after fictional inspection, no access code, and no real agreement are retained with appropriate hypothetical versus asserted/proposed metadata. English stored knowledge is appropriate for either query language and provides useful source-supported context."
+        }
+      ]
+    }
+  ]
+}

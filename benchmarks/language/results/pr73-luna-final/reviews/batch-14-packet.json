@@ -1,0 +1,959 @@
+{
+  "kind": "incremental-frozen-full-evaluation-review-batch",
+  "corpusFingerprint": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+  "rubric": "Unchanged V23 language-output-review-v2 rubric in the frozen benchmark reviewer; no changed thresholds or expected meanings.",
+  "cases": [
+    {
+      "id": "v23-held-open-renewal",
+      "run": 1,
+      "source": {
+        "id": "v23-held-open-renewal",
+        "split": "held-out",
+        "language": "mixed",
+        "scenario": "open-question",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Для Zephyr QX-100 у меня, Ada Marlow, остаётся открытый вопрос: does renewing the service plan require a new paper inspection certificate?"
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "I do not yet have an answer. My unanswered question does not establish that the agreement is silent, and I have not submitted a renewal request."
+          }
+        ],
+        "view": "questions",
+        "admission": "writable",
+        "ordinary": "## Open question\nAda Marlow has no answer yet to whether renewing the Zephyr QX-100 service plan requires a new paper inspection certificate. Her unanswered question does not establish contract silence, and she has not submitted a renewal request.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "What open question does Ada Marlow have about renewing the Zephyr QX-100 service plan?",
+          "ru": "Какой открытый вопрос остаётся у Ada Marlow о продлении плана обслуживания Zephyr QX-100?"
+        },
+        "reviewExpectation": "Retain the unanswered question about a new paper inspection certificate being required for service-plan renewal, with question kind and no commitment to either answer. Preserve Ada’s personal lack of an answer, the distinction from contract silence, and separately her assertion that she has not submitted a renewal request. Do not establish a requirement, exemption, renewal or submission."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_1c532ef2",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_346873427fe35a3ad4b453e5",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1c532ef2",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_346873427fe35a3ad4b453e5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1c532ef2",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_346873427fe35a3ad4b453e5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "Открытый вопрос: у Ada Marlow к Zephyr QX-100 остаётся вопрос, требует ли продление плана обслуживания нового бумажного сертификата инспекции. У Ada Marlow пока нет ответа; этот вопрос без ответа не устанавливает, что в соглашении ничего не сказано, и она не подавала запрос на продление. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1c532ef2",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_346873427fe35a3ad4b453e5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1c532ef2",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_346873427fe35a3ad4b453e5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Открытый вопрос:** Ada Marlow спрашивает в отношении Zephyr QX-100: требует ли продление плана обслуживания нового бумажного сертификата проверки? Ada Marlow пока не знает ответа; этот оставшийся без ответа вопрос не устанавливает, что соглашение умалчивает об этом, и она не подавала запрос на продление. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1c532ef2",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_346873427fe35a3ad4b453e5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1c532ef2",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_346873427fe35a3ad4b453e5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Открытый вопрос:** у Ada Marlow остаётся открытый вопрос о Zephyr QX-100: требует ли продление плана обслуживания новый бумажный сертификат инспекции? Ada Marlow пока не знает ответа; этот вопрос без ответа не устанавливает, что в договоре нет соответствующего положения, и она не подавала запрос на продление. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1c532ef2",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_346873427fe35a3ad4b453e5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1c532ef2",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_346873427fe35a3ad4b453e5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Открытый вопрос:** у Ada Marlow остаётся открытый вопрос о Zephyr QX-100: требует ли продление плана обслуживания новый бумажный сертификат проверки? У Ada Marlow пока нет ответа; этот вопрос без ответа не устанавливает, что соглашение ничего не говорит по этому поводу, и она не подавала запрос на продление. [memory/equipment:7]"
+        }
+      ]
+    },
+    {
+      "id": "v22-held-nested-report",
+      "run": 2,
+      "source": {
+        "id": "v22-held-nested-report",
+        "split": "development",
+        "language": "ru",
+        "scenario": "nested-report",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+          },
+          {
+            "item_id": "turn-3333",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+          }
+        ],
+        "view": "reports",
+        "basis": "source_report",
+        "admission": "writable",
+        "ordinary": "## Пересказ\nAda Marlow передаёт непроверенное сообщение Bo Winters: правила Vulpine Mutual разрешают принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, но не для его замены. Ada не видела правила, не проверяла сообщение и ещё не упаковала своё устройство.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?",
+          "ru": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+        },
+        "reviewExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_03d68f6f",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_aaf0e12ec23eccaec1e46d49",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_03d68f6f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_aaf0e12ec23eccaec1e46d49",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_03d68f6f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_aaf0e12ec23eccaec1e46d49",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**По словам Ada Marlow:** По словам Bo Winters, Vulpine Mutual разрешает принести устройство Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, причём проверяется именно контакт, а не производится его замена. Ada Marlow не видела правила и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_03d68f6f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_aaf0e12ec23eccaec1e46d49",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_03d68f6f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_aaf0e12ec23eccaec1e46d49",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "По словам Ada Marlow, Bo Winters сообщил, что Vulpine Mutual разрешает принести устройство Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта — именно для проверки контакта, а не для его замены. Ada Marlow не видела правила и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_03d68f6f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_aaf0e12ec23eccaec1e46d49",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_03d68f6f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_aaf0e12ec23eccaec1e46d49",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**По словам Ada Marlow:** По словам Bo Winters, Vulpine Mutual разрешает принести устройство Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта — именно для проверки контакта, а не его замены. Ada Marlow не видела правила и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_03d68f6f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_aaf0e12ec23eccaec1e46d49",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_03d68f6f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_aaf0e12ec23eccaec1e46d49",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": null
+        }
+      ]
+    }
+  ],
+  "extra": [
+    {
+      "id": "v23-held-open-renewal",
+      "run": 1,
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_1c532ef2",
+            "source_ref": "invented:v23-held-open-renewal",
+            "input_hash": "267dd461d68770ed17aeb21eda25549bb4c3499e80789d6771f163cbb1c16585",
+            "evidence": "Для Zephyr QX-100 у меня, Ada Marlow, остаётся открытый вопрос: does renewing the service plan require a new paper inspection certificate?\n…\nI do not yet have an answer. My unanswered question does not establish that the agreement is silent, and I have not submitted a renewal request.",
+            "evidence_hash": "a32b39a3ae939e2da183cfdaa1c46b1df35a7046f477047d1e48605e8ee309b7",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "Для Zephyr QX-100 у меня, Ada Marlow, остаётся открытый вопрос: does renewing the service plan require a new paper inspection certificate?",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "I do not yet have an answer. My unanswered question does not establish that the agreement is silent, and I have not submitted a renewal request.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_1c532ef2",
+                    "level": 1,
+                    "kind": "question",
+                    "subject": "ent_346873427fe35a3ad4b453e5",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "none",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Open Questions",
+              "updated": "2026-09-15",
+              "relevance": 0.8512,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_1c532ef2",
+                    "level": 1,
+                    "kind": "question",
+                    "subject": "ent_346873427fe35a3ad4b453e5",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "none",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Open Questions",
+              "updated": "2026-09-15",
+              "relevance": 0.8512,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_1c532ef2",
+                    "level": 1,
+                    "kind": "question",
+                    "subject": "ent_346873427fe35a3ad4b453e5",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "none",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Open Questions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_1c532ef2",
+                    "level": 1,
+                    "kind": "question",
+                    "subject": "ent_346873427fe35a3ad4b453e5",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "none",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Open Questions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ]
+    },
+    {
+      "id": "v22-held-nested-report",
+      "run": 2,
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_03d68f6f",
+            "source_ref": "invented:v22-held-nested-report",
+            "input_hash": "c995dce45037c637c0c15eedfd04a28a40c2869869fdc4c6a171c2cf5946b55d",
+            "evidence": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.\n…\nПо словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.\n…\nОн говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+            "evidence_hash": "ec2e72f76ae09433a92ddaceca1546ec73e3b91d7959bd069d442cffb0b30415",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              },
+              {
+                "quote": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+                "matchingSourceItems": [
+                  "turn-3333"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_03d68f6f",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_aaf0e12ec23eccaec1e46d49",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-Contact Resistance Testing",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_03d68f6f",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_aaf0e12ec23eccaec1e46d49",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-Contact Resistance Testing",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_03d68f6f",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_aaf0e12ec23eccaec1e46d49",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-Contact Resistance Testing",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to test grounding-contact resistance, specifically testing the contact rather than replacing it. Ada Marlow has not seen the rules and has not checked Bo's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_03d68f6f",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_aaf0e12ec23eccaec1e46d49",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-Contact Resistance Testing",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ]
+    }
+  ],
+  "packetFingerprint": "721abaefe5f24428bf674909ed126d9184c7e1dfebfb06e60a6e327a3ca38147"
+}

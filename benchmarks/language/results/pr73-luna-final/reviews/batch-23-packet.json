@@ -1,0 +1,399 @@
+{
+  "kind": "incremental-frozen-full-evaluation-review-batch",
+  "corpusFingerprint": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+  "rubric": "Unchanged V23 language-output-review-v2 rubric in the frozen benchmark reviewer; no changed thresholds or expected meanings.",
+  "cases": [
+    {
+      "id": "v23-held-declined-extension",
+      "run": 2,
+      "source": {
+        "id": "v23-held-declined-extension",
+        "split": "held-out",
+        "language": "en",
+        "scenario": "counterfactual",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "I, Ada Marlow, declined the optional Zephyr QX-100 cable-protection extension."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Had I accepted that extension, repair of the connector after twenty-two months of use would have been free. I did not accept it; this is the unrealized benefit, not coverage I currently have."
+          }
+        ],
+        "view": "discussion",
+        "commitment": "counterfactual",
+        "admission": "writable",
+        "ordinary": "## Counterfactual\nAda Marlow declined the optional Zephyr QX-100 cable-protection extension. Had she accepted it, connector repair after twenty-two months of use would have been free. This benefit is unrealized, not her current coverage.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+          "ru": "Какую нереализованную льготу по ремонту разъёма Zephyr QX-100 описала Ada Marlow?"
+        },
+        "reviewExpectation": "Preserve Ada’s actual rejection and the unrealized free connector repair after twenty-two months of use, dependent on accepting the extension. The counterfactual remains available for discussion; it is neither actual coverage nor a completed repair, replacement promise, calendar event or canceled fact."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_d06f28b2",
+            "level": 1,
+            "kind": "decision",
+            "subject": "ent_fb1d38a8ca3bfd6ec96efd38",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d06f28b2",
+                "level": 1,
+                "kind": "decision",
+                "subject": "ent_fb1d38a8ca3bfd6ec96efd38",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": null
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d06f28b2",
+                "level": 1,
+                "kind": "decision",
+                "subject": "ent_fb1d38a8ca3bfd6ec96efd38",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": null
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d06f28b2",
+                "level": 1,
+                "kind": "decision",
+                "subject": "ent_fb1d38a8ca3bfd6ec96efd38",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": null
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d06f28b2",
+                "level": 1,
+                "kind": "decision",
+                "subject": "ent_fb1d38a8ca3bfd6ec96efd38",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d06f28b2",
+                "level": 1,
+                "kind": "decision",
+                "subject": "ent_fb1d38a8ca3bfd6ec96efd38",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d06f28b2",
+                "level": 1,
+                "kind": "decision",
+                "subject": "ent_fb1d38a8ca3bfd6ec96efd38",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d06f28b2",
+                "level": 1,
+                "kind": "decision",
+                "subject": "ent_fb1d38a8ca3bfd6ec96efd38",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d06f28b2",
+                "level": 1,
+                "kind": "decision",
+                "subject": "ent_fb1d38a8ca3bfd6ec96efd38",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": null
+        }
+      ]
+    }
+  ],
+  "extra": [
+    {
+      "id": "v23-held-declined-extension",
+      "run": 2,
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_d06f28b2",
+            "source_ref": "invented:v23-held-declined-extension",
+            "input_hash": "bf039f2dee5f8a3b5deab6f770678a07b3a8cd5af0f2ce5b93eff5afc3a7e44f",
+            "evidence": "I, Ada Marlow, declined the optional Zephyr QX-100 cable-protection extension.",
+            "evidence_hash": "f5f7786b7ebbd5e9b0cf8e5e0df059dd633bb851cae107103a62eb38cc473535",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "I, Ada Marlow, declined the optional Zephyr QX-100 cable-protection extension.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "evidence": [],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "evidence": [],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_d06f28b2",
+                    "level": 1,
+                    "kind": "decision",
+                    "subject": "ent_fb1d38a8ca3bfd6ec96efd38",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "rejected",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Cable-Protection Extension",
+              "updated": "2026-09-15",
+              "relevance": 0.6667,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_d06f28b2",
+                    "level": 1,
+                    "kind": "decision",
+                    "subject": "ent_fb1d38a8ca3bfd6ec96efd38",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "rejected",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Cable-Protection Extension",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ]
+    }
+  ],
+  "packetFingerprint": "fc481f7a61ab816e0a0021162941bada70c655233dd5b33ad40aefa8041ee39c"
+}

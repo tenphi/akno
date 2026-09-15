@@ -1,0 +1,296 @@
+{
+  "kind": "deterministic-boundary-comparison",
+  "liveModelCalls": 0,
+  "baseCommit": "ce8fbe4ed0d529bec35dd154e8bbfec79eefb0eb",
+  "baseProseSha256": "9720247824fcd122dbebe6d11dc883132ebf47c9afcdb695c8d3f71248a5a947",
+  "baseIntentSha256": "101b7eeedaaf4cd93ec4e4b8127a424d13ef83dc73787e8c046a7ccab35b89c0",
+  "method": "Original base implementations with import paths relocated to current unchanged helpers; candidate uses built output. This compares deterministic boundaries, not model quality.",
+  "cases": [
+    {
+      "id": "ordinary-english-report",
+      "expectedView": "reports",
+      "prose": {
+        "before": {
+          "status": "qualified",
+          "view": "factual",
+          "reason": "asserted",
+          "answer_eligible": true,
+          "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+          "frame": []
+        },
+        "after": {
+          "status": "qualified",
+          "view": "reports",
+          "reason": "speaker",
+          "answer_eligible": false,
+          "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+          "frame": [
+            {
+              "n": 1,
+              "text": "# Zephyr QX-100"
+            },
+            {
+              "n": 3,
+              "text": "  ## Assistant ###"
+            },
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+            }
+          ]
+        }
+      },
+      "queries": [
+        {
+          "language": "en",
+          "query": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+          "before": "reports",
+          "after": "reports"
+        },
+        {
+          "language": "ru",
+          "query": "Что ассистент сообщил о плане обслуживания Zephyr QX-100?",
+          "before": "reports",
+          "after": "reports"
+        },
+        {
+          "language": "mixed",
+          "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+          "before": "planning",
+          "after": "reports"
+        }
+      ]
+    },
+    {
+      "id": "ordinary-russian-report",
+      "expectedView": "reports",
+      "prose": {
+        "before": {
+          "status": "qualified",
+          "view": "factual",
+          "reason": "asserted",
+          "answer_eligible": true,
+          "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+          "frame": []
+        },
+        "after": {
+          "status": "qualified",
+          "view": "reports",
+          "reason": "heading_scope",
+          "answer_eligible": false,
+          "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+          "frame": [
+            {
+              "n": 1,
+              "text": "# Zephyr QX-100"
+            },
+            {
+              "n": 3,
+              "text": "   ## Сообщение ассистента"
+            },
+            {
+              "n": 4,
+              "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+            }
+          ]
+        }
+      },
+      "queries": [
+        {
+          "language": "en",
+          "query": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+          "before": "reports",
+          "after": "reports"
+        },
+        {
+          "language": "ru",
+          "query": "Что ассистент сообщил о плане обслуживания Zephyr QX-100?",
+          "before": "reports",
+          "after": "reports"
+        },
+        {
+          "language": "mixed",
+          "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+          "before": "planning",
+          "after": "reports"
+        }
+      ]
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "expectedView": "discussion",
+      "prose": {
+        "before": {
+          "status": "qualified",
+          "view": "factual",
+          "reason": "asserted",
+          "answer_eligible": true,
+          "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+          "frame": []
+        },
+        "after": {
+          "status": "qualified",
+          "view": "discussion",
+          "reason": "conditional",
+          "answer_eligible": false,
+          "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+          "frame": [
+            {
+              "n": 1,
+              "text": "# Zephyr QX-100"
+            },
+            {
+              "n": 3,
+              "text": "  ## Гипотеза ###"
+            },
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts five years."
+            },
+            {
+              "n": 5,
+              "text": "Замена корпуса покрывается гарантией."
+            }
+          ]
+        }
+      },
+      "queries": [
+        {
+          "language": "en",
+          "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+          "before": "discussion",
+          "after": "discussion"
+        },
+        {
+          "language": "ru",
+          "query": "Какой гипотетический сценарий гарантии записан для Zephyr QX-100?",
+          "before": "discussion",
+          "after": "discussion"
+        },
+        {
+          "language": "mixed",
+          "query": "What hypothetical scenario is recorded о гарантии Zephyr QX-100?",
+          "before": "discussion",
+          "after": "discussion"
+        }
+      ]
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "expectedView": "factual",
+      "prose": {
+        "before": {
+          "status": "qualified",
+          "view": "factual",
+          "reason": "asserted",
+          "answer_eligible": true,
+          "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+          "frame": []
+        },
+        "after": {
+          "status": "qualified",
+          "view": "factual",
+          "reason": "asserted",
+          "answer_eligible": true,
+          "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+          "frame": []
+        }
+      },
+      "queries": [
+        {
+          "language": "en",
+          "query": "What color is the Zephyr QX-100 case?",
+          "before": "factual",
+          "after": "factual"
+        },
+        {
+          "language": "ru",
+          "query": "Какого цвета корпус Zephyr QX-100?",
+          "before": "factual",
+          "after": "factual"
+        },
+        {
+          "language": "mixed",
+          "query": "What color is корпус Zephyr QX-100?",
+          "before": "factual",
+          "after": "factual"
+        }
+      ]
+    },
+    {
+      "id": "retained-english-report",
+      "expectedView": "reports",
+      "prose": null,
+      "queries": [
+        {
+          "language": "en",
+          "query": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+          "before": "reports",
+          "after": "reports"
+        },
+        {
+          "language": "ru",
+          "query": "Что ассистент сообщил о плане обслуживания Zephyr QX-100?",
+          "before": "reports",
+          "after": "reports"
+        },
+        {
+          "language": "mixed",
+          "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+          "before": "planning",
+          "after": "reports"
+        }
+      ]
+    },
+    {
+      "id": "retained-russian-report",
+      "expectedView": "reports",
+      "prose": null,
+      "queries": [
+        {
+          "language": "en",
+          "query": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+          "before": "reports",
+          "after": "reports"
+        },
+        {
+          "language": "ru",
+          "query": "Что ассистент сообщил о плане обслуживания Zephyr QX-100?",
+          "before": "reports",
+          "after": "reports"
+        },
+        {
+          "language": "mixed",
+          "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+          "before": "planning",
+          "after": "reports"
+        }
+      ]
+    },
+    {
+      "id": "retained-mixed-report",
+      "expectedView": "reports",
+      "prose": null,
+      "queries": [
+        {
+          "language": "en",
+          "query": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+          "before": "reports",
+          "after": "reports"
+        },
+        {
+          "language": "ru",
+          "query": "Что ассистент сообщил о плане обслуживания Zephyr QX-100?",
+          "before": "reports",
+          "after": "reports"
+        },
+        {
+          "language": "mixed",
+          "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+          "before": "planning",
+          "after": "reports"
+        }
+      ]
+    }
+  ]
+}

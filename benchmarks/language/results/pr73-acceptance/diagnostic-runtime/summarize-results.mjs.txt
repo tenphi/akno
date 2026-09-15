@@ -1,0 +1,83 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { createHash } from 'node:crypto';
+const root = 'benchmarks/language/results/pr73-acceptance/';
+const read = (file) => JSON.parse(fs.readFileSync(root + file, 'utf8'));
+const sha = (value) => createHash('sha256').update(value).digest('hex');
+const count = (rows, key, expected = true) => rows.filter((row) => row[key] === expected).length;
+const ratio = (n, d) => ({ numerator: n, denominator: d });
+function packet(file) {
+  const value = read(file); const { packetFingerprint, ...body } = value;
+  assert.equal(sha(JSON.stringify(body)), packetFingerprint, file);
+  return value;
+}
+function diagnostics(dirs, packetFile, reviewFile, contextFile) {
+  const p = packet(packetFile), review = read(reviewFile), contexts = read(contextFile);
+  assert.equal(review.packetFingerprint, p.packetFingerprint);
+  assert.equal(contexts.packetFingerprint, p.packetFingerprint);
+  const raw = dirs.flatMap((d) => read(d + '/report.json').cases);
+  const a = review.cases.flatMap((c) => c.answers);
+  const q = raw.flatMap((c) => c.queries);
+  const cx = contexts.cases.flatMap((c) => c.contexts);
+  const rq = review.cases.flatMap((c) => [...new Map(c.answers.map((a) => [`${a.queryLanguage}/${a.explicitView}`, a])).values()]);
+  const supports = raw.flatMap((c) => c.sourceArchive.supports);
+  for (const c of raw) {
+    const source = p.cases.find((v) => v.id === c.id && v.run === c.run).source;
+    for (const s of c.sourceArchive.supports) {
+      assert.equal(sha(s.evidence), s.evidence_hash);
+      assert.equal(s.source_ref, `invented:${c.id}`);
+      for (const span of s.spans) {
+        assert(span.matchingSourceItems.length > 0);
+        assert.deepEqual(span.matchingSourceItems, source.items.filter((i) => i.text.includes(span.quote)).map((i) => i.item_id));
+      }
+    }
+  }
+  const receipts = dirs.flatMap((d) => fs.readFileSync(root + d + '/network-receipts.jsonl', 'utf8').trim().split('\n').map(JSON.parse));
+  const breakdown = (key) => Object.fromEntries([...new Set(a.map((v) => v[key]))].map((v) => { const rows = a.filter((r) => r[key] === v); return [v, ratio(count(rows, 'usefulQualifiedAnswer'), rows.length)]; }));
+  return {
+    completeMatrix: false, repetitions: 1, cases: raw.length,
+    completeRetention: ratio(count(review.cases, 'retentionUseful'), raw.length),
+    usefulAnswers: ratio(count(a, 'usefulQualifiedAnswer'), a.length),
+    acceptedUnsupportedAnswers: count(a, 'sourceEntailed', false),
+    unsupportedRetainedSets: count(review.cases, 'retainedSourceEntailed', false),
+    answerLanguageErrors: count(a, 'languageCompliant', false),
+    retainedLanguageErrors: count(review.cases, 'knowledgeLanguageCompliant', false),
+    answerQualificationErrors: count(a, 'qualificationPreserved', false),
+    unsafeAnswerPromotions: count(a, 'unsafeFactualPromotion'),
+    nullAnswers: q.filter((r) => r.reviewAnswer === null).length,
+    answerAvailabilityFailures: q.filter((r) => ['generation_unavailable', 'generation_failed', 'invalid_draft', 'verification_unavailable'].includes(r.answerReason)).length,
+    caseAvailabilityFailures: count(raw, 'availabilityFailure'),
+    usefulUniqueRetrievals: ratio(count(rq, 'usefulQualifiedRetrieval'), rq.length),
+    usefulContexts: ratio(count(cx, 'usefulContext'), cx.length),
+    sourceBytesStable: ratio(count(raw, 'bytesStable'), raw.length),
+    unchangedReplay: ratio(count(raw, 'replayOutcome', 'replayed'), raw.length),
+    supportArchiveStable: ratio(raw.filter((c) => c.sourceArchive.stableAcrossRebuildReplay).length, raw.length),
+    supportRecordsWithValidHashes: supports.length,
+    exactMatchedStoredQuoteParts: supports.reduce((n, s) => n + s.spans.length, 0),
+    network: { calls: receipts.length, httpSuccess: receipts.filter((r) => r.status >= 200 && r.status < 300).length },
+    byQueryLanguage: breakdown('queryLanguage'), byAnswerLanguage: breakdown('answerLanguage'),
+    byCase: review.cases.map((c) => ({ id: c.id, completeRetention: c.retentionUseful, usefulAnswers: ratio(count(c.answers, 'usefulQualifiedAnswer'), c.answers.length) })),
+  };
+}
+const op = packet('ordinary-public.json'), or = read('ordinary-output-review.json');
+assert.equal(op.packetFingerprint, or.packetFingerprint);
+const oa = or.cases.flatMap((c) => c.answers), oc = or.cases.flatMap((c) => c.contexts), on = or.cases.flatMap((c) => c.negativeControls);
+const ordinaryRaw = fs.readdirSync(root + 'ordinary-full').filter((f) => /-run-\d\.json$/.test(f)).map((f) => read('ordinary-full/' + f));
+const summary = {
+  kind: 'independently-reviewed-diagnostics-not-full-acceptance', releaseEligible: false,
+  low: diagnostics(['diagnostic-a', 'diagnostic-b'], 'diagnostic-public-all.json', 'diagnostic-review-all.json', 'context-review-all.json'),
+  medium: diagnostics(['diagnostic-medium', 'diagnostic-medium-rest'], 'diagnostic-public-medium.json', 'diagnostic-review-medium.json', 'context-review-medium.json'),
+  ordinary: {
+    cases: 4, repetitions: 2,
+    usefulAnswers: ratio(count(oa, 'useful'), oa.length), acceptedUnsupportedAnswers: count(oa, 'sourceEntailed', false),
+    usefulContexts: ratio(count(oc, 'useful'), oc.length), safeFactualNegativeControls: ratio(count(on, 'safeFactualExclusion'), on.length),
+    sourceBytesStable: ratio(ordinaryRaw.filter((r) => r.indexBytesStable && r.rebuildReplayBytesStable && r.readBytesStable).length, ordinaryRaw.length),
+    byAnswerLanguage: Object.fromEntries(['en','ru'].map((l) => { const rows=oa.filter((a)=>a.answerLanguage===l); return [l,ratio(count(rows,'useful'),rows.length)]; })),
+    byQueryLanguage: Object.fromEntries(['en','ru','mixed'].map((l) => { const rows=oa.filter((a)=>a.queryLanguage===l); return [l,ratio(count(rows,'useful'),rows.length)]; })),
+  },
+  frozenDraftVerifierComparison: read('specificity-comparison/summary.json').groups,
+  nanoVerifierDiagnostic: read('nano-verifier-comparison/summary.json').groups,
+  heldOut: { corpus: 'v23', fingerprint: read('v23-input-review.json').corpusFingerprint, liveExecuted: false },
+};
+fs.writeFileSync(root + 'summary.json', JSON.stringify(summary,null,2)+'\n', {flag:'wx'});
+console.log(JSON.stringify(summary,null,2));

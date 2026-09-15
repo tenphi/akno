@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import Database from 'better-sqlite3';
 import type { Line, MemoryQualification, MemoryView } from '@tenphi/akno-protocol';
 import type { AknoConfig, ConfigDoc } from '../config/schema.ts';
 import { RETAIN_PROMPT_VERSION, RETAIN_VERIFIER_VERSION } from '../write/retain.ts';
@@ -26,6 +27,7 @@ import { LANGUAGE_CORPUS_V19 } from './language-corpus-v19.ts';
 import { LANGUAGE_CORPUS_V20 } from './language-corpus-v20.ts';
 import { LANGUAGE_CORPUS_V21 } from './language-corpus-v21.ts';
 import { LANGUAGE_CORPUS_V22 } from './language-corpus-v22.ts';
+import { LANGUAGE_CORPUS_V23 } from './language-corpus-v23.ts';
 import { LANGUAGE_CORPUS_V6 } from './language-corpus-v6.ts';
 import { LANGUAGE_CORPUS_V5 } from './language-corpus-v5.ts';
 import { LANGUAGE_CORPUS_V4 } from './language-corpus-v4.ts';
@@ -57,9 +59,13 @@ export interface LanguageBenchOptions {
     | 'v19'
     | 'v20'
     | 'v21'
-    | 'v22';
+    | 'v22'
+    | 'v23';
   runs?: number;
   caseIds?: string[];
+  /** Exercise the supplied reranker as well as populated vector retrieval. */
+  fullRetrieval?: boolean;
+  onCaseResult?: (result: Awaited<ReturnType<typeof runCase>>) => void;
   onProgress?: (id: string, done: number, total: number) => void;
 }
 
@@ -111,7 +117,9 @@ export async function runLanguageBench(config: AknoConfig, options: LanguageBenc
                                             ? LANGUAGE_CORPUS_V20
                                             : corpus === 'v21'
                                               ? LANGUAGE_CORPUS_V21
-                                              : LANGUAGE_CORPUS_V22;
+                                              : corpus === 'v22'
+                                                ? LANGUAGE_CORPUS_V22
+                                                : LANGUAGE_CORPUS_V23;
   const split = entries.filter((entry) => entry.split === options.split);
   if (options.caseIds?.some((id) => !split.some((entry) => entry.id === id)))
     throw new Error('unknown case id in selected split');
@@ -120,7 +128,9 @@ export async function runLanguageBench(config: AknoConfig, options: LanguageBenc
   const results: Awaited<ReturnType<typeof runCase>>[] = [];
   for (let run = 1; run <= runs; run++)
     for (const entry of cases) {
-      results.push(await runCase(config, entry, corpus, run));
+      const result = await runCase(config, entry, corpus, run, options.fullRetrieval ?? false);
+      results.push(result);
+      options.onCaseResult?.(result);
       options.onProgress?.(`${entry.id} run ${run}`, results.length, cases.length * runs);
     }
   const available = results.filter((result) => !result.retentionAvailabilityFailure);
@@ -156,7 +166,43 @@ export async function runLanguageBench(config: AknoConfig, options: LanguageBenc
       answer: config.models.answer.id,
       embedding: config.models.embedding.id,
       expansion: config.models.expansion.id,
+      ...(options.fullRetrieval ? { reranker: config.models.reranker.id } : {}),
     },
+    modelConfiguration: Object.fromEntries(
+      (['derive', 'answer', 'embedding', 'expansion'] as const).map((role) => {
+        const model = config.models[role];
+        return [
+          role,
+          {
+            enabled: model.enabled,
+            api: model.provider?.api ?? null,
+            timeoutMs: model.timeoutMs,
+            maxOutputTokens: model.maxOutputTokens ?? null,
+            reasoningEffort: model.reasoningEffort ?? null,
+            providerRetries: model.provider?.maxRetries ?? null,
+          },
+        ];
+      }),
+    ),
+    retrievalProfile: options.fullRetrieval ? 'configured' : 'legacy-reranker-disabled',
+    ...(options.fullRetrieval
+      ? {
+          retrievalConfiguration: {
+            embeddingDimensions: config.models.embedding.dimensions,
+            rerankerEnabled: config.models.reranker.enabled,
+            mode: config.models.reranker.rerankerMode,
+            topK: config.models.reranker.topK,
+            maxChars: config.models.reranker.maxChars,
+            excludeIrrelevant: config.models.reranker.excludeIrrelevant,
+            scoreOffset: config.models.reranker.scoreOffset,
+            api: config.models.reranker.provider?.api ?? null,
+            timeoutMs: config.models.reranker.timeoutMs,
+            providerRetries: config.models.reranker.provider?.maxRetries ?? null,
+            maxOutputTokens: config.models.reranker.maxOutputTokens,
+            reasoningEffort: config.models.reranker.reasoningEffort,
+          },
+        }
+      : {}),
     modelOutputTokenLimits: {
       answer: config.models.answer.maxOutputTokens ?? null,
       retention: config.models.derive.maxOutputTokens ?? null,
@@ -280,8 +326,10 @@ async function runCase(
     | 'v19'
     | 'v20'
     | 'v21'
-    | 'v22',
+    | 'v22'
+    | 'v23',
   run: number,
+  fullRetrieval: boolean,
 ) {
   const v2 = corpus !== 'v1' ? (entry as LanguageCaseV2) : null;
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-language-eval-kb-'));
@@ -304,7 +352,7 @@ async function runCase(
     nonfactualExpected,
   };
   try {
-    const { env, overrides } = benchConfig(config);
+    const { env, overrides } = benchConfig(config, fullRetrieval);
     if (v2?.admission === 'read-only') overrides.folders = { '**': { role: 'knowledge', remember: 'deny' } };
     memory = await open({ aknoPath: root, stateDir: state, isolated: true, actor: 'user', env, overrides });
     await memory.index({});
@@ -335,6 +383,7 @@ async function runCase(
     // Ordinary authored text must not compete for placement in the writable-fidelity experiment.
     if (v2) fs.writeFileSync(path.join(root, 'authored/passage.md'), ordinary);
     const beforeRebuild = snapshot(root);
+    const archiveBeforeRebuild = sourceArchive(state);
     await memory.close();
     memory = await open({ aknoPath: root, stateDir: state, isolated: true, actor: 'user', env, overrides });
     await memory.index({ rebuild: true });
@@ -353,7 +402,7 @@ async function runCase(
           query,
           filter: { folder: 'memory' },
           expand: true,
-          rerank: false,
+          rerank: fullRetrieval,
           graph: false,
           ...view,
         });
@@ -398,6 +447,8 @@ async function runCase(
             contextDegraded: context.degraded ?? [],
             contextActivated: context.activation?.activated ?? false,
             contextActivation: context.activation ?? null,
+            reviewContext: context.results,
+            contextKnowledgeLanguage: context.knowledge_language,
             answerOutcome: answer.outcome,
             answerReason: answer.reason_code ?? null,
             answerValidation: answer.validation ?? null,
@@ -488,6 +539,7 @@ async function runCase(
         beforeRebuild === snapshot(root) &&
         fs.readFileSync(path.join(root, 'authored/passage.md'), 'utf8') === ordinary,
       replayOutcome: replay.sources[0]?.outcome,
+      sourceArchive: auditSourceArchive(archiveBeforeRebuild, sourceArchive(state), entry),
       queries,
       reviewKnowledge: memories,
       error: null,
@@ -566,7 +618,10 @@ function snapshot(root: string): string {
   );
 }
 
-function benchConfig(config: AknoConfig): { env: NodeJS.ProcessEnv; overrides: ConfigDoc } {
+function benchConfig(
+  config: AknoConfig,
+  fullRetrieval: boolean,
+): { env: NodeJS.ProcessEnv; overrides: ConfigDoc } {
   const env = { ...process.env };
   const providers = Object.fromEntries(
     Object.entries(config.providers).map(([name, provider], index) => {
@@ -613,9 +668,63 @@ function benchConfig(config: AknoConfig): { env: NodeJS.ProcessEnv; overrides: C
         answer: role('answer'),
         embedding: role('embedding'),
         expansion: role('expansion'),
-        reranker: { id: null, enabled: false },
+        reranker: fullRetrieval
+          ? {
+              provider: config.models.reranker.provider?.name,
+              id: config.models.reranker.id,
+              enabled: config.models.reranker.enabled,
+              mode: config.models.reranker.rerankerMode,
+              top_k: config.models.reranker.topK,
+              max_chars: config.models.reranker.maxChars,
+              exclude_irrelevant: config.models.reranker.excludeIrrelevant,
+              score_offset: config.models.reranker.scoreOffset,
+              timeout_ms: config.models.reranker.timeoutMs,
+              max_output_tokens: config.models.reranker.maxOutputTokens,
+              reasoning_effort: config.models.reranker.reasoningEffort,
+            }
+          : { id: null, enabled: false },
         vision: { id: null, enabled: false },
       },
     },
+  };
+}
+
+interface ArchivedSupport {
+  memory_id: string;
+  source_ref: string;
+  input_hash: string;
+  evidence: string;
+  evidence_hash: string;
+}
+
+function sourceArchive(state: string): ArchivedSupport[] {
+  const db = new Database(path.join(state, 'akno.db'), { readonly: true, fileMustExist: true });
+  try {
+    return db
+      .prepare(
+        `SELECT memory_id, source_ref, input_hash, evidence, evidence_hash
+      FROM retain_supports WHERE retracted_by IS NULL AND forgotten_by IS NULL
+      ORDER BY receipt_fingerprint, candidate_id`,
+      )
+      .all() as ArchivedSupport[];
+  } finally {
+    db.close();
+  }
+}
+
+function auditSourceArchive(before: ArchivedSupport[], after: ArchivedSupport[], entry: LanguageCase) {
+  // Inspect persisted quotes before deleting the isolated state; runtime acceptance is not an audit.
+  return {
+    stableAcrossRebuildReplay: JSON.stringify(before) === JSON.stringify(after),
+    supports: after.map((support) => ({
+      ...support,
+      hashValid: sha256(support.evidence) === support.evidence_hash,
+      spans: support.evidence.split('\n…\n').map((quote) => ({
+        quote,
+        matchingSourceItems: entry.items
+          .filter((item) => item.text.includes(quote))
+          .map((item) => item.item_id),
+      })),
+    })),
   };
 }

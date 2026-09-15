@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "2a24203c7f2044c68d036c00ca951f895b4390b5bd48b55852970dbdb373c9ff",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-competing-hypotheses",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides both competing tentative causes with the exact washer/filter-cover distinction, Ada’s nonselection, absence of supporting data, and nonconfirmation of the rattle by this record. It is useful discussion evidence for either query language. Tentative metadata and prose preserve the source’s epistemic limits; no real fault or observed symptom is injected."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides both competing tentative causes with the exact washer/filter-cover distinction, Ada’s nonselection, absence of supporting data, and nonconfirmation of the rattle by this record. It is useful discussion evidence for either query language. Tentative metadata and prose preserve the source’s epistemic limits; no real fault or observed symptom is injected."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides both competing tentative causes with the exact washer/filter-cover distinction, Ada’s nonselection, absence of supporting data, and nonconfirmation of the rattle by this record. It is useful discussion evidence for either query language. Tentative metadata and prose preserve the source’s epistemic limits; no real fault or observed symptom is injected."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides both competing tentative causes with the exact washer/filter-cover distinction, Ada’s nonselection, absence of supporting data, and nonconfirmation of the rattle by this record. It is useful discussion evidence for either query language. Tentative metadata and prose preserve the source’s epistemic limits; no real fault or observed symptom is injected."
+        }
+      ]
+    }
+  ]
+}

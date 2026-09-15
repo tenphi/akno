@@ -1,0 +1,197 @@
+{
+  "schemaVersion": "paired-results-index-v1",
+  "pairs": [
+    {
+      "file": "ordinary-empty-heading-fact-repeat-1.json",
+      "sha256": "aab9aa00c54ed1417774c91f4615c3a37a169d22bfdd8f7a9ac5da36be8f3bd1"
+    },
+    {
+      "file": "ordinary-english-report-repeat-1.json",
+      "sha256": "7d73a75e3ab1391e56741394757eb78af142b3aa9a364b45b9745e7d71ff9be0"
+    },
+    {
+      "file": "ordinary-mixed-hypothesis-repeat-1.json",
+      "sha256": "cbf60a4b16657eb2a03f68e88daf4a20d878b9cc119cfe239c301726ccc18c81"
+    },
+    {
+      "file": "ordinary-russian-report-repeat-1.json",
+      "sha256": "5edde94acbe0bc6f93add20a24258cc2ce11b4e7d7c84aa41e4204ab7c036196"
+    },
+    {
+      "file": "v22-held-assistant-speculation-run-1-repeat-1.json",
+      "sha256": "755cc9b297669376e5d7e1282b3da904ae480a63fc8c4acd9d1a454553e7d3bb"
+    },
+    {
+      "file": "v22-held-assistant-speculation-run-2-repeat-1.json",
+      "sha256": "a10be12efb116c8690fe7f6a4da549da323e511e4ee2ab7cf6e475cce1e3f9ef"
+    },
+    {
+      "file": "v22-held-competing-hypotheses-run-1-repeat-1.json",
+      "sha256": "c6fbac3ab04b90b079a49faeff52945ebc92fd81d50c2fb2a5d7b22d373a43ee"
+    },
+    {
+      "file": "v22-held-competing-hypotheses-run-2-repeat-1.json",
+      "sha256": "3129e811c637f97f0b92751aad1d5a588e368b27663cad8fc3bd6a708afacb5f"
+    },
+    {
+      "file": "v22-held-conditional-hypothesis-run-1-repeat-1.json",
+      "sha256": "0451d1bb15202ed5d3039cea10f813c43a5775529cb29c159d6505663b458e2d"
+    },
+    {
+      "file": "v22-held-conditional-hypothesis-run-2-repeat-1.json",
+      "sha256": "ef5d7d352329ec07c3ca2b7e5c8d8012f6a31a66180cf55bc0cc3d756771d470"
+    },
+    {
+      "file": "v22-held-counterfactual-run-1-repeat-1.json",
+      "sha256": "c1604f910ad51901582d2799151442a211649be5ad7a65c41901364671c9da8c"
+    },
+    {
+      "file": "v22-held-counterfactual-run-2-repeat-1.json",
+      "sha256": "84f92ccc63e084b858efcfdc4023f7f202767571a2d18cb3c5d41d16cb1433ef"
+    },
+    {
+      "file": "v22-held-coverage-exclusion-run-1-repeat-1.json",
+      "sha256": "cfe3f467712d7141601e3d47fd678db968082ffa5fc2303508edad08334b5ff1"
+    },
+    {
+      "file": "v22-held-coverage-exclusion-run-2-repeat-1.json",
+      "sha256": "feeb91574e3d71e9330a612e95d6b9cc5f55c9a938f3fedd089426f44dedc21e"
+    },
+    {
+      "file": "v22-held-fictional-example-run-1-repeat-1.json",
+      "sha256": "cec8a7250f61a0b8e79be478695cf38918a7bf9d335fd51240be2908fe781b29"
+    },
+    {
+      "file": "v22-held-fictional-example-run-2-repeat-1.json",
+      "sha256": "2be529ecb97457b9f1be4ca4d85eb30fecf288fcca20743358c175b8062830ed"
+    },
+    {
+      "file": "v22-held-nested-report-run-1-repeat-1.json",
+      "sha256": "14f810b0d093365252860f7839d269b21fa5fbcebe031d10f918f37f9cbb5d36"
+    },
+    {
+      "file": "v22-held-nested-report-run-2-repeat-1.json",
+      "sha256": "61657f77d97d3e2f0c3617a18b204e0a441e3a7622a9c6ac141b8668c9730fb6"
+    },
+    {
+      "file": "v22-held-open-question-run-1-repeat-1.json",
+      "sha256": "d5f74f9bcae7b0714ac271fc1f42e17c4abfbc8c10656eec00c7d3e0abea1bdb"
+    },
+    {
+      "file": "v22-held-open-question-run-2-repeat-1.json",
+      "sha256": "3ae37df03e8d5381c6cf5933603fc9922f32e6e535f590217450d4e6147fda74"
+    },
+    {
+      "file": "v22-held-read-only-admission-run-1-repeat-1.json",
+      "sha256": "e15e8d27e2b65021f08148870558fc0482bb6353c2d88469da9725f41da195a3"
+    },
+    {
+      "file": "v22-held-read-only-admission-run-2-repeat-1.json",
+      "sha256": "1a89c3953fde287770aa08ef107c06113baa1144b6cd9dd29c1f11a9d9632190"
+    },
+    {
+      "file": "v22-held-rejected-plan-run-1-repeat-1.json",
+      "sha256": "c722111629783967f03cc75eff114bba59efb6d2d780d0b25f041a0dd2cce4cb"
+    },
+    {
+      "file": "v22-held-rejected-plan-run-2-repeat-1.json",
+      "sha256": "534efc7e762ee6719eced6b9179b5453fe6e57343eb08f82b227f0fb9c40d9c4"
+    },
+    {
+      "file": "v22-held-relative-unknown-date-run-1-repeat-1.json",
+      "sha256": "300f0f96e47ed2027f52868ff0d9ddde4b3f5c14eea5b42c56a3cc9264fdb150"
+    },
+    {
+      "file": "v22-held-relative-unknown-date-run-2-repeat-1.json",
+      "sha256": "dcabdbc98d85f9373326670cf66865d97950caabf2e3c5ababcda20726880952"
+    },
+    {
+      "file": "v23-held-assistant-reading-run-1-repeat-1.json",
+      "sha256": "5b9b7c63d2b2355f08b5def6a5a1a9d1791b15cef348ebb697e3fbf1e31d768b"
+    },
+    {
+      "file": "v23-held-assistant-reading-run-2-repeat-1.json",
+      "sha256": "00abce5f41cd82c90fd015e6dbcf668ffdd9f02c56cbe6b254c7e92c0bacb835"
+    },
+    {
+      "file": "v23-held-assumed-interval-run-1-repeat-1.json",
+      "sha256": "97de2add2c2c2c5f5fded9f44b1c52ccfbfcee7e403383a10254a3a0486866e7"
+    },
+    {
+      "file": "v23-held-assumed-interval-run-2-repeat-1.json",
+      "sha256": "6742644e436aa0dbc15cd82bb3b8b881020f0335247de08def58f7c0f4ae5f9c"
+    },
+    {
+      "file": "v23-held-competing-clicks-run-1-repeat-1.json",
+      "sha256": "18509b81cebdd1881d285eaeac7bf53663fb9ddbdcb2cf32f9613dbb5025ceb3"
+    },
+    {
+      "file": "v23-held-competing-clicks-run-2-repeat-1.json",
+      "sha256": "a178cb1ccd6a05fb979fd908384b6231b14a1cee4e6bee9725927765a60d0a16"
+    },
+    {
+      "file": "v23-held-declined-extension-run-1-repeat-1.json",
+      "sha256": "0ea04a239c49e973b869f23d341d1b36dba2aeffdc98abc84077bb5b76f7bc5e"
+    },
+    {
+      "file": "v23-held-declined-extension-run-2-repeat-1.json",
+      "sha256": "d90256e7009e573ef97d12c9502a5b34672262b44bdde79f8262765aabc09ac2"
+    },
+    {
+      "file": "v23-held-fictional-key-run-1-repeat-1.json",
+      "sha256": "df068efb42f24913a011affc680bf1f0494694b464ad86f8aa4246b5391fa371"
+    },
+    {
+      "file": "v23-held-fictional-key-run-2-repeat-1.json",
+      "sha256": "39a0837a862246e0c5a5fb9e4b5d4ba279f13ff51c481dc39109f573e217e15d"
+    },
+    {
+      "file": "v23-held-open-renewal-run-1-repeat-1.json",
+      "sha256": "fd01e0ac97faa25901dd0f8a9d339a5f68674a1488161f2ff273934fa5b91d67"
+    },
+    {
+      "file": "v23-held-open-renewal-run-2-repeat-1.json",
+      "sha256": "4c2a9804cb748ee6ad3bed759e30dcbaf6bbbfc0068c110e1920a14827d3294e"
+    },
+    {
+      "file": "v23-held-read-only-run-1-repeat-1.json",
+      "sha256": "10711d3ddbaaac9e06406935475e19ad3bc3ed66eb20f3f7665690cc963a73c9"
+    },
+    {
+      "file": "v23-held-read-only-run-2-repeat-1.json",
+      "sha256": "9673fd91ea865b2d001cd6b4d05428b48bb6effb09fca4e8fe77d894b30b7cec"
+    },
+    {
+      "file": "v23-held-rejected-inspection-run-1-repeat-1.json",
+      "sha256": "3b6214670687a3ebe70b5bfaa12e60fe807c5afce18e0af50107c7e154eb7a8c"
+    },
+    {
+      "file": "v23-held-rejected-inspection-run-2-repeat-1.json",
+      "sha256": "f20a88382b090e48a4748006e61dce6537a90040f60a83f80af819ddcbfde110"
+    },
+    {
+      "file": "v23-held-relayed-service-run-1-repeat-1.json",
+      "sha256": "77a45e35cc2e672e2350a3d025b4cd68cc8a98c3d2859364795cb43645ed1dce"
+    },
+    {
+      "file": "v23-held-relayed-service-run-2-repeat-1.json",
+      "sha256": "7a7d9f7484467bca265591954ac9d7976923ce1846503d778c49c479a1cbfd56"
+    },
+    {
+      "file": "v23-held-scoped-exclusion-run-1-repeat-1.json",
+      "sha256": "59cd26f32e3fce79c83ad526383ce9bc5eefcf2acba40639ea3ef6a450a71b94"
+    },
+    {
+      "file": "v23-held-scoped-exclusion-run-2-repeat-1.json",
+      "sha256": "d17ee5455e14a51e88737b6deed907b49b67a521b81dbfb3d82535fbfb13dad0"
+    },
+    {
+      "file": "v23-held-undated-review-run-1-repeat-1.json",
+      "sha256": "9b78c701723a6b13766298aa9863baa14f4c63392312d315d952fafdee82f8f1"
+    },
+    {
+      "file": "v23-held-undated-review-run-2-repeat-1.json",
+      "sha256": "569e227b07856c5a56b8f0b00988a616371a727b7bb4f69690de0535c20abe55"
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "version": "pr73-reviewer-controls-v1",
+  "requiredCorrect": 14,
+  "cases": [
+    {
+      "id": "control-1-1",
+      "scenario": "report",
+      "source": "The assistant reported that the Zephyr QX-100 warranty lasts five years. The assistant has not verified this report.",
+      "candidate": "The assistant reported a five-year warranty for Zephyr QX-100 and has not verified that report.",
+      "language": "en",
+      "expectedAccepted": true
+    },
+    {
+      "id": "control-1-2",
+      "scenario": "report",
+      "source": "The assistant reported that the Zephyr QX-100 warranty lasts five years. The assistant has not verified this report.",
+      "candidate": "Zephyr QX-100 has a verified five-year warranty.",
+      "language": "en",
+      "expectedAccepted": false
+    },
+    {
+      "id": "control-2-1",
+      "scenario": "nested",
+      "source": "Ada Marlow relayed Bo Winters' statement that the Zephyr QX-100 inspection is free. Ada has not checked Bo's statement.",
+      "candidate": "According to Ada Marlow, Bo Winters said that the Zephyr QX-100 inspection is free; Ada has not checked that statement.",
+      "language": "en",
+      "expectedAccepted": true
+    },
+    {
+      "id": "control-2-2",
+      "scenario": "nested",
+      "source": "Ada Marlow relayed Bo Winters' statement that the Zephyr QX-100 inspection is free. Ada has not checked Bo's statement.",
+      "candidate": "According to Bo Winters, Ada Marlow said that the Zephyr QX-100 inspection is free; Ada has not checked that statement.",
+      "language": "en",
+      "expectedAccepted": false
+    },
+    {
+      "id": "control-3-1",
+      "scenario": "conditional",
+      "source": "Предположим, что Zephyr QX-100 очищают каждые шесть недель. Только в этой гипотезе семь недель без очистки нарушили бы правило. Реальное правило неизвестно.",
+      "candidate": "В гипотезе очистка Zephyr QX-100 требуется каждые шесть недель, и семь недель без неё нарушили бы предполагаемое правило; реальное правило неизвестно.",
+      "language": "ru",
+      "expectedAccepted": true
+    },
+    {
+      "id": "control-3-2",
+      "scenario": "conditional",
+      "source": "Предположим, что Zephyr QX-100 очищают каждые шесть недель. Только в этой гипотезе семь недель без очистки нарушили бы правило. Реальное правило неизвестно.",
+      "candidate": "Zephyr QX-100 необходимо очищать каждые шесть недель. Семь недель без очистки нарушают реальное правило.",
+      "language": "ru",
+      "expectedAccepted": false
+    },
+    {
+      "id": "control-4-1",
+      "scenario": "record-scope",
+      "source": "This note does not establish whether Zephyr QX-100 made a rattling sound.",
+      "candidate": "This note does not establish whether Zephyr QX-100 rattled.",
+      "language": "en",
+      "expectedAccepted": true
+    },
+    {
+      "id": "control-4-2",
+      "scenario": "record-scope",
+      "source": "This note does not establish whether Zephyr QX-100 made a rattling sound.",
+      "candidate": "Zephyr QX-100 did not make a rattling sound.",
+      "language": "en",
+      "expectedAccepted": false
+    },
+    {
+      "id": "control-5-1",
+      "scenario": "component",
+      "source": "The proposed Zephyr QX-100 repair replaces a single rotary control knob, not the whole control panel. It has not been approved.",
+      "candidate": "Предложенный ремонт Zephyr QX-100 заменяет одну поворотную ручку управления, а не всю панель управления. Ремонт не одобрен.",
+      "language": "ru",
+      "expectedAccepted": true
+    },
+    {
+      "id": "control-5-2",
+      "scenario": "component",
+      "source": "The proposed Zephyr QX-100 repair replaces a single rotary control knob, not the whole control panel. It has not been approved.",
+      "candidate": "Предложенный ремонт Zephyr QX-100 заменяет всю панель управления, а не одну ручку. Ремонт не одобрен.",
+      "language": "ru",
+      "expectedAccepted": false
+    },
+    {
+      "id": "control-6-1",
+      "scenario": "personal-limit",
+      "source": "Ada Marlow does not know whether the Zephyr QX-100 inspection is included. This note establishes neither inclusion nor exclusion.",
+      "candidate": "Ada Marlow does not know whether the Zephyr QX-100 inspection is included, and this note establishes neither inclusion nor exclusion.",
+      "language": "en",
+      "expectedAccepted": true
+    },
+    {
+      "id": "control-6-2",
+      "scenario": "personal-limit",
+      "source": "Ada Marlow does not know whether the Zephyr QX-100 inspection is included. This note establishes neither inclusion nor exclusion.",
+      "candidate": "Nobody knows whether the Zephyr QX-100 inspection is included, and the contract says nothing about it.",
+      "language": "en",
+      "expectedAccepted": false
+    },
+    {
+      "id": "control-7-1",
+      "scenario": "rejected",
+      "source": "Ada Marlow rejected the Zephyr QX-100 inspection proposal. No appointment was arranged.",
+      "candidate": "Ada Marlow отклонила предложение об осмотре Zephyr QX-100. Запись на осмотр не оформлена.",
+      "language": "ru",
+      "expectedAccepted": true
+    },
+    {
+      "id": "control-7-2",
+      "scenario": "rejected",
+      "source": "Ada Marlow rejected the Zephyr QX-100 inspection proposal. No appointment was arranged.",
+      "candidate": "Ada Marlow одобрила предложение об осмотре Zephyr QX-100. Запись на осмотр оформлена.",
+      "language": "ru",
+      "expectedAccepted": false
+    }
+  ]
+}

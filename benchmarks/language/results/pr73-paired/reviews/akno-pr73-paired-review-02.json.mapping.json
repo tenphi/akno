@@ -1,0 +1,405 @@
+{
+  "packetSha256": "acff723127f815b655c9367dee8ab960376cb78e4d96894f04426ab320efe54f",
+  "mapping": [
+    {
+      "id": "645212c7ae2b4904ddb4",
+      "file": "ordinary-empty-heading-fact-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "84bd5a9efeb45448bbd5",
+      "file": "ordinary-empty-heading-fact-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "29312641604f52a5e61f",
+      "file": "ordinary-empty-heading-fact-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "6f927fd794218d57bb3a",
+      "file": "ordinary-empty-heading-fact-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "39ac5fca41bcd6e76ba3",
+      "file": "ordinary-empty-heading-fact-repeat-1.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "90ad3900675c716a7c20",
+      "file": "ordinary-empty-heading-fact-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "202da10638c4df9ec3b5",
+      "file": "ordinary-empty-heading-fact-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "9e243f8e8637be2e23cb",
+      "file": "ordinary-empty-heading-fact-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "d3d1e7dc5ad326af0508",
+      "file": "ordinary-empty-heading-fact-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "a5bcf9c5bce03e7fa237",
+      "file": "ordinary-empty-heading-fact-repeat-1.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "What color is the Zephyr QX-100 case?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "416f1e6e4ef8c4471da1",
+      "file": "v23-held-assistant-reading-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "6eabe0068c5a00d5783a",
+      "file": "v23-held-assistant-reading-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "f0687c66123fe1427a0d",
+      "file": "v23-held-assistant-reading-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "09a135323a4f10370200",
+      "file": "v23-held-assistant-reading-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "bea08d07d8dc39de926c",
+      "file": "v23-held-assistant-reading-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "49f289b77236fc22b00f",
+      "file": "v23-held-assistant-reading-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "16ee605877e8d18bb2ee",
+      "file": "v23-held-assistant-reading-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "bd8718b58e1dfde37735",
+      "file": "v23-held-assistant-reading-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "686966f126189b06788f",
+      "file": "v23-held-assistant-reading-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "203d9255a03a92a6abc9",
+      "file": "v23-held-assistant-reading-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "6fda9263f51431e4bd88",
+      "file": "v23-held-declined-extension-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "18b835c646c43fbcdf7a",
+      "file": "v23-held-declined-extension-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "a592d37ea101f4d14d35",
+      "file": "v23-held-declined-extension-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "8a1699d78247448c374c",
+      "file": "v23-held-declined-extension-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "5f617a03235d2adb20a9",
+      "file": "v23-held-declined-extension-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "e57fb9bd0f1601eba48a",
+      "file": "v23-held-declined-extension-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "9131a1c5e1e6e1af1c24",
+      "file": "v23-held-declined-extension-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "5805ea701e88ddcc4fb7",
+      "file": "v23-held-declined-extension-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "5ea6ac1e2b11dccaddd9",
+      "file": "v23-held-declined-extension-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "312c9e89dca35a327dfe",
+      "file": "v23-held-declined-extension-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "c92abc35471f2f69fce3",
+      "file": "v23-held-relayed-service-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "d0f7e13898d138b6c402",
+      "file": "v23-held-relayed-service-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "374da2fd215c9d365ee2",
+      "file": "v23-held-relayed-service-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "794f4113eb3ed0d2db18",
+      "file": "v23-held-relayed-service-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "6219b426292484c22754",
+      "file": "v23-held-relayed-service-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "44764b1d75cadd2f4759",
+      "file": "v23-held-relayed-service-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "0a72b1e8e318fc21c739",
+      "file": "v23-held-relayed-service-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "9991b279a840c7ad81d3",
+      "file": "v23-held-relayed-service-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "aecf47cedae0f6b253ab",
+      "file": "v23-held-relayed-service-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "dcf90f63946869fb7259",
+      "file": "v23-held-relayed-service-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "assertions": 463,
+  "proseCases": 21,
+  "routingCases": 19,
+  "malformedGridsRejected": 7,
+  "findings": [],
+  "details": [
+    {
+      "name": "outer scope",
+      "passed": true
+    },
+    {
+      "name": "list scope end",
+      "passed": true
+    },
+    {
+      "name": "backward qualifier",
+      "passed": true
+    },
+    {
+      "name": "  ---",
+      "passed": true
+    },
+    {
+      "name": "  ***",
+      "passed": true
+    },
+    {
+      "name": "      code sample",
+      "passed": true
+    },
+    {
+      "name": "  <!-- invented -->",
+      "passed": true
+    },
+    {
+      "name": "initial code fence",
+      "passed": true
+    },
+    {
+      "name": "initial HTML comment",
+      "passed": true
+    },
+    {
+      "name": "checkbox",
+      "passed": true
+    },
+    {
+      "name": "hypothetical checkbox",
+      "passed": true
+    },
+    {
+      "name": "literal managed-looking marker",
+      "passed": true
+    },
+    {
+      "name": "nested literal marker",
+      "passed": true
+    },
+    {
+      "name": "literal source marker",
+      "passed": true
+    },
+    {
+      "name": "frontmatter/lazy paragraph",
+      "passed": true
+    },
+    {
+      "name": "tab indentation",
+      "passed": true
+    },
+    {
+      "name": "empty marker blank ends container",
+      "passed": true
+    },
+    {
+      "name": "empty marker heading continuation",
+      "passed": true
+    },
+    {
+      "name": "local report heading",
+      "passed": true
+    },
+    {
+      "name": "outer frame length 2380",
+      "passed": true
+    },
+    {
+      "name": "outer frame length 2500",
+      "passed": true
+    },
+    {
+      "name": "missing pair",
+      "passed": true
+    },
+    {
+      "name": "duplicate pair",
+      "passed": true
+    },
+    {
+      "name": "missing factual outcome",
+      "passed": true
+    },
+    {
+      "name": "missing read",
+      "passed": true
+    },
+    {
+      "name": "failed pair",
+      "passed": true
+    },
+    {
+      "name": "failed arm",
+      "passed": true
+    },
+    {
+      "name": "missing answer",
+      "passed": true
+    }
+  ]
+}

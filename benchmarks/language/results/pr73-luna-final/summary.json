@@ -1,0 +1,445 @@
+{
+  "kind": "complete-frozen-luna-baseline",
+  "qualityGatePassed": false,
+  "caseRuns": 44,
+  "writableCaseRuns": 40,
+  "answerCoordinates": 352,
+  "completeRetention": {
+    "numerator": 27,
+    "denominator": 40,
+    "rate": 0.675
+  },
+  "usefulAnswers": {
+    "numerator": 233,
+    "denominator": 320,
+    "rate": 0.728125
+  },
+  "publishedWritableAnswers": 276,
+  "withheldWritableAnswers": 44,
+  "sourceJustifiedWritableAbstentions": 0,
+  "writableNullsByRuntimeReason": {
+    "no_eligible_evidence": 28,
+    "verification_rejected": 6,
+    "draft_rejected": 1,
+    "empty_draft": 8,
+    "verification_unavailable": 1
+  },
+  "acceptedUnsupportedAnswers": 15,
+  "unsupportedRetainedSets": 0,
+  "answerLanguageErrors": 0,
+  "answerQualificationErrors": 26,
+  "unsafeAnswerPromotions": 0,
+  "retainedQualificationErrors": 3,
+  "retainedLanguageErrors": 0,
+  "unsafeRetainedPromotions": 0,
+  "acceptedUnsupportedContexts": 0,
+  "contextQualificationErrors": 12,
+  "contextLanguageErrors": 0,
+  "unsafeContextPromotions": 0,
+  "usefulContexts": {
+    "numerator": 130,
+    "denominator": 160,
+    "rate": 0.8125
+  },
+  "readOnlyJustifiedAbstentions": {
+    "numerator": 32,
+    "denominator": 32,
+    "rate": 1
+  },
+  "sourceBytesStable": {
+    "numerator": 44,
+    "denominator": 44,
+    "rate": 1
+  },
+  "replayStable": {
+    "numerator": 44,
+    "denominator": 44,
+    "rate": 1
+  },
+  "supportArchiveStable": {
+    "numerator": 44,
+    "denominator": 44,
+    "rate": 1
+  },
+  "nonemptyArchives": 38,
+  "supportRecordsWithVerifiedHashes": 50,
+  "exactMatchedQuoteParts": 86,
+  "caseAvailabilityFailures": 3,
+  "answerOperationFailures": 1,
+  "byQueryLanguage": {
+    "en": {
+      "usefulAnswers": {
+        "numerator": 115,
+        "denominator": 160,
+        "rate": 0.71875
+      },
+      "unsupportedAnswers": 10,
+      "languageErrors": 0,
+      "qualificationErrors": 14
+    },
+    "ru": {
+      "usefulAnswers": {
+        "numerator": 118,
+        "denominator": 160,
+        "rate": 0.7375
+      },
+      "unsupportedAnswers": 5,
+      "languageErrors": 0,
+      "qualificationErrors": 12
+    }
+  },
+  "byAnswerLanguage": {
+    "en": {
+      "usefulAnswers": {
+        "numerator": 129,
+        "denominator": 160,
+        "rate": 0.80625
+      },
+      "unsupportedAnswers": 0,
+      "languageErrors": 0,
+      "qualificationErrors": 12
+    },
+    "ru": {
+      "usefulAnswers": {
+        "numerator": 104,
+        "denominator": 160,
+        "rate": 0.65
+      },
+      "unsupportedAnswers": 15,
+      "languageErrors": 0,
+      "qualificationErrors": 14
+    }
+  },
+  "bySourceLanguage": {
+    "ru": {
+      "usefulAnswers": {
+        "numerator": 84,
+        "denominator": 112,
+        "rate": 0.75
+      },
+      "unsupportedAnswers": 0,
+      "languageErrors": 0,
+      "qualificationErrors": 15
+    },
+    "en": {
+      "usefulAnswers": {
+        "numerator": 77,
+        "denominator": 112,
+        "rate": 0.6875
+      },
+      "unsupportedAnswers": 8,
+      "languageErrors": 0,
+      "qualificationErrors": 11
+    },
+    "mixed": {
+      "usefulAnswers": {
+        "numerator": 72,
+        "denominator": 96,
+        "rate": 0.75
+      },
+      "unsupportedAnswers": 7,
+      "languageErrors": 0,
+      "qualificationErrors": 0
+    }
+  },
+  "byScenario": {
+    "nested-report": {
+      "usefulAnswers": {
+        "numerator": 23,
+        "denominator": 32,
+        "rate": 0.71875
+      },
+      "unsupportedAnswers": 0,
+      "languageErrors": 0,
+      "qualificationErrors": 0
+    },
+    "conditional-hypothesis": {
+      "usefulAnswers": {
+        "numerator": 32,
+        "denominator": 32,
+        "rate": 1
+      },
+      "unsupportedAnswers": 0,
+      "languageErrors": 0,
+      "qualificationErrors": 0
+    },
+    "counterfactual": {
+      "usefulAnswers": {
+        "numerator": 15,
+        "denominator": 32,
+        "rate": 0.46875
+      },
+      "unsupportedAnswers": 0,
+      "languageErrors": 0,
+      "qualificationErrors": 0
+    },
+    "coverage-exclusion": {
+      "usefulAnswers": {
+        "numerator": 23,
+        "denominator": 32,
+        "rate": 0.71875
+      },
+      "unsupportedAnswers": 0,
+      "languageErrors": 0,
+      "qualificationErrors": 8
+    },
+    "assistant-speculation": {
+      "usefulAnswers": {
+        "numerator": 24,
+        "denominator": 32,
+        "rate": 0.75
+      },
+      "unsupportedAnswers": 0,
+      "languageErrors": 0,
+      "qualificationErrors": 0
+    },
+    "fictional-example": {
+      "usefulAnswers": {
+        "numerator": 25,
+        "denominator": 32,
+        "rate": 0.78125
+      },
+      "unsupportedAnswers": 4,
+      "languageErrors": 0,
+      "qualificationErrors": 0
+    },
+    "relative-unknown-date": {
+      "usefulAnswers": {
+        "numerator": 16,
+        "denominator": 32,
+        "rate": 0.5
+      },
+      "unsupportedAnswers": 0,
+      "languageErrors": 0,
+      "qualificationErrors": 15
+    },
+    "competing-hypotheses": {
+      "usefulAnswers": {
+        "numerator": 29,
+        "denominator": 32,
+        "rate": 0.90625
+      },
+      "unsupportedAnswers": 0,
+      "languageErrors": 0,
+      "qualificationErrors": 3
+    },
+    "open-question": {
+      "usefulAnswers": {
+        "numerator": 25,
+        "denominator": 32,
+        "rate": 0.78125
+      },
+      "unsupportedAnswers": 7,
+      "languageErrors": 0,
+      "qualificationErrors": 0
+    },
+    "rejected-plan": {
+      "usefulAnswers": {
+        "numerator": 21,
+        "denominator": 32,
+        "rate": 0.65625
+      },
+      "unsupportedAnswers": 4,
+      "languageErrors": 0,
+      "qualificationErrors": 0
+    }
+  },
+  "network": {
+    "text-embedding-3-small": {
+      "calls": 1144,
+      "httpSuccess": 1144,
+      "usagePresent": 1144,
+      "knownInputTokens": 52962,
+      "knownOutputTokens": 0,
+      "knownTotalTokens": 52962,
+      "requestLatencyMs": {
+        "count": 1144,
+        "min": 133,
+        "p50": 179,
+        "p95": 274,
+        "max": 3628
+      }
+    },
+    "gpt-5.6-luna": {
+      "calls": 1551,
+      "httpSuccess": 1551,
+      "usagePresent": 1551,
+      "knownInputTokens": 6051652,
+      "knownOutputTokens": 430049,
+      "knownTotalTokens": 6481701,
+      "requestLatencyMs": {
+        "count": 1551,
+        "min": 822,
+        "p50": 2959,
+        "p95": 9488,
+        "max": 19513
+      }
+    }
+  },
+  "groups": [
+    {
+      "split": "development",
+      "run": 1,
+      "metrics": {
+        "usefulRetentionCoverage": {
+          "numerator": 4,
+          "denominator": 10,
+          "rate": 0.4
+        },
+        "qualifiedRetrievalCoverage": {
+          "numerator": 24,
+          "denominator": 40,
+          "rate": 0.6
+        },
+        "usefulQualifiedAnswerCoverage": {
+          "numerator": 42,
+          "denominator": 80,
+          "rate": 0.525
+        },
+        "justifiedAbstentions": 8,
+        "expectedSafeHolds": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 9,
+        "unsupportedRetainedOutputs": 0,
+        "unsupportedNonnullAnswers": 6,
+        "sourceByteChanges": 0,
+        "availabilityFailureRate": {
+          "numerator": 2,
+          "denominator": 11,
+          "rate": 0.18181818181818182
+        },
+        "ordinaryProseFailures": 0
+      }
+    },
+    {
+      "split": "development",
+      "run": 2,
+      "metrics": {
+        "usefulRetentionCoverage": {
+          "numerator": 7,
+          "denominator": 10,
+          "rate": 0.7
+        },
+        "qualifiedRetrievalCoverage": {
+          "numerator": 40,
+          "denominator": 40,
+          "rate": 1
+        },
+        "usefulQualifiedAnswerCoverage": {
+          "numerator": 69,
+          "denominator": 80,
+          "rate": 0.8625
+        },
+        "justifiedAbstentions": 8,
+        "expectedSafeHolds": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 0,
+        "unsupportedRetainedOutputs": 0,
+        "unsupportedNonnullAnswers": 8,
+        "sourceByteChanges": 0,
+        "availabilityFailureRate": {
+          "numerator": 0,
+          "denominator": 11,
+          "rate": 0
+        },
+        "ordinaryProseFailures": 0
+      }
+    },
+    {
+      "split": "held-out",
+      "run": 1,
+      "metrics": {
+        "usefulRetentionCoverage": {
+          "numerator": 8,
+          "denominator": 10,
+          "rate": 0.8
+        },
+        "qualifiedRetrievalCoverage": {
+          "numerator": 36,
+          "denominator": 40,
+          "rate": 0.9
+        },
+        "usefulQualifiedAnswerCoverage": {
+          "numerator": 65,
+          "denominator": 80,
+          "rate": 0.8125
+        },
+        "justifiedAbstentions": 8,
+        "expectedSafeHolds": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 10,
+        "unsupportedRetainedOutputs": 0,
+        "unsupportedNonnullAnswers": 0,
+        "sourceByteChanges": 0,
+        "availabilityFailureRate": {
+          "numerator": 0,
+          "denominator": 11,
+          "rate": 0
+        },
+        "ordinaryProseFailures": 0
+      }
+    },
+    {
+      "split": "held-out",
+      "run": 2,
+      "metrics": {
+        "usefulRetentionCoverage": {
+          "numerator": 8,
+          "denominator": 10,
+          "rate": 0.8
+        },
+        "qualifiedRetrievalCoverage": {
+          "numerator": 32,
+          "denominator": 40,
+          "rate": 0.8
+        },
+        "usefulQualifiedAnswerCoverage": {
+          "numerator": 57,
+          "denominator": 80,
+          "rate": 0.7125
+        },
+        "justifiedAbstentions": 8,
+        "expectedSafeHolds": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 10,
+        "unsupportedRetainedOutputs": 0,
+        "unsupportedNonnullAnswers": 1,
+        "sourceByteChanges": 0,
+        "availabilityFailureRate": {
+          "numerator": 1,
+          "denominator": 11,
+          "rate": 0.09090909090909091
+        },
+        "ordinaryProseFailures": 0
+      }
+    }
+  ],
+  "limitations": [
+    "The original quality gate is computed without changing thresholds; bounded issue closure is a separate owner-approved scope decision.",
+    "Queries sharing a retained record are correlated. Two repetitions do not establish a model capability ceiling.",
+    "No monetary cost is inferred from token counts; provider billing was not supplied.",
+    "A source-unjustified null is a coverage miss. It is not automatically a false verifier rejection: an invalid or unsupported draft may correctly be withheld.",
+    "Receipt token totals include only supplied usage; a missing usage object is not counted as zero usage.",
+    "Index model summaries/facts, graph expansion and longitudinal maintenance are outside this live matrix."
+  ]
+}

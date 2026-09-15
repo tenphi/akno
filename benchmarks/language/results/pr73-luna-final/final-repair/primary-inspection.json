@@ -1,0 +1,11 @@
+{
+  "kind": "implementing-assistant-source-inspection",
+  "independent": false,
+  "caseRuns": 2,
+  "answerCoordinates": 16,
+  "coordinates": [
+    "v23-held-rejected-inspection/1",
+    "v23-held-rejected-inspection/2"
+  ],
+  "note": "Both sources, retained sets and all published answers inspected; independent grades remain authoritative for the report."
+}

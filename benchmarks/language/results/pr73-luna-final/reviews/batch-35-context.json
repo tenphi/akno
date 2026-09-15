@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "df582d2d4f992697ecda2de6be87c149a3d5b832e24fa49af6a3fe989214a5cf",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-open-renewal",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides the complete focused renewal question with its new paper inspection-certificate detail, Ada’s own lack of an answer, and the explicit nonentailment of contract silence. Question metadata matches the unresolved content. The separate retained non-submission fact need not be included to answer this query. The actual context is useful and source-supported for either query language."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides the complete focused renewal question with its new paper inspection-certificate detail, Ada’s own lack of an answer, and the explicit nonentailment of contract silence. Question metadata matches the unresolved content. The separate retained non-submission fact need not be included to answer this query. The actual context is useful and source-supported for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides the complete focused renewal question with its new paper inspection-certificate detail, Ada’s own lack of an answer, and the explicit nonentailment of contract silence. Question metadata matches the unresolved content. The separate retained non-submission fact need not be included to answer this query. The actual context is useful and source-supported for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides the complete focused renewal question with its new paper inspection-certificate detail, Ada’s own lack of an answer, and the explicit nonentailment of contract silence. Question metadata matches the unresolved content. The separate retained non-submission fact need not be included to answer this query. The actual context is useful and source-supported for either query language."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,684 @@
+{
+  "id": "v22-held-read-only-admission/run-2",
+  "run": 1,
+  "order": [
+    "candidate",
+    "baseline"
+  ],
+  "arms": {
+    "candidate": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What maintenance interval did Ada Marlow ask to remember in the read-only folder?",
+          "explicit": false,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "maintenance interval": false,
+                "ada marlow": false,
+                "ask remember": false,
+                "read-only folder": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [],
+              "related_documents": [],
+              "searched": [
+                "What maintenance interval did Ada Marlow ask to remember in the read-only folder?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 0,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index"
+              ],
+              "reason_code": "retrieval_incomplete",
+              "note": "nothing matched, and the search ran without part of its model stack — this is not proof of absence"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What maintenance interval did Ada Marlow ask to remember in the read-only folder?",
+          "explicit": true,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "maintenance interval": false,
+                "ada marlow": false,
+                "ask remember": false,
+                "read-only folder": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [],
+              "related_documents": [],
+              "searched": [
+                "What maintenance interval did Ada Marlow ask to remember in the read-only folder?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 0,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index"
+              ],
+              "reason_code": "retrieval_incomplete",
+              "note": "nothing matched, and the search ran without part of its model stack — this is not proof of absence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какой интервал обслуживания Ada Marlow попросила запомнить в папке с запретом на запись?",
+          "explicit": false,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какой интервал": false,
+                "обслуживания ada": false,
+                "marlow попросила": false,
+                "запомнить папке": false,
+                "запретом запись": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [],
+              "related_documents": [],
+              "searched": [
+                "Какой интервал обслуживания Ada Marlow попросила запомнить в папке с запретом на запись?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 0,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index"
+              ],
+              "reason_code": "retrieval_incomplete",
+              "note": "nothing matched, and the search ran without part of its model stack — this is not proof of absence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какой интервал обслуживания Ada Marlow попросила запомнить в папке с запретом на запись?",
+          "explicit": true,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какой интервал": false,
+                "обслуживания ada": false,
+                "marlow попросила": false,
+                "запомнить папке": false,
+                "запретом запись": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [],
+              "related_documents": [],
+              "searched": [
+                "Какой интервал обслуживания Ada Marlow попросила запомнить в папке с запретом на запись?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 0,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index"
+              ],
+              "reason_code": "retrieval_incomplete",
+              "note": "nothing matched, and the search ran without part of its model stack — this is not proof of absence"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "4b0ac2c242bdbc263ed1a7a4ce39f03146e9853f93f211052f447988b670d33a",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        }
+      ],
+      "projections": [],
+      "factualEvidence": [],
+      "factualControl": {
+        "query": "What maintenance interval did Ada Marlow ask to remember in the read-only folder?",
+        "context": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "note": "no memory evidence was strong enough for automatic injection",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 0,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "What maintenance interval did Ada Marlow ask to remember in the read-only folder?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "degraded",
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "maintenance interval": false,
+            "ada marlow": false,
+            "ask remember": false,
+            "read-only folder": false
+          },
+          "citations": [],
+          "context": [],
+          "related_page_slugs": [],
+          "related_documents": [],
+          "searched": [
+            "What maintenance interval did Ada Marlow ask to remember in the read-only folder?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 0,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "reason_code": "retrieval_incomplete",
+          "note": "nothing matched, and the search ran without part of its model stack — this is not proof of absence"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    },
+    "baseline": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What maintenance interval did Ada Marlow ask to remember in the read-only folder?",
+          "explicit": false,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "maintenance interval": false,
+                "ada marlow": false,
+                "ask remember": false,
+                "read-only folder": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [],
+              "related_documents": [],
+              "searched": [
+                "What maintenance interval did Ada Marlow ask to remember in the read-only folder?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 0,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index"
+              ],
+              "reason_code": "retrieval_incomplete",
+              "note": "nothing matched, and the search ran without part of its model stack — this is not proof of absence"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What maintenance interval did Ada Marlow ask to remember in the read-only folder?",
+          "explicit": true,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "maintenance interval": false,
+                "ada marlow": false,
+                "ask remember": false,
+                "read-only folder": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [],
+              "related_documents": [],
+              "searched": [
+                "What maintenance interval did Ada Marlow ask to remember in the read-only folder?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 0,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index"
+              ],
+              "reason_code": "retrieval_incomplete",
+              "note": "nothing matched, and the search ran without part of its model stack — this is not proof of absence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какой интервал обслуживания Ada Marlow попросила запомнить в папке с запретом на запись?",
+          "explicit": false,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какой интервал": false,
+                "обслуживания ada": false,
+                "marlow попросила": false,
+                "запомнить папке": false,
+                "запретом запись": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [],
+              "related_documents": [],
+              "searched": [
+                "Какой интервал обслуживания Ada Marlow попросила запомнить в папке с запретом на запись?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 0,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index"
+              ],
+              "reason_code": "retrieval_incomplete",
+              "note": "nothing matched, and the search ran without part of its model stack — this is not proof of absence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какой интервал обслуживания Ada Marlow попросила запомнить в папке с запретом на запись?",
+          "explicit": true,
+          "expectedView": "factual",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какой интервал": false,
+                "обслуживания ada": false,
+                "marlow попросила": false,
+                "запомнить папке": false,
+                "запретом запись": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [],
+              "related_documents": [],
+              "searched": [
+                "Какой интервал обслуживания Ada Marlow попросила запомнить в папке с запретом на запись?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 0,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index"
+              ],
+              "reason_code": "retrieval_incomplete",
+              "note": "nothing matched, and the search ran without part of its model stack — this is not proof of absence"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "4b0ac2c242bdbc263ed1a7a4ce39f03146e9853f93f211052f447988b670d33a",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        }
+      ],
+      "projections": [],
+      "factualEvidence": [],
+      "factualControl": {
+        "query": "What maintenance interval did Ada Marlow ask to remember in the read-only folder?",
+        "context": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "note": "no memory evidence was strong enough for automatic injection",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 0,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "What maintenance interval did Ada Marlow ask to remember in the read-only folder?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "degraded",
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "maintenance interval": false,
+            "ada marlow": false,
+            "ask remember": false,
+            "read-only folder": false
+          },
+          "citations": [],
+          "context": [],
+          "related_page_slugs": [],
+          "related_documents": [],
+          "searched": [
+            "What maintenance interval did Ada Marlow ask to remember in the read-only folder?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 0,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "reason_code": "retrieval_incomplete",
+          "note": "nothing matched, and the search ran without part of its model stack — this is not proof of absence"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    }
+  }
+}

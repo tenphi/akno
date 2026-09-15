@@ -1,0 +1,31 @@
+{
+  "kind": "frozen-draft-verifier-comparison",
+  "createdAt": "2026-09-15T09:46:14.352Z",
+  "packetFingerprint": "307116dd03d82895b52f1a91d1ab92a694d1ad55c3ad9ee44e606177aae0aa13",
+  "reviewerFingerprint": "b806474c2051bce09eb7bb1f3d123e59c85550eedf13d734019333ec7cac35e9",
+  "runnerSha256": "fc1a1c10e1ae652813c5bc97c4bad63aeabf35daf66dac940ba6b473842ce51c",
+  "modules": {
+    "before": {
+      "answer": "446f605895c13287bbb5c83176cab070327e99881c76ccf8c35378f9e7790080",
+      "audit": "121df59c5807151c91d512291369368d9a2f3abb93aadb544febcfadb7b2387c"
+    }
+  },
+  "model": {
+    "id": "gpt-5.4-nano",
+    "api": "responses",
+    "reasoningEffort": "high",
+    "maxOutputTokens": 8192,
+    "timeoutMs": 120000,
+    "providerRetries": 0
+  },
+  "cases": 16,
+  "variants": [
+    "before"
+  ],
+  "concurrency": 4,
+  "limitations": [
+    "Exposed fixed drafts; no new generation or retention is measured.",
+    "Reference labels come from independent review; runtime judgments remain fallible.",
+    "Each draft is submitted once to each verifier; failed coordinates are not selectively retried."
+  ]
+}

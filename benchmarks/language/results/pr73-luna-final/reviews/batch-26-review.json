@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "cec6116dec129596cb7ba393ba112d813b41cd167c2959ffe829d79ed6d236ab",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-relative-unknown-date",
+      "run": 2,
+      "retentionUseful": true,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The complete English record preserves Ada’s actual proposal to compare cleaning instructions two weeks after the source record, the absence of an agreed meeting, the source’s missing date and therefore unknown calendar date, and explicit exclusion of processing day as anchor. Asserted commitment keeps the proposal’s existence definite; proposed disposition and tentative unknown time qualify the prospective comparison. Source recording does not explicitly assert an audio medium. No actual meeting or calendar date is introduced.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence keep the comparison proposal, two-week offset from the original undated record, unknown calendar date, non-processing anchor, and no agreed meeting together. The requested answer language is used. Tentative framing describes proposed timing while the body clearly states that Ada made the proposal, preserving the distinction between an actual proposal and an uncertain date."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence keep the comparison proposal, two-week offset from the original undated record, unknown calendar date, non-processing anchor, and no agreed meeting together. The requested answer language is used. Tentative framing describes proposed timing while the body clearly states that Ada made the proposal, preserving the distinction between an actual proposal and an uncertain date."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence keep the comparison proposal, two-week offset from the original undated record, unknown calendar date, non-processing anchor, and no agreed meeting together. The requested answer language is used. Tentative framing describes proposed timing while the body clearly states that Ada made the proposal, preserving the distinction between an actual proposal and an uncertain date."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence keep the comparison proposal, two-week offset from the original undated record, unknown calendar date, non-processing anchor, and no agreed meeting together. The requested answer language is used. Tentative framing describes proposed timing while the body clearly states that Ada made the proposal, preserving the distinction between an actual proposal and an uncertain date."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence keep the comparison proposal, two-week offset from the original undated record, unknown calendar date, non-processing anchor, and no agreed meeting together. The requested answer language is used. Tentative framing describes proposed timing while the body clearly states that Ada made the proposal, preserving the distinction between an actual proposal and an uncertain date."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence keep the comparison proposal, two-week offset from the original undated record, unknown calendar date, non-processing anchor, and no agreed meeting together. The requested answer language is used. Tentative framing describes proposed timing while the body clearly states that Ada made the proposal, preserving the distinction between an actual proposal and an uncertain date."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence keep the comparison proposal, two-week offset from the original undated record, unknown calendar date, non-processing anchor, and no agreed meeting together. The requested answer language is used. Tentative framing describes proposed timing while the body clearly states that Ada made the proposal, preserving the distinction between an actual proposal and an uncertain date."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence keep the comparison proposal, two-week offset from the original undated record, unknown calendar date, non-processing anchor, and no agreed meeting together. The requested answer language is used. Tentative framing describes proposed timing while the body clearly states that Ada made the proposal, preserving the distinction between an actual proposal and an uncertain date."
+        }
+      ]
+    }
+  ]
+}

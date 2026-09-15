@@ -1,0 +1,840 @@
+{
+  "kind": "coupled-live-downstream-comparison",
+  "manifestSha256": "6368890069c2b387fc31c083849b6bd34866b7f7356fa7db208c26e246ed25d0",
+  "pairs": 22,
+  "counts": {
+    "baseline": {
+      "correctInferredViews": 8,
+      "inferredViews": 22,
+      "correctExplicitViews": 22,
+      "explicitViews": 22,
+      "correctProjections": 2,
+      "projections": 10,
+      "answersWithEligibleEvidence": 64,
+      "answerOperations": 88,
+      "publishedAnswers": 56,
+      "automaticContexts": 30,
+      "unsafeFactualProjections": 8,
+      "unsafeFactualAnswerLines": 0,
+      "unsafeFactualContextLines": 0,
+      "factualAnswerControls": 22,
+      "bytesStable": 22,
+      "reasons": {
+        "answered": 56,
+        "verification_rejected": 3,
+        "generation_failed": 1,
+        "no_eligible_evidence": 24,
+        "empty_draft": 4
+      }
+    },
+    "candidate": {
+      "correctInferredViews": 22,
+      "inferredViews": 22,
+      "correctExplicitViews": 22,
+      "explicitViews": 22,
+      "correctProjections": 10,
+      "projections": 10,
+      "answersWithEligibleEvidence": 80,
+      "answerOperations": 88,
+      "publishedAnswers": 77,
+      "automaticContexts": 40,
+      "unsafeFactualProjections": 0,
+      "unsafeFactualAnswerLines": 0,
+      "unsafeFactualContextLines": 0,
+      "factualAnswerControls": 22,
+      "bytesStable": 22,
+      "reasons": {
+        "answered": 77,
+        "no_eligible_evidence": 8,
+        "verification_rejected": 3
+      }
+    }
+  },
+  "retainedExplicitControls": 32,
+  "retainedExplicitEqual": 32,
+  "projectionUpgrades": 0,
+  "regressions": [],
+  "differences": [
+    {
+      "coordinate": "ordinary-empty-heading-fact/repeat-1/en/inferred",
+      "answerIndex": 0,
+      "views": [
+        "factual",
+        "factual"
+      ],
+      "eligibleLines": [
+        3,
+        1
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-empty-heading-fact/repeat-1/en/inferred",
+      "answerIndex": 1,
+      "views": [
+        "factual",
+        "factual"
+      ],
+      "eligibleLines": [
+        3,
+        1
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-empty-heading-fact/repeat-1/en/explicit",
+      "answerIndex": 0,
+      "views": [
+        "factual",
+        "factual"
+      ],
+      "eligibleLines": [
+        3,
+        1
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-empty-heading-fact/repeat-1/en/explicit",
+      "answerIndex": 1,
+      "views": [
+        "factual",
+        "factual"
+      ],
+      "eligibleLines": [
+        3,
+        1
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-empty-heading-fact/repeat-2/en/inferred",
+      "answerIndex": 0,
+      "views": [
+        "factual",
+        "factual"
+      ],
+      "eligibleLines": [
+        3,
+        1
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-empty-heading-fact/repeat-2/en/inferred",
+      "answerIndex": 1,
+      "views": [
+        "factual",
+        "factual"
+      ],
+      "eligibleLines": [
+        3,
+        1
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-empty-heading-fact/repeat-2/en/explicit",
+      "answerIndex": 0,
+      "views": [
+        "factual",
+        "factual"
+      ],
+      "eligibleLines": [
+        3,
+        1
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-empty-heading-fact/repeat-2/en/explicit",
+      "answerIndex": 1,
+      "views": [
+        "factual",
+        "factual"
+      ],
+      "eligibleLines": [
+        3,
+        1
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-english-report/repeat-1/mixed/inferred",
+      "answerIndex": 0,
+      "views": [
+        "planning",
+        "reports"
+      ],
+      "eligibleLines": [
+        1,
+        1
+      ],
+      "reasons": [
+        "verification_rejected",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-english-report/repeat-1/mixed/inferred",
+      "answerIndex": 1,
+      "views": [
+        "planning",
+        "reports"
+      ],
+      "eligibleLines": [
+        1,
+        1
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-english-report/repeat-1/mixed/explicit",
+      "answerIndex": 0,
+      "views": [
+        "reports",
+        "reports"
+      ],
+      "eligibleLines": [
+        1,
+        1
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-english-report/repeat-1/mixed/explicit",
+      "answerIndex": 1,
+      "views": [
+        "reports",
+        "reports"
+      ],
+      "eligibleLines": [
+        1,
+        1
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-english-report/repeat-2/mixed/inferred",
+      "answerIndex": 0,
+      "views": [
+        "planning",
+        "reports"
+      ],
+      "eligibleLines": [
+        1,
+        1
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-english-report/repeat-2/mixed/inferred",
+      "answerIndex": 1,
+      "views": [
+        "planning",
+        "reports"
+      ],
+      "eligibleLines": [
+        1,
+        1
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-english-report/repeat-2/mixed/explicit",
+      "answerIndex": 0,
+      "views": [
+        "reports",
+        "reports"
+      ],
+      "eligibleLines": [
+        1,
+        1
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-english-report/repeat-2/mixed/explicit",
+      "answerIndex": 1,
+      "views": [
+        "reports",
+        "reports"
+      ],
+      "eligibleLines": [
+        1,
+        1
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-mixed-hypothesis/repeat-1/en/inferred",
+      "answerIndex": 0,
+      "views": [
+        "discussion",
+        "discussion"
+      ],
+      "eligibleLines": [
+        2,
+        2
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-mixed-hypothesis/repeat-1/en/inferred",
+      "answerIndex": 1,
+      "views": [
+        "discussion",
+        "discussion"
+      ],
+      "eligibleLines": [
+        2,
+        2
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-mixed-hypothesis/repeat-1/en/explicit",
+      "answerIndex": 0,
+      "views": [
+        "discussion",
+        "discussion"
+      ],
+      "eligibleLines": [
+        2,
+        2
+      ],
+      "reasons": [
+        "generation_failed",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-mixed-hypothesis/repeat-1/en/explicit",
+      "answerIndex": 1,
+      "views": [
+        "discussion",
+        "discussion"
+      ],
+      "eligibleLines": [
+        2,
+        2
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-mixed-hypothesis/repeat-2/en/inferred",
+      "answerIndex": 0,
+      "views": [
+        "discussion",
+        "discussion"
+      ],
+      "eligibleLines": [
+        2,
+        2
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-mixed-hypothesis/repeat-2/en/inferred",
+      "answerIndex": 1,
+      "views": [
+        "discussion",
+        "discussion"
+      ],
+      "eligibleLines": [
+        2,
+        2
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-mixed-hypothesis/repeat-2/en/explicit",
+      "answerIndex": 0,
+      "views": [
+        "discussion",
+        "discussion"
+      ],
+      "eligibleLines": [
+        2,
+        2
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "ordinary-mixed-hypothesis/repeat-2/en/explicit",
+      "answerIndex": 1,
+      "views": [
+        "discussion",
+        "discussion"
+      ],
+      "eligibleLines": [
+        2,
+        2
+      ],
+      "reasons": [
+        "answered",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v22-held-nested-report/run-1/repeat-1/ru/inferred",
+      "answerIndex": 0,
+      "views": [
+        "factual",
+        "reports"
+      ],
+      "eligibleLines": [
+        0,
+        0
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "no_eligible_evidence"
+      ]
+    },
+    {
+      "coordinate": "v22-held-nested-report/run-1/repeat-1/ru/inferred",
+      "answerIndex": 1,
+      "views": [
+        "factual",
+        "reports"
+      ],
+      "eligibleLines": [
+        0,
+        0
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "no_eligible_evidence"
+      ]
+    },
+    {
+      "coordinate": "v22-held-nested-report/run-1/repeat-2/ru/inferred",
+      "answerIndex": 0,
+      "views": [
+        "factual",
+        "reports"
+      ],
+      "eligibleLines": [
+        0,
+        0
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "no_eligible_evidence"
+      ]
+    },
+    {
+      "coordinate": "v22-held-nested-report/run-1/repeat-2/ru/inferred",
+      "answerIndex": 1,
+      "views": [
+        "factual",
+        "reports"
+      ],
+      "eligibleLines": [
+        0,
+        0
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "no_eligible_evidence"
+      ]
+    },
+    {
+      "coordinate": "v23-held-assistant-reading/run-1/repeat-1/en/inferred",
+      "answerIndex": 0,
+      "views": [
+        "factual",
+        "reports"
+      ],
+      "eligibleLines": [
+        0,
+        1
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-assistant-reading/run-1/repeat-1/en/inferred",
+      "answerIndex": 1,
+      "views": [
+        "factual",
+        "reports"
+      ],
+      "eligibleLines": [
+        0,
+        1
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-assistant-reading/run-1/repeat-2/en/inferred",
+      "answerIndex": 0,
+      "views": [
+        "factual",
+        "reports"
+      ],
+      "eligibleLines": [
+        0,
+        1
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-assistant-reading/run-1/repeat-2/en/inferred",
+      "answerIndex": 1,
+      "views": [
+        "factual",
+        "reports"
+      ],
+      "eligibleLines": [
+        0,
+        1
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-declined-extension/run-1/repeat-1/en/inferred",
+      "answerIndex": 0,
+      "views": [
+        "factual",
+        "discussion"
+      ],
+      "eligibleLines": [
+        0,
+        2
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-declined-extension/run-1/repeat-1/en/inferred",
+      "answerIndex": 1,
+      "views": [
+        "factual",
+        "discussion"
+      ],
+      "eligibleLines": [
+        0,
+        2
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-declined-extension/run-1/repeat-2/en/inferred",
+      "answerIndex": 0,
+      "views": [
+        "factual",
+        "discussion"
+      ],
+      "eligibleLines": [
+        0,
+        2
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-declined-extension/run-1/repeat-2/en/inferred",
+      "answerIndex": 1,
+      "views": [
+        "factual",
+        "discussion"
+      ],
+      "eligibleLines": [
+        0,
+        2
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-fictional-key/run-1/repeat-1/en/inferred",
+      "answerIndex": 0,
+      "views": [
+        "factual",
+        "discussion"
+      ],
+      "eligibleLines": [
+        0,
+        2
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-fictional-key/run-1/repeat-1/en/inferred",
+      "answerIndex": 1,
+      "views": [
+        "factual",
+        "discussion"
+      ],
+      "eligibleLines": [
+        0,
+        2
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "verification_rejected"
+      ]
+    },
+    {
+      "coordinate": "v23-held-fictional-key/run-1/repeat-2/en/inferred",
+      "answerIndex": 0,
+      "views": [
+        "factual",
+        "discussion"
+      ],
+      "eligibleLines": [
+        0,
+        2
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-fictional-key/run-1/repeat-2/en/inferred",
+      "answerIndex": 1,
+      "views": [
+        "factual",
+        "discussion"
+      ],
+      "eligibleLines": [
+        0,
+        2
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-rejected-inspection/run-1/repeat-1/ru/inferred",
+      "answerIndex": 0,
+      "views": [
+        "planning",
+        "history"
+      ],
+      "eligibleLines": [
+        0,
+        1
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-rejected-inspection/run-1/repeat-1/ru/inferred",
+      "answerIndex": 1,
+      "views": [
+        "planning",
+        "history"
+      ],
+      "eligibleLines": [
+        0,
+        1
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-rejected-inspection/run-1/repeat-2/ru/inferred",
+      "answerIndex": 0,
+      "views": [
+        "planning",
+        "history"
+      ],
+      "eligibleLines": [
+        0,
+        1
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-rejected-inspection/run-1/repeat-2/ru/inferred",
+      "answerIndex": 1,
+      "views": [
+        "planning",
+        "history"
+      ],
+      "eligibleLines": [
+        0,
+        1
+      ],
+      "reasons": [
+        "no_eligible_evidence",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-relayed-service/run-1/repeat-1/ru/inferred",
+      "answerIndex": 0,
+      "views": [
+        "factual",
+        "reports"
+      ],
+      "eligibleLines": [
+        1,
+        1
+      ],
+      "reasons": [
+        "empty_draft",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-relayed-service/run-1/repeat-1/ru/inferred",
+      "answerIndex": 1,
+      "views": [
+        "factual",
+        "reports"
+      ],
+      "eligibleLines": [
+        1,
+        1
+      ],
+      "reasons": [
+        "empty_draft",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-relayed-service/run-1/repeat-2/ru/inferred",
+      "answerIndex": 0,
+      "views": [
+        "factual",
+        "reports"
+      ],
+      "eligibleLines": [
+        1,
+        1
+      ],
+      "reasons": [
+        "empty_draft",
+        "answered"
+      ]
+    },
+    {
+      "coordinate": "v23-held-relayed-service/run-1/repeat-2/ru/inferred",
+      "answerIndex": 1,
+      "views": [
+        "factual",
+        "reports"
+      ],
+      "eligibleLines": [
+        1,
+        1
+      ],
+      "reasons": [
+        "empty_draft",
+        "answered"
+      ]
+    }
+  ],
+  "network": {
+    "logicalRequests": 1354,
+    "physicalRequests": 844,
+    "coupledResponses": 510,
+    "failedPhysicalRequests": 0,
+    "usageByModel": {
+      "text-embedding-3-small": 11945,
+      "gpt-5.6-luna": 1524265
+    }
+  },
+  "deterministicAcceptance": false,
+  "endToEndAcceptance": "not measured here; prior full gate remains failed",
+  "liveSemanticReview": "required separately"
+}

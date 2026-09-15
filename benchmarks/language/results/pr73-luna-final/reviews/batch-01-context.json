@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "5b3e367e0a2a48e8602cebc53bf2e0f0979837a1a262abea35c0d21ef85e16ff",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-nested-report",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "No context evidence is exposed for this positive report query. The writable original source supports useful qualified nested-report context, so this is missed activation rather than a required read-only or factual exclusion. Empty context is vacuously source-entailed and makes no qualification, language-framing, or factual-promotion error; the English knowledge-language declaration is compatible with the requested policy. These neutral safety flags do not satisfy context usefulness and do not explain the runtime cause."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "No context evidence is exposed for this positive report query. The writable original source supports useful qualified nested-report context, so this is missed activation rather than a required read-only or factual exclusion. Empty context is vacuously source-entailed and makes no qualification, language-framing, or factual-promotion error; the English knowledge-language declaration is compatible with the requested policy. These neutral safety flags do not satisfy context usefulness and do not explain the runtime cause."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "No context evidence is exposed for this positive report query. The writable original source supports useful qualified nested-report context, so this is missed activation rather than a required read-only or factual exclusion. Empty context is vacuously source-entailed and makes no qualification, language-framing, or factual-promotion error; the English knowledge-language declaration is compatible with the requested policy. These neutral safety flags do not satisfy context usefulness and do not explain the runtime cause."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "No context evidence is exposed for this positive report query. The writable original source supports useful qualified nested-report context, so this is missed activation rather than a required read-only or factual exclusion. Empty context is vacuously source-entailed and makes no qualification, language-framing, or factual-promotion error; the English knowledge-language declaration is compatible with the requested policy. These neutral safety flags do not satisfy context usefulness and do not explain the runtime cause."
+        }
+      ]
+    }
+  ]
+}

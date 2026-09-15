@@ -1,0 +1,948 @@
+{
+  "kind": "incremental-frozen-full-evaluation-review-batch",
+  "corpusFingerprint": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+  "rubric": "Unchanged V23 language-output-review-v2 rubric in the frozen benchmark reviewer; no changed thresholds or expected meanings.",
+  "cases": [
+    {
+      "id": "v22-held-fictional-example",
+      "run": 1,
+      "source": {
+        "id": "v22-held-fictional-example",
+        "split": "development",
+        "language": "en",
+        "scenario": "fictional-example",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "In the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story."
+          }
+        ],
+        "view": "discussion",
+        "commitment": "hypothetical",
+        "admission": "writable",
+        "ordinary": "## Fictional example\nAda Marlow introduces a story, not a real agreement. In it, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "What fictional control-dial loan did Ada Marlow introduce for discussion?",
+          "ru": "Какой вымышленный заём ручки управления Ada Marlow предложила обсудить?"
+        },
+        "reviewExpectation": "Preserve Ada’s actual introduction of an invented example and the story-scoped loan: fictional Vulpine Mutual lends fictional Bo a spare control dial for forty-four days after a fictional repair. No real agreement, repair, loan, or elapsed calendar period is established."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_01cc6717",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_4c1cda6d639b0068b62143ef",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_01cc6717",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4c1cda6d639b0068b62143ef",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_01cc6717",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4c1cda6d639b0068b62143ef",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Гипотетический контекст:** В вымышленной истории Ada Marlow вымышленная Vulpine Mutual предоставляет вымышленному Bo Winters запасной диск управления Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта. Этот заём существует только в истории и не описывает никакого реального соглашения. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_01cc6717",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4c1cda6d639b0068b62143ef",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_01cc6717",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4c1cda6d639b0068b62143ef",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Гипотетический контекст:** В вымышленной истории Ada Marlow вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасной диск управления Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта. Этот заём существует только в истории и не описывает реального соглашения. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_01cc6717",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4c1cda6d639b0068b62143ef",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_01cc6717",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4c1cda6d639b0068b62143ef",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Гипотетический контекст:** В вымышленной истории Ada Marlow вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасную ручку управления Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта. Этот заём существует только в истории и не описывает никакого реального соглашения. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_01cc6717",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4c1cda6d639b0068b62143ef",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_01cc6717",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_4c1cda6d639b0068b62143ef",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Гипотетический контекст:** В вымышленной истории Ada Marlow вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасную ручку управления Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта. Этот заём существует только в истории и не описывает никакого реального соглашения. [memory/equipment:7]"
+        }
+      ]
+    },
+    {
+      "id": "v23-held-scoped-exclusion",
+      "run": 1,
+      "source": {
+        "id": "v23-held-scoped-exclusion",
+        "split": "held-out",
+        "language": "ru",
+        "scenario": "coverage-exclusion",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Я, Ada Marlow, записываю: гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Это исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли. Оно также не означает, что договор ничего не говорит об этой шарнирной петле."
+          }
+        ],
+        "view": "factual",
+        "polarity": "negated",
+        "admission": "writable",
+        "ordinary": "## Coverage\nThe Zephyr QX-100 warranty excludes wax-caused damage to the fabric seal. This exclusion alone does not settle hinge-replacement coverage or establish that the agreement is silent about the hinge.",
+        "ordinaryFactual": true,
+        "queries": {
+          "en": "What does Ada Marlow’s Zephyr QX-100 exclusion record establish about the fabric seal and hinge?",
+          "ru": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?"
+        },
+        "reviewExpectation": "Retain the specific exclusion of wax-caused fabric-seal damage, with negative polarity, and separately the limit that this exclusion does not settle hinge-replacement coverage or prove contract silence. Do not exclude all seal damage, assert inclusion/exclusion of hinge replacement, or change damage coverage into a replacement benefit."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_c525e28e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_07f691343007e67b30b131ae",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "answer": "Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "answer": "Ada Marlow утверждает, что гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском. Одно это исключение не отвечает на вопрос, покрывается ли замена шарнира, и не означает, что договор ничего не говорит о шарнире. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "answer": "Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "answer": "Ada Marlow утверждает, что гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском. Это исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли, и не означает, что договор ничего не говорит об этой шарнирной петле. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "answer": "Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "answer": "Ada Marlow утверждает, что гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском. Само это исключение не отвечает на вопрос, покрывается ли замена шарнирной петли, и не означает, что договор ничего не говорит об этой шарнирной петле. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "answer": "Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "answer": "Ada Marlow утверждает, что гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском. Одно лишь это исключение не отвечает на вопрос о том, покрывается ли заменой шарнирной петли гарантией, и не означает, что договор ничего не говорит о шарнирной петле. [memory/equipment:7]"
+        }
+      ]
+    }
+  ],
+  "extra": [
+    {
+      "id": "v22-held-fictional-example",
+      "run": 1,
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_01cc6717",
+            "source_ref": "invented:v22-held-fictional-example",
+            "input_hash": "24d64bc9c3f446a67de8247ef24c56294d5fa34d2840e614707fe02c7a8c28e5",
+            "evidence": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement.\n…\nIn the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story.",
+            "evidence_hash": "1bd106b6e23ce545837e998265619d2c400f381606b1b915e6757e50493a1218",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "In the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_01cc6717",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_4c1cda6d639b0068b62143ef",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Fictional Scenario",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_01cc6717",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_4c1cda6d639b0068b62143ef",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Fictional Scenario",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_01cc6717",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_4c1cda6d639b0068b62143ef",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Fictional Scenario",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Hypothetical:** In Ada Marlow’s fictional story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_01cc6717",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_4c1cda6d639b0068b62143ef",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Fictional Scenario",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ]
+    },
+    {
+      "id": "v23-held-scoped-exclusion",
+      "run": 1,
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_c525e28e",
+            "source_ref": "invented:v23-held-scoped-exclusion",
+            "input_hash": "e0a8942f50b5e9b06948965035ca80cd5a0ca5601c90fb9b266e947b5f968a14",
+            "evidence": "Я, Ada Marlow, записываю: гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском.\n…\nЭто исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли. Оно также не означает, что договор ничего не говорит об этой шарнирной петле.",
+            "evidence_hash": "76ce18a7a4408a3d8d79c2d06a6315b65e1d0247bb5fb4fc54d9f789fbb9d85e",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "Я, Ada Marlow, записываю: гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "Это исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли. Оно также не означает, что договор ничего не говорит об этой шарнирной петле.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_c525e28e",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_07f691343007e67b30b131ae",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Warranty Coverage",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_c525e28e",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_07f691343007e67b30b131ae",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Warranty Coverage",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_c525e28e",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_07f691343007e67b30b131ae",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Warranty Coverage",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_c525e28e",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_07f691343007e67b30b131ae",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Warranty Coverage",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ]
+    }
+  ],
+  "packetFingerprint": "a0e7c493867dc4da9cf19a268f8eda91ddcb38100f72a2acbdf16cad4611ac27"
+}

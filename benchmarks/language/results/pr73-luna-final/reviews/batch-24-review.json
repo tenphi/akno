@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "7b7e978c8cde4e32401b0bc4e7a65d117ec8c213570298689f8bf3984438d111",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-fictional-example",
+      "run": 2,
+      "retentionUseful": false,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The retained English claim preserves the fictional loan, named lender and borrower, spare control dial, first forty-four days after fictional repair, and no real agreement. Global story framing keeps the named parties inside the invented example. The possessive associates Ada with the presented story without asserting authorship. However, the complete retained set omits the separate actual act of Ada introducing an invented example for discussion. Focused loan evidence is useful, but complete retention fails.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves the story-only loan of a spare control dial to Bo by Vulpine for the first forty-four days after a fictional repair and explicitly rules out a real agreement. Russian «ручка управления» preserves the component where applicable; provides is disambiguated as a loan by the following sentence. It is useful for the focused loan query in the requested language, although the retained set lacks the separate actual introduction act."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null despite useful retrieved evidence containing the complete fictional loan. A source-faithful Russian answer was available, so this is a missed answer rather than a justified source hold; no runtime cause is supplied by the public packet."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves the story-only loan of a spare control dial to Bo by Vulpine for the first forty-four days after a fictional repair and explicitly rules out a real agreement. Russian «ручка управления» preserves the component where applicable; provides is disambiguated as a loan by the following sentence. It is useful for the focused loan query in the requested language, although the retained set lacks the separate actual introduction act."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": false,
+          "reason": "The Russian answer changes control dial to «регуляторный диск», specifying a disk-shaped component that the source does not establish. The actors, loan, duration and fictional/no-real-agreement qualifications survive, and the answer is Russian, but exact component fidelity and useful qualified answering fail. Retrieved English evidence keeps the original control dial and is useful."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves the story-only loan of a spare control dial to Bo by Vulpine for the first forty-four days after a fictional repair and explicitly rules out a real agreement. Russian «ручка управления» preserves the component where applicable; provides is disambiguated as a loan by the following sentence. It is useful for the focused loan query in the requested language, although the retained set lacks the separate actual introduction act."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": false,
+          "reason": "The Russian answer replaces control dial with «регулятор управления», a generic control regulator that does not preserve the specific dial component and may name a different control mechanism. Story scope, actors, loan and duration remain intact, but exact component fidelity and qualified answer usefulness fail. The retrieved English loan itself remains useful and faithful."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves the story-only loan of a spare control dial to Bo by Vulpine for the first forty-four days after a fictional repair and explicitly rules out a real agreement. Russian «ручка управления» preserves the component where applicable; provides is disambiguated as a loan by the following sentence. It is useful for the focused loan query in the requested language, although the retained set lacks the separate actual introduction act."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves the story-only loan of a spare control dial to Bo by Vulpine for the first forty-four days after a fictional repair and explicitly rules out a real agreement. Russian «ручка управления» preserves the component where applicable; provides is disambiguated as a loan by the following sentence. It is useful for the focused loan query in the requested language, although the retained set lacks the separate actual introduction act."
+        }
+      ]
+    }
+  ]
+}

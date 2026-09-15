@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "e8dfcba1bd06f59becfe6a2460bc2bf9cf37bb858f331739f432b5474f979f73",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-rejected-inspection",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual context for this en query and inferred history view contains the original-supported English rejected-offer row: Ada rejected taking the whole device to the workshop to check its alignment gauge. The displayed rejection and rejected-plan metadata preserve the service scope without promoting a plan or completed inspection. This directly answers the focused offer query and is useful qualified context. The separate no-plan/no-appointment/no-transport assertions are not required in this focused context; complete retained-set coverage is judged independently. English generated framing matches the declared English knowledge-language policy even when the query is Russian. This is useful positive activation, not read-only exclusion."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual context for this en query and explicit history view contains the original-supported English rejected-offer row: Ada rejected taking the whole device to the workshop to check its alignment gauge. The displayed rejection and rejected-plan metadata preserve the service scope without promoting a plan or completed inspection. This directly answers the focused offer query and is useful qualified context. The separate no-plan/no-appointment/no-transport assertions are not required in this focused context; complete retained-set coverage is judged independently. English generated framing matches the declared English knowledge-language policy even when the query is Russian. This is useful positive activation, not read-only exclusion."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual context for this ru query and inferred history view contains the original-supported English rejected-offer row: Ada rejected taking the whole device to the workshop to check its alignment gauge. The displayed rejection and rejected-plan metadata preserve the service scope without promoting a plan or completed inspection. This directly answers the focused offer query and is useful qualified context. The separate no-plan/no-appointment/no-transport assertions are not required in this focused context; complete retained-set coverage is judged independently. English generated framing matches the declared English knowledge-language policy even when the query is Russian. This is useful positive activation, not read-only exclusion."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual context for this ru query and explicit history view contains the original-supported English rejected-offer row: Ada rejected taking the whole device to the workshop to check its alignment gauge. The displayed rejection and rejected-plan metadata preserve the service scope without promoting a plan or completed inspection. This directly answers the focused offer query and is useful qualified context. The separate no-plan/no-appointment/no-transport assertions are not required in this focused context; complete retained-set coverage is judged independently. English generated framing matches the declared English knowledge-language policy even when the query is Russian. This is useful positive activation, not read-only exclusion."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-rejected-inspection",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual context for this en query and inferred history view contains the original-supported English rejected-offer row: Ada rejected taking the whole device to the workshop to check its alignment gauge. The displayed rejection and rejected-plan metadata preserve the service scope without promoting a plan or completed inspection. This directly answers the focused offer query and is useful qualified context. The separate no-plan/no-appointment/no-transport assertions are not required in this focused context; complete retained-set coverage is judged independently. English generated framing matches the declared English knowledge-language policy even when the query is Russian. This is useful positive activation, not read-only exclusion."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual context for this en query and explicit history view contains the original-supported English rejected-offer row: Ada rejected taking the whole device to the workshop to check its alignment gauge. The displayed rejection and rejected-plan metadata preserve the service scope without promoting a plan or completed inspection. This directly answers the focused offer query and is useful qualified context. The separate no-plan/no-appointment/no-transport assertions are not required in this focused context; complete retained-set coverage is judged independently. English generated framing matches the declared English knowledge-language policy even when the query is Russian. This is useful positive activation, not read-only exclusion."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual context for this ru query and inferred history view contains the original-supported English rejected-offer row: Ada rejected taking the whole device to the workshop to check its alignment gauge. The displayed rejection and rejected-plan metadata preserve the service scope without promoting a plan or completed inspection. This directly answers the focused offer query and is useful qualified context. The separate no-plan/no-appointment/no-transport assertions are not required in this focused context; complete retained-set coverage is judged independently. English generated framing matches the declared English knowledge-language policy even when the query is Russian. This is useful positive activation, not read-only exclusion."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual context for this ru query and explicit history view contains the original-supported English rejected-offer row: Ada rejected taking the whole device to the workshop to check its alignment gauge. The displayed rejection and rejected-plan metadata preserve the service scope without promoting a plan or completed inspection. This directly answers the focused offer query and is useful qualified context. The separate no-plan/no-appointment/no-transport assertions are not required in this focused context; complete retained-set coverage is judged independently. English generated framing matches the declared English knowledge-language policy even when the query is Russian. This is useful positive activation, not read-only exclusion."
+        }
+      ]
+    }
+  ]
+}

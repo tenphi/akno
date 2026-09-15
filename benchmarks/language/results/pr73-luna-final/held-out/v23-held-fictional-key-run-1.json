@@ -1,0 +1,1335 @@
+{
+  "id": "v23-held-fictional-key",
+  "run": 1,
+  "admission": "writable",
+  "reviewExpectation": "Retain Ada’s real proposal to discuss an invented example separately from its hypothetical payload. Preserve the fictional lender, borrower, spare physical metal cover key rather than an access code, first thirty-three days after fictional inspection, and absence of a real agreement. Neither discussion, inspection nor loan is established as completed in the real world.",
+  "language": "ru",
+  "scenario": "fictional-example",
+  "expectedHold": false,
+  "nonfactualExpected": true,
+  "retentionAvailabilityFailure": false,
+  "availabilityFailure": false,
+  "languageRejected": false,
+  "retention": {
+    "status": "ok",
+    "outcome": "ok",
+    "reason": null,
+    "candidates": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "usage": {
+      "extraction": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 8410,
+        "input_tokens": 7487,
+        "output_tokens": 800,
+        "total_tokens": 8287
+      },
+      "verification": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 9287,
+        "input_tokens": 9205,
+        "output_tokens": 695,
+        "total_tokens": 9900
+      },
+      "placement": [
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1058,
+          "input_tokens": 560,
+          "output_tokens": 16,
+          "total_tokens": 576
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 952,
+          "input_tokens": 596,
+          "output_tokens": 16,
+          "total_tokens": 612
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1086,
+          "input_tokens": 392,
+          "output_tokens": 29,
+          "total_tokens": 421
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1278,
+          "input_tokens": 580,
+          "output_tokens": 28,
+          "total_tokens": 608
+        }
+      ]
+    },
+    "degraded": []
+  },
+  "retainedItems": 2,
+  "noncanonicalEligibilityFlag": false,
+  "semanticsMatch": true,
+  "ordinaryCorrect": true,
+  "ordinaryInspection": {
+    "status": "ok",
+    "results": 1
+  },
+  "bytesStable": true,
+  "replayOutcome": "replayed",
+  "sourceArchive": {
+    "stableAcrossRebuildReplay": true,
+    "supports": [
+      {
+        "memory_id": "mem_8dd93dd0",
+        "source_ref": "invented:v23-held-fictional-key",
+        "input_hash": "e69391e223c3602b84e07eb9bb8bdd30ce5a731be4eb8827116ba0cf8dce6cba",
+        "evidence": "Я, Ada Marlow, предлагаю обсудить вымышленный пример о Zephyr QX-100. Это не реальное соглашение.\n…\nВ этой истории вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасной металлический ключ для крышки Zephyr QX-100 на первые тридцать три дня после вымышленного осмотра. Это физический ключ, не код доступа. Заём существует только внутри истории.",
+        "evidence_hash": "e1097e08d1099fb8e6650b01be9933e2e80d0c923d6b5881db2a373d2c5b7c2b",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "Я, Ada Marlow, предлагаю обсудить вымышленный пример о Zephyr QX-100. Это не реальное соглашение.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          },
+          {
+            "quote": "В этой истории вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасной металлический ключ для крышки Zephyr QX-100 на первые тридцать три дня после вымышленного осмотра. Это физический ключ, не код доступа. Заём существует только внутри истории.",
+            "matchingSourceItems": [
+              "turn-2222"
+            ]
+          }
+        ]
+      },
+      {
+        "memory_id": "mem_ae33b4c0",
+        "source_ref": "invented:v23-held-fictional-key",
+        "input_hash": "e69391e223c3602b84e07eb9bb8bdd30ce5a731be4eb8827116ba0cf8dce6cba",
+        "evidence": "Я, Ada Marlow, предлагаю обсудить вымышленный пример о Zephyr QX-100. Это не реальное соглашение.",
+        "evidence_hash": "8c0eaaa648f0994b78752ca8c171cc900c6e4297a5ade78926d7a8f684a56db7",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "Я, Ada Marlow, предлагаю обсудить вымышленный пример о Zephyr QX-100. Это не реальное соглашение.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "queries": [
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 2,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_8dd93dd0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_b2939f033c45ab12d54fa0d4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ae33b4c0",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_b2939f033c45ab12d54fa0d4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 9,
+              "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_8dd93dd0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_b2939f033c45ab12d54fa0d4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "n": 6,
+              "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ae33b4c0",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_b2939f033c45ab12d54fa0d4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Proposal",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6927,
+          "input_tokens": 5289,
+          "output_tokens": 470,
+          "total_tokens": 5759
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 10374,
+          "input_tokens": 12154,
+          "output_tokens": 946,
+          "total_tokens": 13100
+        }
+      },
+      "reviewAnswer": "According to Ada Marlow, the fictional example involved fictional Vulpine Mutual lending fictional Bo Winters a spare physical metal key for the Zephyr QX-100 cover during the first thirty-three days after a fictional inspection—not an access code. The loan existed only within the story, which Ada proposed discussing, and was not a real agreement. [memory/equipment:9] [memory/equipment:6]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 2,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_8dd93dd0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_b2939f033c45ab12d54fa0d4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ae33b4c0",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_b2939f033c45ab12d54fa0d4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 9,
+              "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_8dd93dd0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_b2939f033c45ab12d54fa0d4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "n": 6,
+              "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ae33b4c0",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_b2939f033c45ab12d54fa0d4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Proposal",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 9964,
+          "input_tokens": 5304,
+          "output_tokens": 631,
+          "total_tokens": 5935
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 9126,
+          "input_tokens": 11117,
+          "output_tokens": 613,
+          "total_tokens": 11730
+        }
+      },
+      "reviewAnswer": "По словам Ada Marlow, в её вымышленной истории Vulpine Mutual одалживает Bo Winters запасной металлический ключ для крышки Zephyr QX-100 на первые тридцать три дня после вымышленного осмотра. Это физический ключ, а не код доступа, и такой заём существует только внутри истории. [memory/equipment:9]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 2,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_8dd93dd0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_b2939f033c45ab12d54fa0d4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ae33b4c0",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_b2939f033c45ab12d54fa0d4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 9,
+              "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_8dd93dd0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_b2939f033c45ab12d54fa0d4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "n": 6,
+              "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ae33b4c0",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_b2939f033c45ab12d54fa0d4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Proposal",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5507,
+          "input_tokens": 5291,
+          "output_tokens": 425,
+          "total_tokens": 5716
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8761,
+          "input_tokens": 12154,
+          "output_tokens": 902,
+          "total_tokens": 13056
+        }
+      },
+      "reviewAnswer": "Ada Marlow proposed discussing a fictional example in which fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and the loan exists only within the story; this is not a real agreement. [memory/equipment:9] [memory/equipment:6]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 2,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_8dd93dd0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_b2939f033c45ab12d54fa0d4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ae33b4c0",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_b2939f033c45ab12d54fa0d4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 9,
+              "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_8dd93dd0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_b2939f033c45ab12d54fa0d4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "n": 6,
+              "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ae33b4c0",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_b2939f033c45ab12d54fa0d4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Proposal",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "not_answered",
+      "answerReason": "empty_draft",
+      "answerValidation": {
+        "generated_blocks": 0,
+        "passed_guards": 0,
+        "verified_blocks": null,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5668,
+          "input_tokens": 4276,
+          "output_tokens": 354,
+          "total_tokens": 4630
+        },
+        "verification": null
+      },
+      "reviewAnswer": null
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 2,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_8dd93dd0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_b2939f033c45ab12d54fa0d4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ae33b4c0",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_b2939f033c45ab12d54fa0d4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 9,
+              "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_8dd93dd0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_b2939f033c45ab12d54fa0d4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "n": 6,
+              "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ae33b4c0",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_b2939f033c45ab12d54fa0d4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Proposal",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6949,
+          "input_tokens": 5297,
+          "output_tokens": 529,
+          "total_tokens": 5826
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 10081,
+          "input_tokens": 12195,
+          "output_tokens": 973,
+          "total_tokens": 13168
+        }
+      },
+      "reviewAnswer": "Ada Marlow proposed discussing a fictional, non-real-agreement example in which fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover during the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and the loan exists only within the story. [memory/equipment:6] [memory/equipment:9]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 2,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_8dd93dd0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_b2939f033c45ab12d54fa0d4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ae33b4c0",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_b2939f033c45ab12d54fa0d4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 9,
+              "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_8dd93dd0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_b2939f033c45ab12d54fa0d4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "n": 6,
+              "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ae33b4c0",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_b2939f033c45ab12d54fa0d4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Proposal",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8216,
+          "input_tokens": 5322,
+          "output_tokens": 529,
+          "total_tokens": 5851
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 9819,
+          "input_tokens": 12444,
+          "output_tokens": 1007,
+          "total_tokens": 13451
+        }
+      },
+      "reviewAnswer": "Ada Marlow предложила обсудить вымышленный, не являющийся реальным соглашением пример, в котором Vulpine Mutual одалживает Bo Winters запасной металлический ключ для крышки Zephyr QX-100 на первые тридцать три дня после вымышленного осмотра. Это физический ключ, а не код доступа; заём существует только внутри истории. [memory/equipment:6] [memory/equipment:9]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 2,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_8dd93dd0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_b2939f033c45ab12d54fa0d4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ae33b4c0",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_b2939f033c45ab12d54fa0d4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 9,
+              "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_8dd93dd0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_b2939f033c45ab12d54fa0d4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "n": 6,
+              "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ae33b4c0",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_b2939f033c45ab12d54fa0d4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Proposal",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 9353,
+          "input_tokens": 5301,
+          "output_tokens": 677,
+          "total_tokens": 5978
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 10292,
+          "input_tokens": 12197,
+          "output_tokens": 1039,
+          "total_tokens": 13236
+        }
+      },
+      "reviewAnswer": "According to Ada Marlow, the proposed fictional example involved fictional Vulpine Mutual lending fictional Bo Winters a spare metal key for the Zephyr QX-100 cover during the first thirty-three days after a fictional inspection. It was a physical key, not an access code, and the loan existed only within the story; the example was not a real agreement. [memory/equipment:6] [memory/equipment:9]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 2,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_8dd93dd0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_b2939f033c45ab12d54fa0d4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ae33b4c0",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_b2939f033c45ab12d54fa0d4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 9,
+              "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_8dd93dd0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_b2939f033c45ab12d54fa0d4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "n": 6,
+              "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ae33b4c0",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_b2939f033c45ab12d54fa0d4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Proposal",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 10016,
+          "input_tokens": 5339,
+          "output_tokens": 583,
+          "total_tokens": 5922
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 11032,
+          "input_tokens": 12330,
+          "output_tokens": 1034,
+          "total_tokens": 13364
+        }
+      },
+      "reviewAnswer": "Ada Marlow предложила обсудить вымышленный пример о Zephyr QX-100, не являющийся реальным соглашением. В этом примере вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасной металлический ключ для крышки Zephyr QX-100 на первые тридцать три дня после вымышленного осмотра. Это физический ключ, а не код доступа; заём существует только внутри истории. [memory/equipment:6] [memory/equipment:9]"
+    }
+  ],
+  "reviewKnowledge": [
+    {
+      "text": "- **Proposal:** Ada Marlow proposed discussing a fictional example about Zephyr QX-100; it is not a real agreement.",
+      "qualification": {
+        "status": "qualified",
+        "id": "mem_ae33b4c0",
+        "level": 1,
+        "kind": "plan",
+        "subject": "ent_b2939f033c45ab12d54fa0d4",
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "commitment": "asserted",
+        "disposition": "proposed",
+        "polarity": "affirmed",
+        "basis": "self_attested",
+        "answer_eligible": false,
+        "current_eligible": false
+      }
+    },
+    {
+      "text": "- **Hypothetical:** In Ada Marlow's fictional story, fictional Vulpine Mutual lends fictional Bo Winters a spare metal key for the Zephyr QX-100 cover for the first thirty-three days after a fictional inspection. It is a physical key, not an access code, and exists only within the story.",
+      "qualification": {
+        "status": "qualified",
+        "id": "mem_8dd93dd0",
+        "level": 1,
+        "kind": "claim",
+        "subject": "ent_b2939f033c45ab12d54fa0d4",
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "commitment": "hypothetical",
+        "disposition": "active",
+        "polarity": "affirmed",
+        "basis": "self_attested",
+        "answer_eligible": false,
+        "current_eligible": false
+      }
+    }
+  ],
+  "error": null
+}

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "f09234312bdf4b91fc7b9d7e4cd6570445306efcab9891dc956347d7053528ba",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-read-only-admission",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "No memory evidence is injected into context, as required for the explicitly read-only admission case. This is safe exclusion, not useful context activation. The empty evidence contains no unsupported factual claim, changed qualification, or language-framing violation; it does not demonstrate source ignorance, a particular runtime error, or byte stability."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "No memory evidence is injected into context, as required for the explicitly read-only admission case. This is safe exclusion, not useful context activation. The empty evidence contains no unsupported factual claim, changed qualification, or language-framing violation; it does not demonstrate source ignorance, a particular runtime error, or byte stability."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "No memory evidence is injected into context, as required for the explicitly read-only admission case. This is safe exclusion, not useful context activation. The empty evidence contains no unsupported factual claim, changed qualification, or language-framing violation; it does not demonstrate source ignorance, a particular runtime error, or byte stability."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "No memory evidence is injected into context, as required for the explicitly read-only admission case. This is safe exclusion, not useful context activation. The empty evidence contains no unsupported factual claim, changed qualification, or language-framing violation; it does not demonstrate source ignorance, a particular runtime error, or byte stability."
+        }
+      ]
+    }
+  ]
+}

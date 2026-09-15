@@ -1,0 +1,768 @@
+{
+  "id": "ordinary-russian-report",
+  "path": "ordinary",
+  "sourceLanguage": "ru",
+  "run": 1,
+  "startedAt": "2026-09-15T08:19:15.933Z",
+  "retrieval": [
+    {
+      "queryLanguage": "en",
+      "inferredView": "reports",
+      "explicitView": "reports",
+      "inferredFocus": true,
+      "explicitFocus": true,
+      "evidence": [
+        {
+          "n": 4,
+          "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+          "prose": {
+            "status": "qualified",
+            "view": "reports",
+            "reason": "heading_scope",
+            "answer_eligible": false,
+            "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 3,
+                "text": "   ## Сообщение ассистента"
+              },
+              {
+                "n": 4,
+                "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+              }
+            ]
+          }
+        }
+      ],
+      "status": "degraded",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "contextStatus": "degraded",
+      "contextActivation": {
+        "activated": false,
+        "basis": "none",
+        "candidates": 1,
+        "selected": 0,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "contextDegraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "knowledgeLanguage": "en"
+    },
+    {
+      "queryLanguage": "ru",
+      "inferredView": "reports",
+      "explicitView": "reports",
+      "inferredFocus": true,
+      "explicitFocus": true,
+      "evidence": [
+        {
+          "n": 4,
+          "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+          "prose": {
+            "status": "qualified",
+            "view": "reports",
+            "reason": "heading_scope",
+            "answer_eligible": false,
+            "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 3,
+                "text": "   ## Сообщение ассистента"
+              },
+              {
+                "n": 4,
+                "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+              }
+            ]
+          }
+        }
+      ],
+      "status": "degraded",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "contextStatus": "degraded",
+      "contextActivation": {
+        "activated": false,
+        "basis": "none",
+        "candidates": 1,
+        "selected": 0,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "contextDegraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "knowledgeLanguage": "en"
+    },
+    {
+      "queryLanguage": "mixed",
+      "inferredView": "reports",
+      "explicitView": "reports",
+      "inferredFocus": true,
+      "explicitFocus": true,
+      "evidence": [
+        {
+          "n": 4,
+          "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+          "prose": {
+            "status": "qualified",
+            "view": "reports",
+            "reason": "heading_scope",
+            "answer_eligible": false,
+            "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 3,
+                "text": "   ## Сообщение ассистента"
+              },
+              {
+                "n": 4,
+                "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+              }
+            ]
+          }
+        }
+      ],
+      "status": "degraded",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "contextStatus": "degraded",
+      "contextActivation": {
+        "activated": false,
+        "basis": "none",
+        "candidates": 1,
+        "selected": 0,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "contextDegraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "knowledgeLanguage": "en"
+    }
+  ],
+  "answers": [
+    {
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes an inspection of the housing every eleven months. [authored/passage:4]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "authored/passage",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "heading_scope",
+                "answer_eligible": false,
+                "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "   ## Сообщение ассистента"
+                  },
+                  {
+                    "n": 4,
+                    "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                  }
+                ]
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "authored/passage",
+          "lines": [
+            1,
+            3,
+            4
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 3298,
+          "input_tokens": 4858,
+          "output_tokens": 199,
+          "total_tokens": 5057
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 2367,
+          "input_tokens": 6862,
+          "output_tokens": 192,
+          "total_tokens": 7054
+        }
+      }
+    },
+    {
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "Ассистент сообщил, что план обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев. [authored/passage:4]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "authored/passage",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "heading_scope",
+                "answer_eligible": false,
+                "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "   ## Сообщение ассистента"
+                  },
+                  {
+                    "n": 4,
+                    "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                  }
+                ]
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "authored/passage",
+          "lines": [
+            1,
+            3,
+            4
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 3475,
+          "input_tokens": 4862,
+          "output_tokens": 213,
+          "total_tokens": 5075
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 2467,
+          "input_tokens": 6866,
+          "output_tokens": 198,
+          "total_tokens": 7064
+        }
+      }
+    },
+    {
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes an inspection of the housing every eleven months. [authored/passage:4]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "authored/passage",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "heading_scope",
+                "answer_eligible": false,
+                "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "   ## Сообщение ассистента"
+                  },
+                  {
+                    "n": 4,
+                    "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                  }
+                ]
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "authored/passage",
+          "lines": [
+            1,
+            3,
+            4
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 4182,
+          "input_tokens": 4857,
+          "output_tokens": 183,
+          "total_tokens": 5040
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 2643,
+          "input_tokens": 6861,
+          "output_tokens": 204,
+          "total_tokens": 7065
+        }
+      }
+    },
+    {
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "Ассистент сообщил, что план обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев. [authored/passage:4]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "authored/passage",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "heading_scope",
+                "answer_eligible": false,
+                "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "   ## Сообщение ассистента"
+                  },
+                  {
+                    "n": 4,
+                    "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                  }
+                ]
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "authored/passage",
+          "lines": [
+            1,
+            3,
+            4
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 3341,
+          "input_tokens": 4861,
+          "output_tokens": 170,
+          "total_tokens": 5031
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 2635,
+          "input_tokens": 6865,
+          "output_tokens": 207,
+          "total_tokens": 7072
+        }
+      }
+    },
+    {
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes a casing inspection every eleven months. [authored/passage:4]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "authored/passage",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "heading_scope",
+                "answer_eligible": false,
+                "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "   ## Сообщение ассистента"
+                  },
+                  {
+                    "n": 4,
+                    "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                  }
+                ]
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "authored/passage",
+          "lines": [
+            1,
+            3,
+            4
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 3641,
+          "input_tokens": 4856,
+          "output_tokens": 194,
+          "total_tokens": 5050
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 3091,
+          "input_tokens": 6860,
+          "output_tokens": 208,
+          "total_tokens": 7068
+        }
+      }
+    },
+    {
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "Ассистент сообщил, что план обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев. [authored/passage:4]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "authored/passage",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "heading_scope",
+                "answer_eligible": false,
+                "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "   ## Сообщение ассистента"
+                  },
+                  {
+                    "n": 4,
+                    "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                  }
+                ]
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "authored/passage",
+          "lines": [
+            1,
+            3,
+            4
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 3355,
+          "input_tokens": 4862,
+          "output_tokens": 196,
+          "total_tokens": 5058
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 3413,
+          "input_tokens": 6866,
+          "output_tokens": 260,
+          "total_tokens": 7126
+        }
+      }
+    }
+  ],
+  "negativeControls": [
+    {
+      "queryLanguage": "en",
+      "answer": null,
+      "reason": "no_eligible_evidence",
+      "context": [],
+      "memoryView": "factual",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ]
+    },
+    {
+      "queryLanguage": "ru",
+      "answer": null,
+      "reason": "no_eligible_evidence",
+      "context": [],
+      "memoryView": "factual",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ]
+    },
+    {
+      "queryLanguage": "mixed",
+      "answer": null,
+      "reason": "no_eligible_evidence",
+      "context": [],
+      "memoryView": "factual",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ]
+    }
+  ],
+  "indexBytesStable": true,
+  "rebuildReplayBytesStable": true,
+  "knowledge": [
+    {
+      "slug": "authored/passage",
+      "lines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "   ## Сообщение ассистента",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+            "frame": [
+              {
+                "n": 3,
+                "text": "   ## Сообщение ассистента"
+              }
+            ]
+          }
+        },
+        {
+          "n": 4,
+          "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+          "prose": {
+            "status": "qualified",
+            "view": "reports",
+            "reason": "heading_scope",
+            "answer_eligible": false,
+            "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 3,
+                "text": "   ## Сообщение ассистента"
+              },
+              {
+                "n": 4,
+                "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "readBytesStable": true,
+  "completed": true,
+  "finishedAt": "2026-09-15T08:19:58.539Z"
+}

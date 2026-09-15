@@ -1,0 +1,68 @@
+[
+  {
+    "id": "v22-held-nested-report",
+    "split": "held-out",
+    "language": "ru",
+    "scenario": "nested-report",
+    "items": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+      },
+      {
+        "item_id": "turn-3333",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+      }
+    ],
+    "view": "reports",
+    "basis": "source_report",
+    "admission": "writable",
+    "ordinary": "## Пересказ\nAda Marlow передаёт непроверенное сообщение Bo Winters: правила Vulpine Mutual разрешают принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, но не для его замены. Ada не видела правила, не проверяла сообщение и ещё не упаковала своё устройство.",
+    "ordinaryFactual": false,
+    "queries": {
+      "en": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?",
+      "ru": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+    },
+    "reviewExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established."
+  },
+  {
+    "id": "v22-held-fictional-example",
+    "split": "held-out",
+    "language": "en",
+    "scenario": "fictional-example",
+    "items": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement."
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "In the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story."
+      }
+    ],
+    "view": "discussion",
+    "commitment": "hypothetical",
+    "admission": "writable",
+    "ordinary": "## Fictional example\nAda Marlow introduces a story, not a real agreement. In it, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair.",
+    "ordinaryFactual": false,
+    "queries": {
+      "en": "What fictional control-dial loan did Ada Marlow introduce for discussion?",
+      "ru": "Какой вымышленный заём ручки управления Ada Marlow предложила обсудить?"
+    },
+    "reviewExpectation": "Preserve Ada’s actual introduction of an invented example and the story-scoped loan: fictional Vulpine Mutual lends fictional Bo a spare control dial for forty-four days after a fictional repair. No real agreement, repair, loan, or elapsed calendar period is established."
+  }
+]

@@ -1,0 +1,1573 @@
+[
+  {
+    "id": "v22-held-nested-report",
+    "split": "development",
+    "run": 1,
+    "language": "ru",
+    "scenario": "nested-report",
+    "retentionOutcome": "held",
+    "candidateOutcomes": [
+      {
+        "outcome": "held",
+        "reason": "discourse_uncertain",
+        "holdStage": "verification",
+        "routingReason": null
+      },
+      {
+        "outcome": "held",
+        "reason": "discourse_uncertain",
+        "holdStage": "verification",
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "retention",
+        "type": "retention_unavailable",
+        "reason": "No knowledge is retained from this writable, understandable development source. A complete retained set would preserve Ada relaying Bo’s alleged Vulpine permission to bring the device to a workshop for a grounding-contact resistance check rather than replacement, Ada’s personal lack of seeing the rules and verifying Bo’s report, and her separate not-yet-packed-device assertion. An unverified attributed report remains legitimate qualified knowledge; the source does not require a read-only or interpretive hold. Complete retention therefore fails. Empty saved knowledge is vacuously source-entailed and contains no generated-language violation, stripped qualification on an emitted claim, or factual promotion; those neutral flags do not turn absence into useful retention. The packet gives no source-based basis for attributing the miss to a particular runtime cause."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "en",
+        "explicitView": false,
+        "reason": "No context evidence is exposed for this positive report query. The writable original source supports useful qualified nested-report context, so this is missed activation rather than a required read-only or factual exclusion. Empty context is vacuously source-entailed and makes no qualification, language-framing, or factual-promotion error; the English knowledge-language declaration is compatible with the requested policy. These neutral safety flags do not satisfy context usefulness and do not explain the runtime cause."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "en",
+        "explicitView": true,
+        "reason": "No context evidence is exposed for this positive report query. The writable original source supports useful qualified nested-report context, so this is missed activation rather than a required read-only or factual exclusion. Empty context is vacuously source-entailed and makes no qualification, language-framing, or factual-promotion error; the English knowledge-language declaration is compatible with the requested policy. These neutral safety flags do not satisfy context usefulness and do not explain the runtime cause."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "ru",
+        "explicitView": false,
+        "reason": "No context evidence is exposed for this positive report query. The writable original source supports useful qualified nested-report context, so this is missed activation rather than a required read-only or factual exclusion. Empty context is vacuously source-entailed and makes no qualification, language-framing, or factual-promotion error; the English knowledge-language declaration is compatible with the requested policy. These neutral safety flags do not satisfy context usefulness and do not explain the runtime cause."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "ru",
+        "explicitView": true,
+        "reason": "No context evidence is exposed for this positive report query. The writable original source supports useful qualified nested-report context, so this is missed activation rather than a required read-only or factual exclusion. Empty context is vacuously source-entailed and makes no qualification, language-framing, or factual-promotion error; the English knowledge-language declaration is compatible with the requested policy. These neutral safety flags do not satisfy context usefulness and do not explain the runtime cause."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "en",
+        "explicitView": false,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "The en report query with a requested en answer and inferred view has empty retrieval and no published answer. The original source supports a useful focused answer preserving Ada → Bo attribution, alleged workshop permission for grounding-contact resistance checking, the checking/replacement contrast, and Ada’s personal unread/unverified limits. It does not require repeating the independent packing fact in that focused answer, but it does require the coupled report qualifications. With no read-only constraint or source-level inability to answer, this is a missed useful answer and retrieval, not a justified source-based abstention. Language and source entailment are null because no answer exists; no unqualified or unsafe claim was emitted."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "The en report query with a requested ru answer and inferred view has empty retrieval and no published answer. The original source supports a useful focused answer preserving Ada → Bo attribution, alleged workshop permission for grounding-contact resistance checking, the checking/replacement contrast, and Ada’s personal unread/unverified limits. It does not require repeating the independent packing fact in that focused answer, but it does require the coupled report qualifications. With no read-only constraint or source-level inability to answer, this is a missed useful answer and retrieval, not a justified source-based abstention. Language and source entailment are null because no answer exists; no unqualified or unsafe claim was emitted."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "en",
+        "explicitView": true,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "The en report query with a requested en answer and explicit view has empty retrieval and no published answer. The original source supports a useful focused answer preserving Ada → Bo attribution, alleged workshop permission for grounding-contact resistance checking, the checking/replacement contrast, and Ada’s personal unread/unverified limits. It does not require repeating the independent packing fact in that focused answer, but it does require the coupled report qualifications. With no read-only constraint or source-level inability to answer, this is a missed useful answer and retrieval, not a justified source-based abstention. Language and source entailment are null because no answer exists; no unqualified or unsafe claim was emitted."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "The en report query with a requested ru answer and explicit view has empty retrieval and no published answer. The original source supports a useful focused answer preserving Ada → Bo attribution, alleged workshop permission for grounding-contact resistance checking, the checking/replacement contrast, and Ada’s personal unread/unverified limits. It does not require repeating the independent packing fact in that focused answer, but it does require the coupled report qualifications. With no read-only constraint or source-level inability to answer, this is a missed useful answer and retrieval, not a justified source-based abstention. Language and source entailment are null because no answer exists; no unqualified or unsafe claim was emitted."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": false,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "The ru report query with a requested en answer and inferred view has empty retrieval and no published answer. The original source supports a useful focused answer preserving Ada → Bo attribution, alleged workshop permission for grounding-contact resistance checking, the checking/replacement contrast, and Ada’s personal unread/unverified limits. It does not require repeating the independent packing fact in that focused answer, but it does require the coupled report qualifications. With no read-only constraint or source-level inability to answer, this is a missed useful answer and retrieval, not a justified source-based abstention. Language and source entailment are null because no answer exists; no unqualified or unsafe claim was emitted."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "The ru report query with a requested ru answer and inferred view has empty retrieval and no published answer. The original source supports a useful focused answer preserving Ada → Bo attribution, alleged workshop permission for grounding-contact resistance checking, the checking/replacement contrast, and Ada’s personal unread/unverified limits. It does not require repeating the independent packing fact in that focused answer, but it does require the coupled report qualifications. With no read-only constraint or source-level inability to answer, this is a missed useful answer and retrieval, not a justified source-based abstention. Language and source entailment are null because no answer exists; no unqualified or unsafe claim was emitted."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": true,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "The ru report query with a requested en answer and explicit view has empty retrieval and no published answer. The original source supports a useful focused answer preserving Ada → Bo attribution, alleged workshop permission for grounding-contact resistance checking, the checking/replacement contrast, and Ada’s personal unread/unverified limits. It does not require repeating the independent packing fact in that focused answer, but it does require the coupled report qualifications. With no read-only constraint or source-level inability to answer, this is a missed useful answer and retrieval, not a justified source-based abstention. Language and source entailment are null because no answer exists; no unqualified or unsafe claim was emitted."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "The ru report query with a requested ru answer and explicit view has empty retrieval and no published answer. The original source supports a useful focused answer preserving Ada → Bo attribution, alleged workshop permission for grounding-contact resistance checking, the checking/replacement contrast, and Ada’s personal unread/unverified limits. It does not require repeating the independent packing fact in that focused answer, but it does require the coupled report qualifications. With no read-only constraint or source-level inability to answer, this is a missed useful answer and retrieval, not a justified source-based abstention. Language and source entailment are null because no answer exists; no unqualified or unsafe claim was emitted."
+      }
+    ]
+  },
+  {
+    "id": "v22-held-counterfactual",
+    "split": "development",
+    "run": 1,
+    "language": "mixed",
+    "scenario": "counterfactual",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "held",
+        "reason": "discourse_uncertain",
+        "holdStage": "verification",
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "retention",
+        "type": "incomplete_retained_set",
+        "reason": "Only Ada’s actual non-enrollment in the optional corrosion plan is saved. That negative factual claim is source-entailed, appropriately asserted/self-attested, and English. The complete source also contains the unrealized consequence that enrollment would have made internal-spring replacement free after thirty-three months of use. That counterfactual benefit, its false antecedent relationship, and its relative usage interval are entirely missing from saved knowledge and the displayed archived support. Complete retention fails. The surviving non-enrollment fact does not itself change scope or promote the missing benefit to fact, so qualification/entailment flags remain true for emitted content. Writable admission and a clear source do not justify holding the missing counterfactual."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "en",
+        "explicitView": false,
+        "reason": "Context is empty for a positive question about the unrealized internal-spring benefit. The writable original source explicitly supports that counterfactual benefit, including the false enrollment antecedent and thirty-three-month usage interval, so this is missed useful activation rather than valid read-only exclusion. Empty context is vacuously source-entailed and emits no distorted qualification, language violation or factual promotion. Neutral safety flags do not imply useful context."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "en",
+        "explicitView": true,
+        "reason": "Context is empty for a positive question about the unrealized internal-spring benefit. The writable original source explicitly supports that counterfactual benefit, including the false enrollment antecedent and thirty-three-month usage interval, so this is missed useful activation rather than valid read-only exclusion. Empty context is vacuously source-entailed and emits no distorted qualification, language violation or factual promotion. Neutral safety flags do not imply useful context."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "ru",
+        "explicitView": false,
+        "reason": "Context is empty for a positive question about the unrealized internal-spring benefit. The writable original source explicitly supports that counterfactual benefit, including the false enrollment antecedent and thirty-three-month usage interval, so this is missed useful activation rather than valid read-only exclusion. Empty context is vacuously source-entailed and emits no distorted qualification, language violation or factual promotion. Neutral safety flags do not imply useful context."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "ru",
+        "explicitView": true,
+        "reason": "Context is empty for a positive question about the unrealized internal-spring benefit. The writable original source explicitly supports that counterfactual benefit, including the false enrollment antecedent and thirty-three-month usage interval, so this is missed useful activation rather than valid read-only exclusion. Empty context is vacuously source-entailed and emits no distorted qualification, language violation or factual promotion. Neutral safety flags do not imply useful context."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "en",
+        "explicitView": false,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "Retrieval is empty. No answer is published. The original source supports a useful counterfactual answer: if Ada had enrolled, replacement of the internal spring after thirty-three months of use would have been free, but she did not enroll. The absent benefit is essential to the focused query, so this is missed answer/retrieval usefulness, not a justified source-based or read-only abstention. The en answer’s language and entailment are null because no answer exists; no unqualified or promoted claim is emitted."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "Retrieval is empty. No answer is published. The original source supports a useful counterfactual answer: if Ada had enrolled, replacement of the internal spring after thirty-three months of use would have been free, but she did not enroll. The absent benefit is essential to the focused query, so this is missed answer/retrieval usefulness, not a justified source-based or read-only abstention. The ru answer’s language and entailment are null because no answer exists; no unqualified or promoted claim is emitted."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "en",
+        "explicitView": true,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "Retrieval is empty. No answer is published. The original source supports a useful counterfactual answer: if Ada had enrolled, replacement of the internal spring after thirty-three months of use would have been free, but she did not enroll. The absent benefit is essential to the focused query, so this is missed answer/retrieval usefulness, not a justified source-based or read-only abstention. The en answer’s language and entailment are null because no answer exists; no unqualified or promoted claim is emitted."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "Retrieval is empty. No answer is published. The original source supports a useful counterfactual answer: if Ada had enrolled, replacement of the internal spring after thirty-three months of use would have been free, but she did not enroll. The absent benefit is essential to the focused query, so this is missed answer/retrieval usefulness, not a justified source-based or read-only abstention. The ru answer’s language and entailment are null because no answer exists; no unqualified or promoted claim is emitted."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": false,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "Retrieval is empty. No answer is published. The original source supports a useful counterfactual answer: if Ada had enrolled, replacement of the internal spring after thirty-three months of use would have been free, but she did not enroll. The absent benefit is essential to the focused query, so this is missed answer/retrieval usefulness, not a justified source-based or read-only abstention. The en answer’s language and entailment are null because no answer exists; no unqualified or promoted claim is emitted."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "Retrieval is empty. No answer is published. The original source supports a useful counterfactual answer: if Ada had enrolled, replacement of the internal spring after thirty-three months of use would have been free, but she did not enroll. The absent benefit is essential to the focused query, so this is missed answer/retrieval usefulness, not a justified source-based or read-only abstention. The ru answer’s language and entailment are null because no answer exists; no unqualified or promoted claim is emitted."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": true,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "Retrieval exposes only Ada’s non-enrollment fact; it lacks the internal-spring replacement benefit asked about. No answer is published. The original source supports a useful counterfactual answer: if Ada had enrolled, replacement of the internal spring after thirty-three months of use would have been free, but she did not enroll. The absent benefit is essential to the focused query, so this is missed answer/retrieval usefulness, not a justified source-based or read-only abstention. The en answer’s language and entailment are null because no answer exists; no unqualified or promoted claim is emitted."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "Retrieval exposes only Ada’s non-enrollment fact; it lacks the internal-spring replacement benefit asked about. No answer is published. The original source supports a useful counterfactual answer: if Ada had enrolled, replacement of the internal spring after thirty-three months of use would have been free, but she did not enroll. The absent benefit is essential to the focused query, so this is missed answer/retrieval usefulness, not a justified source-based or read-only abstention. The ru answer’s language and entailment are null because no answer exists; no unqualified or promoted claim is emitted."
+      }
+    ]
+  },
+  {
+    "id": "v22-held-coverage-exclusion",
+    "split": "development",
+    "run": 1,
+    "language": "en",
+    "scenario": "coverage-exclusion",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "held",
+        "reason": "discourse_uncertain",
+        "holdStage": "verification",
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "retention",
+        "type": "incomplete_retained_set",
+        "reason": "Only Ada’s asserted exclusion of sand-caused damage to the ceramic spacer is retained. That English negative coverage statement is source-entailed, but the complete retained set omits the separate explicit limits that this exclusion does not settle intake-sleeve replacement coverage and does not establish agreement silence. Those limits are material to the reviewed expectation and to both two-component queries, so complete retention and qualification preservation fail. The surviving statement does not itself invent sleeve inclusion/exclusion or contract silence. Writable admission gives no source-based reason to hold the missing qualifications."
+      },
+      {
+        "stage": "retention",
+        "type": "qualification_incomplete",
+        "reason": "Only Ada’s asserted exclusion of sand-caused damage to the ceramic spacer is retained. That English negative coverage statement is source-entailed, but the complete retained set omits the separate explicit limits that this exclusion does not settle intake-sleeve replacement coverage and does not establish agreement silence. Those limits are material to the reviewed expectation and to both two-component queries, so complete retention and qualification preservation fail. The surviving statement does not itself invent sleeve inclusion/exclusion or contract silence. Writable admission gives no source-based reason to hold the missing qualifications."
+      },
+      {
+        "stage": "context",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "explicitView": false,
+        "reason": "The context accurately contains the sand-caused ceramic-spacer exclusion, but not the required source limitations on what this record establishes about intake-sleeve replacement coverage or contract silence. Because the query asks about both components, this partial context is not complete useful qualified evidence, and its required qualification set is incomplete. Its actual statement is source-entailed and adds no unsupported sleeve claim. English knowledge framing is compliant. This is partial positive retrieval, not a required exclusion."
+      },
+      {
+        "stage": "context",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "explicitView": true,
+        "reason": "The context accurately contains the sand-caused ceramic-spacer exclusion, but not the required source limitations on what this record establishes about intake-sleeve replacement coverage or contract silence. Because the query asks about both components, this partial context is not complete useful qualified evidence, and its required qualification set is incomplete. Its actual statement is source-entailed and adds no unsupported sleeve claim. English knowledge framing is compliant. This is partial positive retrieval, not a required exclusion."
+      },
+      {
+        "stage": "context",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "explicitView": false,
+        "reason": "The context accurately contains the sand-caused ceramic-spacer exclusion, but not the required source limitations on what this record establishes about intake-sleeve replacement coverage or contract silence. Because the query asks about both components, this partial context is not complete useful qualified evidence, and its required qualification set is incomplete. Its actual statement is source-entailed and adds no unsupported sleeve claim. English knowledge framing is compliant. This is partial positive retrieval, not a required exclusion."
+      },
+      {
+        "stage": "context",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "explicitView": true,
+        "reason": "The context accurately contains the sand-caused ceramic-spacer exclusion, but not the required source limitations on what this record establishes about intake-sleeve replacement coverage or contract silence. Because the query asks about both components, this partial context is not complete useful qualified evidence, and its required qualification set is incomplete. Its actual statement is source-entailed and adds no unsupported sleeve claim. English knowledge framing is compliant. This is partial positive retrieval, not a required exclusion."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "answerLanguage": "en",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The published en answer faithfully states the sand-caused ceramic-spacer exclusion, preserving Ada, the exact component, damage cause and negative coverage polarity. However, the query explicitly asks about the intake sleeve as well as the spacer. Both answer and retrieval omit that the exclusion does not settle sleeve-replacement coverage and does not establish contract silence. This is a materially incomplete answer and retrieval, with required epistemic qualifications missing; it is not a useful qualified answer to the whole query. The stated subset remains source-entailed and language-compliant, and it does not fabricate any sleeve fact or promote hypothetical content. No abstention occurred."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The published ru answer faithfully states the sand-caused ceramic-spacer exclusion, preserving Ada, the exact component, damage cause and negative coverage polarity. However, the query explicitly asks about the intake sleeve as well as the spacer. Both answer and retrieval omit that the exclusion does not settle sleeve-replacement coverage and does not establish contract silence. This is a materially incomplete answer and retrieval, with required epistemic qualifications missing; it is not a useful qualified answer to the whole query. The stated subset remains source-entailed and language-compliant, and it does not fabricate any sleeve fact or promote hypothetical content. No abstention occurred."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "answerLanguage": "en",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The published en answer faithfully states the sand-caused ceramic-spacer exclusion, preserving Ada, the exact component, damage cause and negative coverage polarity. However, the query explicitly asks about the intake sleeve as well as the spacer. Both answer and retrieval omit that the exclusion does not settle sleeve-replacement coverage and does not establish contract silence. This is a materially incomplete answer and retrieval, with required epistemic qualifications missing; it is not a useful qualified answer to the whole query. The stated subset remains source-entailed and language-compliant, and it does not fabricate any sleeve fact or promote hypothetical content. No abstention occurred."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The published ru answer faithfully states the sand-caused ceramic-spacer exclusion, preserving Ada, the exact component, damage cause and negative coverage polarity. However, the query explicitly asks about the intake sleeve as well as the spacer. Both answer and retrieval omit that the exclusion does not settle sleeve-replacement coverage and does not establish contract silence. This is a materially incomplete answer and retrieval, with required epistemic qualifications missing; it is not a useful qualified answer to the whole query. The stated subset remains source-entailed and language-compliant, and it does not fabricate any sleeve fact or promote hypothetical content. No abstention occurred."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The published en answer faithfully states the sand-caused ceramic-spacer exclusion, preserving Ada, the exact component, damage cause and negative coverage polarity. However, the query explicitly asks about the intake sleeve as well as the spacer. Both answer and retrieval omit that the exclusion does not settle sleeve-replacement coverage and does not establish contract silence. This is a materially incomplete answer and retrieval, with required epistemic qualifications missing; it is not a useful qualified answer to the whole query. The stated subset remains source-entailed and language-compliant, and it does not fabricate any sleeve fact or promote hypothetical content. No abstention occurred."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The published ru answer faithfully states the sand-caused ceramic-spacer exclusion, preserving Ada, the exact component, damage cause and negative coverage polarity. However, the query explicitly asks about the intake sleeve as well as the spacer. Both answer and retrieval omit that the exclusion does not settle sleeve-replacement coverage and does not establish contract silence. This is a materially incomplete answer and retrieval, with required epistemic qualifications missing; it is not a useful qualified answer to the whole query. The stated subset remains source-entailed and language-compliant, and it does not fabricate any sleeve fact or promote hypothetical content. No abstention occurred."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The published en answer faithfully states the sand-caused ceramic-spacer exclusion, preserving Ada, the exact component, damage cause and negative coverage polarity. However, the query explicitly asks about the intake sleeve as well as the spacer. Both answer and retrieval omit that the exclusion does not settle sleeve-replacement coverage and does not establish contract silence. This is a materially incomplete answer and retrieval, with required epistemic qualifications missing; it is not a useful qualified answer to the whole query. The stated subset remains source-entailed and language-compliant, and it does not fabricate any sleeve fact or promote hypothetical content. No abstention occurred."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The published ru answer faithfully states the sand-caused ceramic-spacer exclusion, preserving Ada, the exact component, damage cause and negative coverage polarity. However, the query explicitly asks about the intake sleeve as well as the spacer. Both answer and retrieval omit that the exclusion does not settle sleeve-replacement coverage and does not establish contract silence. This is a materially incomplete answer and retrieval, with required epistemic qualifications missing; it is not a useful qualified answer to the whole query. The stated subset remains source-entailed and language-compliant, and it does not fabricate any sleeve fact or promote hypothetical content. No abstention occurred."
+      }
+    ]
+  },
+  {
+    "id": "v22-held-assistant-speculation",
+    "split": "development",
+    "run": 1,
+    "language": "mixed",
+    "scenario": "assistant-speculation",
+    "retentionOutcome": "held",
+    "candidateOutcomes": [
+      {
+        "outcome": "held",
+        "reason": "discourse_uncertain",
+        "holdStage": "verification",
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "retention",
+        "type": "retention_unavailable",
+        "reason": "The readable, writable assistant source retains no knowledge. It supports a qualified report of a tentative possible optical-shutter check every eleven operating cycles, with assistant attribution, the assistant’s personal unread agreement and unverified guess, and a limit against treating a possible service term as a duty or device state. Empty retention omits all of that useful meaning and is not a justified source-based hold. Empty saved knowledge is vacuously source-entailed and contains no generated-language error, emitted qualification distortion, or factual promotion; those neutral flags do not mean useful retention. The public packet does not establish a runtime cause for the omission."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "en",
+        "explicitView": false,
+        "reason": "The context is empty for a positive assistant-speculation question. The writable source supports useful tentative, attributed optical-shutter service-term context with the eleven-cycle interval and personal unread/unverified limits. Therefore this is missed activation, not valid read-only or factual exclusion. Empty context is vacuously source-entailed, with no emitted qualification distortion, language violation or factual promotion; those neutral flags do not imply usefulness."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "en",
+        "explicitView": true,
+        "reason": "The context is empty for a positive assistant-speculation question. The writable source supports useful tentative, attributed optical-shutter service-term context with the eleven-cycle interval and personal unread/unverified limits. Therefore this is missed activation, not valid read-only or factual exclusion. Empty context is vacuously source-entailed, with no emitted qualification distortion, language violation or factual promotion; those neutral flags do not imply usefulness."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "ru",
+        "explicitView": false,
+        "reason": "The context is empty for a positive assistant-speculation question. The writable source supports useful tentative, attributed optical-shutter service-term context with the eleven-cycle interval and personal unread/unverified limits. Therefore this is missed activation, not valid read-only or factual exclusion. Empty context is vacuously source-entailed, with no emitted qualification distortion, language violation or factual promotion; those neutral flags do not imply usefulness."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "ru",
+        "explicitView": true,
+        "reason": "The context is empty for a positive assistant-speculation question. The writable source supports useful tentative, attributed optical-shutter service-term context with the eleven-cycle interval and personal unread/unverified limits. Therefore this is missed activation, not valid read-only or factual exclusion. Empty context is vacuously source-entailed, with no emitted qualification distortion, language violation or factual promotion; those neutral flags do not imply usefulness."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "en",
+        "explicitView": false,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "Both retrieval and the published answer are empty. The source can answer what the assistant speculated by preserving the tentative possible optical-shutter check every eleven operating cycles together with attribution, the assistant’s personal lack of reading/verification, and the possible-service-term scope. Neither assistant provenance nor uncertainty requires suppressing a useful attributed report. This is a missed useful answer and retrieval, not a justified read-only or source-based abstention. Language and source entailment are null because no answer was emitted; qualification and promotion flags are neutral for the absent assertion."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "Both retrieval and the published answer are empty. The source can answer what the assistant speculated by preserving the tentative possible optical-shutter check every eleven operating cycles together with attribution, the assistant’s personal lack of reading/verification, and the possible-service-term scope. Neither assistant provenance nor uncertainty requires suppressing a useful attributed report. This is a missed useful answer and retrieval, not a justified read-only or source-based abstention. Language and source entailment are null because no answer was emitted; qualification and promotion flags are neutral for the absent assertion."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "en",
+        "explicitView": true,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "Both retrieval and the published answer are empty. The source can answer what the assistant speculated by preserving the tentative possible optical-shutter check every eleven operating cycles together with attribution, the assistant’s personal lack of reading/verification, and the possible-service-term scope. Neither assistant provenance nor uncertainty requires suppressing a useful attributed report. This is a missed useful answer and retrieval, not a justified read-only or source-based abstention. Language and source entailment are null because no answer was emitted; qualification and promotion flags are neutral for the absent assertion."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "Both retrieval and the published answer are empty. The source can answer what the assistant speculated by preserving the tentative possible optical-shutter check every eleven operating cycles together with attribution, the assistant’s personal lack of reading/verification, and the possible-service-term scope. Neither assistant provenance nor uncertainty requires suppressing a useful attributed report. This is a missed useful answer and retrieval, not a justified read-only or source-based abstention. Language and source entailment are null because no answer was emitted; qualification and promotion flags are neutral for the absent assertion."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": false,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "Both retrieval and the published answer are empty. The source can answer what the assistant speculated by preserving the tentative possible optical-shutter check every eleven operating cycles together with attribution, the assistant’s personal lack of reading/verification, and the possible-service-term scope. Neither assistant provenance nor uncertainty requires suppressing a useful attributed report. This is a missed useful answer and retrieval, not a justified read-only or source-based abstention. Language and source entailment are null because no answer was emitted; qualification and promotion flags are neutral for the absent assertion."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "Both retrieval and the published answer are empty. The source can answer what the assistant speculated by preserving the tentative possible optical-shutter check every eleven operating cycles together with attribution, the assistant’s personal lack of reading/verification, and the possible-service-term scope. Neither assistant provenance nor uncertainty requires suppressing a useful attributed report. This is a missed useful answer and retrieval, not a justified read-only or source-based abstention. Language and source entailment are null because no answer was emitted; qualification and promotion flags are neutral for the absent assertion."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": true,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "Both retrieval and the published answer are empty. The source can answer what the assistant speculated by preserving the tentative possible optical-shutter check every eleven operating cycles together with attribution, the assistant’s personal lack of reading/verification, and the possible-service-term scope. Neither assistant provenance nor uncertainty requires suppressing a useful attributed report. This is a missed useful answer and retrieval, not a justified read-only or source-based abstention. Language and source entailment are null because no answer was emitted; qualification and promotion flags are neutral for the absent assertion."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "Both retrieval and the published answer are empty. The source can answer what the assistant speculated by preserving the tentative possible optical-shutter check every eleven operating cycles together with attribution, the assistant’s personal lack of reading/verification, and the possible-service-term scope. Neither assistant provenance nor uncertainty requires suppressing a useful attributed report. This is a missed useful answer and retrieval, not a justified read-only or source-based abstention. Language and source entailment are null because no answer was emitted; qualification and promotion flags are neutral for the absent assertion."
+      }
+    ]
+  },
+  {
+    "id": "v22-held-fictional-example",
+    "split": "development",
+    "run": 1,
+    "language": "en",
+    "scenario": "fictional-example",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "retention",
+        "type": "incomplete_retained_set",
+        "reason": "The retained English claim faithfully preserves the fictional parties, spare control dial, loan, first forty-four days after a fictional repair, and absence of any real agreement. The possessive associates Ada with the presented story without explicitly claiming authorship. However, the complete retained set does not separately preserve the actual source act that Ada introduced an invented example for discussion. The hypothetical story payload is useful for the focused query, but the full reviewed expectation is incomplete."
+      },
+      {
+        "stage": "answer",
+        "type": "accepted_semantic_error",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer changes the control dial to «диск управления», which specifies a disk-shaped component not established by the English source. It therefore fails exact component fidelity and qualified usefulness, although it is Russian and preserves fictional scope, parties, loan, and duration. Retrieved English evidence itself remains complete for the focused loan query."
+      },
+      {
+        "stage": "answer",
+        "type": "accepted_semantic_error",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer changes the control dial to «диск управления», which specifies a disk-shaped component not established by the English source. It therefore fails exact component fidelity and qualified usefulness, although it is Russian and preserves fictional scope, parties, loan, and duration. Retrieved English evidence itself remains complete for the focused loan query."
+      }
+    ]
+  },
+  {
+    "id": "v22-held-open-question",
+    "split": "development",
+    "run": 1,
+    "language": "mixed",
+    "scenario": "open-question",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "answer",
+        "type": "accepted_semantic_error",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer changes the specific procedure annual alignment of the folding handle to «ежегодную регулировку складной ручки», an annual adjustment in general. Adjustment can cover mechanisms other than alignment; without a position/alignment qualifier, this broadens the open service-plan question and fails exact process fidelity. Ada’s personal uncertainty and neither-inclusion-nor-exclusion qualification survive, and the answer is in Russian. Retrieved English evidence itself preserves the exact alignment question and remains useful."
+      },
+      {
+        "stage": "answer",
+        "type": "accepted_semantic_error",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer changes the specific procedure annual alignment of the folding handle to «ежегодную регулировку складной ручки», an annual adjustment in general. Adjustment can cover mechanisms other than alignment; without a position/alignment qualifier, this broadens the open service-plan question and fails exact process fidelity. Ada’s personal uncertainty and neither-inclusion-nor-exclusion qualification survive, and the answer is in Russian. Retrieved English evidence itself preserves the exact alignment question and remains useful."
+      },
+      {
+        "stage": "answer",
+        "type": "accepted_semantic_error",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer changes the specific procedure annual alignment of the folding handle to «ежегодную регулировку складной ручки», an annual adjustment in general. Adjustment can cover mechanisms other than alignment; without a position/alignment qualifier, this broadens the open service-plan question and fails exact process fidelity. Ada’s personal uncertainty and neither-inclusion-nor-exclusion qualification survive, and the answer is in Russian. Retrieved English evidence itself preserves the exact alignment question and remains useful."
+      },
+      {
+        "stage": "answer",
+        "type": "accepted_semantic_error",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer changes the specific procedure annual alignment of the folding handle to «ежегодную регулировку складной ручки», an annual adjustment in general. Adjustment can cover mechanisms other than alignment; without a position/alignment qualifier, this broadens the open service-plan question and fails exact process fidelity. Ada’s personal uncertainty and neither-inclusion-nor-exclusion qualification survive, and the answer is in Russian. Retrieved English evidence itself preserves the exact alignment question and remains useful."
+      }
+    ]
+  },
+  {
+    "id": "v22-held-rejected-plan",
+    "split": "development",
+    "run": 1,
+    "language": "en",
+    "scenario": "rejected-plan",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "held",
+        "reason": "discourse_uncertain",
+        "holdStage": "verification",
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "retention",
+        "type": "incomplete_retained_set",
+        "reason": "The retained English row faithfully records Ada’s rejection of taking the device to a calibration room for rotation-stop-angle measurement, her lack of intent under that proposal, and continuing rejection of the measurement. However, the complete retained set omits two independent material source facts: no appointment has been reserved and no transport arranged. Neither absence follows from rejection alone. Those omissions fail complete retention, while the surviving rejected proposal remains entailed and adequately qualified for the focused question asking which proposal she rejected."
+      }
+    ]
+  },
+  {
+    "id": "v22-held-nested-report",
+    "split": "development",
+    "run": 2,
+    "language": "ru",
+    "scenario": "nested-report",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "retention",
+        "type": "incomplete_retained_set",
+        "reason": "The retained report preserves Ada as outer relayer, Bo as inner source, Vulpine Mutual’s reported permission to bring the device to a workshop for grounding-contact resistance testing rather than replacement, and Ada’s unread/unverified status. Asserted commitment records her report, not established truth of the embedded permission. However, the retained set omits the separate material fact that Ada has not yet packed her device. Complete retention therefore fails even though the report is useful and faithful for the focused service-report query."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "verification_rejected",
+        "reason": "The published Russian answer is null even though retrieval contains the complete qualified service report needed for this query: outer Ada/inner Bo attribution, resistance testing rather than replacement, and Ada’s unread/unverified limits. This is a missed useful answer, not a source-required abstention. The public packet does not establish its runtime cause."
+      }
+    ]
+  },
+  {
+    "id": "v22-held-counterfactual",
+    "split": "development",
+    "run": 2,
+    "language": "mixed",
+    "scenario": "counterfactual",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "draft_rejected",
+        "reason": "The English-query/default-view Russian answer is null although complete qualified counterfactual evidence was retrieved. The source supports a useful Russian answer preserving non-enrollment and the unrealized benefit, so this is a missed answer rather than a source-required abstention. The public packet does not identify the runtime cause."
+      }
+    ]
+  },
+  {
+    "id": "v22-held-fictional-example",
+    "split": "development",
+    "run": 2,
+    "language": "en",
+    "scenario": "fictional-example",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "retention",
+        "type": "incomplete_retained_set",
+        "reason": "The retained English claim preserves the fictional loan, named lender and borrower, spare control dial, first forty-four days after fictional repair, and no real agreement. Global story framing keeps the named parties inside the invented example. The possessive associates Ada with the presented story without asserting authorship. However, the complete retained set omits the separate actual act of Ada introducing an invented example for discussion. Focused loan evidence is useful, but complete retention fails."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "verification_rejected",
+        "reason": "The answer is null despite useful retrieved evidence containing the complete fictional loan. A source-faithful Russian answer was available, so this is a missed answer rather than a justified source hold; no runtime cause is supplied by the public packet."
+      },
+      {
+        "stage": "answer",
+        "type": "accepted_semantic_error",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer changes control dial to «регуляторный диск», specifying a disk-shaped component that the source does not establish. The actors, loan, duration and fictional/no-real-agreement qualifications survive, and the answer is Russian, but exact component fidelity and useful qualified answering fail. Retrieved English evidence keeps the original control dial and is useful."
+      },
+      {
+        "stage": "answer",
+        "type": "accepted_semantic_error",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer replaces control dial with «регулятор управления», a generic control regulator that does not preserve the specific dial component and may name a different control mechanism. Story scope, actors, loan and duration remain intact, but exact component fidelity and qualified answer usefulness fail. The retrieved English loan itself remains useful and faithful."
+      }
+    ]
+  },
+  {
+    "id": "v22-held-open-question",
+    "split": "development",
+    "run": 2,
+    "language": "mixed",
+    "scenario": "open-question",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "answer",
+        "type": "accepted_semantic_error",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer broadens annual alignment of the folding handle to «ежегодную регулировку складной ручки», annual adjustment without specifying alignment. Adjustment can concern other settings or mechanisms, so this changes the exact service procedure whose inclusion remains an open question. Personal uncertainty and neither-inclusion-nor-exclusion scope survive, and the answer is Russian, but process fidelity and qualified usefulness fail. Retrieved English evidence retains alignment precisely and remains useful."
+      },
+      {
+        "stage": "answer",
+        "type": "accepted_semantic_error",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer broadens annual alignment of the folding handle to «ежегодную регулировку складной ручки», annual adjustment without specifying alignment. Adjustment can concern other settings or mechanisms, so this changes the exact service procedure whose inclusion remains an open question. Personal uncertainty and neither-inclusion-nor-exclusion scope survive, and the answer is Russian, but process fidelity and qualified usefulness fail. Retrieved English evidence retains alignment precisely and remains useful."
+      },
+      {
+        "stage": "answer",
+        "type": "accepted_semantic_error",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer broadens annual alignment of the folding handle to «ежегодную регулировку складной ручки», annual adjustment without specifying alignment. Adjustment can concern other settings or mechanisms, so this changes the exact service procedure whose inclusion remains an open question. Personal uncertainty and neither-inclusion-nor-exclusion scope survive, and the answer is Russian, but process fidelity and qualified usefulness fail. Retrieved English evidence retains alignment precisely and remains useful."
+      }
+    ]
+  },
+  {
+    "id": "v22-held-rejected-plan",
+    "split": "development",
+    "run": 2,
+    "language": "en",
+    "scenario": "rejected-plan",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      },
+      {
+        "outcome": "held",
+        "reason": "no_writable_destination",
+        "holdStage": "placement",
+        "routingReason": "no_admitted_destination"
+      }
+    ],
+    "failures": [
+      {
+        "stage": "retention",
+        "type": "incomplete_retained_set",
+        "reason": "The retained English proposal preserves Ada’s rejection, the calibration-room destination, exact rotation-stop-angle measurement purpose, and her lack of intent under that proposal. Its continuing rejected disposition is preserved. The complete retained set omits the independent absence of a reserved appointment and arranged transport, neither of which is entailed merely by rejecting the proposal. Retention is therefore incomplete, while the surviving historical proposal remains source-entailed and qualified."
+      },
+      {
+        "stage": "answer",
+        "type": "accepted_semantic_error",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer changes the destination from a calibration room to «калибровочную лабораторию», a calibration laboratory. The source establishes a room used for calibration, not a laboratory facility, so this is unsupported destination specificity in the very proposal the query asks to identify. Rejection, the rotation-stop-angle measurement, and lack of intent survive, and the answer is Russian, but source fidelity and focused usefulness fail. The English retrieval preserves the original room and remains useful."
+      },
+      {
+        "stage": "answer",
+        "type": "accepted_semantic_error",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer changes the destination from a calibration room to «калибровочную лабораторию», a calibration laboratory. The source establishes a room used for calibration, not a laboratory facility, so this is unsupported destination specificity in the very proposal the query asks to identify. Rejection, the rotation-stop-angle measurement, and lack of intent survive, and the answer is Russian, but source fidelity and focused usefulness fail. The English retrieval preserves the original room and remains useful."
+      },
+      {
+        "stage": "answer",
+        "type": "accepted_semantic_error",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer changes the destination from a calibration room to «калибровочную лабораторию», a calibration laboratory. The source establishes a room used for calibration, not a laboratory facility, so this is unsupported destination specificity in the very proposal the query asks to identify. Rejection, the rotation-stop-angle measurement, and lack of intent survive, and the answer is Russian, but source fidelity and focused usefulness fail. The English retrieval preserves the original room and remains useful."
+      }
+    ]
+  },
+  {
+    "id": "v23-held-fictional-key",
+    "split": "held-out",
+    "run": 1,
+    "language": "ru",
+    "scenario": "fictional-example",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "empty_draft",
+        "reason": "The published answer is null despite complete, source-supported retrieval of the fictional loan and actual discussion proposal. A useful qualified Russian response was available; this is a missed answer rather than a source-required abstention. No semantic claim is emitted, and the public packet alone does not establish the runtime cause."
+      }
+    ]
+  },
+  {
+    "id": "v23-held-undated-review",
+    "split": "held-out",
+    "run": 1,
+    "language": "ru",
+    "scenario": "relative-unknown-date",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      },
+      {
+        "outcome": "held",
+        "reason": "routing_uncertain",
+        "holdStage": "placement",
+        "routingReason": "ownership_uncertain"
+      }
+    ],
+    "failures": [
+      {
+        "stage": "retention",
+        "type": "incomplete_retained_set",
+        "reason": "The retained proposition is entailed: Ada proposed discussing service terms eleven days after the utterance rather than processing, and the proposal remains unaccepted. The temporal metadata does carry an undated, unknown, tentative, nonactionable envelope, but the retained set omits the explicit source fact that no meeting has been scheduled. Unaccepted proposal does not entail unscheduled meeting; a proposed meeting could already have a tentative booking. The prose also omits the source’s explicit unknown utterance date. The complete set therefore fails the full governing timing/status qualification, while asserting no invented date, accepted proposal, or scheduled event."
+      },
+      {
+        "stage": "retention",
+        "type": "qualification_incomplete",
+        "reason": "The retained proposition is entailed: Ada proposed discussing service terms eleven days after the utterance rather than processing, and the proposal remains unaccepted. The temporal metadata does carry an undated, unknown, tentative, nonactionable envelope, but the retained set omits the explicit source fact that no meeting has been scheduled. Unaccepted proposal does not entail unscheduled meeting; a proposed meeting could already have a tentative booking. The prose also omits the source’s explicit unknown utterance date. The complete set therefore fails the full governing timing/status qualification, while asserting no invented date, accepted proposal, or scheduled event."
+      },
+      {
+        "stage": "context",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "explicitView": false,
+        "reason": "The English context supplies an entailed but incomplete proposal: service terms, eleven days after the utterance rather than processing, and nonacceptance. Its metadata preserves an undated unknown tentative envelope, yet neither that envelope nor nonacceptance states the source’s explicit absence of a scheduled meeting. The prose also lacks the explicit unknown date of the utterance. The full timing/status qualifications are not preserved, so this is not a complete useful qualified context. No unsupported date or actual appointment is asserted, and the English knowledge framing is compliant."
+      },
+      {
+        "stage": "context",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "explicitView": true,
+        "reason": "The English context supplies an entailed but incomplete proposal: service terms, eleven days after the utterance rather than processing, and nonacceptance. Its metadata preserves an undated unknown tentative envelope, yet neither that envelope nor nonacceptance states the source’s explicit absence of a scheduled meeting. The prose also lacks the explicit unknown date of the utterance. The full timing/status qualifications are not preserved, so this is not a complete useful qualified context. No unsupported date or actual appointment is asserted, and the English knowledge framing is compliant."
+      },
+      {
+        "stage": "context",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "explicitView": false,
+        "reason": "The English context supplies an entailed but incomplete proposal: service terms, eleven days after the utterance rather than processing, and nonacceptance. Its metadata preserves an undated unknown tentative envelope, yet neither that envelope nor nonacceptance states the source’s explicit absence of a scheduled meeting. The prose also lacks the explicit unknown date of the utterance. The full timing/status qualifications are not preserved, so this is not a complete useful qualified context. No unsupported date or actual appointment is asserted, and the English knowledge framing is compliant."
+      },
+      {
+        "stage": "context",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "explicitView": true,
+        "reason": "The English context supplies an entailed but incomplete proposal: service terms, eleven days after the utterance rather than processing, and nonacceptance. Its metadata preserves an undated unknown tentative envelope, yet neither that envelope nor nonacceptance states the source’s explicit absence of a scheduled meeting. The prose also lacks the explicit unknown date of the utterance. The full timing/status qualifications are not preserved, so this is not a complete useful qualified context. No unsupported date or actual appointment is asserted, and the English knowledge framing is compliant."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "answerLanguage": "en",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The published answer correctly gives the eleven-day offset from the utterance, excludes processing as the anchor, and preserves nonacceptance, in the requested language. However, it omits both that the utterance date is unknown and that no meeting is scheduled. Those are material qualifications to the query asking when the proposal applies; a tentative label does not supply them. Retrieval has unknown/undated temporal metadata but still omits the explicit absence of a scheduled meeting, so it is also incomplete under the full qualification rubric. The surviving statements are source-entailed and no calendar date or actual meeting is invented."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The published answer correctly gives the eleven-day offset from the utterance, excludes processing as the anchor, and preserves nonacceptance, in the requested language. However, it omits both that the utterance date is unknown and that no meeting is scheduled. Those are material qualifications to the query asking when the proposal applies; a tentative label does not supply them. Retrieval has unknown/undated temporal metadata but still omits the explicit absence of a scheduled meeting, so it is also incomplete under the full qualification rubric. The surviving statements are source-entailed and no calendar date or actual meeting is invented."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "answerLanguage": "en",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The published answer correctly gives the eleven-day offset from the utterance, excludes processing as the anchor, and preserves nonacceptance, in the requested language. However, it omits both that the utterance date is unknown and that no meeting is scheduled. Those are material qualifications to the query asking when the proposal applies; a tentative label does not supply them. Retrieval has unknown/undated temporal metadata but still omits the explicit absence of a scheduled meeting, so it is also incomplete under the full qualification rubric. The surviving statements are source-entailed and no calendar date or actual meeting is invented."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The published answer correctly gives the eleven-day offset from the utterance, excludes processing as the anchor, and preserves nonacceptance, in the requested language. However, it omits both that the utterance date is unknown and that no meeting is scheduled. Those are material qualifications to the query asking when the proposal applies; a tentative label does not supply them. Retrieval has unknown/undated temporal metadata but still omits the explicit absence of a scheduled meeting, so it is also incomplete under the full qualification rubric. The surviving statements are source-entailed and no calendar date or actual meeting is invented."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The published answer correctly gives the eleven-day offset from the utterance, excludes processing as the anchor, and preserves nonacceptance, in the requested language. However, it omits both that the utterance date is unknown and that no meeting is scheduled. Those are material qualifications to the query asking when the proposal applies; a tentative label does not supply them. Retrieval has unknown/undated temporal metadata but still omits the explicit absence of a scheduled meeting, so it is also incomplete under the full qualification rubric. The surviving statements are source-entailed and no calendar date or actual meeting is invented."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The published answer correctly gives the eleven-day offset from the utterance, excludes processing as the anchor, and preserves nonacceptance, in the requested language. However, it omits both that the utterance date is unknown and that no meeting is scheduled. Those are material qualifications to the query asking when the proposal applies; a tentative label does not supply them. Retrieval has unknown/undated temporal metadata but still omits the explicit absence of a scheduled meeting, so it is also incomplete under the full qualification rubric. The surviving statements are source-entailed and no calendar date or actual meeting is invented."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The published answer correctly gives the eleven-day offset from the utterance, excludes processing as the anchor, and preserves nonacceptance, in the requested language. However, it omits both that the utterance date is unknown and that no meeting is scheduled. Those are material qualifications to the query asking when the proposal applies; a tentative label does not supply them. Retrieval has unknown/undated temporal metadata but still omits the explicit absence of a scheduled meeting, so it is also incomplete under the full qualification rubric. The surviving statements are source-entailed and no calendar date or actual meeting is invented."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The published answer correctly gives the eleven-day offset from the utterance, excludes processing as the anchor, and preserves nonacceptance, in the requested language. However, it omits both that the utterance date is unknown and that no meeting is scheduled. Those are material qualifications to the query asking when the proposal applies; a tentative label does not supply them. Retrieval has unknown/undated temporal metadata but still omits the explicit absence of a scheduled meeting, so it is also incomplete under the full qualification rubric. The surviving statements are source-entailed and no calendar date or actual meeting is invented."
+      }
+    ]
+  },
+  {
+    "id": "v23-held-competing-clicks",
+    "split": "held-out",
+    "run": 1,
+    "language": "en",
+    "scenario": "competing-hypotheses",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer preserves both mechanisms, Ada’s unselected alternatives, and the record-scoped unconfirmed clicking. However, «ни одно из них не подтверждено наблюдениями» says neither is confirmed by observations, which is weaker than the source’s absence of any supporting observations for either. A hypothesis may have supporting observations without being confirmed. That material evidence qualification is incomplete, so qualified usefulness fails even though the weaker statement is entailed and no fault is promoted to fact. The retrieved English evidence retains the stronger absence-of-support qualifier and is useful."
+      }
+    ]
+  },
+  {
+    "id": "v23-held-rejected-inspection",
+    "split": "held-out",
+    "run": 1,
+    "language": "en",
+    "scenario": "rejected-plan",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "held",
+        "reason": "validation_failed",
+        "holdStage": "validation",
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "retention",
+        "type": "incomplete_retained_set",
+        "reason": "The retained set preserves the rejected offer to take Ada’s entire device to the workshop for checking its alignment gauge, plus the separate absence of an inspection appointment and of transported-device action. It omits Ada’s explicit statement that she has no plan to take the device there. Rejection of one offer, no appointment, and no past transport do not entail absence of all current plans to go there. This is incomplete retention, while both surviving rows preserve their own source meaning, rejection and negative-event polarity without an invented measurement property or completed inspection."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "ru",
+        "explicitView": false,
+        "reason": "The default Russian-query context is empty even though the source supports a qualified historical answer and the reviewed answer retrieval includes the rejected offer. This is a missed useful context, not a required safe exclusion. Empty evidence emits no unsupported claim, qualification change, or language error; no runtime cause can be inferred from it."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "verification_rejected",
+        "reason": "The published answer is null despite retrieved evidence that directly identifies the rejected workshop offer and the exact alignment-gauge check. This writable source supports a useful qualified answer, so the omission is not justified by the source or admission policy. The public evidence does not reveal its runtime cause. All query/view variants retrieve the focused rejected offer, including the default Russian variant that also retrieves the negative appointment/transport row."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "verification_rejected",
+        "reason": "The published answer is null despite retrieved evidence that directly identifies the rejected workshop offer and the exact alignment-gauge check. This writable source supports a useful qualified answer, so the omission is not justified by the source or admission policy. The public evidence does not reveal its runtime cause. All query/view variants retrieve the focused rejected offer, including the default Russian variant that also retrieves the negative appointment/transport row."
+      },
+      {
+        "stage": "answer",
+        "type": "wrong_inferred_view",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": false,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "The published answer is null despite retrieved evidence that directly identifies the rejected workshop offer and the exact alignment-gauge check. This writable source supports a useful qualified answer, so the omission is not justified by the source or admission policy. The public evidence does not reveal its runtime cause. All query/view variants retrieve the focused rejected offer, including the default Russian variant that also retrieves the negative appointment/transport row."
+      },
+      {
+        "stage": "answer",
+        "type": "wrong_inferred_view",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "The published answer is null despite retrieved evidence that directly identifies the rejected workshop offer and the exact alignment-gauge check. This writable source supports a useful qualified answer, so the omission is not justified by the source or admission policy. The public evidence does not reveal its runtime cause. All query/view variants retrieve the focused rejected offer, including the default Russian variant that also retrieves the negative appointment/transport row."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "verification_rejected",
+        "reason": "The published answer is null despite retrieved evidence that directly identifies the rejected workshop offer and the exact alignment-gauge check. This writable source supports a useful qualified answer, so the omission is not justified by the source or admission policy. The public evidence does not reveal its runtime cause. All query/view variants retrieve the focused rejected offer, including the default Russian variant that also retrieves the negative appointment/transport row."
+      }
+    ]
+  },
+  {
+    "id": "v23-held-declined-extension",
+    "split": "held-out",
+    "run": 2,
+    "language": "en",
+    "scenario": "counterfactual",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "held",
+        "reason": "discourse_uncertain",
+        "holdStage": "verification",
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "retention",
+        "type": "incomplete_retained_set",
+        "reason": "Only Ada’s actual rejection of the optional cable-protection extension is retained. The material counterfactual payload—free connector repair after twenty-two months of use if she had accepted, explicitly unrealized and not current coverage—is omitted. The surviving decision and its rejected/asserted qualification are faithful, but cannot substitute for the requested benefit or complete retained meaning. There is no source/admission reason to hold the writable counterfactual from discussion."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "en",
+        "explicitView": false,
+        "reason": "The context is empty although the writable source contains a useful qualified unrealized repair benefit. This is a missed context rather than a required safe exclusion. Empty evidence emits no claim, language violation, or qualification distortion; the public packet does not establish the runtime cause."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "en",
+        "explicitView": true,
+        "reason": "The context is empty although the writable source contains a useful qualified unrealized repair benefit. This is a missed context rather than a required safe exclusion. Empty evidence emits no claim, language violation, or qualification distortion; the public packet does not establish the runtime cause."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "ru",
+        "explicitView": false,
+        "reason": "The English context contains only Ada’s actual rejection of the extension, faithfully qualified as rejected. It omits the conditional free connector repair after twenty-two months of use and therefore does not answer the benefit-focused query. The surviving decision is entailed, but incomplete useful context cannot be credited and no admission hold is required."
+      },
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "ru",
+        "explicitView": true,
+        "reason": "The English context contains only Ada’s actual rejection of the extension, faithfully qualified as rejected. It omits the conditional free connector repair after twenty-two months of use and therefore does not answer the benefit-focused query. The surviving decision is entailed, but incomplete useful context cannot be credited and no admission hold is required."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "en",
+        "explicitView": false,
+        "runtimeReason": "empty_draft",
+        "reason": "The answer is null and retrieval contains only the actual rejection, omitting the source-supported unrealized connector-repair benefit. The original writable source is answerable, so this is an avoidable pipeline miss rather than a justified source hold. The empty answer emits no false claim; its runtime cause is not supplied by the public packet."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "empty_draft",
+        "reason": "The answer is null and retrieval contains only the actual rejection, omitting the source-supported unrealized connector-repair benefit. The original writable source is answerable, so this is an avoidable pipeline miss rather than a justified source hold. The empty answer emits no false claim; its runtime cause is not supplied by the public packet."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "en",
+        "explicitView": true,
+        "runtimeReason": "empty_draft",
+        "reason": "The answer is null and retrieval contains only the actual rejection, omitting the source-supported unrealized connector-repair benefit. The original writable source is answerable, so this is an avoidable pipeline miss rather than a justified source hold. The empty answer emits no false claim; its runtime cause is not supplied by the public packet."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "empty_draft",
+        "reason": "The answer is null and retrieval contains only the actual rejection, omitting the source-supported unrealized connector-repair benefit. The original writable source is answerable, so this is an avoidable pipeline miss rather than a justified source hold. The empty answer emits no false claim; its runtime cause is not supplied by the public packet."
+      },
+      {
+        "stage": "answer",
+        "type": "incomplete_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The English answer faithfully states that Ada declined the extension, but does not identify the unrealized benefit asked about: conditional free connector repair after twenty-two months of use. Retrieval likewise contains only the rejection. This is an entailed, correctly qualified and correctly languaged statement that fails focused answer/retrieval usefulness; it asserts no current coverage or performed repair."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "empty_draft",
+        "reason": "The answer is null and retrieval contains only the actual rejection, omitting the source-supported unrealized connector-repair benefit. The original writable source is answerable, so this is an avoidable pipeline miss rather than a justified source hold. The empty answer emits no false claim; its runtime cause is not supplied by the public packet."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": true,
+        "runtimeReason": "empty_draft",
+        "reason": "The answer is null and retrieval contains only the actual rejection, omitting the source-supported unrealized connector-repair benefit. The original writable source is answerable, so this is an avoidable pipeline miss rather than a justified source hold. The empty answer emits no false claim; its runtime cause is not supplied by the public packet."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "empty_draft",
+        "reason": "The answer is null and retrieval contains only the actual rejection, omitting the source-supported unrealized connector-repair benefit. The original writable source is answerable, so this is an avoidable pipeline miss rather than a justified source hold. The empty answer emits no false claim; its runtime cause is not supplied by the public packet."
+      }
+    ]
+  },
+  {
+    "id": "v23-held-scoped-exclusion",
+    "split": "held-out",
+    "run": 2,
+    "language": "ru",
+    "scenario": "coverage-exclusion",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "answer",
+        "type": "incomplete_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The English answer correctly preserves both hinge-related epistemic limits, but omits the fabric-seal damage exclusion entirely. The query explicitly asks what the record establishes about both the fabric seal and hinge, so this partial response is not a useful complete answer to that query. Its stated claims remain source-entailed and correctly qualified, and retrieval supplies both rows; no unsupported hinge coverage is asserted."
+      }
+    ]
+  },
+  {
+    "id": "v23-held-fictional-key",
+    "split": "held-out",
+    "run": 2,
+    "language": "ru",
+    "scenario": "fictional-example",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "answer",
+        "type": "answer_operation_failure",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "verification_unavailable",
+        "reason": "The default Russian-query Russian answer is null despite complete retrieval of both the actual discussion proposal and the qualified fictional key loan. The source supports a useful Russian response, so this is a missed answer rather than a source-required abstention. The public semantic packet does not identify a runtime cause."
+      }
+    ]
+  },
+  {
+    "id": "v23-held-undated-review",
+    "split": "held-out",
+    "run": 2,
+    "language": "ru",
+    "scenario": "relative-unknown-date",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "held",
+        "reason": "discourse_uncertain",
+        "holdStage": "verification",
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "retention",
+        "type": "incomplete_retained_set",
+        "reason": "The retained row correctly preserves Ada’s actual unaccepted service-terms proposal, eleven-day utterance anchor rather than processing, and unknown utterance date. It omits the explicit source fact that no meeting is scheduled. An unaccepted proposal and tentative unknown time do not entail absence of a scheduled meeting; a proposed invitation can already have a tentative booking. That material timing/status qualification is therefore missing from the complete retained set, although no published statement invents a date or scheduled event."
+      },
+      {
+        "stage": "retention",
+        "type": "qualification_incomplete",
+        "reason": "The retained row correctly preserves Ada’s actual unaccepted service-terms proposal, eleven-day utterance anchor rather than processing, and unknown utterance date. It omits the explicit source fact that no meeting is scheduled. An unaccepted proposal and tentative unknown time do not entail absence of a scheduled meeting; a proposed invitation can already have a tentative booking. That material timing/status qualification is therefore missing from the complete retained set, although no published statement invents a date or scheduled event."
+      },
+      {
+        "stage": "context",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "explicitView": false,
+        "reason": "The context preserves the proposal, unknown utterance date, eleven-day source anchor, non-processing distinction, and nonacceptance. It lacks the explicit fact that no meeting is scheduled, and the tentative/undated metadata does not restore that status. The evidence is entailed but incomplete under the full timing-qualification rubric; no date or actual meeting is invented. English language framing remains compliant."
+      },
+      {
+        "stage": "context",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "explicitView": true,
+        "reason": "The context preserves the proposal, unknown utterance date, eleven-day source anchor, non-processing distinction, and nonacceptance. It lacks the explicit fact that no meeting is scheduled, and the tentative/undated metadata does not restore that status. The evidence is entailed but incomplete under the full timing-qualification rubric; no date or actual meeting is invented. English language framing remains compliant."
+      },
+      {
+        "stage": "context",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "explicitView": false,
+        "reason": "The context preserves the proposal, unknown utterance date, eleven-day source anchor, non-processing distinction, and nonacceptance. It lacks the explicit fact that no meeting is scheduled, and the tentative/undated metadata does not restore that status. The evidence is entailed but incomplete under the full timing-qualification rubric; no date or actual meeting is invented. English language framing remains compliant."
+      },
+      {
+        "stage": "context",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "explicitView": true,
+        "reason": "The context preserves the proposal, unknown utterance date, eleven-day source anchor, non-processing distinction, and nonacceptance. It lacks the explicit fact that no meeting is scheduled, and the tentative/undated metadata does not restore that status. The evidence is entailed but incomplete under the full timing-qualification rubric; no date or actual meeting is invented. English language framing remains compliant."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "answerLanguage": "en",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The answer correctly gives the eleven-day offset, utterance rather than processing anchor, unknown source date, and unaccepted proposal, in the requested language. It omits the source’s explicit absence of a scheduled meeting, which is a governing qualification for the question about the proposal and when it applies. The tentative label and nonacceptance do not supply that fact. Published statements remain entailed, but complete qualified usefulness fails for both answer and retrieval."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The answer correctly gives the eleven-day offset, utterance rather than processing anchor, unknown source date, and unaccepted proposal, in the requested language. It omits the source’s explicit absence of a scheduled meeting, which is a governing qualification for the question about the proposal and when it applies. The tentative label and nonacceptance do not supply that fact. Published statements remain entailed, but complete qualified usefulness fails for both answer and retrieval."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "answerLanguage": "en",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The answer correctly gives the eleven-day offset, utterance rather than processing anchor, unknown source date, and unaccepted proposal, in the requested language. It omits the source’s explicit absence of a scheduled meeting, which is a governing qualification for the question about the proposal and when it applies. The tentative label and nonacceptance do not supply that fact. Published statements remain entailed, but complete qualified usefulness fails for both answer and retrieval."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The answer correctly gives the eleven-day offset, utterance rather than processing anchor, unknown source date, and unaccepted proposal, in the requested language. It omits the source’s explicit absence of a scheduled meeting, which is a governing qualification for the question about the proposal and when it applies. The tentative label and nonacceptance do not supply that fact. Published statements remain entailed, but complete qualified usefulness fails for both answer and retrieval."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The answer correctly gives the eleven-day offset, utterance rather than processing anchor, unknown source date, and unaccepted proposal, in the requested language. It omits the source’s explicit absence of a scheduled meeting, which is a governing qualification for the question about the proposal and when it applies. The tentative label and nonacceptance do not supply that fact. Published statements remain entailed, but complete qualified usefulness fails for both answer and retrieval."
+      },
+      {
+        "stage": "answer",
+        "type": "missed_useful_answer",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "verification_rejected",
+        "reason": "The default Russian-query Russian answer is null. The original writable source supports a useful answer with all timing/status qualifications, so this is not a source-required abstention. The retrieved row is itself incomplete because it omits the absence of a scheduled meeting; no runtime cause for the missing publication can be inferred. The null answer emits no semantic or language claim."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The answer correctly gives the eleven-day offset, utterance rather than processing anchor, unknown source date, and unaccepted proposal, in the requested language. It omits the source’s explicit absence of a scheduled meeting, which is a governing qualification for the question about the proposal and when it applies. The tentative label and nonacceptance do not supply that fact. Published statements remain entailed, but complete qualified usefulness fails for both answer and retrieval."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The answer correctly gives the eleven-day offset, utterance rather than processing anchor, unknown source date, and unaccepted proposal, in the requested language. It omits the source’s explicit absence of a scheduled meeting, which is a governing qualification for the question about the proposal and when it applies. The tentative label and nonacceptance do not supply that fact. Published statements remain entailed, but complete qualified usefulness fails for both answer and retrieval."
+      }
+    ]
+  },
+  {
+    "id": "v23-held-competing-clicks",
+    "split": "held-out",
+    "run": 2,
+    "language": "en",
+    "scenario": "competing-hypotheses",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer keeps the two mechanisms, Ada’s nonselection, and record-scoped nonconfirmation of clicking, but replaces no supporting observations with «ни одно не подтверждено наблюдениями». Lack of confirmation allows some supporting observations that are insufficient for confirmation; the source expressly says neither hypothesis has supporting observations. This weakens a material evidence qualifier and fails complete qualified usefulness. The weaker statement remains entailed and the answer is Russian; the complete English retrieval remains useful."
+      },
+      {
+        "stage": "answer",
+        "type": "qualification_incomplete",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": true,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer keeps the two mechanisms, Ada’s nonselection, and record-scoped nonconfirmation of clicking, but replaces no supporting observations with «ни одно не подтверждено наблюдениями». Lack of confirmation allows some supporting observations that are insufficient for confirmation; the source expressly says neither hypothesis has supporting observations. This weakens a material evidence qualifier and fails complete qualified usefulness. The weaker statement remains entailed and the answer is Russian; the complete English retrieval remains useful."
+      }
+    ]
+  },
+  {
+    "id": "v23-held-rejected-inspection",
+    "split": "held-out",
+    "run": 2,
+    "language": "en",
+    "scenario": "rejected-plan",
+    "retentionOutcome": "ok",
+    "candidateOutcomes": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "failures": [
+      {
+        "stage": "context",
+        "type": "missed_useful_context",
+        "queryLanguage": "ru",
+        "explicitView": false,
+        "reason": "The default Russian-query context is empty even though the original source and answer retrieval contain a useful qualified rejected offer. This is a missed context, not a required exclusion. Empty evidence emits no false claim; the runtime cause is not shown in the public packet."
+      },
+      {
+        "stage": "answer",
+        "type": "accepted_semantic_error",
+        "queryLanguage": "en",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "answered",
+        "reason": "The Russian answer narrows alignment gauge to «измеритель соосности», a gauge for coaxiality. Alignment can concern relationships other than coaxial alignment; the original source does not identify that specific property or instrument subtype. The whole-device destination and rejection survive, and the answer is Russian, but exact component fidelity and useful qualified answering fail. Retrieved English evidence preserves the broader original alignment gauge and remains useful."
+      },
+      {
+        "stage": "answer",
+        "type": "wrong_inferred_view",
+        "queryLanguage": "ru",
+        "answerLanguage": "en",
+        "explicitView": false,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "The default Russian-query answer is null despite retrieved evidence that directly identifies the rejected workshop offer, with additional negative facts. The original writable source supports a useful qualified answer, so this is a missed answer rather than a justified source hold. The public packet does not establish the runtime cause."
+      },
+      {
+        "stage": "answer",
+        "type": "wrong_inferred_view",
+        "queryLanguage": "ru",
+        "answerLanguage": "ru",
+        "explicitView": false,
+        "runtimeReason": "no_eligible_evidence",
+        "reason": "The default Russian-query answer is null despite retrieved evidence that directly identifies the rejected workshop offer, with additional negative facts. The original writable source supports a useful qualified answer, so this is a missed answer rather than a justified source hold. The public packet does not establish the runtime cause."
+      }
+    ]
+  }
+]

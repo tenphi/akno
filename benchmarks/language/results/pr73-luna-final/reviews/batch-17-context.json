@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "acc32b640d31a78641247e99a7be46b5018d499ebc615d2d653bde8d6eabc2b6",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-rejected-inspection",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context identifies Ada’s rejected offer, the entire-device destination at the workshop, and checking its alignment gauge without inventing a particular property to measure. It is useful for the focused historical query and preserves rejected disposition. It omits the source’s separate no-plan assertion and other side facts, so useful focused context does not imply complete retained meaning. No active plan or completed inspection is asserted."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context identifies Ada’s rejected offer, the entire-device destination at the workshop, and checking its alignment gauge without inventing a particular property to measure. It is useful for the focused historical query and preserves rejected disposition. It omits the source’s separate no-plan assertion and other side facts, so useful focused context does not imply complete retained meaning. No active plan or completed inspection is asserted."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The default Russian-query context is empty even though the source supports a qualified historical answer and the reviewed answer retrieval includes the rejected offer. This is a missed useful context, not a required safe exclusion. Empty evidence emits no unsupported claim, qualification change, or language error; no runtime cause can be inferred from it."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context identifies Ada’s rejected offer, the entire-device destination at the workshop, and checking its alignment gauge without inventing a particular property to measure. It is useful for the focused historical query and preserves rejected disposition. It omits the source’s separate no-plan assertion and other side facts, so useful focused context does not imply complete retained meaning. No active plan or completed inspection is asserted."
+        }
+      ]
+    }
+  ]
+}

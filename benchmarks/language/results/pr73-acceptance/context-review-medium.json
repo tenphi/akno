@@ -1,0 +1,197 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "3a2fd3cc453c4fbeb556ea678c3ba6e6e2c1a17e802c0e125a14c2798431d9c0",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-fictional-example",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Quoted context retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translation of evidence. Titles and breadcrumbs are contextual navigation labels, not independent assertions of completed events.",
+          "languageFramingCompliant": true,
+          "reason": "The context preserves the exact control dial, fictional actors, lending relation, spare status, first forty-four days after a fictional repair, and explicit story-only/no-real-agreement scope. The page title and breadcrumb also identify fiction. This is useful source-entailed context for the focused loan query despite the separate failure to retain Ada’s actual introduction for discussion; the introducing act cannot be recovered as a saved proposition merely from the story association."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Quoted context retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translation of evidence. Titles and breadcrumbs are contextual navigation labels, not independent assertions of completed events.",
+          "languageFramingCompliant": true,
+          "reason": "The context preserves the exact control dial, fictional actors, lending relation, spare status, first forty-four days after a fictional repair, and explicit story-only/no-real-agreement scope. The page title and breadcrumb also identify fiction. This is useful source-entailed context for the focused loan query despite the separate failure to retain Ada’s actual introduction for discussion; the introducing act cannot be recovered as a saved proposition merely from the story association."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Quoted context retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translation of evidence. Titles and breadcrumbs are contextual navigation labels, not independent assertions of completed events.",
+          "languageFramingCompliant": true,
+          "reason": "The context preserves the exact control dial, fictional actors, lending relation, spare status, first forty-four days after a fictional repair, and explicit story-only/no-real-agreement scope. The page title and breadcrumb also identify fiction. This is useful source-entailed context for the focused loan query despite the separate failure to retain Ada’s actual introduction for discussion; the introducing act cannot be recovered as a saved proposition merely from the story association."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Quoted context retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translation of evidence. Titles and breadcrumbs are contextual navigation labels, not independent assertions of completed events.",
+          "languageFramingCompliant": true,
+          "reason": "The context preserves the exact control dial, fictional actors, lending relation, spare status, first forty-four days after a fictional repair, and explicit story-only/no-real-agreement scope. The page title and breadcrumb also identify fiction. This is useful source-entailed context for the focused loan query despite the separate failure to retain Ada’s actual introduction for discussion; the introducing act cannot be recovered as a saved proposition merely from the story association."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-nested-report",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Quoted context retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translation of evidence. Titles and breadcrumbs are contextual navigation labels, not independent assertions of completed events.",
+          "languageFramingCompliant": true,
+          "reason": "The context supplies the nested Ada → Bo report, alleged permission, workshop destination and resistance-check purpose, with the replacement contrast and Ada’s personal unread/unchecked limits. It is useful and source-entailed for the report question; asserted source_report metadata does not override the explicit report scope. The missing packing fact is a complete-retention omission, not a qualification required to interpret this focused report context."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Quoted context retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translation of evidence. Titles and breadcrumbs are contextual navigation labels, not independent assertions of completed events.",
+          "languageFramingCompliant": true,
+          "reason": "The context supplies the nested Ada → Bo report, alleged permission, workshop destination and resistance-check purpose, with the replacement contrast and Ada’s personal unread/unchecked limits. It is useful and source-entailed for the report question; asserted source_report metadata does not override the explicit report scope. The missing packing fact is a complete-retention omission, not a qualification required to interpret this focused report context."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Quoted context retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translation of evidence. Titles and breadcrumbs are contextual navigation labels, not independent assertions of completed events.",
+          "languageFramingCompliant": true,
+          "reason": "The context supplies the nested Ada → Bo report, alleged permission, workshop destination and resistance-check purpose, with the replacement contrast and Ada’s personal unread/unchecked limits. It is useful and source-entailed for the report question; asserted source_report metadata does not override the explicit report scope. The missing packing fact is a complete-retention omission, not a qualification required to interpret this focused report context."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Quoted context retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translation of evidence. Titles and breadcrumbs are contextual navigation labels, not independent assertions of completed events.",
+          "languageFramingCompliant": true,
+          "reason": "The context supplies the nested Ada → Bo report, alleged permission, workshop destination and resistance-check purpose, with the replacement contrast and Ada’s personal unread/unchecked limits. It is useful and source-entailed for the report question; asserted source_report metadata does not override the explicit report scope. The missing packing fact is a complete-retention omission, not a qualification required to interpret this focused report context."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Quoted context retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translation of evidence. Titles and breadcrumbs are contextual navigation labels, not independent assertions of completed events.",
+          "languageFramingCompliant": true,
+          "reason": "The context contains both tentative competing explanations and all governing limits: Ada selected neither, neither has supporting evidence yet, and the record does not confirm the rattling itself. Its metadata agrees with tentative explanations. The Rattling Investigation breadcrumb is a topic label and does not establish an external inspection or actual rattling. Evidence is complete and useful for the hypotheses query."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Quoted context retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translation of evidence. Titles and breadcrumbs are contextual navigation labels, not independent assertions of completed events.",
+          "languageFramingCompliant": true,
+          "reason": "The context contains both tentative competing explanations and all governing limits: Ada selected neither, neither has supporting evidence yet, and the record does not confirm the rattling itself. Its metadata agrees with tentative explanations. The Rattling Investigation breadcrumb is a topic label and does not establish an external inspection or actual rattling. Evidence is complete and useful for the hypotheses query."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Quoted context retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translation of evidence. Titles and breadcrumbs are contextual navigation labels, not independent assertions of completed events.",
+          "languageFramingCompliant": true,
+          "reason": "The context contains both tentative competing explanations and all governing limits: Ada selected neither, neither has supporting evidence yet, and the record does not confirm the rattling itself. Its metadata agrees with tentative explanations. The Rattling Investigation breadcrumb is a topic label and does not establish an external inspection or actual rattling. Evidence is complete and useful for the hypotheses query."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Quoted context retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translation of evidence. Titles and breadcrumbs are contextual navigation labels, not independent assertions of completed events.",
+          "languageFramingCompliant": true,
+          "reason": "The context contains both tentative competing explanations and all governing limits: Ada selected neither, neither has supporting evidence yet, and the record does not confirm the rattling itself. Its metadata agrees with tentative explanations. The Rattling Investigation breadcrumb is a topic label and does not establish an external inspection or actual rattling. Evidence is complete and useful for the hypotheses query."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingPolicy": "Quoted context retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translation of evidence. Titles and breadcrumbs are contextual navigation labels, not independent assertions of completed events.",
+          "languageFramingCompliant": true,
+          "reason": "The context is accurate but incomplete for the two-component question: it exposes only the sand-caused ceramic-spacer exclusion and omits every source statement about the limits on inferring intake-sleeve coverage or contract silence. It therefore fails complete useful context and preservation of the requested epistemic limitations. Its actual content is source-entailed and does not fabricate any sleeve answer, but absence of a retrieved sleeve statement is not equivalent to the source’s explicit limit on what this exclusion establishes."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingPolicy": "Quoted context retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translation of evidence. Titles and breadcrumbs are contextual navigation labels, not independent assertions of completed events.",
+          "languageFramingCompliant": true,
+          "reason": "The context is accurate but incomplete for the two-component question: it exposes only the sand-caused ceramic-spacer exclusion and omits every source statement about the limits on inferring intake-sleeve coverage or contract silence. It therefore fails complete useful context and preservation of the requested epistemic limitations. Its actual content is source-entailed and does not fabricate any sleeve answer, but absence of a retrieved sleeve statement is not equivalent to the source’s explicit limit on what this exclusion establishes."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingPolicy": "Quoted context retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translation of evidence. Titles and breadcrumbs are contextual navigation labels, not independent assertions of completed events.",
+          "languageFramingCompliant": true,
+          "reason": "The context is accurate but incomplete for the two-component question: it exposes only the sand-caused ceramic-spacer exclusion and omits every source statement about the limits on inferring intake-sleeve coverage or contract silence. It therefore fails complete useful context and preservation of the requested epistemic limitations. Its actual content is source-entailed and does not fabricate any sleeve answer, but absence of a retrieved sleeve statement is not equivalent to the source’s explicit limit on what this exclusion establishes."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingPolicy": "Quoted context retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translation of evidence. Titles and breadcrumbs are contextual navigation labels, not independent assertions of completed events.",
+          "languageFramingCompliant": true,
+          "reason": "The context is accurate but incomplete for the two-component question: it exposes only the sand-caused ceramic-spacer exclusion and omits every source statement about the limits on inferring intake-sleeve coverage or contract silence. It therefore fails complete useful context and preservation of the requested epistemic limitations. Its actual content is source-entailed and does not fabricate any sleeve answer, but absence of a retrieved sleeve statement is not equivalent to the source’s explicit limit on what this exclusion establishes."
+        }
+      ]
+    }
+  ]
+}

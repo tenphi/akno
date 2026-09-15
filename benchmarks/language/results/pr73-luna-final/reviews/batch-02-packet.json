@@ -1,0 +1,994 @@
+{
+  "kind": "incremental-frozen-full-evaluation-review-batch",
+  "corpusFingerprint": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+  "rubric": "Unchanged V23 language-output-review-v2 rubric in the frozen benchmark reviewer; no changed thresholds or expected meanings.",
+  "cases": [
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "run": 1,
+      "source": {
+        "id": "v22-held-conditional-hypothesis",
+        "split": "development",
+        "language": "en",
+        "scenario": "conditional-hypothesis",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "For this hypothetical analysis, assume the Zephyr QX-100 drain channel is cleared every six weeks."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Only under that assumption, leaving the channel uncleared for seven weeks would breach the assumed schedule. I do not know the real maintenance rule, and I am not reporting an actual missed clearing."
+          }
+        ],
+        "view": "discussion",
+        "commitment": "hypothetical",
+        "admission": "writable",
+        "ordinary": "## Hypothesis\nAssume the Zephyr QX-100 drain channel is cleared every six weeks. Under that assumption alone, seven weeks without clearing breaches the schedule. Ada Marlow does not know the real rule and reports no actual missed clearing.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "What conditional drain-channel maintenance scenario did Ada Marlow set out for Zephyr QX-100?",
+          "ru": "Какой условный сценарий обслуживания дренажного канала Zephyr QX-100 описала Ada Marlow?"
+        },
+        "reviewExpectation": "Keep the assumed six-week clearing schedule and its conditional seven-week breach together. Ada does not know the real rule and reports no actual omission. The interval is a recurring property, not a dated event or established obligation."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_a09be1e2",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_e3757f35d805034ea4cc193c",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_a09be1e2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3757f35d805034ea4cc193c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_a09be1e2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3757f35d805034ea4cc193c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Гипотетический сценарий:** Ada Marlow гипотетически предполагает, что канал слива Zephyr QX-100 очищают каждые шесть недель; только при этом допущении оставление его неочищенным в течение семи недель нарушило бы предполагаемый график. Ada Marlow не знает фактическое правило технического обслуживания и не сообщает о реально пропущенной очистке. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_a09be1e2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3757f35d805034ea4cc193c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_a09be1e2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3757f35d805034ea4cc193c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Гипотетически:** Ada Marlow предполагает, что канал слива Zephyr QX-100 очищают каждые шесть недель; только при этом допущении оставление его неочищенным в течение семи недель нарушило бы предполагаемый график. Ada Marlow не знает реальное правило обслуживания и не сообщает о фактически пропущенной очистке. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_a09be1e2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3757f35d805034ea4cc193c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_a09be1e2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3757f35d805034ea4cc193c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Гипотетический контекст:** Ada Marlow гипотетически предполагает, что дренажный канал Zephyr QX-100 очищается каждые шесть недель; только при этом допущении оставление его неочищенным в течение семи недель нарушило бы предполагаемый график. Ada Marlow не знает фактическое правило обслуживания и не сообщает о фактически пропущенной очистке. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_a09be1e2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3757f35d805034ea4cc193c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_a09be1e2",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e3757f35d805034ea4cc193c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Гипотетический контекст:** Ada Marlow гипотетически предполагает, что дренажный канал Zephyr QX-100 очищают каждые шесть недель; только при этом предположении отсутствие очистки в течение семи недель нарушило бы предполагаемый график. Ada Marlow не знает фактическое правило обслуживания и не сообщает о реально пропущенной очистке. [memory/equipment:7]"
+        }
+      ]
+    },
+    {
+      "id": "v23-held-relayed-service",
+      "run": 1,
+      "source": {
+        "id": "v23-held-relayed-service",
+        "split": "held-out",
+        "language": "ru",
+        "scenario": "nested-report",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Я, Ada Marlow, записываю сообщение Bo Winters об обслуживании Zephyr QX-100 компанией Vulpine Mutual. Я не читала условия и не проверяла это сообщение."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Bo Winters сказал, что Vulpine Mutual разрешает отправить Zephyr QX-100 в мастерскую для измерения яркости индикатора."
+          },
+          {
+            "item_id": "turn-3333",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Уточняю содержание его сообщения: речь шла об измерении яркости, а не о замене индикатора. Отдельно: я ещё не сняла защитную крышку со своего Zephyr QX-100."
+          }
+        ],
+        "view": "reports",
+        "basis": "source_report",
+        "admission": "writable",
+        "ordinary": "## Пересказ\nAda Marlow передаёт сообщение Bo Winters: Vulpine Mutual разрешает отправить Zephyr QX-100 в мастерскую для измерения яркости индикатора. Ada не читала условия и не проверяла сообщение.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "What service report did Ada Marlow relay from Bo Winters about the Zephyr QX-100 indicator?",
+          "ru": "Какое сообщение Bo Winters об индикаторе Zephyr QX-100 пересказала Ada Marlow?"
+        },
+        "reviewExpectation": "Preserve Ada as outer recorder, Bo as the inner reporter, the alleged permission to send the device to a workshop to measure indicator brightness, and Ada’s clarification that the reported action was measurement rather than replacement. This does not prohibit all replacement or establish real permission. Keep her personal unread/unverified limits and separately her asserted fact that she has not removed her device’s protective cover."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_63b1a51b",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_fb91b22cf8950f6c9ed00e24",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "text": "- Ada Marlow has not yet removed the protective cover from her Zephyr QX-100.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_95de9eb4",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_fb91b22cf8950f6c9ed00e24",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_63b1a51b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_63b1a51b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**По словам Ada Marlow:** Ada Marlow сообщает, что Bo Winters сказал: Vulpine Mutual разрешает отправить Zephyr QX-100 в мастерскую, чтобы измерить яркость индикатора, а не заменить индикатор. Ada Marlow не читала условия и не проверяла это сообщение. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_63b1a51b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_63b1a51b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**По словам Ada Marlow:** Ada Marlow сообщает, что Bo Winters сказал: Vulpine Mutual разрешает отправить Zephyr QX-100 в мастерскую, чтобы измерить яркость индикатора, а не заменить индикатор. Ada Marlow не читала условия и не проверяла это сообщение. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_63b1a51b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_63b1a51b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**По словам Ada Marlow:** Ada Marlow сообщает, что Bo Winters сказал: Vulpine Mutual разрешает отправить Zephyr QX-100 в мастерскую, чтобы измерить яркость индикатора, а не заменить индикатор. Ada Marlow не читала условия и не проверяла это сообщение. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_63b1a51b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_63b1a51b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "По словам Ada Marlow: Ada Marlow сообщает, что Bo Winters сказал: Vulpine Mutual разрешает отправить Zephyr QX-100 в мастерскую, чтобы измерить яркость индикатора, а не заменить индикатор. Ada Marlow не читала условия и не проверяла это сообщение. [memory/equipment:6]"
+        }
+      ]
+    }
+  ],
+  "extra": [
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "run": 1,
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_a09be1e2",
+            "source_ref": "invented:v22-held-conditional-hypothesis",
+            "input_hash": "d80dfbcebf2ab6081dfe91d3b644854256ef16d996b2edbed6fd415fd11131ed",
+            "evidence": "For this hypothetical analysis, assume the Zephyr QX-100 drain channel is cleared every six weeks.\n…\nOnly under that assumption, leaving the channel uncleared for seven weeks would breach the assumed schedule. I do not know the real maintenance rule, and I am not reporting an actual missed clearing.",
+            "evidence_hash": "e935d6ba50eaa1b94e630b63d2e2cb09793e5f2365f6363adeea64536599576b",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "For this hypothetical analysis, assume the Zephyr QX-100 drain channel is cleared every six weeks.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "Only under that assumption, leaving the channel uncleared for seven weeks would breach the assumed schedule. I do not know the real maintenance rule, and I am not reporting an actual missed clearing.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_a09be1e2",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_e3757f35d805034ea4cc193c",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Hypothetical Maintenance Assumption",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_a09be1e2",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_e3757f35d805034ea4cc193c",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Hypothetical Maintenance Assumption",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_a09be1e2",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_e3757f35d805034ea4cc193c",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Hypothetical Maintenance Assumption",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 drain channel is cleared every six weeks; only under that assumption, leaving it uncleared for seven weeks would breach the assumed schedule. Ada Marlow does not know the real maintenance rule and is not reporting an actual missed clearing.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_a09be1e2",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_e3757f35d805034ea4cc193c",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Hypothetical Maintenance Assumption",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ]
+    },
+    {
+      "id": "v23-held-relayed-service",
+      "run": 1,
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_95de9eb4",
+            "source_ref": "invented:v23-held-relayed-service",
+            "input_hash": "965b01704f3b062161573a9d5f735b04cf17b3678d9810297ee211be05f7a935",
+            "evidence": "Отдельно: я ещё не сняла защитную крышку со своего Zephyr QX-100.",
+            "evidence_hash": "e85d9f0e9d095077dd5513783bd974d6ba057af8169acc1743c634d0929a1fec",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "Отдельно: я ещё не сняла защитную крышку со своего Zephyr QX-100.",
+                "matchingSourceItems": [
+                  "turn-3333"
+                ]
+              }
+            ]
+          },
+          {
+            "memory_id": "mem_63b1a51b",
+            "source_ref": "invented:v23-held-relayed-service",
+            "input_hash": "965b01704f3b062161573a9d5f735b04cf17b3678d9810297ee211be05f7a935",
+            "evidence": "Я, Ada Marlow, записываю сообщение Bo Winters об обслуживании Zephyr QX-100 компанией Vulpine Mutual. Я не читала условия и не проверяла это сообщение.\n…\nBo Winters сказал, что Vulpine Mutual разрешает отправить Zephyr QX-100 в мастерскую для измерения яркости индикатора.\n…\nУточняю содержание его сообщения: речь шла об измерении яркости, а не о замене индикатора.",
+            "evidence_hash": "7e599c751def8c042dde9f9cf8d4cb2df5478b4fa8c63bd527b621606b85aa21",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "Я, Ada Marlow, записываю сообщение Bo Winters об обслуживании Zephyr QX-100 компанией Vulpine Mutual. Я не читала условия и не проверяла это сообщение.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "Bo Winters сказал, что Vulpine Mutual разрешает отправить Zephyr QX-100 в мастерскую для измерения яркости индикатора.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              },
+              {
+                "quote": "Уточняю содержание его сообщения: речь шла об измерении яркости, а не о замене индикатора.",
+                "matchingSourceItems": [
+                  "turn-3333"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 6,
+                  "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_63b1a51b",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Reported Claims",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 6,
+                  "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_63b1a51b",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Reported Claims",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 6,
+                  "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_63b1a51b",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Reported Claims",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 6,
+                  "text": "- **Reported by Ada Marlow:** Ada Marlow reports that Bo Winters said Vulpine Mutual permits sending the Zephyr QX-100 to a workshop to measure the indicator's brightness, not replace the indicator. Ada Marlow has not read the terms or checked this message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_63b1a51b",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_fb91b22cf8950f6c9ed00e24",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Reported Claims",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ]
+    }
+  ],
+  "packetFingerprint": "50e972e047d33d9f17f51120cae33166fc7a704b0789739b088a3457798c164c"
+}

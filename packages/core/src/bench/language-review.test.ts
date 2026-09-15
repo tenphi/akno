@@ -12,6 +12,7 @@ import { LANGUAGE_CORPUS_V19 } from './language-corpus-v19.ts';
 import { LANGUAGE_CORPUS_V20 } from './language-corpus-v20.ts';
 import { LANGUAGE_CORPUS_V21 } from './language-corpus-v21.ts';
 import { LANGUAGE_CORPUS_V22 } from './language-corpus-v22.ts';
+import { LANGUAGE_CORPUS_V23 } from './language-corpus-v23.ts';
 import { LANGUAGE_CORPUS_V10 } from './language-corpus-v10.ts';
 import { LANGUAGE_CORPUS_V3 } from './language-corpus-v3.ts';
 import { languageReviewPacket, adjudicateLanguageGate, languageGateThresholds } from './language-review.ts';
@@ -40,7 +41,8 @@ function fixture(
     | 'v19'
     | 'v20'
     | 'v21'
-    | 'v22' = 'v3',
+    | 'v22'
+    | 'v23' = 'v3',
 ) {
   const corpus =
     version === 'v3'
@@ -69,7 +71,9 @@ function fixture(
                             ? LANGUAGE_CORPUS_V20
                             : version === 'v21'
                               ? LANGUAGE_CORPUS_V21
-                              : LANGUAGE_CORPUS_V22;
+                              : version === 'v22'
+                                ? LANGUAGE_CORPUS_V22
+                                : LANGUAGE_CORPUS_V23;
   const evidence = {
     text: 'An invented qualified memory record.',
     qualification: {
@@ -152,7 +156,9 @@ function fixture(
   })) as unknown as Report[];
   const packet = languageReviewPacket(reports, inputs);
   const outputs = {
-    schemaVersion: ['v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22'].includes(version)
+    schemaVersion: ['v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22', 'v23'].includes(
+      version,
+    )
       ? 'language-output-review-v2'
       : 'language-output-review-v1',
     packetFingerprint: packet.packetFingerprint,
@@ -162,7 +168,7 @@ function fixture(
       run: entry.run,
       retentionUseful: !entry.source.hold,
       retentionJustifiedHold: entry.source.hold ?? false,
-      ...(['v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22'].includes(version)
+      ...(['v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22', 'v23'].includes(version)
         ? { retainedSourceEntailed: true }
         : {}),
       knowledgeLanguageCompliant: true,
@@ -177,7 +183,7 @@ function fixture(
         usefulQualifiedRetrieval: answer.retrievedEvidence.length > 0,
         justifiedAbstention: answer.answer === null,
         languageCompliant: answer.answer === null ? null : true,
-        ...(['v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22'].includes(version)
+        ...(['v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22', 'v23'].includes(version)
           ? { sourceEntailed: answer.answer === null ? null : true }
           : {}),
         qualificationPreserved: true,
@@ -190,6 +196,67 @@ function fixture(
 }
 
 describe('independently adjudicated language gate', () => {
+  it('uses V23 independent approval and retains the full source-fidelity gate', () => {
+    const inputs = JSON.parse(
+      fs.readFileSync(
+        new URL(
+          '../../../../benchmarks/language/results/pr73-acceptance/v23-input-review.json',
+          import.meta.url,
+        ),
+        'utf8',
+      ),
+    );
+    const { reports, outputs } = fixture('v23');
+    const packet = languageReviewPacket(reports, inputs);
+    expect(packet.cases).toHaveLength(44);
+    outputs.packetFingerprint = packet.packetFingerprint;
+    const gate = adjudicateLanguageGate(reports, inputs, outputs);
+    expect(gate.releaseEligible).toBe(true);
+    expect(gate.thresholds.usefulQualifiedAnswerCoverage).toBe(0.9);
+    expect(gate.thresholds.unsupportedNonnullAnswers).toBe(0);
+  });
+
+  it('does not combine equal token limits with different reasoning profiles', () => {
+    const { reports, inputs } = fixture('v23');
+    for (const report of reports)
+      report.modelConfiguration = {
+        answer: {
+          enabled: true,
+          api: 'responses',
+          timeoutMs: 60000,
+          maxOutputTokens: 2400,
+          reasoningEffort: 'low',
+          providerRetries: 0,
+        },
+      };
+    languageReviewPacket(reports, inputs);
+    reports[1]!.modelConfiguration.answer!.reasoningEffort = 'medium';
+    expect(() => languageReviewPacket(reports, inputs)).toThrow('runtime contracts differ');
+  });
+
+  it('binds retrieval settings to the review and rejects mixed profiles', () => {
+    const { reports, inputs, outputs } = fixture('v22');
+    const original = languageReviewPacket(reports, inputs).packetFingerprint;
+    for (const report of reports) {
+      report.retrievalProfile = 'configured';
+      report.retrievalConfiguration = {
+        embeddingDimensions: 1536,
+        rerankerEnabled: true,
+        mode: 'llm',
+        topK: 8,
+        maxChars: 2400,
+        excludeIrrelevant: true,
+        scoreOffset: 'auto',
+        maxOutputTokens: 1600,
+        reasoningEffort: 'low',
+      };
+    }
+    expect(languageReviewPacket(reports, inputs).packetFingerprint).not.toBe(original);
+    expect(() => adjudicateLanguageGate(reports, inputs, outputs)).toThrow('stale output review');
+    reports[1]!.retrievalConfiguration!.topK = 4;
+    expect(() => languageReviewPacket(reports, inputs)).toThrow('runtime contracts differ');
+  });
+
   it('consumes the actual approved V22 input artifact through the grading interface', () => {
     const inputReview = JSON.parse(
       fs.readFileSync(
@@ -252,18 +319,29 @@ describe('independently adjudicated language gate', () => {
     }
   });
 
-  it.each(['v11', 'v12', 'v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22'] as const)(
-    'keeps the stronger gate and complete breakdowns for fresh corpus %s',
-    (version) => {
-      const { reports, inputs, outputs } = fixture(version);
-      const gate = adjudicateLanguageGate(reports, inputs, outputs);
-      expect(gate.releaseEligible).toBe(true);
-      expect(gate.thresholds.usefulQualifiedAnswerCoverage).toBe(0.9);
-      expect(gate.groups.every((group) => Object.keys(group.breakdowns!.byAnswerLanguage).length === 2)).toBe(
-        true,
-      );
-    },
-  );
+  it.each([
+    'v11',
+    'v12',
+    'v13',
+    'v14',
+    'v15',
+    'v16',
+    'v17',
+    'v18',
+    'v19',
+    'v20',
+    'v21',
+    'v22',
+    'v23',
+  ] as const)('keeps the stronger gate and complete breakdowns for fresh corpus %s', (version) => {
+    const { reports, inputs, outputs } = fixture(version);
+    const gate = adjudicateLanguageGate(reports, inputs, outputs);
+    expect(gate.releaseEligible).toBe(true);
+    expect(gate.thresholds.usefulQualifiedAnswerCoverage).toBe(0.9);
+    expect(gate.groups.every((group) => Object.keys(group.breakdowns!.byAnswerLanguage).length === 2)).toBe(
+      true,
+    );
+  });
 
   it('fails qualified but source-unsupported output even when coverage remains above its thresholds', () => {
     const { reports, inputs, outputs } = fixture('v13');
@@ -333,7 +411,7 @@ describe('independently adjudicated language gate', () => {
     expect(() => adjudicateLanguageGate(reports, inputs, outputs)).toThrow();
   });
 
-  it.each(['v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22'] as const)(
+  it.each(['v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22', 'v23'] as const)(
     'keeps the source-entailment schema and zero thresholds for %s',
     (version) => {
       const { reports, inputs, outputs } = fixture(version);

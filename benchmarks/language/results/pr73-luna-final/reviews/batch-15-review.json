@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "e028157b1966a934d2cb0f68af99b38c726c4eba128f5a674cfdc54313d7b4a7",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "run": 2,
+      "retentionUseful": true,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The complete retained set keeps the assumed recurring six-week drain-channel clearing schedule coupled to the conditional seven-week breach. It explicitly preserves Ada’s personal lack of knowledge of the real rule and her not reporting an actual missed clearing. English hypothetical framing and metadata agree; no calendar event, established maintenance duty, actual omission, or universal ignorance is introduced.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer uses the requested language and preserves the six-week assumption together with the seven-week nonclearing consequence only within that hypothetical schedule. It also preserves Ada as the person who does not know the real rule and the absence of a report of actual missed clearing. The complete retrieved evidence supports all of these qualifications. No real breach, obligation, date, or factual maintenance event is asserted."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer uses the requested language and preserves the six-week assumption together with the seven-week nonclearing consequence only within that hypothetical schedule. It also preserves Ada as the person who does not know the real rule and the absence of a report of actual missed clearing. The complete retrieved evidence supports all of these qualifications. No real breach, obligation, date, or factual maintenance event is asserted."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer uses the requested language and preserves the six-week assumption together with the seven-week nonclearing consequence only within that hypothetical schedule. It also preserves Ada as the person who does not know the real rule and the absence of a report of actual missed clearing. The complete retrieved evidence supports all of these qualifications. No real breach, obligation, date, or factual maintenance event is asserted."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer uses the requested language and preserves the six-week assumption together with the seven-week nonclearing consequence only within that hypothetical schedule. It also preserves Ada as the person who does not know the real rule and the absence of a report of actual missed clearing. The complete retrieved evidence supports all of these qualifications. No real breach, obligation, date, or factual maintenance event is asserted."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer uses the requested language and preserves the six-week assumption together with the seven-week nonclearing consequence only within that hypothetical schedule. It also preserves Ada as the person who does not know the real rule and the absence of a report of actual missed clearing. The complete retrieved evidence supports all of these qualifications. No real breach, obligation, date, or factual maintenance event is asserted."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer uses the requested language and preserves the six-week assumption together with the seven-week nonclearing consequence only within that hypothetical schedule. It also preserves Ada as the person who does not know the real rule and the absence of a report of actual missed clearing. The complete retrieved evidence supports all of these qualifications. No real breach, obligation, date, or factual maintenance event is asserted."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer uses the requested language and preserves the six-week assumption together with the seven-week nonclearing consequence only within that hypothetical schedule. It also preserves Ada as the person who does not know the real rule and the absence of a report of actual missed clearing. The complete retrieved evidence supports all of these qualifications. No real breach, obligation, date, or factual maintenance event is asserted."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer uses the requested language and preserves the six-week assumption together with the seven-week nonclearing consequence only within that hypothetical schedule. It also preserves Ada as the person who does not know the real rule and the absence of a report of actual missed clearing. The complete retrieved evidence supports all of these qualifications. No real breach, obligation, date, or factual maintenance event is asserted."
+        }
+      ]
+    }
+  ]
+}

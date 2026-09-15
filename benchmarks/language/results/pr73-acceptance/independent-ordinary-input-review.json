@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "language-input-review-v1",
+  "corpusFingerprint": "11c903b03f701ab86a467981b86e2ab70d839228714a0638925be47f639abadb",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutOutputs": true
+  },
+  "cases": [
+    {
+      "id": "ordinary-english-report",
+      "approved": true,
+      "reason": "Approved: the exact line “  ## Assistant ###” is a level-two ATX heading with two leading spaces and a closing hash sequence; its title is Assistant. It scopes the following case-inspection statement as an assistant report. All three queries seek that report, reports is the appropriate view, and the expectation preserves device identity, inspection of the case, the eleven-month interval, and attribution without promoting the reported term to established coverage or an actual obligation. focusLine 4 correctly identifies the report body."
+    },
+    {
+      "id": "ordinary-russian-report",
+      "approved": true,
+      "reason": "Approved: “   ## Сообщение ассистента” has three leading spaces and remains a level-two ATX heading identifying the following sentence as an assistant report. The Russian body states inspection of the device housing every eleven months. All three queries target that same report; reports is coherent, and the expectation requires its attribution and exact component and interval without establishing an actual requirement. focusLine 4 points to the body, and the exact Russian heading bytes need no normalization to be semantically readable."
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "approved": true,
+      "reason": "Approved: “  ## Гипотеза ###” is an indented level-two ATX heading with a closing hash sequence and the title Гипотеза. Both following body lines are within its hypothetical scope: a five-year warranty and warranty coverage for housing replacement. The discussion view and all three queries request that hypothetical scenario, and the expectation requires both propositions and their shared qualification. focusLine 4 selects the first proposition, so full retrieval/context must also include line 5 to satisfy the declared completeness requirement."
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "approved": true,
+      "reason": "Approved: the two-space-indented “## Hypothesis” heading scopes the eleven-year warranty claim. The later unindented “##” is a valid empty level-two ATX heading; as a sibling, it ends the hypothetical section before the silver-case statement on line 7. All three color queries, the factual view, and focusLine 7 therefore coherently target the silver color as an ordinary authored assertion. The expectation correctly excludes carrying over the earlier hypothetical scope or adding its unrelated warranty duration."
+    }
+  ]
+}

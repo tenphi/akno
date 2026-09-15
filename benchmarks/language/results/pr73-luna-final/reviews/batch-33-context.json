@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "fba041513add3d70de82b1ce6eea39d0725cd46d705ab572abc1ad4d545c4a3b",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-undated-review",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves the proposal, unknown utterance date, eleven-day source anchor, non-processing distinction, and nonacceptance. It lacks the explicit fact that no meeting is scheduled, and the tentative/undated metadata does not restore that status. The evidence is entailed but incomplete under the full timing-qualification rubric; no date or actual meeting is invented. English language framing remains compliant."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves the proposal, unknown utterance date, eleven-day source anchor, non-processing distinction, and nonacceptance. It lacks the explicit fact that no meeting is scheduled, and the tentative/undated metadata does not restore that status. The evidence is entailed but incomplete under the full timing-qualification rubric; no date or actual meeting is invented. English language framing remains compliant."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves the proposal, unknown utterance date, eleven-day source anchor, non-processing distinction, and nonacceptance. It lacks the explicit fact that no meeting is scheduled, and the tentative/undated metadata does not restore that status. The evidence is entailed but incomplete under the full timing-qualification rubric; no date or actual meeting is invented. English language framing remains compliant."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves the proposal, unknown utterance date, eleven-day source anchor, non-processing distinction, and nonacceptance. It lacks the explicit fact that no meeting is scheduled, and the tentative/undated metadata does not restore that status. The evidence is entailed but incomplete under the full timing-qualification rubric; no date or actual meeting is invented. English language framing remains compliant."
+        }
+      ]
+    }
+  ]
+}

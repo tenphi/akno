@@ -1,0 +1,115 @@
+{
+  "schemaVersion": "language-bounded-closure-scope-audit-v1",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "scope": "Current evaluated scope section and PR73 Luna closure mapping against the original bodies of issues 61, 62 and 66, frozen baseline artifacts and the original independent ordinary supplement review. Final v11 live outputs are unfinished and were not inspected or graded.",
+  "status": "bounded_scope_consistent_with_documentation_corrections",
+  "reviewedFileSha256": {
+    "docs/language-and-discourse.md": "5835862ad13972f8060dfb5ff152c813d89b856df892ee69ad5eb42d17f32127",
+    "benchmarks/language/results/pr73-luna-final/closure-mapping.md": "dc8dde4fd653cac1de0396cfd36f32ec29d0023e773512b219fe59c4f85da201"
+  },
+  "issueSources": [
+    {
+      "number": 61,
+      "title": "Add a main knowledge language and evaluate cross-language retention",
+      "url": "https://github.com/tenphi/akno/issues/61",
+      "stateAtRead": "OPEN"
+    },
+    {
+      "number": 62,
+      "title": "Preserve discourse qualification for ordinary Markdown evidence",
+      "url": "https://github.com/tenphi/akno/issues/62",
+      "stateAtRead": "OPEN"
+    },
+    {
+      "number": 66,
+      "title": "Evaluate memory reliability across repeated retention and consolidation cycles",
+      "url": "https://github.com/tenphi/akno/issues/66",
+      "stateAtRead": "OPEN"
+    }
+  ],
+  "findings": [
+    {
+      "id": "freeze-wording",
+      "severity": "correction",
+      "file": "docs/language-and-discourse.md",
+      "line": 209,
+      "reason": "The text states that evidence is frozen before calls. Generated output evidence cannot be frozen before it exists. The actual protocol freezes runtime, profile and corpus before calls, then records outputs and freezes the public packet before independent grading.",
+      "requestedCorrection": "Separate the two stages explicitly: inputs/runtime/profile frozen before calls; every output preserved and frozen for independent review afterward."
+    },
+    {
+      "id": "pending-publication-links",
+      "severity": "publication_dependency",
+      "locations": [
+        {
+          "file": "docs/language-and-discourse.md",
+          "line": 205
+        },
+        {
+          "file": "docs/language-and-discourse.md",
+          "line": 227
+        },
+        {
+          "file": "docs/language-and-discourse.md",
+          "line": 229
+        },
+        {
+          "file": "benchmarks/language/results/pr73-luna-final/closure-mapping.md",
+          "line": 4
+        }
+      ],
+      "reason": "At audit time benchmarks/language/results/pr73-luna-final/README.md and final-repair/summary.json do not exist. The final v11 run is still underway, so saying both intermediate and final measurements remain visible is premature.",
+      "requestedCorrection": "Before publication, complete and link the independently reviewed final artifacts and the full README, or mark those links/results as pending. This is a draft completion dependency, not a failure inferred from unfinished live outputs."
+    },
+    {
+      "id": "explicit-unexecuted-scenarios",
+      "severity": "scope_disclosure",
+      "file": "benchmarks/language/results/pr73-luna-final/closure-mapping.md",
+      "line": 19,
+      "reason": "Original issue 61 requests accepted/rejected proposal transitions, late corrections and unresolved references in addition to the scenarios in V23. The live corpus has eleven scenario structures, including rejected plans and unknown relative dates, but no accepted-proposal transition, later correction sequence or unresolved-reference-resolution scenario. The mapping already names incomplete/oversized frames and long-distance discourse as bounded/non-live coverage, but does not explicitly name these other missing live scenarios.",
+      "requestedCorrection": "List accepted-proposal transitions, late corrections and unresolved-reference resolution as not exercised by this V23 live matrix, or link their separate historical/deterministic evidence with an explicit evidence category. This disclosure does not require expanding the owner-approved bounded closure."
+    },
+    {
+      "id": "null-terminology",
+      "severity": "wording_precision",
+      "locations": [
+        {
+          "file": "docs/language-and-discourse.md",
+          "line": 236
+        },
+        {
+          "file": "benchmarks/language/results/pr73-luna-final/closure-mapping.md",
+          "line": 29
+        }
+      ],
+      "reason": "The ordinary review establishes that the one null is an avoidable source-unjustified missed answer, despite useful available context. It does not establish that a source-faithful generated draft was falsely rejected by a verifier. Falsely held can be read as the latter claim.",
+      "requestedCorrection": "Prefer one source-supported useful answer was withheld/missed, or explicitly define false hold as a source-level coverage judgment rather than a proven verifier error."
+    }
+  ],
+  "confirmed": [
+    "The documented baseline counts match the frozen independent reviews: 44 case-runs, 352 total answers, 40 writable retained sets, 320 writable answer coordinates, 27 complete sets, 233 useful answers, 130 useful contexts of 160, 15 unsupported published answers, 26 answer qualification omissions, 129 useful English answers and 104 useful Russian answers. All 15 unsupported answers are Russian.",
+    "No answer-language violation or unsafe factual promotion is graded in this baseline. Three case-runs have typed availability failures, including one answer verification unavailable. All 32 read-only nulls are justified. Source/replay/archive stability statements match the frozen observations, without claiming that exact support hashes establish paraphrase completeness.",
+    "The original gate is explicitly failed and unchanged. Bounded issue closure is described as the owner-approved delivery scope decision, not as satisfaction of the original numerical acceptance gate, a capability ceiling for Luna, or universal language/discourse coverage.",
+    "Issue 61 mapping preserves separate source, knowledge and response-language decisions, owner control and stable unset behavior, exact quotes/identities, model-free caller candidates, receipt/replay behavior and no implied bulk translation. Generated summaries/maintenance policy claims are identified as deterministic coverage, not live-model success in the V23 matrix.",
+    "Issue 62 mapping preserves authored-byte authority, rebuildable scope qualification, ordinary factual usefulness, current-byte invalidation, typed bounded-frame behavior and source-language inspection. The four-case ordinary live supplement counts reconcile to 47/48 useful answers, 24/24 contexts and 18/18 safe factual-negative controls; its small bounded scope is disclosed.",
+    "Model index synthesis, graph expansion and longitudinal maintenance are explicitly outside the live matrix. The table does not claim that deterministic graph or maintenance eligibility tests establish live model quality.",
+    "Follow-up ownership distinguishes preservation of language/source regression cases under issue 66 from the new multi-cycle work that issue 66 still requires. The present baseline does not claim to measure propagation, false corroboration, correction/retraction recovery, unchanged-input drift or longitudinal reliability.",
+    "The repair subset is explicitly separate from the 352-coordinate baseline and is not proposed as a replacement gate run or fresh held-out generalization. The original v10 measurement and final v11 measurement must remain separately labeled."
+  ],
+  "limitations": [
+    "This is a documentation/evidence-scope audit, not a new runtime implementation audit of every policy, graph, summary or maintenance path. Deterministic implementation claims are assessed for truthful evidence categorization, not independently re-proven here.",
+    "The user-authorized bounded closure decision is taken from the parent delegation context. The original issue bodies were read directly through GitHub and remain open at the time of this audit.",
+    "Final v11 success, output quality and availability remain unknown pending completion and independent grading. No unfinished output is credited or penalized."
+  ],
+  "priorEvidence": {
+    "baselineAudit": "/tmp/akno-luna-baseline-audit.json",
+    "ordinaryReview": "/tmp/akno-pr73-ordinary-output-review.json",
+    "baselinePacketFingerprint": "85f20d6be3a3d918e302957ae46716e14d236c1b2db994ffb860b72b58937254"
+  },
+  "gradesChanged": false
+}

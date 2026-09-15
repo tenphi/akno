@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "057b4925a69db67b7facdca3d1e8956216cf904a98a0fa943bd1af55cbaa18a9",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-read-only-admission",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The actual context is empty, safely excluding the source from memory activation as required by the read-only target. It is not useful context activation. Empty evidence contains no false proposition, qualification distortion, or language-framing violation, and it does not establish runtime unavailability or byte stability."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The actual context is empty, safely excluding the source from memory activation as required by the read-only target. It is not useful context activation. Empty evidence contains no false proposition, qualification distortion, or language-framing violation, and it does not establish runtime unavailability or byte stability."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The actual context is empty, safely excluding the source from memory activation as required by the read-only target. It is not useful context activation. Empty evidence contains no false proposition, qualification distortion, or language-framing violation, and it does not establish runtime unavailability or byte stability."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The actual context is empty, safely excluding the source from memory activation as required by the read-only target. It is not useful context activation. Empty evidence contains no false proposition, qualification distortion, or language-framing violation, and it does not establish runtime unavailability or byte stability."
+        }
+      ]
+    }
+  ]
+}

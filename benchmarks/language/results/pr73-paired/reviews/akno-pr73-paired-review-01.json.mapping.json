@@ -1,0 +1,205 @@
+{
+  "packetSha256": "b10cf770d14d37dc67b1d6054ef6e1f63911f7df50cce909ee3ba37ef96880df",
+  "mapping": [
+    {
+      "id": "83b3481d37d72233361c",
+      "file": "ordinary-english-report-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "87a27e290a971bff1c3a",
+      "file": "ordinary-english-report-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "a7d985d0e53c4eab3e4a",
+      "file": "ordinary-english-report-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "2e988cb988305677e15e",
+      "file": "ordinary-english-report-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "55f4118ee812470c01c5",
+      "file": "ordinary-english-report-repeat-1.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "c3e8650f82af08befb07",
+      "file": "ordinary-english-report-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "057eee1aac86715ad24d",
+      "file": "ordinary-english-report-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "4a73007ff3652247a027",
+      "file": "ordinary-english-report-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "28596201ed98186d0246",
+      "file": "ordinary-english-report-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "827f010906503ad56194",
+      "file": "ordinary-english-report-repeat-1.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "ae48f9cbcad7032e10a1",
+      "file": "ordinary-mixed-hypothesis-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "34f2e94b214161c6dbe6",
+      "file": "ordinary-mixed-hypothesis-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "b998547063903d3e76a8",
+      "file": "ordinary-mixed-hypothesis-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "7061ce96fb958a3c8c61",
+      "file": "ordinary-mixed-hypothesis-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "1f8d95c6a251fce43d8d",
+      "file": "ordinary-mixed-hypothesis-repeat-1.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "af7e01127066c794fe41",
+      "file": "ordinary-mixed-hypothesis-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "49f244aea62b21dc848b",
+      "file": "ordinary-mixed-hypothesis-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "6175ba385c90ad2fb8b7",
+      "file": "ordinary-mixed-hypothesis-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "d608b051ed4e37427ca2",
+      "file": "ordinary-mixed-hypothesis-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "ffd94df37038a4c4a235",
+      "file": "ordinary-mixed-hypothesis-repeat-1.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    }
+  ]
+}

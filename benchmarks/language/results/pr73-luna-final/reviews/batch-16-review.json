@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "f78841813cddfd1f7b2dd7acad384173be20c124588315955f7b854bfe9e74b2",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-read-only",
+      "run": 1,
+      "retentionUseful": false,
+      "retentionJustifiedHold": true,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The source states an understandable eleven-year support period, but the declared target is read-only and requires an admission hold. The empty retained set is the justified exclusion, not successful useful retention or an inability to interpret the fact. It emits no unsupported statement, missing-support claim, language error, or qualification distortion. Exact typed admission status and byte stability are operational properties not demonstrated by this semantic output packet.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The null answer and empty memory retrieval are appropriate for a fact that must not be retained in the read-only target. This is a justified memory-query abstention, not useful answer/retrieval activation. The source fact remains understandable, and the empty publication does not assert that support is absent or that interpretation is unavailable."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The null answer and empty memory retrieval are appropriate for a fact that must not be retained in the read-only target. This is a justified memory-query abstention, not useful answer/retrieval activation. The source fact remains understandable, and the empty publication does not assert that support is absent or that interpretation is unavailable."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The null answer and empty memory retrieval are appropriate for a fact that must not be retained in the read-only target. This is a justified memory-query abstention, not useful answer/retrieval activation. The source fact remains understandable, and the empty publication does not assert that support is absent or that interpretation is unavailable."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The null answer and empty memory retrieval are appropriate for a fact that must not be retained in the read-only target. This is a justified memory-query abstention, not useful answer/retrieval activation. The source fact remains understandable, and the empty publication does not assert that support is absent or that interpretation is unavailable."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The null answer and empty memory retrieval are appropriate for a fact that must not be retained in the read-only target. This is a justified memory-query abstention, not useful answer/retrieval activation. The source fact remains understandable, and the empty publication does not assert that support is absent or that interpretation is unavailable."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The null answer and empty memory retrieval are appropriate for a fact that must not be retained in the read-only target. This is a justified memory-query abstention, not useful answer/retrieval activation. The source fact remains understandable, and the empty publication does not assert that support is absent or that interpretation is unavailable."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The null answer and empty memory retrieval are appropriate for a fact that must not be retained in the read-only target. This is a justified memory-query abstention, not useful answer/retrieval activation. The source fact remains understandable, and the empty publication does not assert that support is absent or that interpretation is unavailable."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The null answer and empty memory retrieval are appropriate for a fact that must not be retained in the read-only target. This is a justified memory-query abstention, not useful answer/retrieval activation. The source fact remains understandable, and the empty publication does not assert that support is absent or that interpretation is unavailable."
+        }
+      ]
+    }
+  ]
+}

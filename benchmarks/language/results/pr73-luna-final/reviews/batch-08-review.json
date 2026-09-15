@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "2a24203c7f2044c68d036c00ca951f895b4390b5bd48b55852970dbdb373c9ff",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-competing-hypotheses",
+      "run": 1,
+      "retentionUseful": true,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The retained English prose preserves both distinct preliminary alternatives from the conversation: a deformed washer or a poorly secured filter cover. It retains Ada as the person considering and selecting neither, the current absence of supporting data for either, and the limit that this record does not confirm the rattle itself. Tentative discussion metadata agrees with the prose. No component, hypothesis, or symptom is promoted to an established fault.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer uses the requested language and faithfully preserves the two competing component-specific hypotheses, Ada’s personal nonselection, lack of supporting data for either, and the fact that this record does not itself confirm rattling. The retrieved evidence contains all of those coupled qualifications. Neither cause is selected, merged with the other, or asserted as a real fault."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer uses the requested language and faithfully preserves the two competing component-specific hypotheses, Ada’s personal nonselection, lack of supporting data for either, and the fact that this record does not itself confirm rattling. The retrieved evidence contains all of those coupled qualifications. Neither cause is selected, merged with the other, or asserted as a real fault."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer uses the requested language and faithfully preserves the two competing component-specific hypotheses, Ada’s personal nonselection, lack of supporting data for either, and the fact that this record does not itself confirm rattling. The retrieved evidence contains all of those coupled qualifications. Neither cause is selected, merged with the other, or asserted as a real fault."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer uses the requested language and faithfully preserves the two competing component-specific hypotheses, Ada’s personal nonselection, lack of supporting data for either, and the fact that this record does not itself confirm rattling. The retrieved evidence contains all of those coupled qualifications. Neither cause is selected, merged with the other, or asserted as a real fault."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer uses the requested language and faithfully preserves the two competing component-specific hypotheses, Ada’s personal nonselection, lack of supporting data for either, and the fact that this record does not itself confirm rattling. The retrieved evidence contains all of those coupled qualifications. Neither cause is selected, merged with the other, or asserted as a real fault."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer uses the requested language and faithfully preserves the two competing component-specific hypotheses, Ada’s personal nonselection, lack of supporting data for either, and the fact that this record does not itself confirm rattling. The retrieved evidence contains all of those coupled qualifications. Neither cause is selected, merged with the other, or asserted as a real fault."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer uses the requested language and faithfully preserves the two competing component-specific hypotheses, Ada’s personal nonselection, lack of supporting data for either, and the fact that this record does not itself confirm rattling. The retrieved evidence contains all of those coupled qualifications. Neither cause is selected, merged with the other, or asserted as a real fault."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer uses the requested language and faithfully preserves the two competing component-specific hypotheses, Ada’s personal nonselection, lack of supporting data for either, and the fact that this record does not itself confirm rattling. The retrieved evidence contains all of those coupled qualifications. Neither cause is selected, merged with the other, or asserted as a real fault."
+        }
+      ]
+    }
+  ]
+}

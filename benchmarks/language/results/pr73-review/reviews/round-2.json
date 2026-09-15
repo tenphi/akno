@@ -1,0 +1,116 @@
+{
+  "schemaVersion": "independent-production-review-v1",
+  "round": 2,
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotModifyRepository": true
+  },
+  "originalFiveReproductions": "All five are corrected in the reviewed working tree; intended positive routing examples remain accepted.",
+  "reviewedSha256": {
+    "packages/core/src/kb/prose.ts": "e5f6a9cd8949f68de9361571309ccbc33933d59668494cbb2193bc9fee070cd1",
+    "packages/core/src/memory/intent.ts": "da838b24180a98811860ae13ce3c1900f8329e5b1904a53168556150b6e0fafb",
+    "scripts/language-comparison-validation.mjs": "75c649cc167887d804bfa680acb96aa04a62362ab6ee7a61568ba0f83759f64c",
+    "scripts/summarize-language-comparison.mjs": "f814907c2d3e1d2198040c769b3659b50f7aba056cc251be3307bcbfbef058a3"
+  },
+  "findings": [
+    {
+      "id": "P73-R2-01",
+      "priority": 1,
+      "path": "packages/core/src/kb/prose.ts",
+      "line": 245,
+      "title": "Retain list paragraph eligibility for a following backward qualifier",
+      "inputLines": [
+        "- Notes",
+        "",
+        "  ## Details",
+        "",
+        "  The case is silver.",
+        "",
+        "This is only hypothetical."
+      ],
+      "beforeRound1": {
+        "line5View": "discussion",
+        "line5AnswerEligible": false
+      },
+      "workingTree": {
+        "line5View": "factual",
+        "line5AnswerEligible": true,
+        "line5Frame": []
+      },
+      "reason": "The recursive list branch resets previousParagraph, so the established backward-qualification rule cannot apply the explicit hypothetical qualification to the preceding list content. Preserve the relevant paragraph plus exact source frame through the container boundary."
+    },
+    {
+      "id": "P73-R2-02",
+      "priority": 2,
+      "path": "packages/core/src/kb/prose.ts",
+      "line": 69,
+      "title": "Only paragraph blocks can enable lazy continuation",
+      "inputLines": [
+        "- Notes",
+        "",
+        "  ## Hypothesis",
+        "",
+        "  ---",
+        "The case is silver."
+      ],
+      "workingTree": {
+        "line6View": "discussion",
+        "line6AnswerEligible": false
+      },
+      "expected": {
+        "line6View": "factual",
+        "line6AnswerEligible": true
+      },
+      "reason": "Thematic breaks, indented code and HTML comments currently set paragraph=true. An outdented new paragraph is then consumed as lazy list continuation and inherits the list-local hypothesis. Variants replace the separator with three asterisks, an indented code line or an HTML comment. Initial list content opening a fence is also not reflected in the fence state."
+    },
+    {
+      "id": "P73-R2-03",
+      "priority": 2,
+      "path": "scripts/language-comparison-validation.mjs",
+      "line": 74,
+      "endLine": 77,
+      "title": "Validate the factual-control outcome and retained read observation",
+      "reproduction": "Remove candidate.factualControl.answer.answer from one archived offline canonical pair and update its indexed file hash; keep every other field and all 48 coordinates.",
+      "actual": {
+        "validatorAccepts": true,
+        "summarizerDeterministicAcceptance": true,
+        "reportedFactualAnswerControls": 48
+      },
+      "reason": "Unlike main answers, factual controls are checked only for view and answer language. A missing outcome is counted as a completed control. A missing retained read snapshot also passes validation. Require the same null-or-string answer contract and the required read observation shape.",
+      "temporaryReproduction": "/var/folders/8b/6ybnt3j12fj1bj956m8b9ry40000gn/T/akno-review-missing-factual-g2NQLl"
+    },
+    {
+      "id": "P73-R2-04",
+      "priority": 2,
+      "path": "scripts/summarize-language-comparison.mjs",
+      "line": 73,
+      "title": "Bind upgrade validation to the recorded projection version",
+      "reason": "Initially the summarizer required prose-v3 and rejected new prose-v4 index upgrades. The latest inspected working tree accepts both prose-v3 and prose-v4, preserving archive compatibility. Reverify version and artifact binding in the final run.",
+      "status": "Compatibility blocker addressed during concurrent parent edits"
+    },
+    {
+      "id": "P73-R2-05",
+      "priority": 2,
+      "path": "packages/core/src/memory/intent.ts",
+      "line": 215,
+      "title": "Use the same whitespace handling for the machine-message exclusion",
+      "query": "Какое сообщение об\tошибке передаёт дисплей Zephyr QX-100?",
+      "expectedView": "factual",
+      "actualView": "reports",
+      "reason": "The new exclusion uses literal single spaces although the positive bounded transport matcher accepts tabs and repeated spaces. A whitespace-only query change bypasses the intended factual-message guard."
+    }
+  ],
+  "validationPositiveChecks": [
+    "Original archived 48-pair offline grid passes validation.",
+    "Missing indexed pair fails.",
+    "Duplicate answer coordinate fails.",
+    "An arm with harnessError fails."
+  ],
+  "notes": [
+    "No frozen archive was edited; the malformed evidence reproduction is isolated in a temporary directory.",
+    "No live model calls were made.",
+    "This review captures the working tree at the listed hashes; parent is implementing concurrently."
+  ]
+}

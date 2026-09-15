@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "fc481f7a61ab816e0a0021162941bada70c655233dd5b33ad40aefa8041ee39c",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-declined-extension",
+      "run": 2,
+      "retentionUseful": false,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "Only Ada’s actual rejection of the optional cable-protection extension is retained. The material counterfactual payload—free connector repair after twenty-two months of use if she had accepted, explicitly unrealized and not current coverage—is omitted. The surviving decision and its rejected/asserted qualification are faithful, but cannot substitute for the requested benefit or complete retained meaning. There is no source/admission reason to hold the writable counterfactual from discussion.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and retrieval contains only the actual rejection, omitting the source-supported unrealized connector-repair benefit. The original writable source is answerable, so this is an avoidable pipeline miss rather than a justified source hold. The empty answer emits no false claim; its runtime cause is not supplied by the public packet."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and retrieval contains only the actual rejection, omitting the source-supported unrealized connector-repair benefit. The original writable source is answerable, so this is an avoidable pipeline miss rather than a justified source hold. The empty answer emits no false claim; its runtime cause is not supplied by the public packet."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and retrieval contains only the actual rejection, omitting the source-supported unrealized connector-repair benefit. The original writable source is answerable, so this is an avoidable pipeline miss rather than a justified source hold. The empty answer emits no false claim; its runtime cause is not supplied by the public packet."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and retrieval contains only the actual rejection, omitting the source-supported unrealized connector-repair benefit. The original writable source is answerable, so this is an avoidable pipeline miss rather than a justified source hold. The empty answer emits no false claim; its runtime cause is not supplied by the public packet."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The English answer faithfully states that Ada declined the extension, but does not identify the unrealized benefit asked about: conditional free connector repair after twenty-two months of use. Retrieval likewise contains only the rejection. This is an entailed, correctly qualified and correctly languaged statement that fails focused answer/retrieval usefulness; it asserts no current coverage or performed repair."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and retrieval contains only the actual rejection, omitting the source-supported unrealized connector-repair benefit. The original writable source is answerable, so this is an avoidable pipeline miss rather than a justified source hold. The empty answer emits no false claim; its runtime cause is not supplied by the public packet."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and retrieval contains only the actual rejection, omitting the source-supported unrealized connector-repair benefit. The original writable source is answerable, so this is an avoidable pipeline miss rather than a justified source hold. The empty answer emits no false claim; its runtime cause is not supplied by the public packet."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and retrieval contains only the actual rejection, omitting the source-supported unrealized connector-repair benefit. The original writable source is answerable, so this is an avoidable pipeline miss rather than a justified source hold. The empty answer emits no false claim; its runtime cause is not supplied by the public packet."
+        }
+      ]
+    }
+  ]
+}

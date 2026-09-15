@@ -1,0 +1,2156 @@
+{
+  "schemaVersion": "paired-source-review-v1",
+  "instructions": "Independently assess each output against original source AND separately frozen available evidence. Never treat empty/partial retained records as proof the original source lacks an answer. Main usefulness is from the original question and any explicitly requested view; an incorrectly inferred runtime view cannot justify a null. Factual controls explicitly request factual evidence and must not promote reports/hypotheses/plans into actual facts. A correct null may be justified by that explicit restriction. Focused answers may omit independent unrelated facts but must preserve coupled scope/qualification, object/component distinctions and all requested details. Return every ID exactly once with useful:boolean (nonnull answers only), sourceEntailed:boolean|null, qualificationPreserved:boolean|null, languageCompliant:boolean|null, citationsValid:boolean|null, supportedByAvailableEvidence:boolean|null, justifiedNull:boolean|null (null for nonnull answers), and concise reason. Null answer implies all five emitted-answer flags null and useful:false. Keep source-level justification separate from artifact-caused absence. Correctly typed availability failure is still unavailable, not a justified source-based abstention. No runtime acceptance or archive judgment overrides original-source reading. Reviewer must check citation coordinates against citationLines and not merely trust runtime flags.",
+  "cases": [
+    {
+      "id": "025fb241c7a5187f7ad3",
+      "fixtureId": "ordinary-english-report",
+      "kind": "factual-control",
+      "question": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": "factual",
+      "originalSource": "# Zephyr QX-100\n\n  ## Assistant ###\nThe Zephyr QX-100 maintenance plan includes a case inspection every eleven months.\n",
+      "frozenAvailableRecords": null,
+      "originalRetentionReview": null,
+      "sourceExpectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity.",
+      "answer": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": []
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "  ## Assistant ###"
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+        }
+      ]
+    },
+    {
+      "id": "062132edd8855aa681cf",
+      "fixtureId": "v22-held-nested-report/run-1",
+      "kind": "main",
+      "question": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "requestedAnswerLanguage": "ru",
+      "requestedView": "reports",
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+        },
+        {
+          "item_id": "turn-3333",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+        }
+      ],
+      "frozenAvailableRecords": [],
+      "originalRetentionReview": {
+        "complete": false,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "No knowledge is retained from this writable, understandable development source. A complete retained set would preserve Ada relaying Bo’s alleged Vulpine permission to bring the device to a workshop for a grounding-contact resistance check rather than replacement, Ada’s personal lack of seeing the rules and verifying Bo’s report, and her separate not-yet-packed-device assertion. An unverified attributed report remains legitimate qualified knowledge; the source does not require a read-only or interpretive hold. Complete retention therefore fails. Empty saved knowledge is vacuously source-entailed and contains no generated-language violation, stripped qualification on an emitted claim, or factual promotion; those neutral flags do not turn absence into useful retention. The packet gives no source-based basis for attributing the miss to a particular runtime cause."
+      },
+      "sourceExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established.",
+      "answer": null,
+      "reasonCode": "no_eligible_evidence",
+      "suppliedEvidence": [],
+      "citations": [],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        }
+      ]
+    },
+    {
+      "id": "110cce03daff78a57812",
+      "fixtureId": "v23-held-scoped-exclusion/run-1",
+      "kind": "main",
+      "question": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": "factual",
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, записываю: гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Это исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли. Оно также не означает, что договор ничего не говорит об этой шарнирной петле."
+        }
+      ],
+      "frozenAvailableRecords": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_c525e28e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_07f691343007e67b30b131ae",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "originalRetentionReview": {
+        "complete": true,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "The complete retained claim preserves Ada’s wax-caused fabric-seal damage exclusion and both coupled limits: it alone settles neither hinge-replacement coverage nor whether the contract discusses the hinge. The revised source expressly identifies a mechanical hinge, so English hinge preserves its component meaning. Negative polarity and self-attested attribution match the source; no wider seal exclusion or hinge entitlement is asserted."
+      },
+      "sourceExpectation": "Retain the specific exclusion of wax-caused fabric-seal damage, with negative polarity, and separately the limit that this exclusion does not settle hinge-replacement coverage or prove contract silence. Do not exclude all seal damage, assert inclusion/exclusion of hinge replacement, or change damage coverage into a replacement benefit.",
+      "answer": "Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not establish whether hinge replacement is covered, nor does it mean that the contract says nothing about the hinge. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_c525e28e v=2 supports=6054ff36c5e203a621d9c898@5feceb66ffc86f38d952786c@9cb52e62454297267d8f5ad5@provided level=1 kind=claim subject=ent_07f691343007e67b30b131ae source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+        },
+        {
+          "n": 4,
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge."
+        }
+      ]
+    },
+    {
+      "id": "1bb0d2dfc94c0a270e81",
+      "fixtureId": "v23-held-scoped-exclusion/run-1",
+      "kind": "factual-control",
+      "question": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": "factual",
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, записываю: гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Это исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли. Оно также не означает, что договор ничего не говорит об этой шарнирной петле."
+        }
+      ],
+      "frozenAvailableRecords": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_c525e28e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_07f691343007e67b30b131ae",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "originalRetentionReview": {
+        "complete": true,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "The complete retained claim preserves Ada’s wax-caused fabric-seal damage exclusion and both coupled limits: it alone settles neither hinge-replacement coverage nor whether the contract discusses the hinge. The revised source expressly identifies a mechanical hinge, so English hinge preserves its component meaning. Negative polarity and self-attested attribution match the source; no wider seal exclusion or hinge entitlement is asserted."
+      },
+      "sourceExpectation": "Retain the specific exclusion of wax-caused fabric-seal damage, with negative polarity, and separately the limit that this exclusion does not settle hinge-replacement coverage or prove contract silence. Do not exclude all seal damage, assert inclusion/exclusion of hinge replacement, or change damage coverage into a replacement benefit.",
+      "answer": "Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion does not establish whether hinge replacement is covered, nor does it mean that the contract says nothing about the hinge. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_c525e28e v=2 supports=6054ff36c5e203a621d9c898@5feceb66ffc86f38d952786c@9cb52e62454297267d8f5ad5@provided level=1 kind=claim subject=ent_07f691343007e67b30b131ae source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+        },
+        {
+          "n": 4,
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge."
+        }
+      ]
+    },
+    {
+      "id": "263a492bd76405805cb4",
+      "fixtureId": "v22-held-nested-report/run-1",
+      "kind": "factual-control",
+      "question": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": "factual",
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+        },
+        {
+          "item_id": "turn-3333",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+        }
+      ],
+      "frozenAvailableRecords": [],
+      "originalRetentionReview": {
+        "complete": false,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "No knowledge is retained from this writable, understandable development source. A complete retained set would preserve Ada relaying Bo’s alleged Vulpine permission to bring the device to a workshop for a grounding-contact resistance check rather than replacement, Ada’s personal lack of seeing the rules and verifying Bo’s report, and her separate not-yet-packed-device assertion. An unverified attributed report remains legitimate qualified knowledge; the source does not require a read-only or interpretive hold. Complete retention therefore fails. Empty saved knowledge is vacuously source-entailed and contains no generated-language violation, stripped qualification on an emitted claim, or factual promotion; those neutral flags do not turn absence into useful retention. The packet gives no source-based basis for attributing the miss to a particular runtime cause."
+      },
+      "sourceExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established.",
+      "answer": null,
+      "reasonCode": "no_eligible_evidence",
+      "suppliedEvidence": [],
+      "citations": [],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        }
+      ]
+    },
+    {
+      "id": "2c56f0b913d8c744e636",
+      "fixtureId": "v23-held-scoped-exclusion/run-1",
+      "kind": "main",
+      "question": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "requestedAnswerLanguage": "ru",
+      "requestedView": null,
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, записываю: гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Это исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли. Оно также не означает, что договор ничего не говорит об этой шарнирной петле."
+        }
+      ],
+      "frozenAvailableRecords": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_c525e28e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_07f691343007e67b30b131ae",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "originalRetentionReview": {
+        "complete": true,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "The complete retained claim preserves Ada’s wax-caused fabric-seal damage exclusion and both coupled limits: it alone settles neither hinge-replacement coverage nor whether the contract discusses the hinge. The revised source expressly identifies a mechanical hinge, so English hinge preserves its component meaning. Negative polarity and self-attested attribution match the source; no wider seal exclusion or hinge entitlement is asserted."
+      },
+      "sourceExpectation": "Retain the specific exclusion of wax-caused fabric-seal damage, with negative polarity, and separately the limit that this exclusion does not settle hinge-replacement coverage or prove contract silence. Do not exclude all seal damage, assert inclusion/exclusion of hinge replacement, or change damage coverage into a replacement benefit.",
+      "answer": "Ada Marlow утверждает, что гарантия на Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском. Само это исключение не устанавливает, покрывает ли гарантия замену петли, и не означает, что в договоре ничего не сказано о петле. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_c525e28e v=2 supports=6054ff36c5e203a621d9c898@5feceb66ffc86f38d952786c@9cb52e62454297267d8f5ad5@provided level=1 kind=claim subject=ent_07f691343007e67b30b131ae source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+        },
+        {
+          "n": 4,
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge."
+        }
+      ]
+    },
+    {
+      "id": "3665531f898d38bd134a",
+      "fixtureId": "ordinary-english-report",
+      "kind": "main",
+      "question": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "requestedAnswerLanguage": "ru",
+      "requestedView": null,
+      "originalSource": "# Zephyr QX-100\n\n  ## Assistant ###\nThe Zephyr QX-100 maintenance plan includes a case inspection every eleven months.\n",
+      "frozenAvailableRecords": null,
+      "originalRetentionReview": null,
+      "sourceExpectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity.",
+      "answer": "План обслуживания Zephyr QX-100 включает проверку корпуса каждые одиннадцать месяцев. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": []
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "  ## Assistant ###"
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+        }
+      ]
+    },
+    {
+      "id": "39ff1c6aaa07f57173d1",
+      "fixtureId": "v23-held-scoped-exclusion/run-1",
+      "kind": "main",
+      "question": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "requestedAnswerLanguage": "ru",
+      "requestedView": null,
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, записываю: гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Это исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли. Оно также не означает, что договор ничего не говорит об этой шарнирной петле."
+        }
+      ],
+      "frozenAvailableRecords": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_c525e28e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_07f691343007e67b30b131ae",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "originalRetentionReview": {
+        "complete": true,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "The complete retained claim preserves Ada’s wax-caused fabric-seal damage exclusion and both coupled limits: it alone settles neither hinge-replacement coverage nor whether the contract discusses the hinge. The revised source expressly identifies a mechanical hinge, so English hinge preserves its component meaning. Negative polarity and self-attested attribution match the source; no wider seal exclusion or hinge entitlement is asserted."
+      },
+      "sourceExpectation": "Retain the specific exclusion of wax-caused fabric-seal damage, with negative polarity, and separately the limit that this exclusion does not settle hinge-replacement coverage or prove contract silence. Do not exclude all seal damage, assert inclusion/exclusion of hinge replacement, or change damage coverage into a replacement benefit.",
+      "answer": "Ada Marlow утверждает, что гарантия на Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском. Само это исключение не устанавливает, покрывает ли гарантия замену петли, и не означает, что в договоре ничего не сказано о петле. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_c525e28e v=2 supports=6054ff36c5e203a621d9c898@5feceb66ffc86f38d952786c@9cb52e62454297267d8f5ad5@provided level=1 kind=claim subject=ent_07f691343007e67b30b131ae source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+        },
+        {
+          "n": 4,
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge."
+        }
+      ]
+    },
+    {
+      "id": "3c420b77c56eae289075",
+      "fixtureId": "ordinary-english-report",
+      "kind": "main",
+      "question": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": null,
+      "originalSource": "# Zephyr QX-100\n\n  ## Assistant ###\nThe Zephyr QX-100 maintenance plan includes a case inspection every eleven months.\n",
+      "frozenAvailableRecords": null,
+      "originalRetentionReview": null,
+      "sourceExpectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity.",
+      "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes a case inspection every eleven months. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": []
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "  ## Assistant ###"
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+        }
+      ]
+    },
+    {
+      "id": "3d617011d0e80d85a5e8",
+      "fixtureId": "v22-held-nested-report/run-1",
+      "kind": "main",
+      "question": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": null,
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+        },
+        {
+          "item_id": "turn-3333",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+        }
+      ],
+      "frozenAvailableRecords": [],
+      "originalRetentionReview": {
+        "complete": false,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "No knowledge is retained from this writable, understandable development source. A complete retained set would preserve Ada relaying Bo’s alleged Vulpine permission to bring the device to a workshop for a grounding-contact resistance check rather than replacement, Ada’s personal lack of seeing the rules and verifying Bo’s report, and her separate not-yet-packed-device assertion. An unverified attributed report remains legitimate qualified knowledge; the source does not require a read-only or interpretive hold. Complete retention therefore fails. Empty saved knowledge is vacuously source-entailed and contains no generated-language violation, stripped qualification on an emitted claim, or factual promotion; those neutral flags do not turn absence into useful retention. The packet gives no source-based basis for attributing the miss to a particular runtime cause."
+      },
+      "sourceExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established.",
+      "answer": null,
+      "reasonCode": "no_eligible_evidence",
+      "suppliedEvidence": [],
+      "citations": [],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        }
+      ]
+    },
+    {
+      "id": "447fb9db1316428a8921",
+      "fixtureId": "v23-held-scoped-exclusion/run-1",
+      "kind": "main",
+      "question": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": null,
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, записываю: гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Это исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли. Оно также не означает, что договор ничего не говорит об этой шарнирной петле."
+        }
+      ],
+      "frozenAvailableRecords": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_c525e28e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_07f691343007e67b30b131ae",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "originalRetentionReview": {
+        "complete": true,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "The complete retained claim preserves Ada’s wax-caused fabric-seal damage exclusion and both coupled limits: it alone settles neither hinge-replacement coverage nor whether the contract discusses the hinge. The revised source expressly identifies a mechanical hinge, so English hinge preserves its component meaning. Negative polarity and self-attested attribution match the source; no wider seal exclusion or hinge entitlement is asserted."
+      },
+      "sourceExpectation": "Retain the specific exclusion of wax-caused fabric-seal damage, with negative polarity, and separately the limit that this exclusion does not settle hinge-replacement coverage or prove contract silence. Do not exclude all seal damage, assert inclusion/exclusion of hinge replacement, or change damage coverage into a replacement benefit.",
+      "answer": "Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion does not establish whether hinge replacement is covered, nor does it mean that the contract says nothing about the hinge. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_c525e28e v=2 supports=6054ff36c5e203a621d9c898@5feceb66ffc86f38d952786c@9cb52e62454297267d8f5ad5@provided level=1 kind=claim subject=ent_07f691343007e67b30b131ae source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+        },
+        {
+          "n": 4,
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge."
+        }
+      ]
+    },
+    {
+      "id": "4484f1b7cdffac6e8dac",
+      "fixtureId": "v23-held-scoped-exclusion/run-1",
+      "kind": "factual-control",
+      "question": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": "factual",
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, записываю: гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Это исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли. Оно также не означает, что договор ничего не говорит об этой шарнирной петле."
+        }
+      ],
+      "frozenAvailableRecords": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_c525e28e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_07f691343007e67b30b131ae",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "originalRetentionReview": {
+        "complete": true,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "The complete retained claim preserves Ada’s wax-caused fabric-seal damage exclusion and both coupled limits: it alone settles neither hinge-replacement coverage nor whether the contract discusses the hinge. The revised source expressly identifies a mechanical hinge, so English hinge preserves its component meaning. Negative polarity and self-attested attribution match the source; no wider seal exclusion or hinge entitlement is asserted."
+      },
+      "sourceExpectation": "Retain the specific exclusion of wax-caused fabric-seal damage, with negative polarity, and separately the limit that this exclusion does not settle hinge-replacement coverage or prove contract silence. Do not exclude all seal damage, assert inclusion/exclusion of hinge replacement, or change damage coverage into a replacement benefit.",
+      "answer": "Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion does not establish whether hinge replacement is covered, nor does it mean that the contract says nothing about the hinge. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_c525e28e v=2 supports=6054ff36c5e203a621d9c898@5feceb66ffc86f38d952786c@9cb52e62454297267d8f5ad5@provided level=1 kind=claim subject=ent_07f691343007e67b30b131ae source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+        },
+        {
+          "n": 4,
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge."
+        }
+      ]
+    },
+    {
+      "id": "486756ef23cf32815db8",
+      "fixtureId": "ordinary-english-report",
+      "kind": "main",
+      "question": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "requestedAnswerLanguage": "ru",
+      "requestedView": "reports",
+      "originalSource": "# Zephyr QX-100\n\n  ## Assistant ###\nThe Zephyr QX-100 maintenance plan includes a case inspection every eleven months.\n",
+      "frozenAvailableRecords": null,
+      "originalRetentionReview": null,
+      "sourceExpectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity.",
+      "answer": "В записи указано, что план обслуживания Zephyr QX-100 предусматривает проверку корпуса каждые одиннадцать месяцев. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": []
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "  ## Assistant ###"
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+        }
+      ]
+    },
+    {
+      "id": "566b61f9200e72fb72db",
+      "fixtureId": "v23-held-scoped-exclusion/run-1",
+      "kind": "main",
+      "question": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": "factual",
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, записываю: гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Это исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли. Оно также не означает, что договор ничего не говорит об этой шарнирной петле."
+        }
+      ],
+      "frozenAvailableRecords": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_c525e28e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_07f691343007e67b30b131ae",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "originalRetentionReview": {
+        "complete": true,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "The complete retained claim preserves Ada’s wax-caused fabric-seal damage exclusion and both coupled limits: it alone settles neither hinge-replacement coverage nor whether the contract discusses the hinge. The revised source expressly identifies a mechanical hinge, so English hinge preserves its component meaning. Negative polarity and self-attested attribution match the source; no wider seal exclusion or hinge entitlement is asserted."
+      },
+      "sourceExpectation": "Retain the specific exclusion of wax-caused fabric-seal damage, with negative polarity, and separately the limit that this exclusion does not settle hinge-replacement coverage or prove contract silence. Do not exclude all seal damage, assert inclusion/exclusion of hinge replacement, or change damage coverage into a replacement benefit.",
+      "answer": "Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not establish whether hinge replacement is covered, nor does it mean that the contract says nothing about the hinge. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_c525e28e v=2 supports=6054ff36c5e203a621d9c898@5feceb66ffc86f38d952786c@9cb52e62454297267d8f5ad5@provided level=1 kind=claim subject=ent_07f691343007e67b30b131ae source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+        },
+        {
+          "n": 4,
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge."
+        }
+      ]
+    },
+    {
+      "id": "5b1b53f4ba13daa30e3f",
+      "fixtureId": "ordinary-english-report",
+      "kind": "main",
+      "question": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": "reports",
+      "originalSource": "# Zephyr QX-100\n\n  ## Assistant ###\nThe Zephyr QX-100 maintenance plan includes a case inspection every eleven months.\n",
+      "frozenAvailableRecords": null,
+      "originalRetentionReview": null,
+      "sourceExpectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity.",
+      "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes a case inspection every eleven months. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "speaker",
+                "answer_eligible": false,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Assistant ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                  }
+                ]
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            1,
+            3,
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "  ## Assistant ###"
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+        }
+      ]
+    },
+    {
+      "id": "6b384c736ca7ded5e996",
+      "fixtureId": "v22-held-nested-report/run-1",
+      "kind": "main",
+      "question": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "requestedAnswerLanguage": "ru",
+      "requestedView": "reports",
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+        },
+        {
+          "item_id": "turn-3333",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+        }
+      ],
+      "frozenAvailableRecords": [],
+      "originalRetentionReview": {
+        "complete": false,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "No knowledge is retained from this writable, understandable development source. A complete retained set would preserve Ada relaying Bo’s alleged Vulpine permission to bring the device to a workshop for a grounding-contact resistance check rather than replacement, Ada’s personal lack of seeing the rules and verifying Bo’s report, and her separate not-yet-packed-device assertion. An unverified attributed report remains legitimate qualified knowledge; the source does not require a read-only or interpretive hold. Complete retention therefore fails. Empty saved knowledge is vacuously source-entailed and contains no generated-language violation, stripped qualification on an emitted claim, or factual promotion; those neutral flags do not turn absence into useful retention. The packet gives no source-based basis for attributing the miss to a particular runtime cause."
+      },
+      "sourceExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established.",
+      "answer": null,
+      "reasonCode": "no_eligible_evidence",
+      "suppliedEvidence": [],
+      "citations": [],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        }
+      ]
+    },
+    {
+      "id": "6cbb8bf7e7321761289f",
+      "fixtureId": "v22-held-nested-report/run-1",
+      "kind": "factual-control",
+      "question": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": "factual",
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+        },
+        {
+          "item_id": "turn-3333",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+        }
+      ],
+      "frozenAvailableRecords": [],
+      "originalRetentionReview": {
+        "complete": false,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "No knowledge is retained from this writable, understandable development source. A complete retained set would preserve Ada relaying Bo’s alleged Vulpine permission to bring the device to a workshop for a grounding-contact resistance check rather than replacement, Ada’s personal lack of seeing the rules and verifying Bo’s report, and her separate not-yet-packed-device assertion. An unverified attributed report remains legitimate qualified knowledge; the source does not require a read-only or interpretive hold. Complete retention therefore fails. Empty saved knowledge is vacuously source-entailed and contains no generated-language violation, stripped qualification on an emitted claim, or factual promotion; those neutral flags do not turn absence into useful retention. The packet gives no source-based basis for attributing the miss to a particular runtime cause."
+      },
+      "sourceExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established.",
+      "answer": null,
+      "reasonCode": "no_eligible_evidence",
+      "suppliedEvidence": [],
+      "citations": [],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        }
+      ]
+    },
+    {
+      "id": "72176246c058dc04b74b",
+      "fixtureId": "v23-held-scoped-exclusion/run-1",
+      "kind": "main",
+      "question": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "requestedAnswerLanguage": "ru",
+      "requestedView": "factual",
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, записываю: гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Это исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли. Оно также не означает, что договор ничего не говорит об этой шарнирной петле."
+        }
+      ],
+      "frozenAvailableRecords": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_c525e28e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_07f691343007e67b30b131ae",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "originalRetentionReview": {
+        "complete": true,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "The complete retained claim preserves Ada’s wax-caused fabric-seal damage exclusion and both coupled limits: it alone settles neither hinge-replacement coverage nor whether the contract discusses the hinge. The revised source expressly identifies a mechanical hinge, so English hinge preserves its component meaning. Negative polarity and self-attested attribution match the source; no wider seal exclusion or hinge entitlement is asserted."
+      },
+      "sourceExpectation": "Retain the specific exclusion of wax-caused fabric-seal damage, with negative polarity, and separately the limit that this exclusion does not settle hinge-replacement coverage or prove contract silence. Do not exclude all seal damage, assert inclusion/exclusion of hinge replacement, or change damage coverage into a replacement benefit.",
+      "answer": "Ada Marlow утверждает, что гарантия на Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском. Одно это исключение не отвечает на вопрос, покрывает ли гарантия замену петли, и не означает, что в договоре ничего не сказано о петле. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_c525e28e v=2 supports=6054ff36c5e203a621d9c898@5feceb66ffc86f38d952786c@9cb52e62454297267d8f5ad5@provided level=1 kind=claim subject=ent_07f691343007e67b30b131ae source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+        },
+        {
+          "n": 4,
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge."
+        }
+      ]
+    },
+    {
+      "id": "7b3e3b1684bc453db07a",
+      "fixtureId": "v22-held-nested-report/run-1",
+      "kind": "main",
+      "question": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "requestedAnswerLanguage": "ru",
+      "requestedView": null,
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+        },
+        {
+          "item_id": "turn-3333",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+        }
+      ],
+      "frozenAvailableRecords": [],
+      "originalRetentionReview": {
+        "complete": false,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "No knowledge is retained from this writable, understandable development source. A complete retained set would preserve Ada relaying Bo’s alleged Vulpine permission to bring the device to a workshop for a grounding-contact resistance check rather than replacement, Ada’s personal lack of seeing the rules and verifying Bo’s report, and her separate not-yet-packed-device assertion. An unverified attributed report remains legitimate qualified knowledge; the source does not require a read-only or interpretive hold. Complete retention therefore fails. Empty saved knowledge is vacuously source-entailed and contains no generated-language violation, stripped qualification on an emitted claim, or factual promotion; those neutral flags do not turn absence into useful retention. The packet gives no source-based basis for attributing the miss to a particular runtime cause."
+      },
+      "sourceExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established.",
+      "answer": null,
+      "reasonCode": "no_eligible_evidence",
+      "suppliedEvidence": [],
+      "citations": [],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        }
+      ]
+    },
+    {
+      "id": "89cbc1dcf393ec488c62",
+      "fixtureId": "ordinary-english-report",
+      "kind": "factual-control",
+      "question": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": "factual",
+      "originalSource": "# Zephyr QX-100\n\n  ## Assistant ###\nThe Zephyr QX-100 maintenance plan includes a case inspection every eleven months.\n",
+      "frozenAvailableRecords": null,
+      "originalRetentionReview": null,
+      "sourceExpectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity.",
+      "answer": null,
+      "reasonCode": "no_eligible_evidence",
+      "suppliedEvidence": [],
+      "citations": [],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "  ## Assistant ###"
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+        }
+      ]
+    },
+    {
+      "id": "a214f5f200b9281baf3c",
+      "fixtureId": "v23-held-scoped-exclusion/run-1",
+      "kind": "main",
+      "question": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": null,
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, записываю: гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Это исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли. Оно также не означает, что договор ничего не говорит об этой шарнирной петле."
+        }
+      ],
+      "frozenAvailableRecords": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_c525e28e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_07f691343007e67b30b131ae",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "originalRetentionReview": {
+        "complete": true,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "The complete retained claim preserves Ada’s wax-caused fabric-seal damage exclusion and both coupled limits: it alone settles neither hinge-replacement coverage nor whether the contract discusses the hinge. The revised source expressly identifies a mechanical hinge, so English hinge preserves its component meaning. Negative polarity and self-attested attribution match the source; no wider seal exclusion or hinge entitlement is asserted."
+      },
+      "sourceExpectation": "Retain the specific exclusion of wax-caused fabric-seal damage, with negative polarity, and separately the limit that this exclusion does not settle hinge-replacement coverage or prove contract silence. Do not exclude all seal damage, assert inclusion/exclusion of hinge replacement, or change damage coverage into a replacement benefit.",
+      "answer": "Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion does not establish whether hinge replacement is covered, nor does it mean that the contract says nothing about the hinge. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_c525e28e v=2 supports=6054ff36c5e203a621d9c898@5feceb66ffc86f38d952786c@9cb52e62454297267d8f5ad5@provided level=1 kind=claim subject=ent_07f691343007e67b30b131ae source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+        },
+        {
+          "n": 4,
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge."
+        }
+      ]
+    },
+    {
+      "id": "a7f92eafc5f61ef684e9",
+      "fixtureId": "v22-held-nested-report/run-1",
+      "kind": "main",
+      "question": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "requestedAnswerLanguage": "ru",
+      "requestedView": null,
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+        },
+        {
+          "item_id": "turn-3333",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+        }
+      ],
+      "frozenAvailableRecords": [],
+      "originalRetentionReview": {
+        "complete": false,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "No knowledge is retained from this writable, understandable development source. A complete retained set would preserve Ada relaying Bo’s alleged Vulpine permission to bring the device to a workshop for a grounding-contact resistance check rather than replacement, Ada’s personal lack of seeing the rules and verifying Bo’s report, and her separate not-yet-packed-device assertion. An unverified attributed report remains legitimate qualified knowledge; the source does not require a read-only or interpretive hold. Complete retention therefore fails. Empty saved knowledge is vacuously source-entailed and contains no generated-language violation, stripped qualification on an emitted claim, or factual promotion; those neutral flags do not turn absence into useful retention. The packet gives no source-based basis for attributing the miss to a particular runtime cause."
+      },
+      "sourceExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established.",
+      "answer": null,
+      "reasonCode": "no_eligible_evidence",
+      "suppliedEvidence": [],
+      "citations": [],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        }
+      ]
+    },
+    {
+      "id": "bb02e79dc8d6aa2b4124",
+      "fixtureId": "ordinary-english-report",
+      "kind": "main",
+      "question": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "requestedAnswerLanguage": "ru",
+      "requestedView": "reports",
+      "originalSource": "# Zephyr QX-100\n\n  ## Assistant ###\nThe Zephyr QX-100 maintenance plan includes a case inspection every eleven months.\n",
+      "frozenAvailableRecords": null,
+      "originalRetentionReview": null,
+      "sourceExpectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity.",
+      "answer": "Ассистент сообщил, что план обслуживания Zephyr QX-100 включает проверку корпуса каждые одиннадцать месяцев. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "speaker",
+                "answer_eligible": false,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Assistant ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                  }
+                ]
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            1,
+            3,
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "  ## Assistant ###"
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+        }
+      ]
+    },
+    {
+      "id": "cca8295d2d1dead2aa2d",
+      "fixtureId": "ordinary-english-report",
+      "kind": "main",
+      "question": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": null,
+      "originalSource": "# Zephyr QX-100\n\n  ## Assistant ###\nThe Zephyr QX-100 maintenance plan includes a case inspection every eleven months.\n",
+      "frozenAvailableRecords": null,
+      "originalRetentionReview": null,
+      "sourceExpectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity.",
+      "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes a case inspection every eleven months. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "speaker",
+                "answer_eligible": false,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Assistant ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                  }
+                ]
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            1,
+            3,
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "  ## Assistant ###"
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+        }
+      ]
+    },
+    {
+      "id": "da3ae41457b8762658a5",
+      "fixtureId": "v22-held-nested-report/run-1",
+      "kind": "main",
+      "question": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": null,
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+        },
+        {
+          "item_id": "turn-3333",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+        }
+      ],
+      "frozenAvailableRecords": [],
+      "originalRetentionReview": {
+        "complete": false,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "No knowledge is retained from this writable, understandable development source. A complete retained set would preserve Ada relaying Bo’s alleged Vulpine permission to bring the device to a workshop for a grounding-contact resistance check rather than replacement, Ada’s personal lack of seeing the rules and verifying Bo’s report, and her separate not-yet-packed-device assertion. An unverified attributed report remains legitimate qualified knowledge; the source does not require a read-only or interpretive hold. Complete retention therefore fails. Empty saved knowledge is vacuously source-entailed and contains no generated-language violation, stripped qualification on an emitted claim, or factual promotion; those neutral flags do not turn absence into useful retention. The packet gives no source-based basis for attributing the miss to a particular runtime cause."
+      },
+      "sourceExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established.",
+      "answer": null,
+      "reasonCode": "no_eligible_evidence",
+      "suppliedEvidence": [],
+      "citations": [],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        }
+      ]
+    },
+    {
+      "id": "e51a00fcf7c9df5c9b15",
+      "fixtureId": "v22-held-nested-report/run-1",
+      "kind": "main",
+      "question": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": "reports",
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+        },
+        {
+          "item_id": "turn-3333",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+        }
+      ],
+      "frozenAvailableRecords": [],
+      "originalRetentionReview": {
+        "complete": false,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "No knowledge is retained from this writable, understandable development source. A complete retained set would preserve Ada relaying Bo’s alleged Vulpine permission to bring the device to a workshop for a grounding-contact resistance check rather than replacement, Ada’s personal lack of seeing the rules and verifying Bo’s report, and her separate not-yet-packed-device assertion. An unverified attributed report remains legitimate qualified knowledge; the source does not require a read-only or interpretive hold. Complete retention therefore fails. Empty saved knowledge is vacuously source-entailed and contains no generated-language violation, stripped qualification on an emitted claim, or factual promotion; those neutral flags do not turn absence into useful retention. The packet gives no source-based basis for attributing the miss to a particular runtime cause."
+      },
+      "sourceExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established.",
+      "answer": null,
+      "reasonCode": "no_eligible_evidence",
+      "suppliedEvidence": [],
+      "citations": [],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        }
+      ]
+    },
+    {
+      "id": "e7d221af930cd03bfd81",
+      "fixtureId": "ordinary-english-report",
+      "kind": "main",
+      "question": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": "reports",
+      "originalSource": "# Zephyr QX-100\n\n  ## Assistant ###\nThe Zephyr QX-100 maintenance plan includes a case inspection every eleven months.\n",
+      "frozenAvailableRecords": null,
+      "originalRetentionReview": null,
+      "sourceExpectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity.",
+      "answer": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": []
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "  ## Assistant ###"
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+        }
+      ]
+    },
+    {
+      "id": "e9106b46c2c1177d175f",
+      "fixtureId": "v23-held-scoped-exclusion/run-1",
+      "kind": "main",
+      "question": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "requestedAnswerLanguage": "ru",
+      "requestedView": "factual",
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, записываю: гарантия Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Это исключение само по себе не отвечает на вопрос, покрывается ли замена шарнирной петли. Оно также не означает, что договор ничего не говорит об этой шарнирной петле."
+        }
+      ],
+      "frozenAvailableRecords": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_c525e28e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_07f691343007e67b30b131ae",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "originalRetentionReview": {
+        "complete": true,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "The complete retained claim preserves Ada’s wax-caused fabric-seal damage exclusion and both coupled limits: it alone settles neither hinge-replacement coverage nor whether the contract discusses the hinge. The revised source expressly identifies a mechanical hinge, so English hinge preserves its component meaning. Negative polarity and self-attested attribution match the source; no wider seal exclusion or hinge entitlement is asserted."
+      },
+      "sourceExpectation": "Retain the specific exclusion of wax-caused fabric-seal damage, with negative polarity, and separately the limit that this exclusion does not settle hinge-replacement coverage or prove contract silence. Do not exclude all seal damage, assert inclusion/exclusion of hinge replacement, or change damage coverage into a replacement benefit.",
+      "answer": "Ada Marlow утверждает, что гарантия на Zephyr QX-100 исключает повреждение тканевого уплотнителя, вызванное воском. Одно это исключение не отвечает на вопрос, покрывает ли гарантия замену петли, и не означает, что в договоре ничего не сказано о петле. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_c525e28e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_07f691343007e67b30b131ae",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_c525e28e v=2 supports=6054ff36c5e203a621d9c898@5feceb66ffc86f38d952786c@9cb52e62454297267d8f5ad5@provided level=1 kind=claim subject=ent_07f691343007e67b30b131ae source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->"
+        },
+        {
+          "n": 4,
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty excludes damage to the fabric seal caused by wax. This exclusion alone does not answer whether hinge replacement is covered, and it does not mean that the contract says nothing about the hinge."
+        }
+      ]
+    },
+    {
+      "id": "ec73672c413711d4129c",
+      "fixtureId": "v22-held-nested-report/run-1",
+      "kind": "main",
+      "question": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "requestedAnswerLanguage": "en",
+      "requestedView": "reports",
+      "originalSource": [
+        {
+          "item_id": "turn-1111",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+        },
+        {
+          "item_id": "turn-2222",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+        },
+        {
+          "item_id": "turn-3333",
+          "role": "user",
+          "speaker": "Ada Marlow",
+          "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+        }
+      ],
+      "frozenAvailableRecords": [],
+      "originalRetentionReview": {
+        "complete": false,
+        "justifiedHold": false,
+        "sourceEntailed": true,
+        "qualificationPreserved": true,
+        "reason": "No knowledge is retained from this writable, understandable development source. A complete retained set would preserve Ada relaying Bo’s alleged Vulpine permission to bring the device to a workshop for a grounding-contact resistance check rather than replacement, Ada’s personal lack of seeing the rules and verifying Bo’s report, and her separate not-yet-packed-device assertion. An unverified attributed report remains legitimate qualified knowledge; the source does not require a read-only or interpretive hold. Complete retention therefore fails. Empty saved knowledge is vacuously source-entailed and contains no generated-language violation, stripped qualification on an emitted claim, or factual promotion; those neutral flags do not turn absence into useful retention. The packet gives no source-based basis for attributing the miss to a particular runtime cause."
+      },
+      "sourceExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established.",
+      "answer": null,
+      "reasonCode": "no_eligible_evidence",
+      "suppliedEvidence": [],
+      "citations": [],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        }
+      ]
+    },
+    {
+      "id": "ee24932b828964f6d89c",
+      "fixtureId": "ordinary-english-report",
+      "kind": "main",
+      "question": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "requestedAnswerLanguage": "ru",
+      "requestedView": null,
+      "originalSource": "# Zephyr QX-100\n\n  ## Assistant ###\nThe Zephyr QX-100 maintenance plan includes a case inspection every eleven months.\n",
+      "frozenAvailableRecords": null,
+      "originalRetentionReview": null,
+      "sourceExpectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity.",
+      "answer": "Ассистент сообщил, что план обслуживания Zephyr QX-100 предусматривает проверку корпуса каждые одиннадцать месяцев. [equipment:4]",
+      "reasonCode": "answered",
+      "suppliedEvidence": [
+        {
+          "type": "page",
+          "slug": "equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "speaker",
+                "answer_eligible": false,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Assistant ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                  }
+                ]
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "equipment",
+          "lines": [
+            1,
+            3,
+            4
+          ]
+        }
+      ],
+      "citationLines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100"
+        },
+        {
+          "n": 3,
+          "text": "  ## Assistant ###"
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+        }
+      ]
+    }
+  ]
+}

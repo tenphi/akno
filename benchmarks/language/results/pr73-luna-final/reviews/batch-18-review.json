@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "e7af6ae490c02c28a4d439a26ec98728def793a4a7785f73253ec5ef28ee62c6",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-counterfactual",
+      "run": 2,
+      "retentionUseful": true,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The retained set separately preserves actual non-enrollment in the optional corrosion plan and the unrealized free internal-spring replacement after thirty-three months of use, conditional on enrollment. The source explicitly links non-enrollment to the consequence remaining unrealized, so the generated because/therefore relation is supported. English prose and counterfactual metadata preserve the false antecedent and do not assert current coverage, a calendar date, or a completed replacement.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves actual non-enrollment and the conditional free replacement of the internal spring after thirty-three months of use, explicitly describing it as unrealized. The source’s consequence relation remains intact. The requested language is used, and the answer and retrieved evidence do not promote the hypothetical benefit to current coverage, actual service, or a dated event."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The English-query/default-view Russian answer is null although complete qualified counterfactual evidence was retrieved. The source supports a useful Russian answer preserving non-enrollment and the unrealized benefit, so this is a missed answer rather than a source-required abstention. The public packet does not identify the runtime cause."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves actual non-enrollment and the conditional free replacement of the internal spring after thirty-three months of use, explicitly describing it as unrealized. The source’s consequence relation remains intact. The requested language is used, and the answer and retrieved evidence do not promote the hypothetical benefit to current coverage, actual service, or a dated event."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves actual non-enrollment and the conditional free replacement of the internal spring after thirty-three months of use, explicitly describing it as unrealized. The source’s consequence relation remains intact. The requested language is used, and the answer and retrieved evidence do not promote the hypothetical benefit to current coverage, actual service, or a dated event."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves actual non-enrollment and the conditional free replacement of the internal spring after thirty-three months of use, explicitly describing it as unrealized. The source’s consequence relation remains intact. The requested language is used, and the answer and retrieved evidence do not promote the hypothetical benefit to current coverage, actual service, or a dated event."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves actual non-enrollment and the conditional free replacement of the internal spring after thirty-three months of use, explicitly describing it as unrealized. The source’s consequence relation remains intact. The requested language is used, and the answer and retrieved evidence do not promote the hypothetical benefit to current coverage, actual service, or a dated event."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves actual non-enrollment and the conditional free replacement of the internal spring after thirty-three months of use, explicitly describing it as unrealized. The source’s consequence relation remains intact. The requested language is used, and the answer and retrieved evidence do not promote the hypothetical benefit to current coverage, actual service, or a dated event."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves actual non-enrollment and the conditional free replacement of the internal spring after thirty-three months of use, explicitly describing it as unrealized. The source’s consequence relation remains intact. The requested language is used, and the answer and retrieved evidence do not promote the hypothetical benefit to current coverage, actual service, or a dated event."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1128 @@
+{
+  "id": "v22-held-assistant-speculation/run-2",
+  "run": 1,
+  "order": [
+    "candidate",
+    "baseline"
+  ],
+  "arms": {
+    "candidate": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?",
+          "explicit": false,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_5798f31d",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_0397f7261e9edab9a3ee6dae",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "assistant speculate": false,
+                "optical-shutter checks": false,
+                "zephyr qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_5798f31d",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_0397f7261e9edab9a3ee6dae",
+                        "source_role": "assistant",
+                        "source_speaker": "assistant",
+                        "commitment": "tentative",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "source_report",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 117,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?",
+          "explicit": true,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_5798f31d",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_0397f7261e9edab9a3ee6dae",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "assistant speculate": false,
+                "optical-shutter checks": false,
+                "zephyr qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_5798f31d",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_0397f7261e9edab9a3ee6dae",
+                        "source_role": "assistant",
+                        "source_speaker": "assistant",
+                        "commitment": "tentative",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "source_report",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 117,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?",
+          "explicit": false,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_5798f31d",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_0397f7261e9edab9a3ee6dae",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какое предположение": false,
+                "проверке оптической": false,
+                "шторки zephyr": false,
+                "qx-100 высказал": false,
+                "ассистент": false
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_5798f31d",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_0397f7261e9edab9a3ee6dae",
+                        "source_role": "assistant",
+                        "source_speaker": "assistant",
+                        "commitment": "tentative",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "source_report",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 117,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?",
+          "explicit": true,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_5798f31d",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_0397f7261e9edab9a3ee6dae",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какое предположение": false,
+                "проверке оптической": false,
+                "шторки zephyr": false,
+                "qx-100 высказал": false,
+                "ассистент": false
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_5798f31d",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_0397f7261e9edab9a3ee6dae",
+                        "source_role": "assistant",
+                        "source_speaker": "assistant",
+                        "commitment": "tentative",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "source_report",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 117,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "522576a5d142ea3aa6c674e5faddca8588d36907a3fbd023207945c8d7523da5",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_5798f31d v=2 supports=580741d587def5d790cc8b26@5feceb66ffc86f38d952786c@53c99379c57e37cd94611ba8@provided level=1 kind=claim subject=ent_0397f7261e9edab9a3ee6dae source-role=assistant speaker=assistant reports=0 commitment=tentative disposition=active polarity=affirmed basis=source_report -->"
+        },
+        {
+          "n": 4,
+          "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_5798f31d",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_0397f7261e9edab9a3ee6dae",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "projections": [],
+      "factualEvidence": [
+        {
+          "n": 4,
+          "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_5798f31d",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_0397f7261e9edab9a3ee6dae",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          },
+          "prose": null
+        }
+      ],
+      "factualControl": {
+        "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?",
+        "context": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "note": "no memory evidence was strong enough for automatic injection",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "degraded",
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "assistant speculate": false,
+            "optical-shutter checks": false,
+            "zephyr qx-100": true
+          },
+          "citations": [],
+          "context": [],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 117,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "reason_code": "no_eligible_evidence",
+          "note": "related memory was found, but it was explicitly noncanonical and cannot ground a factual answer"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    },
+    "baseline": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?",
+          "explicit": false,
+          "expectedView": "reports",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_5798f31d",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_0397f7261e9edab9a3ee6dae",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "assistant speculate": false,
+                "optical-shutter checks": false,
+                "zephyr qx-100": true
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 117,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index"
+              ],
+              "reason_code": "no_eligible_evidence",
+              "note": "related memory was found, but it was explicitly noncanonical and cannot ground a factual answer"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?",
+          "explicit": true,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_5798f31d",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_0397f7261e9edab9a3ee6dae",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "assistant speculate": false,
+                "optical-shutter checks": false,
+                "zephyr qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_5798f31d",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_0397f7261e9edab9a3ee6dae",
+                        "source_role": "assistant",
+                        "source_speaker": "assistant",
+                        "commitment": "tentative",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "source_report",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 117,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?",
+          "explicit": false,
+          "expectedView": "reports",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_5798f31d",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_0397f7261e9edab9a3ee6dae",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какое предположение": false,
+                "проверке оптической": false,
+                "шторки zephyr": false,
+                "qx-100 высказал": false,
+                "ассистент": false
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 117,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index"
+              ],
+              "reason_code": "no_eligible_evidence",
+              "note": "related memory was found, but it was explicitly noncanonical and cannot ground a factual answer"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?",
+          "explicit": true,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_5798f31d",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_0397f7261e9edab9a3ee6dae",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какое предположение": false,
+                "проверке оптической": false,
+                "шторки zephyr": false,
+                "qx-100 высказал": false,
+                "ассистент": false
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_5798f31d",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_0397f7261e9edab9a3ee6dae",
+                        "source_role": "assistant",
+                        "source_speaker": "assistant",
+                        "commitment": "tentative",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "source_report",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое предположение о проверке оптической шторки Zephyr QX-100 высказал ассистент?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 117,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "522576a5d142ea3aa6c674e5faddca8588d36907a3fbd023207945c8d7523da5",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_5798f31d v=2 supports=580741d587def5d790cc8b26@5feceb66ffc86f38d952786c@53c99379c57e37cd94611ba8@provided level=1 kind=claim subject=ent_0397f7261e9edab9a3ee6dae source-role=assistant speaker=assistant reports=0 commitment=tentative disposition=active polarity=affirmed basis=source_report -->"
+        },
+        {
+          "n": 4,
+          "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_5798f31d",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_0397f7261e9edab9a3ee6dae",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "projections": [],
+      "factualEvidence": [
+        {
+          "n": 4,
+          "text": "- **Reported by assistant · Tentative:** The assistant's preliminary guess is that servicing Zephyr QX-100 may include checking the optical shutter after every eleven operating cycles. The assistant has not read the contract or checked this guess; this is a possible service condition, not an established obligation or device state.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_5798f31d",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_0397f7261e9edab9a3ee6dae",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          },
+          "prose": null
+        }
+      ],
+      "factualControl": {
+        "query": "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?",
+        "context": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "note": "no memory evidence was strong enough for automatic injection",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "degraded",
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "assistant speculate": false,
+            "optical-shutter checks": false,
+            "zephyr qx-100": true
+          },
+          "citations": [],
+          "context": [],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "What did the assistant speculate about optical-shutter checks for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 117,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "reason_code": "no_eligible_evidence",
+          "note": "related memory was found, but it was explicitly noncanonical and cannot ground a factual answer"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    }
+  }
+}

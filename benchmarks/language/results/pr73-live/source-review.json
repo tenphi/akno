@@ -1,0 +1,48 @@
+{
+  "kind": "source-review-before-output-adjudication",
+  "reviewer": "Implementing assistant; not an independent model or human review",
+  "sourceFreezeCommit": "ed3d73697286de7836259cced3cb955e2fce30da",
+  "sourceReview": [
+    {
+      "id": "ordinary-english-report",
+      "expectationAccepted": true,
+      "obligation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity."
+    },
+    {
+      "id": "ordinary-russian-report",
+      "expectationAccepted": true,
+      "obligation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity. Authored Russian text and its exact heading frame remain unchanged."
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "expectationAccepted": true,
+      "obligation": "Both the five-year warranty duration and housing replacement coverage belong to one hypothetical scenario. A useful answer preserves both propositions and their hypothetical status. Neither proposition establishes actual warranty coverage."
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "expectationAccepted": true,
+      "obligation": "The case is silver as an ordinary authored assertion. The empty sibling heading ends the hypothetical section. Do not describe the case color as hypothetical or add the hypothetical eleven-year warranty to the answer."
+    },
+    {
+      "id": "retained-english-report",
+      "expectationAccepted": true,
+      "obligation": "Retain an English assistant report describing a case inspection every eleven months, with the assistant's explicit lack of independent verification. Preserve attribution, the verification limit, case inspection, interval, and device identity in every useful answer. Do not promote the reported plan to an established obligation. Original-language support and frame quotes must be exact."
+    },
+    {
+      "id": "retained-russian-report",
+      "expectationAccepted": true,
+      "obligation": "Retain an English assistant report describing a case inspection every eleven months, with the assistant's explicit lack of independent verification. Preserve attribution, the verification limit, case inspection, interval, and device identity in every useful answer. Do not promote the reported plan to an established obligation. Original Russian support and frame quotes must be exact."
+    },
+    {
+      "id": "retained-mixed-report",
+      "expectationAccepted": true,
+      "obligation": "Retain an English assistant report describing a case inspection every eleven months, with the assistant's explicit lack of independent verification. Preserve attribution, the verification limit, case inspection, interval, and device identity in every useful answer. Do not promote the reported plan to an established obligation. Original mixed-language support and frame quotes must be exact."
+    }
+  ],
+  "limits": [
+    "The cases and expectations were authored and checked before live execution. This artifact records that review after execution began.",
+    "The ordinary empty-heading fixture also indents the preceding hypothetical heading. The old scanner misses that earlier heading, so its focal color line is factual in both versions. This case tests current useful factual retrieval but does not isolate the empty-heading fix against baseline; deterministic regression tests cover that boundary separately.",
+    "The runtime excludes rejected generated drafts from public answers. A null with a local guard reason is a coverage miss; without its draft, it cannot be adjudicated as a true or false rejection.",
+    "The earlier independent reviewer model was not accessible. Output grading will be performed against these sources by the implementing assistant and explicitly retain that limitation."
+  ]
+}

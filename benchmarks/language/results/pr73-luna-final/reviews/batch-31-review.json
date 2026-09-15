@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "c7940bdc3fd945e8b190e62b34caff0fb5a4663cb1ca085596acab1d85351f38",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-rejected-plan",
+      "run": 2,
+      "retentionUseful": false,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The retained English proposal preserves Ada’s rejection, the calibration-room destination, exact rotation-stop-angle measurement purpose, and her lack of intent under that proposal. Its continuing rejected disposition is preserved. The complete retained set omits the independent absence of a reserved appointment and arranged transport, neither of which is entailed merely by rejecting the proposal. Retention is therefore incomplete, while the surviving historical proposal remains source-entailed and qualified.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer identifies the rejected calibration-room proposal for measuring the rotation-stop angle and Ada’s lack of intent under that proposal. The English wording or Russian «калибровочную комнату» preserves the destination, and the angle formulation preserves the intended rotation-stop measurement. This is useful focused historical evidence in the requested language. The omitted independent appointment/transport facts make retention incomplete but are not needed to identify which proposal she rejected."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": false,
+          "reason": "The Russian answer changes the destination from a calibration room to «калибровочную лабораторию», a calibration laboratory. The source establishes a room used for calibration, not a laboratory facility, so this is unsupported destination specificity in the very proposal the query asks to identify. Rejection, the rotation-stop-angle measurement, and lack of intent survive, and the answer is Russian, but source fidelity and focused usefulness fail. The English retrieval preserves the original room and remains useful."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer identifies the rejected calibration-room proposal for measuring the rotation-stop angle and Ada’s lack of intent under that proposal. The English wording or Russian «калибровочную комнату» preserves the destination, and the angle formulation preserves the intended rotation-stop measurement. This is useful focused historical evidence in the requested language. The omitted independent appointment/transport facts make retention incomplete but are not needed to identify which proposal she rejected."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": false,
+          "reason": "The Russian answer changes the destination from a calibration room to «калибровочную лабораторию», a calibration laboratory. The source establishes a room used for calibration, not a laboratory facility, so this is unsupported destination specificity in the very proposal the query asks to identify. Rejection, the rotation-stop-angle measurement, and lack of intent survive, and the answer is Russian, but source fidelity and focused usefulness fail. The English retrieval preserves the original room and remains useful."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer identifies the rejected calibration-room proposal for measuring the rotation-stop angle and Ada’s lack of intent under that proposal. The English wording or Russian «калибровочную комнату» preserves the destination, and the angle formulation preserves the intended rotation-stop measurement. This is useful focused historical evidence in the requested language. The omitted independent appointment/transport facts make retention incomplete but are not needed to identify which proposal she rejected."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": false,
+          "reason": "The Russian answer changes the destination from a calibration room to «калибровочную лабораторию», a calibration laboratory. The source establishes a room used for calibration, not a laboratory facility, so this is unsupported destination specificity in the very proposal the query asks to identify. Rejection, the rotation-stop-angle measurement, and lack of intent survive, and the answer is Russian, but source fidelity and focused usefulness fail. The English retrieval preserves the original room and remains useful."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer identifies the rejected calibration-room proposal for measuring the rotation-stop angle and Ada’s lack of intent under that proposal. The English wording or Russian «калибровочную комнату» preserves the destination, and the angle formulation preserves the intended rotation-stop measurement. This is useful focused historical evidence in the requested language. The omitted independent appointment/transport facts make retention incomplete but are not needed to identify which proposal she rejected."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer identifies the rejected calibration-room proposal for measuring the rotation-stop angle and Ada’s lack of intent under that proposal. The English wording or Russian «калибровочную комнату» preserves the destination, and the angle formulation preserves the intended rotation-stop measurement. This is useful focused historical evidence in the requested language. The omitted independent appointment/transport facts make retention incomplete but are not needed to identify which proposal she rejected."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "v22-held-coverage-exclusion",
+    "split": "held-out",
+    "language": "en",
+    "scenario": "coverage-exclusion",
+    "items": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "I, Ada Marlow, record that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand."
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "This exclusion alone does not answer whether replacement of the intake sleeve is covered. It also does not say that the agreement is silent about that sleeve."
+      }
+    ],
+    "view": "factual",
+    "polarity": "negated",
+    "admission": "writable",
+    "ordinary": "## Coverage\nThe Zephyr QX-100 warranty excludes sand damage to the ceramic spacer. This record does not settle coverage for replacing the intake sleeve and does not establish that the agreement is silent about it.",
+    "ordinaryFactual": true,
+    "queries": {
+      "en": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?",
+      "ru": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+    },
+    "reviewExpectation": "Retain the asserted exclusion of sand damage to the ceramic spacer with negative polarity. Separately preserve that this record does not settle intake-sleeve replacement coverage and does not establish agreement silence. Do not infer inclusion or exclusion for the sleeve."
+  },
+  {
+    "id": "v22-held-competing-hypotheses",
+    "split": "held-out",
+    "language": "ru",
+    "scenario": "competing-hypotheses",
+    "items": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Я, Ada Marlow, рассматриваю две конкурирующие предварительные причины дребезга Zephyr QX-100: деформированная шайба или плохо закреплённая крышка фильтра."
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Я не выбрала ни одну причину. Для обеих версий пока нет подтверждающих данных; сам дребезг этой записью также не подтверждается."
+      }
+    ],
+    "view": "discussion",
+    "commitment": "tentative",
+    "admission": "writable",
+    "ordinary": "## Предварительные версии\nAda Marlow рассматривает деформированную шайбу и плохо закреплённую крышку фильтра как конкурирующие причины возможного дребезга Zephyr QX-100. Ни одна причина не выбрана и не подтверждена; сам дребезг записью не подтверждён.",
+    "ordinaryFactual": false,
+    "queries": {
+      "en": "Which competing rattle hypotheses did Ada Marlow consider for Zephyr QX-100?",
+      "ru": "Какие конкурирующие версии причины дребезга Zephyr QX-100 рассматривала Ada Marlow?"
+    },
+    "reviewExpectation": "Keep both tentative competing causes: a deformed washer and an inadequately secured filter cover. Ada selected neither, evidence supports neither, and the record does not itself confirm the rattle. Do not establish either fault or collapse them into one cause."
+  }
+]

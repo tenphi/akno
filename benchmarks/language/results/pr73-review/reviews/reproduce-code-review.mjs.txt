@@ -1,0 +1,57 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+const root=process.cwd();
+const { proseQualifications:q, proseEligibleForView:eligible }=await import(`${root}/packages/core/src/kb/prose.ts`);
+const { qualifyManagedMemoryLines }=await import(`${root}/packages/core/src/kb/managed-lines.ts`);
+const { inferMemoryView:view }=await import(`${root}/packages/core/src/memory/intent.ts`);
+const { validateComparison }=await import(`${root}/scripts/language-comparison-validation.mjs`);
+let assertions=0;const ok=(f)=>{f();assertions++};const details=[];
+const cases=[
+ ['outer scope',['## Hypothesis','','- Notes','','  ## Details','','  The case is silver.','','The case is blue.'],[[7,'discussion',false],[9,'discussion',false]]],
+ ['list scope end',['- Notes','','  ## Hypothesis','','  The case is blue.','','The case is silver.'],[[5,'discussion',false],[7,'factual',true]]],
+ ['backward qualifier',['- Notes','','  ## Details','','  The case is silver.','','This is only hypothetical.'],[[5,'discussion',false]]],
+ ...['  ---','  ***','      code sample','  <!-- invented -->'].map(b=>[b,['- Notes','','  ## Hypothesis','',b,'The case is silver.'],[[6,'factual',true]]]),
+ ['initial code fence',['## Hypothesis','','- ```md','  ## Details','  The case is blue.','','The case is silver.'],[[5,'discussion',false],[7,'discussion',false]]],
+ ['initial HTML comment',['## Hypothesis','','- <!-- invented','  ## Details','  The case is blue. -->','','The case is silver.'],[[5,'discussion',false],[7,'discussion',false]]],
+ ['checkbox',['- [ ] Inspect the Zephyr QX-100.','','  ## Details','','  The case is silver.'],[[1,'planning',false]]],
+ ['hypothetical checkbox',['## Hypothesis','','- [ ] Inspect the case.','','  ## Details','','  The case is silver.'],[[3,'discussion',false],[7,'discussion',false]]],
+ ['literal managed-looking marker',['## Hypothesis','','- <!-- akno:item mem_invented v=2 -->','  The case is silver.','','  ## Details','','  The handle is blue.'],[[4,'discussion',false],[8,'discussion',false]]],
+ ['nested literal marker',['## Hypothesis','','- Notes','','  - <!-- akno:item mem_invented v=2 -->','    The case is silver.','','    ## Details','','    The handle is blue.'],[[6,'discussion',false],[10,'discussion',false]]],
+ ['literal source marker',['- <!-- source -->','  The case is silver.','','  ## Details','','  The handle is blue.'],[[2,'factual',true],[6,'factual',true]]],
+ ['frontmatter/lazy paragraph',['---','title: Invented','---','','- Notes','','  ## Hypothesis','','  The case is blue.','The handle is silver.','','The lid is green.'],[[9,'discussion',false],[10,'discussion',false],[12,'factual',true]]],
+ ['tab indentation',['## Hypothesis','','-\tNotes','','\t## Details','','\tThe case is silver.','','The case is blue.'],[[7,'discussion',false],[9,'discussion',false]]],
+ ['empty marker blank ends container',['## Hypothesis','','-','','  ## Details','','The case is silver.'],[[7,'factual',true]]],
+ ['empty marker heading continuation',['## Hypothesis','','-','  ## Details','','  The case is silver.','','The lid is blue.'],[[6,'discussion',false],[8,'discussion',false]]],
+ ['local report heading',['## Hypothesis','','- Notes','','  ## Assistant report','','  The case is silver.'],[[7,'reports',false]]],
+ ...[2380,2500].map(n=>[`outer frame length ${n}`,['## Hypothesis '+ 'x'.repeat(n),'','- Notes','','  ## Details','','  The case is silver.'],[[7,'discussion',false]]]),
+];
+for(const [name,lines,expected] of cases){const result=q(lines);for(const [n,v,e] of expected)ok(()=>assert.deepEqual([result.get(n)?.view,result.get(n)?.answer_eligible],[v,e]));for(const [n,p] of result){ok(()=>assert(n>=1&&n<=lines.length));ok(()=>assert.equal(p.source_hash,createHash('sha256').update(lines.join('\n')).digest('hex')));for(const frame of p.frame)ok(()=>assert.equal(frame.text,lines[frame.n-1]));if(p.reason==='context_limit'){ok(()=>assert.equal(p.status,'unresolved'));for(const v of ['factual','discussion','reports','planning','history','questions'])ok(()=>assert.equal(eligible(p,v),false));ok(()=>assert.equal(eligible(p,'all'),true));}}details.push({name,passed:true});}
+const actualMarker=['- Notes','','  ## Hypothesis','','  <!-- akno:item mem_invented v=2 -->','  The case is silver.'];
+const managed=qualifyManagedMemoryLines([{n:6,text:actualMarker[5]}],actualMarker)[0];ok(()=>assert.equal(managed.memory.status,'unavailable'));ok(()=>assert.equal(managed.memory.answer_eligible,false));
+const routes=[
+ ['Какое сообщение об ошибке передаёт дисплей Zephyr QX-100?','factual'],
+ ['Какое сообщение об\tошибке передаёт дисплей Zephyr QX-100?','factual'],
+ ['Какое сообщение  об  ошибке передаёт дисплей Zephyr QX-100?','factual'],
+ ['What color is Zephyr QX-100? The assistant speculated about its warranty.','factual'],
+ ['Which plan applies when the assistant speculates about the warranty?','planning'],
+ ['Какой план Ada Marlow выберет, если Bo Winters отверг предложение об осмотре?','planning'],
+ ['Какой план выбрать, если предложение об осмотре отверг Bo Winters?','planning'],
+ ['Какой открытый вопрос остаётся по документу Report 1111?','questions'],
+ ['What did the assistant speculate about the inspection interval?','reports'],
+ ['The assistant has conjectured that the inspection may be covered.','reports'],
+ ['Ada Marlow передаёт сообщение Bo Winters о гарантийном осмотре.','reports'],
+ ['Какое сообщение об ошибке пересказала Ada Marlow?','reports'],
+ ['Какое неподтверждённое сообщение об ошибке передала Ada Marlow?','reports'],
+ ['Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?','history'],
+ ['Какой план Ada Marlow не отвергла?','planning'],
+ ['Какой план отвергла б Ada Marlow?','planning'],
+ ['Если корпус синий, какой план отвергла Ada Marlow?','history'],
+ ['What did Ada Marlow report about план осмотра?','reports'],
+ ['Which reports concern план осмотра?','reports'],
+];for(const [query,v]of routes)ok(()=>assert.equal(view(query),v));
+const archived=`${root}/benchmarks/language/results/pr73-paired/offline`,read=n=>JSON.parse(fs.readFileSync(path.join(archived,n)));
+const grid={plan:read('plan.json'),fixtures:read('fixtures.json'),manifest:read('manifest.json'),completion:read('completion.json'),results:read('results.json').pairs.map(x=>read(x.file)),receipts:[]};ok(()=>validateComparison(grid));
+const corruptions=[['missing pair',x=>x.results.pop()],['duplicate pair',x=>x.results[1]=structuredClone(x.results[0])],['missing factual outcome',x=>{delete x.results[0].arms.candidate.factualControl.answer.answer}],['missing read',x=>{delete x.results[0].arms.candidate.read}],['failed pair',x=>x.completion.failedPairs=1],['failed arm',x=>x.results[0].arms.candidate.harnessError={type:'Error'}],['missing answer',x=>x.results[0].arms.candidate.queries[0].answers.pop()]];for(const [name,mutate]of corruptions){const x=structuredClone(grid);mutate(x);ok(()=>assert.throws(()=>validateComparison(x)));details.push({name,passed:true});}
+const result={assertions,proseCases:cases.length,routingCases:routes.length,malformedGridsRejected:corruptions.length,findings:[],details};console.log(JSON.stringify(result,null,2));

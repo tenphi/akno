@@ -1,0 +1,2175 @@
+{
+  "schemaVersion": "language-benchmark-v2",
+  "createdAt": "2026-09-15T09:34:49.213Z",
+  "corpusVersion": "language-discourse-v22",
+  "corpusFingerprint": "b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a",
+  "selectedCaseIds": [
+    "v22-held-nested-report",
+    "v22-held-fictional-example"
+  ],
+  "runs": 1,
+  "setup": "separate-writable-fidelity-and-read-only-admission",
+  "queryMatrix": [
+    "query_language",
+    "answer_language",
+    "explicit_view"
+  ],
+  "split": "held-out",
+  "knowledgeLanguage": "en",
+  "proseProjectionVersion": "prose-v3",
+  "memoryViewVersion": "memory-view-v9",
+  "answerPromptVersion": "answer-generation-v68",
+  "answerVerifierVersion": "answer-verifier-v48",
+  "retentionPromptVersion": "retain-extraction-language-v57",
+  "retentionVerifierVersion": "retain-verifier-language-v41",
+  "models": {
+    "retention": "gpt-5.6-luna",
+    "answer": "gpt-5.6-luna",
+    "embedding": "text-embedding-3-small",
+    "expansion": null,
+    "reranker": "gpt-5.6-luna"
+  },
+  "retrievalProfile": "configured",
+  "retrievalConfiguration": {
+    "embeddingDimensions": 1536,
+    "rerankerEnabled": true,
+    "mode": "llm",
+    "topK": 8,
+    "maxChars": 2400,
+    "excludeIrrelevant": true,
+    "scoreOffset": "auto",
+    "maxOutputTokens": 1600,
+    "reasoningEffort": "low"
+  },
+  "modelOutputTokenLimits": {
+    "answer": 4096,
+    "retention": 8192
+  },
+  "indexModelDerivation": false,
+  "independentlyReviewed": false,
+  "releaseEligible": false,
+  "adjudication": "pending: inspect review material; verifier agreement and typed expectations are not independent truth labels",
+  "thresholds": {
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "usefulQualifiedAnswerCoverage": 0.9,
+    "availabilityFailureRate": 0.05,
+    "unsupportedRetainedOutputs": 0,
+    "unsupportedNonnullAnswers": 0
+  },
+  "metrics": {
+    "availabilityFailures": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "answerOperationFailures": {
+      "numerator": 0,
+      "denominator": 16,
+      "rate": 0
+    },
+    "producedAnswers": {
+      "numerator": 16,
+      "denominator": 16,
+      "rate": 1
+    },
+    "producedAnswersOverRetained": {
+      "numerator": 16,
+      "denominator": 16,
+      "rate": 1
+    },
+    "answerReasons": {
+      "answered": 16
+    },
+    "routingReasons": {
+      "no_admitted_destination": 1
+    },
+    "holdStages": {
+      "placement": 1
+    },
+    "independentlyJudgedQualifiedAnswers": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "independentlyJustifiedAbstentions": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "languagePolicyRejections": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "acceptedLanguageViolations": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "translationQualificationErrors": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "unsafeFactualPromotion": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "noncanonicalEligibilityFlags": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "usefulRetentionCoverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "expectedRetentionMisses": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "falseHolds": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "expectedSafeHolds": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "typedSemanticsMatch": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "qualifiedRetrievalCoverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "ordinaryProseQualification": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "sourceByteChanges": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    }
+  },
+  "byLanguage": {
+    "en": 1,
+    "ru": 1,
+    "mixed": 0
+  },
+  "byScenario": {
+    "nested-report": 1,
+    "fictional-example": 1
+  },
+  "cases": [
+    {
+      "id": "v22-held-nested-report",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established.",
+      "language": "ru",
+      "scenario": "nested-report",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          },
+          {
+            "outcome": "held",
+            "reason": "no_writable_destination",
+            "holdStage": "placement",
+            "routingReason": "no_admitted_destination"
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 15120,
+            "input_tokens": 7493,
+            "output_tokens": 1390,
+            "total_tokens": 8883
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 12992,
+            "input_tokens": 9731,
+            "output_tokens": 1250,
+            "total_tokens": 10981
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 993,
+              "input_tokens": 588,
+              "output_tokens": 32,
+              "total_tokens": 620
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1882,
+              "input_tokens": 422,
+              "output_tokens": 73,
+              "total_tokens": 495
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_ce7d46fb",
+            "source_ref": "invented:v22-held-nested-report",
+            "input_hash": "c995dce45037c637c0c15eedfd04a28a40c2869869fdc4c6a171c2cf5946b55d",
+            "evidence": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.\n…\nПо словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.\n…\nОн говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+            "evidence_hash": "ec2e72f76ae09433a92ddaceca1546ec73e3b91d7959bd069d442cffb0b30415",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              },
+              {
+                "quote": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+                "matchingSourceItems": [
+                  "turn-3333"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ce7d46fb",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 8227,
+              "input_tokens": 6420,
+              "output_tokens": 646,
+              "total_tokens": 7066
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 14239,
+              "input_tokens": 11136,
+              "output_tokens": 1538,
+              "total_tokens": 12674
+            }
+          },
+          "reviewAnswer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ce7d46fb",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 9171,
+              "input_tokens": 6386,
+              "output_tokens": 690,
+              "total_tokens": 7076
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 16592,
+              "input_tokens": 11140,
+              "output_tokens": 1462,
+              "total_tokens": 12602
+            }
+          },
+          "reviewAnswer": "По словам Ada Marlow: По словам Bo Winters, Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, а не для замены контакта. Ada Marlow не видела правил и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ce7d46fb",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7608,
+              "input_tokens": 6420,
+              "output_tokens": 570,
+              "total_tokens": 6990
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 11417,
+              "input_tokens": 11136,
+              "output_tokens": 1147,
+              "total_tokens": 12283
+            }
+          },
+          "reviewAnswer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ce7d46fb",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 8918,
+              "input_tokens": 6386,
+              "output_tokens": 733,
+              "total_tokens": 7119
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 18943,
+              "input_tokens": 11162,
+              "output_tokens": 1876,
+              "total_tokens": 13038
+            }
+          },
+          "reviewAnswer": "По словам Ada Marlow: По словам Bo Winters, Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, а не для замены контакта. Ada Marlow не видела правила и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ce7d46fb",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 8044,
+              "input_tokens": 6425,
+              "output_tokens": 596,
+              "total_tokens": 7021
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 15961,
+              "input_tokens": 11136,
+              "output_tokens": 1569,
+              "total_tokens": 12705
+            }
+          },
+          "reviewAnswer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ce7d46fb",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7471,
+              "input_tokens": 6389,
+              "output_tokens": 664,
+              "total_tokens": 7053
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 11671,
+              "input_tokens": 11182,
+              "output_tokens": 1086,
+              "total_tokens": 12268
+            }
+          },
+          "reviewAnswer": "По словам Ada Marlow, Bo Winters сообщил, что Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую, чтобы проверить сопротивление заземляющего контакта, а не заменить контакт. Ada Marlow не видела правил и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ce7d46fb",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7490,
+              "input_tokens": 6425,
+              "output_tokens": 560,
+              "total_tokens": 6985
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 13512,
+              "input_tokens": 11136,
+              "output_tokens": 1254,
+              "total_tokens": 12390
+            }
+          },
+          "reviewAnswer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ce7d46fb",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 10987,
+              "input_tokens": 6389,
+              "output_tokens": 939,
+              "total_tokens": 7328
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 27077,
+              "input_tokens": 11138,
+              "output_tokens": 2270,
+              "total_tokens": 13408
+            }
+          },
+          "reviewAnswer": "По словам Ada Marlow: По словам Bo Winters, Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую, чтобы проверить сопротивление заземляющего контакта, а не заменить контакт. Ada Marlow не видела правил и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ce7d46fb",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "v22-held-fictional-example",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Preserve Ada’s actual introduction of an invented example and the story-scoped loan: fictional Vulpine Mutual lends fictional Bo a spare control dial for forty-four days after a fictional repair. No real agreement, repair, loan, or elapsed calendar period is established.",
+      "language": "en",
+      "scenario": "fictional-example",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 9362,
+            "input_tokens": 7415,
+            "output_tokens": 806,
+            "total_tokens": 8221
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 5241,
+            "input_tokens": 8045,
+            "output_tokens": 430,
+            "total_tokens": 8475
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2610,
+              "input_tokens": 600,
+              "output_tokens": 127,
+              "total_tokens": 727
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2014,
+              "input_tokens": 426,
+              "output_tokens": 67,
+              "total_tokens": 493
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_57004a45",
+            "source_ref": "invented:v22-held-fictional-example",
+            "input_hash": "24d64bc9c3f446a67de8247ef24c56294d5fa34d2840e614707fe02c7a8c28e5",
+            "evidence": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement.\n…\nIn the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story.",
+            "evidence_hash": "1bd106b6e23ce545837e998265619d2c400f381606b1b915e6757e50493a1218",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "In the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57004a45",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_187b506e3ea537c12efea510",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 2,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 control dial loan in fictional example",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_57004a45",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_187b506e3ea537c12efea510",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 control dial loan in fictional example › Fictional Loan Terms",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7127,
+              "input_tokens": 6370,
+              "output_tokens": 511,
+              "total_tokens": 6881
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 10442,
+              "input_tokens": 10970,
+              "output_tokens": 1197,
+              "total_tokens": 12167
+            }
+          },
+          "reviewAnswer": "**Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57004a45",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_187b506e3ea537c12efea510",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 2,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 control dial loan in fictional example",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_57004a45",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_187b506e3ea537c12efea510",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 control dial loan in fictional example › Fictional Loan Terms",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 10149,
+              "input_tokens": 6356,
+              "output_tokens": 761,
+              "total_tokens": 7117
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7625,
+              "input_tokens": 10947,
+              "output_tokens": 765,
+              "total_tokens": 11712
+            }
+          },
+          "reviewAnswer": "**Гипотетический контекст:** В придуманной Ada Marlow истории вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасной регуляторный диск Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта; этот заём существует только в истории и не описывает реального соглашения. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57004a45",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_187b506e3ea537c12efea510",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 2,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 control dial loan in fictional example",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_57004a45",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_187b506e3ea537c12efea510",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 control dial loan in fictional example › Fictional Loan Terms",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7276,
+              "input_tokens": 6370,
+              "output_tokens": 435,
+              "total_tokens": 6805
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 11825,
+              "input_tokens": 10970,
+              "output_tokens": 1343,
+              "total_tokens": 12313
+            }
+          },
+          "reviewAnswer": "**Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57004a45",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_187b506e3ea537c12efea510",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 2,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 control dial loan in fictional example",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_57004a45",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_187b506e3ea537c12efea510",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 control dial loan in fictional example › Fictional Loan Terms",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 10914,
+              "input_tokens": 6353,
+              "output_tokens": 839,
+              "total_tokens": 7192
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 13413,
+              "input_tokens": 10922,
+              "output_tokens": 1469,
+              "total_tokens": 12391
+            }
+          },
+          "reviewAnswer": "**Гипотетический контекст:** В вымышленной истории Ada Marlow вымышленная Vulpine Mutual предоставляет вымышленному Bo Winters запасной диск управления Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта; заём существует только в этой истории и не описывает никакого реального соглашения. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57004a45",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_187b506e3ea537c12efea510",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 2,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 control dial loan in fictional example",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_57004a45",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_187b506e3ea537c12efea510",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 control dial loan in fictional example › Fictional Loan Terms",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 10580,
+              "input_tokens": 6376,
+              "output_tokens": 752,
+              "total_tokens": 7128
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6067,
+              "input_tokens": 10970,
+              "output_tokens": 758,
+              "total_tokens": 11728
+            }
+          },
+          "reviewAnswer": "**Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57004a45",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_187b506e3ea537c12efea510",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 2,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 control dial loan in fictional example",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_57004a45",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_187b506e3ea537c12efea510",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 control dial loan in fictional example › Fictional Loan Terms",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 10520,
+              "input_tokens": 6361,
+              "output_tokens": 875,
+              "total_tokens": 7236
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 16359,
+              "input_tokens": 10968,
+              "output_tokens": 1434,
+              "total_tokens": 12402
+            }
+          },
+          "reviewAnswer": "**Гипотетически:** В вымышленной истории Ada Marlow вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасной регулятор Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта; заём существует только в этой истории и не описывает никакого реального соглашения. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57004a45",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_187b506e3ea537c12efea510",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 2,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 control dial loan in fictional example",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_57004a45",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_187b506e3ea537c12efea510",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 control dial loan in fictional example › Fictional Loan Terms",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 11201,
+              "input_tokens": 6376,
+              "output_tokens": 823,
+              "total_tokens": 7199
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 9997,
+              "input_tokens": 10970,
+              "output_tokens": 1068,
+              "total_tokens": 12038
+            }
+          },
+          "reviewAnswer": "**Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57004a45",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_187b506e3ea537c12efea510",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 2,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 control dial loan in fictional example",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_57004a45",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_187b506e3ea537c12efea510",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "hypothetical",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 control dial loan in fictional example › Fictional Loan Terms",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 9254,
+              "input_tokens": 6363,
+              "output_tokens": 770,
+              "total_tokens": 7133
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 18328,
+              "input_tokens": 10970,
+              "output_tokens": 1401,
+              "total_tokens": 12371
+            }
+          },
+          "reviewAnswer": "**Гипотетический контекст:** В вымышленной истории Ada Marlow вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасную ручку управления Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта; заём существует только в этой истории и не описывает никакого реального соглашения. [memory/zephyr-qx-100:14]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow’s invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; the loan exists only in the story and describes no real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_57004a45",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_187b506e3ea537c12efea510",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "error": null
+    }
+  ]
+}

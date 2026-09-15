@@ -1,0 +1,513 @@
+{
+  "kind": "incremental-frozen-full-evaluation-review-batch",
+  "corpusFingerprint": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+  "rubric": "Unchanged V23 language-output-review-v2 rubric in the frozen benchmark reviewer; no changed thresholds or expected meanings.",
+  "cases": [
+    {
+      "id": "v22-held-counterfactual",
+      "run": 2,
+      "source": {
+        "id": "v22-held-counterfactual",
+        "split": "development",
+        "language": "mixed",
+        "scenario": "counterfactual",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "I, Ada Marlow, did not enroll my Zephyr QX-100 in the optional corrosion plan."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Если бы я оформила этот план, замена внутренней пружины после тридцати трёх месяцев использования была бы бесплатной. План не оформлен, поэтому это только нереализованное следствие."
+          }
+        ],
+        "view": "discussion",
+        "commitment": "counterfactual",
+        "admission": "writable",
+        "ordinary": "## Counterfactual\nAda Marlow did not enroll Zephyr QX-100 in the optional corrosion plan. Had she enrolled, replacement of the internal spring after thirty-three months of use would have been free. That benefit is unrealized.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "What unrealized internal-spring benefit did Ada Marlow describe for Zephyr QX-100?",
+          "ru": "Какую нереализованную льготу для внутренней пружины Zephyr QX-100 описала Ada Marlow?"
+        },
+        "reviewExpectation": "Preserve the actual non-enrollment and the counterfactual free internal-spring replacement after thirty-three months. The benefit depends on the false enrollment antecedent and is not current coverage; the usage interval is not a calendar date."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_97ae1482",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_810c79b46e718651da7c4a58",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        },
+        {
+          "text": "- **Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_7b1ebee5",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_810c79b46e718651da7c4a58",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "counterfactual",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_7b1ebee5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_810c79b46e718651da7c4a58",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free. [memory/equipment:9]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_7b1ebee5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_810c79b46e718651da7c4a58",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": null
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_7b1ebee5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_810c79b46e718651da7c4a58",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free. [memory/equipment:9]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_7b1ebee5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_810c79b46e718651da7c4a58",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Контрфактический контекст:** Поскольку Ada Marlow не оформила для своего Zephyr QX-100 дополнительный план защиты от коррозии, далее описывается только нереализованный контрфактический сценарий: если бы она оформила этот план, замена внутренней пружины после тридцати трёх месяцев использования была бы бесплатной. [memory/equipment:9]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_7b1ebee5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_810c79b46e718651da7c4a58",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free. [memory/equipment:9]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_7b1ebee5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_810c79b46e718651da7c4a58",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Контрфактическое утверждение:** Ada Marlow не оформила для своего Zephyr QX-100 дополнительный план защиты от коррозии, поэтому далее описывается только нереализованный контрфактический сценарий: если бы она оформила этот план, замена внутренней пружины после тридцати трёх месяцев использования была бы бесплатной. [memory/equipment:9]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_7b1ebee5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_810c79b46e718651da7c4a58",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free. [memory/equipment:9]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_7b1ebee5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_810c79b46e718651da7c4a58",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Контрфактическое утверждение:** поскольку Ada Marlow не оформила свой Zephyr QX-100 в дополнительный план защиты от коррозии, это лишь нереализованный контрфактический сценарий: если бы она оформила план, замена внутренней пружины после тридцати трёх месяцев использования была бы бесплатной. [memory/equipment:9]"
+        }
+      ]
+    }
+  ],
+  "extra": [
+    {
+      "id": "v22-held-counterfactual",
+      "run": 2,
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_7b1ebee5",
+            "source_ref": "invented:v22-held-counterfactual",
+            "input_hash": "f87eba1a80e6938ae0132e7a36806b12a6528e3dabc25fbda76a523be98be7d3",
+            "evidence": "I, Ada Marlow, did not enroll my Zephyr QX-100 in the optional corrosion plan.\n…\nЕсли бы я оформила этот план, замена внутренней пружины после тридцати трёх месяцев использования была бы бесплатной. План не оформлен, поэтому это только нереализованное следствие.",
+            "evidence_hash": "187390795d61a46fe0f322b61aa1986b0fd535e8e69f91fcb90b32bb7f2cb448",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "I, Ada Marlow, did not enroll my Zephyr QX-100 in the optional corrosion plan.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "Если бы я оформила этот план, замена внутренней пружины после тридцати трёх месяцев использования была бы бесплатной. План не оформлен, поэтому это только нереализованное следствие.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              }
+            ]
+          },
+          {
+            "memory_id": "mem_97ae1482",
+            "source_ref": "invented:v22-held-counterfactual",
+            "input_hash": "f87eba1a80e6938ae0132e7a36806b12a6528e3dabc25fbda76a523be98be7d3",
+            "evidence": "I, Ada Marlow, did not enroll my Zephyr QX-100 in the optional corrosion plan.",
+            "evidence_hash": "e17da038e80143adbdf111b1230a12749ea84028042dd38a7f3af63587cabb82",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "I, Ada Marlow, did not enroll my Zephyr QX-100 in the optional corrosion plan.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 9,
+                  "text": "- **Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_7b1ebee5",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_810c79b46e718651da7c4a58",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "counterfactual",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Optional Corrosion Plan",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 9,
+                  "text": "- **Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_7b1ebee5",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_810c79b46e718651da7c4a58",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "counterfactual",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Optional Corrosion Plan",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 9,
+                  "text": "- **Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_7b1ebee5",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_810c79b46e718651da7c4a58",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "counterfactual",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Optional Corrosion Plan",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 9,
+                  "text": "- **Counterfactual:** Because Ada Marlow did not enroll her Zephyr QX-100 in the optional corrosion plan, the following is only an unrealized counterfactual: if she had enrolled it, replacement of the internal spring after thirty-three months of use would have been free.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_7b1ebee5",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_810c79b46e718651da7c4a58",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "counterfactual",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Optional Corrosion Plan",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ]
+    }
+  ],
+  "packetFingerprint": "e7af6ae490c02c28a4d439a26ec98728def793a4a7785f73253ec5ef28ee62c6"
+}

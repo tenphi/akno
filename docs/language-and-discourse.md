@@ -16,6 +16,11 @@ English is the initial supported knowledge target. `answer({ answer_language: "r
 language applies; if both are unset, no explicit answer-language policy is added. Hosts discover the effective
 policy in `context.knowledge_language` and remain responsible for their own final conversation responses.
 
+English and Russian query cues use the same precedence, including when both languages occur in one query:
+reports, open questions, discussion, history, then planning. For example, an English request for a report
+about a Russian-named plan selects reports. A caller's explicit `memory_view` still takes precedence over
+inference; the query language and selected view do not change the knowledge or requested answer language.
+
 For an automatically extracted record with one intact source support, answering also receives its bounded
 original quotation as internal context. The visible retained record determines what can be answered; the
 quotation constrains its meaning and qualifications. The same verifier call must separately confirm that
@@ -138,6 +143,12 @@ source fences, and an explicit following qualification referring back across a p
 and speaker scope continues across blank lines until the next heading. Sibling headings end their enclosing
 scope; nested headings retain it.
 
+ATX headings retain their scope with up to three leading spaces, tab separators, and optional closing
+hashes. Empty sibling headings also end the preceding scope. The same heading recognition is used when
+finding paragraph boundaries, so an indented qualifier cannot be dropped while admitting its paragraph as
+factual evidence. Frames keep the exact original heading bytes. Reindexing upgrades the derived projection
+and invalidates affected facts and summaries without rewriting source files.
+
 Category headings such as `Assistant report`, `Пересказ`, `Preliminary versions` and
 `Предварительные версии` also qualify their otherwise assertion-shaped paragraphs. Category matching is
 bounded to the title structure: `Report serial number` and `Preliminary coating specification` remain
@@ -172,7 +183,7 @@ evidence. Single-span candidates retain their existing comparison. Interpretatio
 remain fallible model judgments; their presence does not prove entailment or override a negative dimension.
 This accounting uses the same verification call with a bounded allowance per required span. Private candidate verdict schemas use an ordinary nested union with distinct single-value ID enums, compatible with the strict endpoint subset. Unexpected verdict fields fail local parsing as they do the wire schema.
 
-Missing dimensions fail closed. Each candidate or block is submitted once during the semantic verification pass, with no retry after rejection. Disjoint batches retain the full original source or their own cited evidence; related candidates supply relation context only. Final retention applies dependency closure: a relation whose internal target was withheld also withholds its source record and all transitive dependents. A malformed or unavailable verification batch withholds the operation; a semantic rejection does not prevent checking other batches. Retention verifies against the complete original source, including process identity and word sense; a fluent English paraphrase cannot certify its own meaning. Generated attribution normalization keeps the structured outer recorder and explicitly supported inner reporters, holds contradictory roles or chain overflow, and never truncates a chain. Unknown source clocks require both a readable source anchor and unknown date. Answers cannot infer what the whole original source omitted from a retrieved subset.
+Missing dimensions fail closed. Each candidate or block is submitted once during the semantic verification pass, with no retry after rejection. Disjoint batches retain the full original source or their own cited evidence; related candidates supply relation context only. Final retention applies dependency closure: a relation whose internal target was withheld also withholds its source record and all transitive dependents. A malformed or unavailable verification batch withholds the operation; a semantic rejection does not prevent checking other batches. Retention verifies against the complete original source, including process identity and word sense; a fluent English paraphrase cannot certify its own meaning. Generated attribution normalization keeps the structured outer recorder and explicitly supported inner reporters, holds contradictory roles or chain overflow, and never truncates a chain. Recognized source-clock expressions require both a readable source anchor and unknown date. Answers cannot infer what the whole original source omitted from a retrieved subset.
 CLI excerpts show qualification labels and scope line references;
 `--json` exposes the exact frame.
 
@@ -189,7 +200,78 @@ is required. The scanner does not understand arbitrary implicit discourse, every
 language. Unsupported implicit qualifications may be missed; conservative false holds and bounded supported
 cases must be assessed separately from model quality.
 
-## Current evaluated scope
+## What PR 73 demonstrates
+
+PR 73 fixes Markdown heading scope and English/Russian query-view selection. It does not change the
+retention, answer-generation or answer-verification prompts from its base revision. Those boundaries
+matter: the historical answer percentages come from different corpora, profiles and model executions.
+They do not demonstrate an overall accuracy improvement attributable to this PR.
+
+The [paired comparison](../benchmarks/language/paired-comparison.md) gives the actual base and PR revision
+identical ordinary Markdown and all 44 frozen retained sets, including incomplete and empty sets. Across
+48 input fixtures, correct inferred views improve from **66/100 to 100/100**, and answer operations supplied
+with eligible evidence improve from **153/200 to 172/200**. All **88 retained explicit-view controls**
+preserve identical evidence. Five incorrect factual projections are corrected; all four ordinary fixtures
+upgrade a real base-created index to the new projection without changing source bytes.
+
+These are deterministic scope and routing measurements, not generated-answer grades. Model-free
+auto-context remains inactive or degraded on many coordinates. The separate repeated Luna experiment
+uses active embeddings and reranking, and couples exact matching requests across revisions. Its reviewed
+results and limitations are reported with the [comparison evidence](../benchmarks/language/results/pr73-paired/README.md).
+
+In that live comparison, independently source-useful answers improve from **43/88 to 68/88**. Requiring
+support in the supplied evidence as well as source fidelity, qualifications, language and citations gives
+**38/88 to 68/88 fully grounded useful answers**. Both repetitions improve, with no paired useful-answer
+losses. Eight component/word-sense errors and one qualification omission remain. This bounded downstream
+measurement does not replace the full retention-and-answer evaluation below.
+Neither experiment replaces the full language/discourse quality gate below.
+
+The [subsequent review and fix rounds](../benchmarks/language/results/pr73-review/README.md) correct
+additional list-container and query-boundary regressions. Current code at `558954d` repeats all 48 offline
+pairs with complete arm observations identical to the earlier run. The generated-answer scores above
+remain measurements of frozen runtime `f23c0da`; no live generation was rerun after the review fixes.
+
+## Full Luna baseline and remaining limits
+
+The earlier [full Luna evaluation for PR 73](../benchmarks/language/results/pr73-luna-final/README.md) runs
+22 invented V23 sources twice: 44 case-runs and 352 answer coordinates, including 32 expected read-only
+abstentions. English knowledge, English/Russian queries and independently requested answer languages use
+an active vector index, Luna reranking, and independent review against original sources. The runtime,
+model profile and corpus are frozen before calls; outputs are recorded afterward and frozen for review.
+Every result is retained.
+
+The baseline produces **233/320 useful answers (72.8%)**, **27/40 complete retained sets** and **130/160
+useful auto-recall contexts**. Fifteen published answers change source meaning, and 26 omit required
+qualifications. English answers score 129/160; Russian answers score 104/160 and contain all 15 source-meaning
+errors. There are no wrong-language answers or unsafe factual promotions in this matrix. Three case-runs
+have typed availability failures, including one unavailable answer verification. All 32 read-only
+abstentions are justified; source bytes, replay and stored support remain stable in all 44 case-runs.
+Stored evidence fidelity does not establish completeness or semantic correctness of generated knowledge.
+
+**The original quality gate fails.** The owner selected Luna as the economical runtime and approved
+[bounded completion of #61/#62](../benchmarks/language/results/pr73-luna-final/closure-mapping.md), with
+remaining failures carried into #66. This scope decision does not lower the original thresholds, prove
+that Luna cannot improve further, or claim arbitrary multilingual/discourse coverage. Model index synthesis,
+graph expansion and longitudinal maintenance are outside this live matrix. Accepted-proposal transitions,
+late corrections and unresolved-reference resolution from the original #61 scope also lack live coverage
+here; incomplete/oversized frames and broader long-distance discourse have deterministic controls only.
+
+A bounded Russian rejected-proposal routing defect found in both repetitions is repaired separately.
+Independent review also caught negated/conditional rejection in the first patch; the final guard excludes
+those cues, and both intermediate and final measurements remain visible.
+The built V23 query-view matrix improves from 43/44 to 44/44 while V22 remains at 44/44. The
+[separate repair evidence](../benchmarks/language/results/pr73-luna-final/final-repair/summary.json) records
+two fresh executions of the exposed case under the same Luna profile. Those 16 answer coordinates are
+not pooled into the full baseline or treated as a replacement quality-gate run.
+
+The earlier [ordinary Markdown supplement](../benchmarks/language/results/pr73-acceptance/README.md)
+produces 47/48 useful answers, 24/24 useful auto-recall contexts and 18/18 safe factual-negative controls
+across two repetitions. All 47 published answers preserve source meaning, qualification, requested language
+and supporting citations; one useful answer was withheld. Four ordinary cases provide bounded evidence,
+not comprehensive Markdown coverage. The historical profiles below remain unchanged and are not pooled
+with the new results.
+
+### Historical fixed comparison
 
 The current implementation provides an opt-in English knowledge language and bounded English/Russian
 discourse handling. The fixed comparison below measures retention, qualified retrieval and answers from
@@ -235,7 +317,7 @@ The integration removes the forced report rewrite before source verification, jo
 
 A final deterministic consistency fix at `9045eda` recognizes the exact Russian source-clock sentence already prescribed by generation, including day references. It passes the local language/discourse/semantic controls, but is outside this frozen live score: no coordinate was rerun or credited for it.
 
-This closes the bounded PR work within seven of the ten allowed iterations. The opt-in language policy and bounded Markdown protections are implemented; reliability acceptance remains unmet and issues #61/#62 remain open.
+That earlier bounded PR work stopped within seven of its ten allowed iterations. The opt-in language policy and bounded Markdown protections were implemented; reliability acceptance remained unmet. The latest acceptance work is reported above.
 
 The separate [release profile smoke](../benchmarks/language/results/release-profile-smoke/README.md)
 checks the shipped 2,400-token answer ceiling under default and English language targeting. Both reports

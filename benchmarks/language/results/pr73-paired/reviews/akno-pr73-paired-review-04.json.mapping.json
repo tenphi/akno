@@ -1,0 +1,305 @@
+{
+  "packetSha256": "710a858a25ab2fe1fe3fc100e177272f2ecce7bcb7755b811748fa67ca5fe36f",
+  "mapping": [
+    {
+      "id": "3c420b77c56eae289075",
+      "file": "ordinary-english-report-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "3665531f898d38bd134a",
+      "file": "ordinary-english-report-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "e7d221af930cd03bfd81",
+      "file": "ordinary-english-report-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "486756ef23cf32815db8",
+      "file": "ordinary-english-report-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "025fb241c7a5187f7ad3",
+      "file": "ordinary-english-report-repeat-2.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "cca8295d2d1dead2aa2d",
+      "file": "ordinary-english-report-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "ee24932b828964f6d89c",
+      "file": "ordinary-english-report-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "5b1b53f4ba13daa30e3f",
+      "file": "ordinary-english-report-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "bb02e79dc8d6aa2b4124",
+      "file": "ordinary-english-report-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "89cbc1dcf393ec488c62",
+      "file": "ordinary-english-report-repeat-2.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "da3ae41457b8762658a5",
+      "file": "v22-held-nested-report-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "a7f92eafc5f61ef684e9",
+      "file": "v22-held-nested-report-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "ec73672c413711d4129c",
+      "file": "v22-held-nested-report-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "062132edd8855aa681cf",
+      "file": "v22-held-nested-report-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "263a492bd76405805cb4",
+      "file": "v22-held-nested-report-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "3d617011d0e80d85a5e8",
+      "file": "v22-held-nested-report-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "7b3e3b1684bc453db07a",
+      "file": "v22-held-nested-report-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "e51a00fcf7c9df5c9b15",
+      "file": "v22-held-nested-report-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "6b384c736ca7ded5e996",
+      "file": "v22-held-nested-report-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "6cbb8bf7e7321761289f",
+      "file": "v22-held-nested-report-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "a214f5f200b9281baf3c",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "2c56f0b913d8c744e636",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "110cce03daff78a57812",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "e9106b46c2c1177d175f",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "1bb0d2dfc94c0a270e81",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-1.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "447fb9db1316428a8921",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": false,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "39ff1c6aaa07f57173d1",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": false,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "566b61f9200e72fb72db",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    },
+    {
+      "id": "72176246c058dc04b74b",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": true,
+      "language": "ru",
+      "run": 1
+    },
+    {
+      "id": "4484f1b7cdffac6e8dac",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-1.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": true,
+      "language": "en",
+      "run": 1
+    }
+  ]
+}

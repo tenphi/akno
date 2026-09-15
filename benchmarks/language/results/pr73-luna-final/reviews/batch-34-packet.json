@@ -1,0 +1,479 @@
+{
+  "kind": "incremental-frozen-full-evaluation-review-batch",
+  "corpusFingerprint": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+  "rubric": "Unchanged V23 language-output-review-v2 rubric in the frozen benchmark reviewer; no changed thresholds or expected meanings.",
+  "cases": [
+    {
+      "id": "v23-held-competing-clicks",
+      "run": 2,
+      "source": {
+        "id": "v23-held-competing-clicks",
+        "split": "held-out",
+        "language": "en",
+        "scenario": "competing-hypotheses",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "I, Ada Marlow, am considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail, or a locking pin seated at an angle."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "I have chosen neither explanation. Neither has supporting observations, and this record does not confirm that the clicking itself occurs."
+          }
+        ],
+        "view": "discussion",
+        "commitment": "tentative",
+        "admission": "writable",
+        "ordinary": "## Preliminary hypotheses\nAda Marlow considers a cracked guide rail or an angled locking pin as explanations for Zephyr QX-100 clicking. She has chosen neither; neither has supporting observations, and this record does not confirm that clicking occurs.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "What competing hypotheses did Ada Marlow consider for clicking in Zephyr QX-100?",
+          "ru": "Какие конкурирующие гипотезы щелчков в Zephyr QX-100 рассматривала Ada Marlow?"
+        },
+        "reviewExpectation": "Retain both tentative causes with their exact mechanisms: cracked guide rail and locking pin seated at an angle. Keep Ada’s personal nonselection, no supporting observations for either, and the record-scoped lack of confirmation of clicking itself. Do not replace the symptom, broaden angled seating to generic damage, claim no one selected a cause, or establish a real fault."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ddc67e18",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_e977d3017b7ef26e854a186c",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ddc67e18",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e977d3017b7ef26e854a186c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ddc67e18",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e977d3017b7ef26e854a186c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Предварительный статус:** Ada Marlow рассматривает два предварительных объяснения щелканья в Zephyr QX-100: треснувшую направляющую или фиксирующий штифт, установленный под углом. Она не выбрала ни одно из них; ни одно не подтверждено наблюдениями, и эта запись не подтверждает, что само щелканье происходит. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ddc67e18",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e977d3017b7ef26e854a186c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ddc67e18",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e977d3017b7ef26e854a186c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Предварительный статус:** Ada Marlow рассматривает два предварительных объяснения щелчков в Zephyr QX-100: треснувшую направляющую или штифт фиксации, установленный под углом. Она не выбрала ни одно из них; ни одно не подтверждено наблюдениями, и эта запись не подтверждает, что сами щелчки происходят. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ddc67e18",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e977d3017b7ef26e854a186c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ddc67e18",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e977d3017b7ef26e854a186c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Предварительный статус:** Ada Marlow рассматривает два предварительных объяснения щелчков в Zephyr QX-100: треснувшую направляющую или фиксирующий штифт, установленный под углом. Она не выбрала ни одно из них; ни у одного нет подтверждающих наблюдений, и эта запись не подтверждает, что сами щелчки происходят. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ddc67e18",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e977d3017b7ef26e854a186c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ddc67e18",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e977d3017b7ef26e854a186c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Предварительный статус:** Ada Marlow рассматривает два предварительных объяснения щелчков в Zephyr QX-100: треснувшую направляющую или фиксирующий штифт, установленный под углом. Она не выбрала ни одно из них; ни одно из них не имеет подтверждающих наблюдений, и эта запись не подтверждает, что сами щелчки происходят. [memory/equipment:7]"
+        }
+      ]
+    }
+  ],
+  "extra": [
+    {
+      "id": "v23-held-competing-clicks",
+      "run": 2,
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_ddc67e18",
+            "source_ref": "invented:v23-held-competing-clicks",
+            "input_hash": "800830d32840236b0ced9a45a7d13a6b2748123c1fa7c1bf55827d6ef8345a31",
+            "evidence": "I, Ada Marlow, am considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail, or a locking pin seated at an angle.\n…\nI have chosen neither explanation. Neither has supporting observations, and this record does not confirm that the clicking itself occurs.",
+            "evidence_hash": "d97ebcffa812ea4c2e2512cba0d71f3746976bae6779cad4045b4ebc2c03f4ef",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "I, Ada Marlow, am considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail, or a locking pin seated at an angle.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "I have chosen neither explanation. Neither has supporting observations, and this record does not confirm that the clicking itself occurs.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ddc67e18",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_e977d3017b7ef26e854a186c",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Preliminary Explanations for Clicking",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ddc67e18",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_e977d3017b7ef26e854a186c",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Preliminary Explanations for Clicking",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ddc67e18",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_e977d3017b7ef26e854a186c",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Preliminary Explanations for Clicking",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two preliminary explanations for clicking in Zephyr QX-100: a cracked guide rail or a locking pin seated at an angle. She has chosen neither; neither has supporting observations, and this record does not confirm that the clicking itself occurs.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_ddc67e18",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_e977d3017b7ef26e854a186c",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Preliminary Explanations for Clicking",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ]
+    }
+  ],
+  "packetFingerprint": "a87f71f664ee376a56a7dca5434b714a94a5d83ae3185ba766a47b14a40f95a6"
+}

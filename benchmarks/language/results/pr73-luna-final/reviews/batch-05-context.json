@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "fc6ad3dcf01f031e12a36bb16c32f4598a7dee6712a919b893d0c30cdafb6188",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-declined-extension",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context includes the counterfactual free connector repair after twenty-two months of use together with Ada’s actual rejection and explicit absence of current coverage. The qualification metadata agrees with the prose, and English stored knowledge is appropriate for either query language. This is useful discussion evidence, with no promotion to an actual entitlement."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context includes the counterfactual free connector repair after twenty-two months of use together with Ada’s actual rejection and explicit absence of current coverage. The qualification metadata agrees with the prose, and English stored knowledge is appropriate for either query language. This is useful discussion evidence, with no promotion to an actual entitlement."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context includes the counterfactual free connector repair after twenty-two months of use together with Ada’s actual rejection and explicit absence of current coverage. The qualification metadata agrees with the prose, and English stored knowledge is appropriate for either query language. This is useful discussion evidence, with no promotion to an actual entitlement."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context includes the counterfactual free connector repair after twenty-two months of use together with Ada’s actual rejection and explicit absence of current coverage. The qualification metadata agrees with the prose, and English stored knowledge is appropriate for either query language. This is useful discussion evidence, with no promotion to an actual entitlement."
+        }
+      ]
+    }
+  ]
+}

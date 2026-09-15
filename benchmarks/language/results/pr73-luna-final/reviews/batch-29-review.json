@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "c03c5f28d5c166a83e0fde3582ada497ebddba715ad26a83aa07a6eb9400813e",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-open-question",
+      "run": 2,
+      "retentionUseful": true,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The retained English question preserves the exact annual folding-handle alignment procedure, Ada’s personal lack of an answer, and neither inclusion nor exclusion being established by this note. Question metadata with no commitment matches the unresolved requirement. No contract silence, universal ignorance, or completed maintenance is asserted.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The English answer and retrieved evidence preserve annual alignment of the folding handle precisely, with Ada’s personal uncertainty and neither coverage outcome being established by this note. The focused unresolved-question answer is useful, correctly languaged, and source-entailed without a performed alignment or universal ignorance claim."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": false,
+          "reason": "The Russian answer broadens annual alignment of the folding handle to «ежегодную регулировку складной ручки», annual adjustment without specifying alignment. Adjustment can concern other settings or mechanisms, so this changes the exact service procedure whose inclusion remains an open question. Personal uncertainty and neither-inclusion-nor-exclusion scope survive, and the answer is Russian, but process fidelity and qualified usefulness fail. Retrieved English evidence retains alignment precisely and remains useful."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The English answer and retrieved evidence preserve annual alignment of the folding handle precisely, with Ada’s personal uncertainty and neither coverage outcome being established by this note. The focused unresolved-question answer is useful, correctly languaged, and source-entailed without a performed alignment or universal ignorance claim."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": false,
+          "reason": "The Russian answer broadens annual alignment of the folding handle to «ежегодную регулировку складной ручки», annual adjustment without specifying alignment. Adjustment can concern other settings or mechanisms, so this changes the exact service procedure whose inclusion remains an open question. Personal uncertainty and neither-inclusion-nor-exclusion scope survive, and the answer is Russian, but process fidelity and qualified usefulness fail. Retrieved English evidence retains alignment precisely and remains useful."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The English answer and retrieved evidence preserve annual alignment of the folding handle precisely, with Ada’s personal uncertainty and neither coverage outcome being established by this note. The focused unresolved-question answer is useful, correctly languaged, and source-entailed without a performed alignment or universal ignorance claim."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": false,
+          "reason": "The Russian answer broadens annual alignment of the folding handle to «ежегодную регулировку складной ручки», annual adjustment without specifying alignment. Adjustment can concern other settings or mechanisms, so this changes the exact service procedure whose inclusion remains an open question. Personal uncertainty and neither-inclusion-nor-exclusion scope survive, and the answer is Russian, but process fidelity and qualified usefulness fail. Retrieved English evidence retains alignment precisely and remains useful."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The English answer and retrieved evidence preserve annual alignment of the folding handle precisely, with Ada’s personal uncertainty and neither coverage outcome being established by this note. The focused unresolved-question answer is useful, correctly languaged, and source-entailed without a performed alignment or universal ignorance claim."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The Russian answer correctly preserves annual alignment as «ежегодное выравнивание складной ручки», Ada’s personal lack of an answer, and neither inclusion nor exclusion being established by the note. It does not resolve coverage or infer contract silence. Both the answer and its complete English retrieval are useful and source-entailed."
+        }
+      ]
+    }
+  ]
+}

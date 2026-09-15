@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "4d2b721cb314cfeaf36a301fc2a335fbf9ae99c9340c2e76d5b92e34e952218e",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-relayed-service",
+      "run": 2,
+      "retentionUseful": true,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The complete retained set preserves Ada as outer recorder and Bo as inner reporter, the reported permission to send the device to a workshop for indicator-brightness measurement rather than indicator replacement, and Ada’s personal unread/unverified status. In this reported-purpose construction, not to replace identifies the content of the relayed service message; it does not state a general prohibition on all replacement. The separate self-attested negative fact that Ada has not yet removed the protective cover is retained with matching polarity. No verified permission or completed service is asserted.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved report preserve the outer Ada/inner Bo chain, reported workshop shipment permission for measuring indicator brightness, the distinction from replacement in that message, and Ada’s not having read the terms or checked the report. This describes the reported service purpose rather than imposing a general replacement ban. The focused answer may omit the separately retained protective-cover fact. The requested language is used and no established permission, completed shipment, or performed service is introduced."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved report preserve the outer Ada/inner Bo chain, reported workshop shipment permission for measuring indicator brightness, the distinction from replacement in that message, and Ada’s not having read the terms or checked the report. This describes the reported service purpose rather than imposing a general replacement ban. The focused answer may omit the separately retained protective-cover fact. The requested language is used and no established permission, completed shipment, or performed service is introduced."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved report preserve the outer Ada/inner Bo chain, reported workshop shipment permission for measuring indicator brightness, the distinction from replacement in that message, and Ada’s not having read the terms or checked the report. This describes the reported service purpose rather than imposing a general replacement ban. The focused answer may omit the separately retained protective-cover fact. The requested language is used and no established permission, completed shipment, or performed service is introduced."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved report preserve the outer Ada/inner Bo chain, reported workshop shipment permission for measuring indicator brightness, the distinction from replacement in that message, and Ada’s not having read the terms or checked the report. This describes the reported service purpose rather than imposing a general replacement ban. The focused answer may omit the separately retained protective-cover fact. The requested language is used and no established permission, completed shipment, or performed service is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved report preserve the outer Ada/inner Bo chain, reported workshop shipment permission for measuring indicator brightness, the distinction from replacement in that message, and Ada’s not having read the terms or checked the report. This describes the reported service purpose rather than imposing a general replacement ban. The focused answer may omit the separately retained protective-cover fact. The requested language is used and no established permission, completed shipment, or performed service is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved report preserve the outer Ada/inner Bo chain, reported workshop shipment permission for measuring indicator brightness, the distinction from replacement in that message, and Ada’s not having read the terms or checked the report. This describes the reported service purpose rather than imposing a general replacement ban. The focused answer may omit the separately retained protective-cover fact. The requested language is used and no established permission, completed shipment, or performed service is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved report preserve the outer Ada/inner Bo chain, reported workshop shipment permission for measuring indicator brightness, the distinction from replacement in that message, and Ada’s not having read the terms or checked the report. This describes the reported service purpose rather than imposing a general replacement ban. The focused answer may omit the separately retained protective-cover fact. The requested language is used and no established permission, completed shipment, or performed service is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved report preserve the outer Ada/inner Bo chain, reported workshop shipment permission for measuring indicator brightness, the distinction from replacement in that message, and Ada’s not having read the terms or checked the report. This describes the reported service purpose rather than imposing a general replacement ban. The focused answer may omit the separately retained protective-cover fact. The requested language is used and no established permission, completed shipment, or performed service is introduced."
+        }
+      ]
+    }
+  ]
+}

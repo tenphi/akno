@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "fc481f7a61ab816e0a0021162941bada70c655233dd5b33ad40aefa8041ee39c",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-declined-extension",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is empty although the writable source contains a useful qualified unrealized repair benefit. This is a missed context rather than a required safe exclusion. Empty evidence emits no claim, language violation, or qualification distortion; the public packet does not establish the runtime cause."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is empty although the writable source contains a useful qualified unrealized repair benefit. This is a missed context rather than a required safe exclusion. Empty evidence emits no claim, language violation, or qualification distortion; the public packet does not establish the runtime cause."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains only Ada’s actual rejection of the extension, faithfully qualified as rejected. It omits the conditional free connector repair after twenty-two months of use and therefore does not answer the benefit-focused query. The surviving decision is entailed, but incomplete useful context cannot be credited and no admission hold is required."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains only Ada’s actual rejection of the extension, faithfully qualified as rejected. It omits the conditional free connector repair after twenty-two months of use and therefore does not answer the benefit-focused query. The surviving decision is entailed, but incomplete useful context cannot be credited and no admission hold is required."
+        }
+      ]
+    }
+  ]
+}

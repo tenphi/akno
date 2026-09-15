@@ -1,0 +1,322 @@
+{
+  "schemaVersion": "independent-paired-final-audit-v1",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "anonymousGradesFrozenBeforeArmMapping": true
+  },
+  "decision": "Evidence is internally consistent and supports the bounded Markdown scope/projection and inferred-view routing claim. It does not establish overall accuracy improvement, noninferiority, or passage of the historical quality gate.",
+  "remainingSubstantiveBlockers": [],
+  "gradesChanged": false,
+  "scope": {
+    "baseline": "ce8fbe4ed0d529bec35dd154e8bbfec79eefb0eb",
+    "candidate": "f23c0dae204bef561a5e1eb3c3a64767f8bd0452",
+    "offlinePairs": 48,
+    "livePairs": 22,
+    "anonymousPackets": 8,
+    "independentlyGradedOutputs": 220,
+    "mainOperationsPerArm": 88,
+    "factualControlsPerArm": 22,
+    "liveRepetitions": 2,
+    "freshRetentionTested": false
+  },
+  "independentVerification": {
+    "assertionsPassed": 16253,
+    "assertionFailures": [],
+    "checks": [
+      "Recomputed metrics, paired gains/losses and failure ledger from every frozen grade and raw arm coordinate.",
+      "Verified all 220 IDs once; reconstructed every anonymous packet entry from raw arm output, query, fixture, read metadata and available evidence. All packet/grade bytes equal the original temporary files, and every raw-byte packet hash matches its mapping and grade.",
+      "Checked all 70 canonical pair hashes, completion counts, source-byte invariants and actual answer memory_view values, including explicit and factual controls.",
+      "Compared all 44 reconstructed retained text/qualification arrays with archived public knowledge, original source.items, review expectations, original admission/hold judgments and separately preserved support references. Verified live selection against the fixed offline fixtures.",
+      "Checked text, line numbers and qualification-frame metadata across read, recall, answer evidence and auto-context; all published citation coordinates resolve to the supplied shared bytes.",
+      "Confirmed 88 offline and 32 live retained explicit-view evidence controls are equal across arms. Independent partial-set comparison loses only the intended fictional warranty and empty heading in the ordinary factual control.",
+      "Verified all four actual base-created indexes upgrade to candidate projection results with source bytes unchanged. Stored qualified eligibility is assessed together with semantic view; it is not synonymous with factual answer eligibility.",
+      "Checked all network receipts: corresponding opposite-arm occurrence, case, repetition, stage and exact request hash; no same-arm or cross-repetition response sharing, and physical usage counted once.",
+      "Verified frozen runner/fixture/transport hashes, declared compiled-module union and protocol resolution; both present built trees still match their archived manifests. Only prose and intent production modules differ.",
+      "Verified old PR evidence archives remain unchanged against their prior committed tree."
+    ],
+    "independentSummarizerReruns": {
+      "old-offline": {
+        "matchesArchived": true,
+        "sha256": "64cbed77f1caf589debfa881092eeaaf6137c8597222571df796ab1aadf9f5c8"
+      },
+      "old-live": {
+        "matchesArchived": true,
+        "sha256": "bfc6ae97656f57d7d75c78e6063fed92af844269b3734f54a8115eb862d596de"
+      },
+      "current-offline": {
+        "matchesArchived": true,
+        "sha256": "64cbed77f1caf589debfa881092eeaaf6137c8597222571df796ab1aadf9f5c8"
+      },
+      "current-live": {
+        "matchesArchived": true,
+        "sha256": "bfc6ae97656f57d7d75c78e6063fed92af844269b3734f54a8115eb862d596de"
+      }
+    },
+    "currentBuiltHashesMatch": {
+      "baseline": {
+        "core": true,
+        "protocol": true
+      },
+      "candidate": {
+        "core": true,
+        "protocol": true
+      }
+    }
+  },
+  "verifiedMain": {
+    "baseline": {
+      "operations": 88,
+      "sourceUseful": 43,
+      "groundedUseful": 38,
+      "published": 56,
+      "sourceErrors": 12,
+      "qualificationErrors": 8,
+      "languageErrors": 0,
+      "citationErrors": 0,
+      "unsupportedByAvailableEvidence": 10,
+      "justifiedNulls": 0,
+      "nulls": 32
+    },
+    "candidate": {
+      "operations": 88,
+      "sourceUseful": 68,
+      "groundedUseful": 68,
+      "published": 77,
+      "sourceErrors": 8,
+      "qualificationErrors": 1,
+      "languageErrors": 0,
+      "citationErrors": 0,
+      "unsupportedByAvailableEvidence": 8,
+      "justifiedNulls": 0,
+      "nulls": 11
+    }
+  },
+  "verifiedFactualControls": {
+    "baseline": {
+      "operations": 22,
+      "sourceUseful": 4,
+      "groundedUseful": 4,
+      "published": 7,
+      "sourceErrors": 2,
+      "qualificationErrors": 2,
+      "languageErrors": 0,
+      "citationErrors": 0,
+      "unsupportedByAvailableEvidence": 1,
+      "justifiedNulls": 14,
+      "nulls": 15
+    },
+    "candidate": {
+      "operations": 22,
+      "sourceUseful": 4,
+      "groundedUseful": 4,
+      "published": 4,
+      "sourceErrors": 0,
+      "qualificationErrors": 0,
+      "languageErrors": 0,
+      "citationErrors": 0,
+      "unsupportedByAvailableEvidence": 0,
+      "justifiedNulls": 18,
+      "nulls": 18
+    }
+  },
+  "verifiedByRepetition": {
+    "1": {
+      "baseline": {
+        "operations": 44,
+        "sourceUseful": 21,
+        "groundedUseful": 19,
+        "published": 27,
+        "sourceErrors": 6,
+        "qualificationErrors": 3,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 5,
+        "justifiedNulls": 0,
+        "nulls": 17
+      },
+      "candidate": {
+        "operations": 44,
+        "sourceUseful": 34,
+        "groundedUseful": 34,
+        "published": 38,
+        "sourceErrors": 4,
+        "qualificationErrors": 0,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 4,
+        "justifiedNulls": 0,
+        "nulls": 6
+      }
+    },
+    "2": {
+      "baseline": {
+        "operations": 44,
+        "sourceUseful": 22,
+        "groundedUseful": 19,
+        "published": 29,
+        "sourceErrors": 6,
+        "qualificationErrors": 5,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 5,
+        "justifiedNulls": 0,
+        "nulls": 15
+      },
+      "candidate": {
+        "operations": 44,
+        "sourceUseful": 34,
+        "groundedUseful": 34,
+        "published": 39,
+        "sourceErrors": 4,
+        "qualificationErrors": 1,
+        "languageErrors": 0,
+        "citationErrors": 0,
+        "unsupportedByAvailableEvidence": 4,
+        "justifiedNulls": 0,
+        "nulls": 5
+      }
+    }
+  },
+  "pairedChanges": {
+    "sourceUsefulGains": 25,
+    "sourceUsefulLosses": 0,
+    "groundedUsefulGains": 30,
+    "groundedUsefulLosses": 0,
+    "baselineNullToCandidateSourceError": [
+      {
+        "beforeId": "c04da3387fcd0c2a5fe9",
+        "afterId": "a1b4583034e8b69ba65f",
+        "fixture": "v23-held-rejected-inspection/run-1",
+        "run": 1
+      },
+      {
+        "beforeId": "06bba970754642055d8a",
+        "afterId": "3032f628d3b6d3e2579e",
+        "fixture": "v23-held-fictional-key/run-1",
+        "run": 2
+      },
+      {
+        "beforeId": "6559fac43de41adc52af",
+        "afterId": "3b959957125ba112ccca",
+        "fixture": "v23-held-rejected-inspection/run-1",
+        "run": 2
+      }
+    ]
+  },
+  "verifiedOffline": {
+    "inferredViews": {
+      "baseline": 66,
+      "candidate": 100,
+      "denominator": 100
+    },
+    "explicitViews": {
+      "baseline": 100,
+      "candidate": 100,
+      "denominator": 100
+    },
+    "ordinaryProjections": {
+      "baseline": 1,
+      "candidate": 6,
+      "denominator": 6
+    },
+    "incorrectFactualProjections": {
+      "baseline": 5,
+      "candidate": 0
+    },
+    "operationsWithEligibleAnswerEvidence": {
+      "baseline": 153,
+      "candidate": 172,
+      "denominator": 200
+    },
+    "equalRetainedExplicitControls": 88,
+    "baseIndexUpgrades": 4,
+    "bytesStablePerArm": 48,
+    "networkRequests": 0
+  },
+  "verifiedNetwork": {
+    "logicalRequests": 1354,
+    "physicalRequests": 844,
+    "coupledResponses": 510,
+    "failedPhysicalRequests": 0,
+    "usageByModel": {
+      "text-embedding-3-small": 11945,
+      "gpt-5.6-luna": 1524265
+    }
+  },
+  "readmeReview": {
+    "claimsMatchEvidence": true,
+    "narrowScopeAppropriate": true,
+    "sourceVersusGroundedMetricCorrectionResolved": true,
+    "newlyPublishedErrorTransitionsDisclosed": true,
+    "historicalGateFailurePreserved": true,
+    "historicalFullUsefulAnswers": {
+      "numerator": 233,
+      "denominator": 320
+    },
+    "localLinksMissingAtReview": [
+      "final-audit.json",
+      "publication-audit.json",
+      "artifact-manifest.json"
+    ],
+    "publicationSequencing": "Only the final audit copy, publication audit and final artifact manifest remain to be written; their links must resolve before publication. This audit does not certify a manifest that has not yet been generated.",
+    "validationEvidence": "Inspected the supplied validation receipt, isolated built/socket check and built view matrix; did not independently rerun the full test suite."
+  },
+  "limitations": [
+    "The live set is exposed, selected and small: 11 fixed fixtures, one selected query per fixture, two repetitions. It measures downstream behavior on those inputs, not unseen linguistic generalization or overall retention/answer accuracy.",
+    "Rehydrated public artifacts preserve exposed text and typed qualifications but lack full original managed markers and provenance. Fixture receipts with empty links/reporters/evidence cannot reproduce original provenance-backed verification, lineage, source archive or replay.",
+    "Exact corresponding requests share responses across arms within a repetition. Different requests sample independently. The 220 answer operations and 1354 logical provider calls are not independent samples; 844 physical requests and 510 coupled responses are separately reported.",
+    "Zero useful-answer losses is not semantic safety noninferiority: three candidate source-error answers replace baseline nulls. Candidate still has eight component/word-sense errors and one qualification omission.",
+    "Eleven candidate nulls remain source-answerability misses: eight arise from an inherited empty artifact and three from verification rejection. An empty artifact explains availability but does not justify abstention against the original answerable source.",
+    "Context/evidence availability and correct inferred views are not semantic answer correctness. Valid citation coordinates likewise do not prove the cited text supports an answer.",
+    "The full historical evaluation stays at 233/320 useful answers with a failed unchanged numerical gate; this comparison neither changes that grade nor measures longitudinal work."
+  ],
+  "evidenceSha256": {
+    "README.md": "ff7361a1284b89e8db285309c221e15893fb68cdb3346fab1909ac58c35b862e",
+    "source-review-summary.json": "cb21211d86b413fbc01ea49d22e80baea1a529b8a36ee5ea9d3a540ff19c7dea",
+    "source-failure-ledger.json": "9996898782cc80917f6c9f5524aa11580e9dc6962a186a6d37b10dbd0b2919ad",
+    "offline/manifest.json": "e2225ba334ceeba9905bb173db15cb98fa59f0334d9044244338ab5725c1e856",
+    "offline/results.json": "6880b288cbafd5f799d7f40e8ab01b1fea20eabfec5bea5f140eb8b2da516d16",
+    "offline/summary.json": "64cbed77f1caf589debfa881092eeaaf6137c8597222571df796ab1aadf9f5c8",
+    "offline/completion.json": "162ecd023efb03782f5a09c05b57632f4140501d25039dc2360ace8c19b2f24f",
+    "live/manifest.json": "6368890069c2b387fc31c083849b6bd34866b7f7356fa7db208c26e246ed25d0",
+    "live/results.json": "1f18d337aac3a708cad2f110e9579c66bf6345a004e234a9c750c6a67018ad47",
+    "live/summary.json": "bfc6ae97656f57d7d75c78e6063fed92af844269b3734f54a8115eb862d596de",
+    "live/completion.json": "5111b6f0708041920ff0b2e9a77fb81882eb3a4a1cefc0f95f656d8d55e39f20",
+    "live/network-receipts.jsonl": "19c2f989285302767b32ee9d9c5437c58afd52d5de1967c639129539a1f64628",
+    "freeze-review.json": "1e565eaa2958e6308d62a6d82cfc0e3f88993854d3422a2a400c873a96b9c9e1",
+    "summarizer-validation.json": "e8898c5d09a6a4e43c1d4a44120f648843dc052804cfa427f9f402015c2dc792",
+    "validation.json": "062d2100086abd8175647220aa5f3ecc753af4f43a6dcccd39443cea8cacf1cb",
+    "built-check/built-check.json": "095323cc14537ba3b6db096fda9544cde537511e1b087e5cf291d7f697aa4436",
+    "built-check/view-matrix.json": "ec62c095f97cf95f884430a33400e6f2cb59b9d526ac6354ca3c334f1f1197ac",
+    "reviewed-runtime/summarize-language-comparison.mjs.txt": "b26827a8f926e2c06857a42be4fe5102f0cc7ddf1cfedd51e11096c5bc94be43",
+    "reviewed-runtime/score-review.mjs.txt": "2711424c7a43e1fff426ff2c8f43d21be695f2b3260992bca15bffaf24772160",
+    "reviews/akno-pr73-paired-grades-01.json": "c4d974f067683fef0cbe44b63eff9112a100861fcaf384b151ce10c26f563743",
+    "reviews/akno-pr73-paired-grades-02.json": "22623bfde6ec7b394e8fd782b0875fae8670ee62c137970bcad89cd09b1720b9",
+    "reviews/akno-pr73-paired-grades-03.json": "d88cba20654c158edd360c718d45367c4c55ede58c99acb487b1de1507b9d5fa",
+    "reviews/akno-pr73-paired-grades-04.json": "f77ef1d9ab86f20a7baff18f33a8ea917d56b6627baa6bbf08ff1575ff74c484",
+    "reviews/akno-pr73-paired-grades-05.json": "4a54f95c29bbe7b76aed2e88aaedb90fe91ed1bb3756d0bc90c36056b13dae5a",
+    "reviews/akno-pr73-paired-grades-06.json": "69ed031fe197fc8405c7183c0333bcda9a72e0004a393b4a841211fa36cae481",
+    "reviews/akno-pr73-paired-grades-07.json": "8d9c971176e39db4116de4d6dfcc3de462729cf8cbc1dd1cc72bfb37b2ca15d8",
+    "reviews/akno-pr73-paired-grades-08.json": "465b0c7d528c1834434372fbb2b59ef6c166e0834bf6158a756613c1d88fb2ac",
+    "reviews/akno-pr73-paired-review-01.json": "b10cf770d14d37dc67b1d6054ef6e1f63911f7df50cce909ee3ba37ef96880df",
+    "reviews/akno-pr73-paired-review-01.json.mapping.json": "5d4e735102f1a8fa811729f5c7a4ff19231e35c4cd46fbba618e36ae21da76e7",
+    "reviews/akno-pr73-paired-review-02.json": "acff723127f815b655c9367dee8ab960376cb78e4d96894f04426ab320efe54f",
+    "reviews/akno-pr73-paired-review-02.json.mapping.json": "6c437b96b2bae103860eecde2afaf2aa9f0c9afb6307e93180d20f778ac65ae7",
+    "reviews/akno-pr73-paired-review-03.json": "c465ef28050765cb1491010cb7ec55df8a1a985af639a6b92cf2b3f3a5d32335",
+    "reviews/akno-pr73-paired-review-03.json.mapping.json": "fc9978ad91a3674253f1e28cbe6cfd8648d268e85bc22b593b8bf679021e961d",
+    "reviews/akno-pr73-paired-review-04.json": "710a858a25ab2fe1fe3fc100e177272f2ecce7bcb7755b811748fa67ca5fe36f",
+    "reviews/akno-pr73-paired-review-04.json.mapping.json": "4643b700042f023746f8672f8063f3868799d8857f25216bba052cc85fc57b21",
+    "reviews/akno-pr73-paired-review-05.json": "2ffc88745eef68946978d173d2fb40e87f9d43237969d8d97157546cdf93bad0",
+    "reviews/akno-pr73-paired-review-05.json.mapping.json": "b74b86e2d9dead5bb2f9d52d94083a7a646e548b2919df92b5c61cabe7e2198b",
+    "reviews/akno-pr73-paired-review-06.json": "97c68cc7aaa25b5720076ea7d4ad0c36562fcaf8ea7852de6438e8b35866fda5",
+    "reviews/akno-pr73-paired-review-06.json.mapping.json": "f8622b3e44f372bc88e3d611bf72e44cfbbbdc600229ba53b4a116215068221d",
+    "reviews/akno-pr73-paired-review-07.json": "67902a33439ac777660460fdd343eeb99dcb30964fc1ff908fb4ab7f1d5a6ee6",
+    "reviews/akno-pr73-paired-review-07.json.mapping.json": "9db2df402cee5f40ecfcb0df3f3c4f32081ed0d613eca3387c9e9ecb7dd16b6e",
+    "reviews/akno-pr73-paired-review-08.json": "56cf26f34f12c78f8445917dbec25de94c7501cc1adce26ceb245138004534ff",
+    "reviews/akno-pr73-paired-review-08.json.mapping.json": "8d4297611ba80650035e13262928a2b433665741178030eade77efc64ced0027"
+  }
+}

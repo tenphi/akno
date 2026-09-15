@@ -1,0 +1,301 @@
+{
+  "kind": "exposed-targeted-routing-repair-supplement",
+  "memoryViewVersion": "memory-view-v11",
+  "sameModelProfile": true,
+  "fullGateRecomputed": false,
+  "caseRuns": 2,
+  "answerCoordinates": 16,
+  "completeRetention": {
+    "numerator": 0,
+    "denominator": 2,
+    "rate": 0
+  },
+  "usefulAnswers": {
+    "numerator": 14,
+    "denominator": 16,
+    "rate": 0.875
+  },
+  "usefulContexts": {
+    "numerator": 8,
+    "denominator": 8,
+    "rate": 1
+  },
+  "unsupportedAnswers": 2,
+  "answerQualificationErrors": 0,
+  "answerLanguageErrors": 0,
+  "russianInferredHistory": {
+    "numerator": 2,
+    "denominator": 2,
+    "rate": 1
+  },
+  "stableSourceBytes": 2,
+  "stableReplay": 2,
+  "stableSupportArchive": 2,
+  "before": [
+    {
+      "run": 1,
+      "completeRetention": false,
+      "usefulAnswers": {
+        "numerator": 3,
+        "denominator": 8,
+        "rate": 0.375
+      },
+      "unsupportedAnswers": 0,
+      "qualificationErrors": 0,
+      "russianInferredView": "planning",
+      "answerOutcomes": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "reason": "verification_rejected"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "reason": "verification_rejected"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "reason": "no_eligible_evidence"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "reason": "no_eligible_evidence"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "reason": "verification_rejected"
+        }
+      ],
+      "reviewReason": "The retained set preserves the rejected offer to take Ada’s entire device to the workshop for checking its alignment gauge, plus the separate absence of an inspection appointment and of transported-device action. It omits Ada’s explicit statement that she has no plan to take the device there. Rejection of one offer, no appointment, and no past transport do not entail absence of all current plans to go there. This is incomplete retention, while both surviving rows preserve their own source meaning, rejection and negative-event polarity without an invented measurement property or completed inspection."
+    },
+    {
+      "run": 2,
+      "completeRetention": true,
+      "usefulAnswers": {
+        "numerator": 5,
+        "denominator": 8,
+        "rate": 0.625
+      },
+      "unsupportedAnswers": 1,
+      "qualificationErrors": 0,
+      "russianInferredView": "planning",
+      "answerOutcomes": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "reason": "no_eligible_evidence"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "reason": "no_eligible_evidence"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "reason": "answered"
+        }
+      ],
+      "reviewReason": "The complete retained set preserves Ada’s rejected offer to take the whole device to the workshop to check its alignment gauge, plus separate assertions of no current plan, no inspection appointment, and no transported device. Each claim remains correctly scoped and negatively qualified where needed. The clarification identifying the device for the appointment is entailed by the source context; it adds no appointment or service fact. No active offer, completed inspection, or unmentioned measurement property is asserted."
+    }
+  ],
+  "after": [
+    {
+      "run": 1,
+      "completeRetention": false,
+      "usefulAnswers": {
+        "numerator": 7,
+        "denominator": 8,
+        "rate": 0.875
+      },
+      "unsupportedAnswers": 1,
+      "qualificationErrors": 0,
+      "russianInferredView": "history",
+      "answerOutcomes": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "reason": "answered"
+        }
+      ],
+      "reviewReason": "The three saved English rows faithfully preserve Ada rejecting the offer to take the whole Zephyr QX-100 to the workshop to check its alignment gauge, no inspection appointment having been made, and no transport of the device to the workshop. Their rejected-plan and negative-event metadata preserve the source role, disposition and polarity. The retained set is nevertheless incomplete: source item turn-2222 separately states that Ada has no plan to take the device there, and no saved row preserves that assertion. Rejection of one offer, absence of an appointment and absence of transport do not themselves establish absence of a current plan. This is omission of a separate material fact, not a stripped governing qualification or an unsupported emitted claim. The understandable writable source does not justify a hold. Only source.items supplies the original meaning; the ordinary counterpart does not fill the gap."
+    },
+    {
+      "run": 2,
+      "completeRetention": false,
+      "usefulAnswers": {
+        "numerator": 7,
+        "denominator": 8,
+        "rate": 0.875
+      },
+      "unsupportedAnswers": 1,
+      "qualificationErrors": 0,
+      "russianInferredView": "history",
+      "answerOutcomes": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "reason": "answered"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "reason": "answered"
+        }
+      ],
+      "reviewReason": "The three saved English rows faithfully preserve Ada rejecting the offer to take the whole Zephyr QX-100 to the workshop to check its alignment gauge, no inspection appointment having been made, and no transport of the device to the workshop. Their rejected-plan and negative-event metadata preserve the source role, disposition and polarity. The retained set is nevertheless incomplete: source item turn-2222 separately states that Ada has no plan to take the device there, and no saved row preserves that assertion. Rejection of one offer, absence of an appointment and absence of transport do not themselves establish absence of a current plan. This is omission of a separate material fact, not a stripped governing qualification or an unsupported emitted claim. The understandable writable source does not justify a hold. Only source.items supplies the original meaning; the ordinary counterpart does not fill the gap."
+    }
+  ],
+  "network": {
+    "calls": 160,
+    "httpSuccess": 160,
+    "usagePresent": 160,
+    "knownTotalTokens": 371214
+  },
+  "limitations": [
+    "The sources are exposed and retention is rerun, so coverage changes are not isolated causal estimates of routing alone.",
+    "These 16 answers remain separate from the 352-coordinate baseline.",
+    "The unchanged complete quality gate is not satisfied by this focused supplement."
+  ]
+}

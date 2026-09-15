@@ -26,12 +26,30 @@ import { LANGUAGE_CORPUS_V19 } from './language-corpus-v19.ts';
 import { LANGUAGE_CORPUS_V20 } from './language-corpus-v20.ts';
 import { LANGUAGE_CORPUS_V21 } from './language-corpus-v21.ts';
 import { LANGUAGE_CORPUS_V22 } from './language-corpus-v22.ts';
+import { LANGUAGE_CORPUS_V23 } from './language-corpus-v23.ts';
 import { LANGUAGE_CORPUS } from './language-corpus.ts';
 import { runLanguageBench } from './language.ts';
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe('frozen language/discourse evaluation', () => {
+  it('freezes reviewed V23 content variants and keeps exposed development inputs unchanged', () => {
+    expect(sha256(JSON.stringify(LANGUAGE_CORPUS_V23))).toBe(
+      'fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663',
+    );
+    expect(LANGUAGE_CORPUS_V23.filter((entry) => entry.split === 'development')).toEqual(
+      LANGUAGE_CORPUS_V22.filter((entry) => entry.split === 'held-out').map((entry) => ({
+        ...entry,
+        split: 'development',
+      })),
+    );
+    const oldTexts = new Set(LANGUAGE_CORPUS_V22.flatMap((entry) => entry.items.map((item) => item.text)));
+    const held = LANGUAGE_CORPUS_V23.filter((entry) => entry.split === 'held-out');
+    expect(held).toHaveLength(11);
+    expect(held.filter((entry) => !entry.hold)).toHaveLength(10);
+    expect(held.flatMap((entry) => entry.items).some((item) => oldTexts.has(item.text))).toBe(false);
+  });
+
   it('freezes independently approved replacement inputs with unchanged development cases', () => {
     expect(sha256(JSON.stringify(LANGUAGE_CORPUS_V22))).toBe(
       'b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a',
@@ -460,13 +478,25 @@ describe('frozen language/discourse evaluation', () => {
       expect(report.metrics.ordinaryProseQualification).toEqual({ numerator: 8, denominator: 8, rate: 1 });
       expect(report.metrics.acceptedLanguageViolations.rate).toBeNull();
       expect(report.releaseEligible).toBe(false);
+      expect(report.retrievalProfile).toBe('legacy-reranker-disabled');
+      expect(report.cases.every((entry) => entry.sourceArchive?.stableAcrossRebuildReplay)).toBe(true);
+      expect(report.cases.every((entry) => entry.sourceArchive?.supports.length === 0)).toBe(true);
       expect(fetch).not.toHaveBeenCalled();
+      const completed = vi.fn();
       const repeated = await runLanguageBench(config, {
         split: 'development',
         corpus: 'v2',
         runs: 2,
         caseIds: ['v2-dev-belief'],
+        fullRetrieval: true,
+        onCaseResult: completed,
       });
+      expect(repeated.retrievalProfile).toBe('configured');
+      expect(repeated.retrievalConfiguration?.rerankerEnabled).toBe(false);
+      expect(completed.mock.calls.map(([entry]) => entry.run)).toEqual([1, 2]);
+      expect(
+        repeated.cases.every((entry) => entry.queries.every((query) => Array.isArray(query.reviewContext))),
+      ).toBe(true);
       expect(repeated.selectedCaseIds).toEqual(['v2-dev-belief']);
       expect(repeated.cases.map((entry) => entry.run)).toEqual([1, 2]);
       expect(repeated.cases.every((entry) => entry.queries.length === 8)).toBe(true);

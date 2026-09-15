@@ -1,0 +1,1003 @@
+{
+  "id": "v22-held-nested-report",
+  "run": 1,
+  "admission": "writable",
+  "reviewExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established.",
+  "language": "ru",
+  "scenario": "nested-report",
+  "expectedHold": false,
+  "nonfactualExpected": true,
+  "retentionAvailabilityFailure": false,
+  "availabilityFailure": false,
+  "languageRejected": false,
+  "retention": {
+    "status": "ok",
+    "outcome": "ok",
+    "reason": null,
+    "candidates": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      },
+      {
+        "outcome": "held",
+        "reason": "no_writable_destination",
+        "holdStage": "placement",
+        "routingReason": "no_admitted_destination"
+      }
+    ],
+    "usage": {
+      "extraction": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 15120,
+        "input_tokens": 7493,
+        "output_tokens": 1390,
+        "total_tokens": 8883
+      },
+      "verification": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 12992,
+        "input_tokens": 9731,
+        "output_tokens": 1250,
+        "total_tokens": 10981
+      },
+      "placement": [
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 993,
+          "input_tokens": 588,
+          "output_tokens": 32,
+          "total_tokens": 620
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1882,
+          "input_tokens": 422,
+          "output_tokens": 73,
+          "total_tokens": 495
+        }
+      ]
+    },
+    "degraded": []
+  },
+  "retainedItems": 1,
+  "noncanonicalEligibilityFlag": false,
+  "semanticsMatch": true,
+  "ordinaryCorrect": true,
+  "ordinaryInspection": {
+    "status": "ok",
+    "results": 1
+  },
+  "bytesStable": true,
+  "replayOutcome": "replayed",
+  "sourceArchive": {
+    "stableAcrossRebuildReplay": true,
+    "supports": [
+      {
+        "memory_id": "mem_ce7d46fb",
+        "source_ref": "invented:v22-held-nested-report",
+        "input_hash": "c995dce45037c637c0c15eedfd04a28a40c2869869fdc4c6a171c2cf5946b55d",
+        "evidence": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.\n…\nПо словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.\n…\nОн говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+        "evidence_hash": "ec2e72f76ae09433a92ddaceca1546ec73e3b91d7959bd069d442cffb0b30415",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          },
+          {
+            "quote": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.",
+            "matchingSourceItems": [
+              "turn-2222"
+            ]
+          },
+          {
+            "quote": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+            "matchingSourceItems": [
+              "turn-3333"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "queries": [
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "reports",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ce7d46fb",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8227,
+          "input_tokens": 6420,
+          "output_tokens": 646,
+          "total_tokens": 7066
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 14239,
+          "input_tokens": 11136,
+          "output_tokens": 1538,
+          "total_tokens": 12674
+        }
+      },
+      "reviewAnswer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "reports",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ce7d46fb",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 9171,
+          "input_tokens": 6386,
+          "output_tokens": 690,
+          "total_tokens": 7076
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 16592,
+          "input_tokens": 11140,
+          "output_tokens": 1462,
+          "total_tokens": 12602
+        }
+      },
+      "reviewAnswer": "По словам Ada Marlow: По словам Bo Winters, Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, а не для замены контакта. Ada Marlow не видела правил и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "reports",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ce7d46fb",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7608,
+          "input_tokens": 6420,
+          "output_tokens": 570,
+          "total_tokens": 6990
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 11417,
+          "input_tokens": 11136,
+          "output_tokens": 1147,
+          "total_tokens": 12283
+        }
+      },
+      "reviewAnswer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "reports",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ce7d46fb",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8918,
+          "input_tokens": 6386,
+          "output_tokens": 733,
+          "total_tokens": 7119
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 18943,
+          "input_tokens": 11162,
+          "output_tokens": 1876,
+          "total_tokens": 13038
+        }
+      },
+      "reviewAnswer": "По словам Ada Marlow: По словам Bo Winters, Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, а не для замены контакта. Ada Marlow не видела правила и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "reports",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ce7d46fb",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8044,
+          "input_tokens": 6425,
+          "output_tokens": 596,
+          "total_tokens": 7021
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 15961,
+          "input_tokens": 11136,
+          "output_tokens": 1569,
+          "total_tokens": 12705
+        }
+      },
+      "reviewAnswer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "reports",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ce7d46fb",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7471,
+          "input_tokens": 6389,
+          "output_tokens": 664,
+          "total_tokens": 7053
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 11671,
+          "input_tokens": 11182,
+          "output_tokens": 1086,
+          "total_tokens": 12268
+        }
+      },
+      "reviewAnswer": "По словам Ada Marlow, Bo Winters сообщил, что Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую, чтобы проверить сопротивление заземляющего контакта, а не заменить контакт. Ada Marlow не видела правил и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "reports",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ce7d46fb",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7490,
+          "input_tokens": 6425,
+          "output_tokens": 560,
+          "total_tokens": 6985
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 13512,
+          "input_tokens": 11136,
+          "output_tokens": 1254,
+          "total_tokens": 12390
+        }
+      },
+      "reviewAnswer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "reports",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ce7d46fb",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ce7d46fb",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Grounding-contact resistance checks",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 10987,
+          "input_tokens": 6389,
+          "output_tokens": 939,
+          "total_tokens": 7328
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 27077,
+          "input_tokens": 11138,
+          "output_tokens": 2270,
+          "total_tokens": 13408
+        }
+      },
+      "reviewAnswer": "По словам Ada Marlow: По словам Bo Winters, Vulpine Mutual разрешает принести Zephyr QX-100 в мастерскую, чтобы проверить сопротивление заземляющего контакта, а не заменить контакт. Ada Marlow не видела правил и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+    }
+  ],
+  "reviewKnowledge": [
+    {
+      "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 to a workshop to check the grounding-contact resistance, not to replace the contact. Ada Marlow has not seen the rules and has not checked Bo Winters's message.",
+      "qualification": {
+        "status": "qualified",
+        "id": "mem_ce7d46fb",
+        "level": 1,
+        "kind": "claim",
+        "subject": "ent_c9db3f2f1e3c4a12f459a9dd",
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "commitment": "asserted",
+        "disposition": "active",
+        "polarity": "affirmed",
+        "basis": "source_report",
+        "answer_eligible": false,
+        "current_eligible": false
+      }
+    }
+  ],
+  "error": null
+}

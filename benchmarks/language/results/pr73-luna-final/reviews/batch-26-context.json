@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "cec6116dec129596cb7ba393ba112d813b41cd167c2959ffe829d79ed6d236ab",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-relative-unknown-date",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves all proposal and timing qualifications, including the missing source date, two-week source-record anchor rather than processing, unknown calendar date, and lack of an agreed meeting. Asserted/proposed metadata with undated tentative time matches the prose. It is useful planning evidence for either query language and introduces no accepted appointment or dated event."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves all proposal and timing qualifications, including the missing source date, two-week source-record anchor rather than processing, unknown calendar date, and lack of an agreed meeting. Asserted/proposed metadata with undated tentative time matches the prose. It is useful planning evidence for either query language and introduces no accepted appointment or dated event."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves all proposal and timing qualifications, including the missing source date, two-week source-record anchor rather than processing, unknown calendar date, and lack of an agreed meeting. Asserted/proposed metadata with undated tentative time matches the prose. It is useful planning evidence for either query language and introduces no accepted appointment or dated event."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves all proposal and timing qualifications, including the missing source date, two-week source-record anchor rather than processing, unknown calendar date, and lack of an agreed meeting. Asserted/proposed metadata with undated tentative time matches the prose. It is useful planning evidence for either query language and introduces no accepted appointment or dated event."
+        }
+      ]
+    }
+  ]
+}

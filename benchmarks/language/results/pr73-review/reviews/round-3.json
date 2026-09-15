@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "independent-production-review-v1",
+  "round": 3,
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotModifyRepository": true
+  },
+  "priorFindings": "Original five routing/scope reproductions and all four open round-two reproductions pass. Archived complete grids pass; missing factual outcomes, missing read snapshots, missing pairs and failed pairs now reject.",
+  "findings": [
+    {
+      "id": "P73-R3-01",
+      "priority": 1,
+      "path": "packages/core/src/kb/prose.ts",
+      "line": 72,
+      "title": "Isolate list-contained code/comments even without an AST heading node",
+      "inputLines": [
+        "## Hypothesis",
+        "",
+        "- ```md",
+        "  ## Details",
+        "  The case is blue.",
+        "",
+        "The case is silver."
+      ],
+      "actual": {
+        "line5View": "factual",
+        "line5Eligible": true,
+        "line7View": "factual",
+        "line7Eligible": true
+      },
+      "reason": "CommonMark correctly parses the apparent heading as code within the list. Because only items containing an AST heading are processed, this item falls through to the legacy line scanner, which mistakes the indented code text for a document sibling and pops the hypothesis. A comment opened directly after the list marker similarly lets heading-looking comment text affect global scope.",
+      "suggestedBoundary": "Use AST container/code ownership to suppress these false heading boundaries, not only AST heading presence."
+    },
+    {
+      "id": "P73-R3-02",
+      "priority": 1,
+      "path": "packages/core/src/kb/prose.ts",
+      "line": 78,
+      "title": "Preserve unchecked-task semantics during list normalization",
+      "inputLines": [
+        "- [ ] Inspect the Zephyr QX-100.",
+        "",
+        "  ## Details",
+        "",
+        "  The case is silver."
+      ],
+      "before": {
+        "line1View": "planning",
+        "line1Eligible": false
+      },
+      "actual": {
+        "line1View": "factual",
+        "line1Eligible": true,
+        "line1Frame": []
+      },
+      "reason": "Removing the list marker leaves bare [ ] text, which the existing planning rule does not recognize. An explicitly unfinished action becomes factually eligible solely because its list item contains a heading. Preserve the semantic marker or qualify the original task prefix before normalization."
+    },
+    {
+      "id": "P73-R3-03",
+      "priority": 1,
+      "path": "packages/core/src/kb/prose.ts",
+      "line": 266,
+      "title": "Do not invent managed-marker identity from normalized list content",
+      "inputLines": [
+        "## Hypothesis",
+        "",
+        "- <!-- akno:item mem_invented v=2 -->",
+        "  The case is silver.",
+        "",
+        "  ## Details",
+        "",
+        "  The handle is blue."
+      ],
+      "before": {
+        "line4View": "discussion",
+        "line4Eligible": false
+      },
+      "actual": {
+        "line4ProseQualification": null,
+        "line4ManagedQualification": null
+      },
+      "reason": "The recursive view strips the leading list marker, then recognizes the resulting comment as managed and skips the following payload. The actual managed-memory parser reads original bytes and correctly finds no marker. qualifyManagedMemoryLines returns the unqualified payload, which answerLineEligible admits because neither prose nor memory qualification is present. This is a new admission bypass introduced by normalization.",
+      "suggestedBoundary": "Determine reserved marker identity from original bytes; normalized structural interpretation must not suppress qualification for unmanaged original payloads."
+    }
+  ],
+  "verification": [
+    "Executed all reproductions against current source with Node.",
+    "Compared task and managed-payload cases against committed pre-fix source.",
+    "Inspected mdast node types and positions for fence/list boundaries.",
+    "Checked frame n/text pairs against original bytes for scope, tabs, backward qualification and lazy continuation probes.",
+    "No provider requests or frozen archive edits."
+  ],
+  "reviewedSha256": {
+    "packages/core/src/kb/prose.ts": "c4924fd9897312c9a7875ac57c17e6dda634588d84ca976dc84acdcd4f1e3fc4",
+    "packages/core/src/memory/intent.ts": "b1c3a2f1826769eb752952886c07203f6f33fdbb9af37d9177648a4f8acb8dee",
+    "scripts/language-comparison-validation.mjs": "d2fb8b9cacf42ea82a35be95dd2b0eebd72e73eeb6f49f0864dd896a03d109e0",
+    "scripts/summarize-language-comparison.mjs": "1548b1090a256459552b66484ebd3eb1b932c7e7454b7e67b1c90505d1e5ca4b"
+  }
+}

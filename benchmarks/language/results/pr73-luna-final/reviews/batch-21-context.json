@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "afeaf9079f0ba657f34415441ec7262b3b12f006d9794c1a5967fb270e4f8940",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-assumed-interval",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context keeps the assumed eleven-operating-cycle interval and twelve-cycle breach as one hypothetical unit, with Ada’s personal ignorance of the actual rule and no assertion of missed lubrication. Metadata agrees with that scope. It supplies useful discussion evidence for either query language without introducing an actual duty, maintenance omission, or calendar event."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context keeps the assumed eleven-operating-cycle interval and twelve-cycle breach as one hypothetical unit, with Ada’s personal ignorance of the actual rule and no assertion of missed lubrication. Metadata agrees with that scope. It supplies useful discussion evidence for either query language without introducing an actual duty, maintenance omission, or calendar event."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context keeps the assumed eleven-operating-cycle interval and twelve-cycle breach as one hypothetical unit, with Ada’s personal ignorance of the actual rule and no assertion of missed lubrication. Metadata agrees with that scope. It supplies useful discussion evidence for either query language without introducing an actual duty, maintenance omission, or calendar event."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context keeps the assumed eleven-operating-cycle interval and twelve-cycle breach as one hypothetical unit, with Ada’s personal ignorance of the actual rule and no assertion of missed lubrication. Metadata agrees with that scope. It supplies useful discussion evidence for either query language without introducing an actual duty, maintenance omission, or calendar event."
+        }
+      ]
+    }
+  ]
+}

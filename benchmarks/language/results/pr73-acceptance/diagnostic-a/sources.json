@@ -1,0 +1,68 @@
+[
+  {
+    "id": "v22-held-nested-report",
+    "split": "held-out",
+    "language": "ru",
+    "scenario": "nested-report",
+    "items": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+      },
+      {
+        "item_id": "turn-3333",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+      }
+    ],
+    "view": "reports",
+    "basis": "source_report",
+    "admission": "writable",
+    "ordinary": "## Пересказ\nAda Marlow передаёт непроверенное сообщение Bo Winters: правила Vulpine Mutual разрешают принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, но не для его замены. Ada не видела правила, не проверяла сообщение и ещё не упаковала своё устройство.",
+    "ordinaryFactual": false,
+    "queries": {
+      "en": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?",
+      "ru": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+    },
+    "reviewExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established."
+  },
+  {
+    "id": "v22-held-coverage-exclusion",
+    "split": "held-out",
+    "language": "en",
+    "scenario": "coverage-exclusion",
+    "items": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "I, Ada Marlow, record that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand."
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "This exclusion alone does not answer whether replacement of the intake sleeve is covered. It also does not say that the agreement is silent about that sleeve."
+      }
+    ],
+    "view": "factual",
+    "polarity": "negated",
+    "admission": "writable",
+    "ordinary": "## Coverage\nThe Zephyr QX-100 warranty excludes sand damage to the ceramic spacer. This record does not settle coverage for replacing the intake sleeve and does not establish that the agreement is silent about it.",
+    "ordinaryFactual": true,
+    "queries": {
+      "en": "What does Ada Marlow’s coverage record establish about the ceramic spacer and intake sleeve of Zephyr QX-100?",
+      "ru": "Что запись Ada Marlow устанавливает о керамической проставке и впускной втулке Zephyr QX-100?"
+    },
+    "reviewExpectation": "Retain the asserted exclusion of sand damage to the ceramic spacer with negative polarity. Separately preserve that this record does not settle intake-sleeve replacement coverage and does not establish agreement silence. Do not infer inclusion or exclusion for the sleeve."
+  }
+]

@@ -1,0 +1,1883 @@
+{
+  "id": "ordinary-mixed-hypothesis",
+  "run": 2,
+  "order": [
+    "baseline",
+    "candidate"
+  ],
+  "arms": {
+    "baseline": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+          "explicit": false,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts five years.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": []
+              }
+            },
+            {
+              "n": 5,
+              "text": "Замена корпуса покрывается гарантией.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": []
+              }
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "ok",
+          "context": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts five years.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": []
+              }
+            },
+            {
+              "n": 5,
+              "text": "Замена корпуса покрывается гарантией.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": []
+              }
+            }
+          ],
+          "contextDegraded": [],
+          "answers": [
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "The recorded warranty scenario for Zephyr QX-100 is that its warranty lasts five years and covers replacement of the casing. [equipment:4,5]",
+              "answer_language": "en",
+              "coverage": {
+                "hypothetical warranty": false,
+                "scenario recorded": false,
+                "zephyr qx-100": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    4,
+                    5
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 warranty lasts five years.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                        "frame": []
+                      }
+                    },
+                    {
+                      "n": 5,
+                      "text": "Замена корпуса покрывается гарантией.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What hypothetical warranty scenario is recorded for Zephyr QX-100?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 142,
+                "evidence_tokens": 28,
+                "answer_tokens": 35
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3657,
+                  "input_tokens": 4774,
+                  "output_tokens": 123,
+                  "total_tokens": 4897
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 5096,
+                  "input_tokens": 6778,
+                  "output_tokens": 290,
+                  "total_tokens": 7068
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            },
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "Для Zephyr QX-100 указано, что гарантия действует пять лет, а замена корпуса покрывается гарантией. [equipment:4,5]",
+              "answer_language": "ru",
+              "coverage": {
+                "hypothetical warranty": false,
+                "scenario recorded": false,
+                "zephyr qx-100": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    4,
+                    5
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 warranty lasts five years.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                        "frame": []
+                      }
+                    },
+                    {
+                      "n": 5,
+                      "text": "Замена корпуса покрывается гарантией.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What hypothetical warranty scenario is recorded for Zephyr QX-100?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 142,
+                "evidence_tokens": 28,
+                "answer_tokens": 29
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 5656,
+                  "input_tokens": 4775,
+                  "output_tokens": 273,
+                  "total_tokens": 5048
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 2308,
+                  "input_tokens": 6779,
+                  "output_tokens": 209,
+                  "total_tokens": 6988
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+          "explicit": true,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts five years.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": []
+              }
+            },
+            {
+              "n": 5,
+              "text": "Замена корпуса покрывается гарантией.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": []
+              }
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "ok",
+          "context": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts five years.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": []
+              }
+            },
+            {
+              "n": 5,
+              "text": "Замена корпуса покрывается гарантией.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": []
+              }
+            }
+          ],
+          "contextDegraded": [],
+          "answers": [
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "The recorded warranty scenario is that the Zephyr QX-100 warranty lasts five years and covers housing replacement. [equipment:4,5]",
+              "answer_language": "en",
+              "coverage": {
+                "hypothetical warranty": false,
+                "scenario recorded": false,
+                "zephyr qx-100": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    4,
+                    5
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 warranty lasts five years.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                        "frame": []
+                      }
+                    },
+                    {
+                      "n": 5,
+                      "text": "Замена корпуса покрывается гарантией.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What hypothetical warranty scenario is recorded for Zephyr QX-100?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 142,
+                "evidence_tokens": 28,
+                "answer_tokens": 33
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3775,
+                  "input_tokens": 4771,
+                  "output_tokens": 120,
+                  "total_tokens": 4891
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3451,
+                  "input_tokens": 6775,
+                  "output_tokens": 313,
+                  "total_tokens": 7088
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            },
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "Для Zephyr QX-100 зафиксировано, что гарантия действует пять лет, а замена корпуса покрывается гарантией. [equipment:4,5]",
+              "answer_language": "ru",
+              "coverage": {
+                "hypothetical warranty": false,
+                "scenario recorded": false,
+                "zephyr qx-100": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    4,
+                    5
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 warranty lasts five years.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                        "frame": []
+                      }
+                    },
+                    {
+                      "n": 5,
+                      "text": "Замена корпуса покрывается гарантией.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What hypothetical warranty scenario is recorded for Zephyr QX-100?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 142,
+                "evidence_tokens": 28,
+                "answer_tokens": 31
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3844,
+                  "input_tokens": 4776,
+                  "output_tokens": 216,
+                  "total_tokens": 4992
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 2349,
+                  "input_tokens": 6780,
+                  "output_tokens": 216,
+                  "total_tokens": 6996
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "  ## Гипотеза ###"
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 warranty lasts five years.",
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": []
+          }
+        },
+        {
+          "n": 5,
+          "text": "Замена корпуса покрывается гарантией.",
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": []
+          }
+        }
+      ],
+      "projections": [
+        {
+          "n": 4,
+          "view": "discussion",
+          "actual": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": []
+          }
+        },
+        {
+          "n": 5,
+          "view": "discussion",
+          "actual": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": []
+          }
+        }
+      ],
+      "factualEvidence": [
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 warranty lasts five years.",
+          "memory": null,
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": []
+          }
+        },
+        {
+          "n": 5,
+          "text": "Замена корпуса покрывается гарантией.",
+          "memory": null,
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": []
+          }
+        }
+      ],
+      "factualControl": {
+        "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+        "context": {
+          "status": "ok",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [
+            {
+              "type": "page",
+              "slug": "equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": []
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": []
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-01-11",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "timeline": [],
+          "searched": [
+            "What hypothetical warranty scenario is recorded for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "qualification": {
+            "model": "llm",
+            "model_id": "gpt-5.6-luna",
+            "latency_ms": 3169.756250000035,
+            "input_tokens": 572,
+            "output_tokens": 179,
+            "total_tokens": 751,
+            "applied": true,
+            "judged": 1,
+            "rejected": 0,
+            "unjudged": 0,
+            "basis": "llm_grade",
+            "threshold": null
+          },
+          "budget_used": 142,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "degraded",
+          "degraded": [
+            "language_mismatch"
+          ],
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "hypothetical warranty": false,
+            "scenario recorded": false,
+            "zephyr qx-100": true
+          },
+          "citations": [],
+          "context": [
+            {
+              "type": "page",
+              "slug": "equipment",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": []
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": []
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "What hypothetical warranty scenario is recorded for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 142,
+            "evidence_tokens": 28,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5777,
+              "input_tokens": 4776,
+              "output_tokens": 344,
+              "total_tokens": 5120
+            },
+            "verification": null
+          },
+          "reason_code": "generation_failed",
+          "note": "generated prose did not satisfy the requested output language"
+        }
+      },
+      "unsafeFactualProjections": [
+        {
+          "n": 4,
+          "view": "discussion",
+          "actual": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": []
+          }
+        },
+        {
+          "n": 5,
+          "view": "discussion",
+          "actual": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": []
+          }
+        }
+      ],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    },
+    "candidate": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+          "explicit": false,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts five years.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "conditional",
+                "answer_eligible": false,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Гипотеза ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 warranty lasts five years."
+                  },
+                  {
+                    "n": 5,
+                    "text": "Замена корпуса покрывается гарантией."
+                  }
+                ]
+              }
+            },
+            {
+              "n": 5,
+              "text": "Замена корпуса покрывается гарантией.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "conditional",
+                "answer_eligible": false,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Гипотеза ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 warranty lasts five years."
+                  },
+                  {
+                    "n": 5,
+                    "text": "Замена корпуса покрывается гарантией."
+                  }
+                ]
+              }
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "ok",
+          "context": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts five years.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "conditional",
+                "answer_eligible": false,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Гипотеза ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 warranty lasts five years."
+                  },
+                  {
+                    "n": 5,
+                    "text": "Замена корпуса покрывается гарантией."
+                  }
+                ]
+              }
+            },
+            {
+              "n": 5,
+              "text": "Замена корпуса покрывается гарантией.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "conditional",
+                "answer_eligible": false,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Гипотеза ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 warranty lasts five years."
+                  },
+                  {
+                    "n": 5,
+                    "text": "Замена корпуса покрывается гарантией."
+                  }
+                ]
+              }
+            }
+          ],
+          "contextDegraded": [],
+          "answers": [
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "The hypothetical scenario is that the Zephyr QX-100 warranty lasts five years and covers replacement of the casing. [equipment:4,5]",
+              "answer_language": "en",
+              "coverage": {
+                "hypothetical warranty": false,
+                "scenario recorded": false,
+                "zephyr qx-100": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    1,
+                    3,
+                    4,
+                    5
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 warranty lasts five years.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "discussion",
+                        "reason": "conditional",
+                        "answer_eligible": false,
+                        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                        "frame": [
+                          {
+                            "n": 1,
+                            "text": "# Zephyr QX-100"
+                          },
+                          {
+                            "n": 3,
+                            "text": "  ## Гипотеза ###"
+                          },
+                          {
+                            "n": 4,
+                            "text": "The Zephyr QX-100 warranty lasts five years."
+                          },
+                          {
+                            "n": 5,
+                            "text": "Замена корпуса покрывается гарантией."
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "n": 5,
+                      "text": "Замена корпуса покрывается гарантией.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "discussion",
+                        "reason": "conditional",
+                        "answer_eligible": false,
+                        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                        "frame": [
+                          {
+                            "n": 1,
+                            "text": "# Zephyr QX-100"
+                          },
+                          {
+                            "n": 3,
+                            "text": "  ## Гипотеза ###"
+                          },
+                          {
+                            "n": 4,
+                            "text": "The Zephyr QX-100 warranty lasts five years."
+                          },
+                          {
+                            "n": 5,
+                            "text": "Замена корпуса покрывается гарантией."
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What hypothetical warranty scenario is recorded for Zephyr QX-100?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 237,
+                "evidence_tokens": 176,
+                "answer_tokens": 33
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3973,
+                  "input_tokens": 4957,
+                  "output_tokens": 183,
+                  "total_tokens": 5140
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3856,
+                  "input_tokens": 6961,
+                  "output_tokens": 342,
+                  "total_tokens": 7303
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            },
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "В записи рассматривается гипотетический сценарий, в котором гарантия на Zephyr QX-100 действует пять лет, а замена корпуса покрывается гарантией. [equipment:4,5]",
+              "answer_language": "ru",
+              "coverage": {
+                "hypothetical warranty": false,
+                "scenario recorded": false,
+                "zephyr qx-100": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    1,
+                    3,
+                    4,
+                    5
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 warranty lasts five years.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "discussion",
+                        "reason": "conditional",
+                        "answer_eligible": false,
+                        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                        "frame": [
+                          {
+                            "n": 1,
+                            "text": "# Zephyr QX-100"
+                          },
+                          {
+                            "n": 3,
+                            "text": "  ## Гипотеза ###"
+                          },
+                          {
+                            "n": 4,
+                            "text": "The Zephyr QX-100 warranty lasts five years."
+                          },
+                          {
+                            "n": 5,
+                            "text": "Замена корпуса покрывается гарантией."
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "n": 5,
+                      "text": "Замена корпуса покрывается гарантией.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "discussion",
+                        "reason": "conditional",
+                        "answer_eligible": false,
+                        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                        "frame": [
+                          {
+                            "n": 1,
+                            "text": "# Zephyr QX-100"
+                          },
+                          {
+                            "n": 3,
+                            "text": "  ## Гипотеза ###"
+                          },
+                          {
+                            "n": 4,
+                            "text": "The Zephyr QX-100 warranty lasts five years."
+                          },
+                          {
+                            "n": 5,
+                            "text": "Замена корпуса покрывается гарантией."
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What hypothetical warranty scenario is recorded for Zephyr QX-100?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 237,
+                "evidence_tokens": 176,
+                "answer_tokens": 41
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3616,
+                  "input_tokens": 4969,
+                  "output_tokens": 190,
+                  "total_tokens": 5159
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3005,
+                  "input_tokens": 6973,
+                  "output_tokens": 230,
+                  "total_tokens": 7203
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+          "explicit": true,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts five years.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "conditional",
+                "answer_eligible": false,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Гипотеза ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 warranty lasts five years."
+                  },
+                  {
+                    "n": 5,
+                    "text": "Замена корпуса покрывается гарантией."
+                  }
+                ]
+              }
+            },
+            {
+              "n": 5,
+              "text": "Замена корпуса покрывается гарантией.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "conditional",
+                "answer_eligible": false,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Гипотеза ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 warranty lasts five years."
+                  },
+                  {
+                    "n": 5,
+                    "text": "Замена корпуса покрывается гарантией."
+                  }
+                ]
+              }
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "ok",
+          "context": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts five years.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "conditional",
+                "answer_eligible": false,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Гипотеза ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 warranty lasts five years."
+                  },
+                  {
+                    "n": 5,
+                    "text": "Замена корпуса покрывается гарантией."
+                  }
+                ]
+              }
+            },
+            {
+              "n": 5,
+              "text": "Замена корпуса покрывается гарантией.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "conditional",
+                "answer_eligible": false,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Гипотеза ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 warranty lasts five years."
+                  },
+                  {
+                    "n": 5,
+                    "text": "Замена корпуса покрывается гарантией."
+                  }
+                ]
+              }
+            }
+          ],
+          "contextDegraded": [],
+          "answers": [
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "The recorded hypothetical scenario is that the Zephyr QX-100 warranty lasts five years and covers replacement of the casing. [equipment:4,5]",
+              "answer_language": "en",
+              "coverage": {
+                "hypothetical warranty": false,
+                "scenario recorded": false,
+                "zephyr qx-100": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    1,
+                    3,
+                    4,
+                    5
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 warranty lasts five years.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "discussion",
+                        "reason": "conditional",
+                        "answer_eligible": false,
+                        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                        "frame": [
+                          {
+                            "n": 1,
+                            "text": "# Zephyr QX-100"
+                          },
+                          {
+                            "n": 3,
+                            "text": "  ## Гипотеза ###"
+                          },
+                          {
+                            "n": 4,
+                            "text": "The Zephyr QX-100 warranty lasts five years."
+                          },
+                          {
+                            "n": 5,
+                            "text": "Замена корпуса покрывается гарантией."
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "n": 5,
+                      "text": "Замена корпуса покрывается гарантией.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "discussion",
+                        "reason": "conditional",
+                        "answer_eligible": false,
+                        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                        "frame": [
+                          {
+                            "n": 1,
+                            "text": "# Zephyr QX-100"
+                          },
+                          {
+                            "n": 3,
+                            "text": "  ## Гипотеза ###"
+                          },
+                          {
+                            "n": 4,
+                            "text": "The Zephyr QX-100 warranty lasts five years."
+                          },
+                          {
+                            "n": 5,
+                            "text": "Замена корпуса покрывается гарантией."
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What hypothetical warranty scenario is recorded for Zephyr QX-100?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 237,
+                "evidence_tokens": 176,
+                "answer_tokens": 35
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 4244,
+                  "input_tokens": 4958,
+                  "output_tokens": 197,
+                  "total_tokens": 5155
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 2792,
+                  "input_tokens": 6962,
+                  "output_tokens": 223,
+                  "total_tokens": 7185
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            },
+            {
+              "status": "ok",
+              "outcome": "partial",
+              "answer": "В записанном гипотетическом сценарии гарантия на Zephyr QX-100 действует пять лет и покрывает замену корпуса. [equipment:4,5]",
+              "answer_language": "ru",
+              "coverage": {
+                "hypothetical warranty": false,
+                "scenario recorded": false,
+                "zephyr qx-100": true
+              },
+              "citations": [
+                {
+                  "id": "E1",
+                  "type": "page",
+                  "slug": "equipment",
+                  "lines": [
+                    1,
+                    3,
+                    4,
+                    5
+                  ]
+                }
+              ],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 warranty lasts five years.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "discussion",
+                        "reason": "conditional",
+                        "answer_eligible": false,
+                        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                        "frame": [
+                          {
+                            "n": 1,
+                            "text": "# Zephyr QX-100"
+                          },
+                          {
+                            "n": 3,
+                            "text": "  ## Гипотеза ###"
+                          },
+                          {
+                            "n": 4,
+                            "text": "The Zephyr QX-100 warranty lasts five years."
+                          },
+                          {
+                            "n": 5,
+                            "text": "Замена корпуса покрывается гарантией."
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "n": 5,
+                      "text": "Замена корпуса покрывается гарантией.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "discussion",
+                        "reason": "conditional",
+                        "answer_eligible": false,
+                        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                        "frame": [
+                          {
+                            "n": 1,
+                            "text": "# Zephyr QX-100"
+                          },
+                          {
+                            "n": 3,
+                            "text": "  ## Гипотеза ###"
+                          },
+                          {
+                            "n": 4,
+                            "text": "The Zephyr QX-100 warranty lasts five years."
+                          },
+                          {
+                            "n": 5,
+                            "text": "Замена корпуса покрывается гарантией."
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What hypothetical warranty scenario is recorded for Zephyr QX-100?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 237,
+                "evidence_tokens": 176,
+                "answer_tokens": 32
+              },
+              "model_usage": {
+                "generation": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3527,
+                  "input_tokens": 4963,
+                  "output_tokens": 210,
+                  "total_tokens": 5173
+                },
+                "verification": {
+                  "model": "gpt-5.6-luna",
+                  "latency_ms": 3348,
+                  "input_tokens": 6967,
+                  "output_tokens": 275,
+                  "total_tokens": 7242
+                }
+              },
+              "validation": {
+                "generated_blocks": 1,
+                "passed_guards": 1,
+                "verified_blocks": 1,
+                "rejection_counts": {}
+              },
+              "reason_code": "answered",
+              "note": "memory evidence did not cover every requested detail"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "  ## Гипотеза ###",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": [
+              {
+                "n": 3,
+                "text": "  ## Гипотеза ###"
+              }
+            ]
+          }
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 warranty lasts five years.",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "conditional",
+            "answer_eligible": false,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 3,
+                "text": "  ## Гипотеза ###"
+              },
+              {
+                "n": 4,
+                "text": "The Zephyr QX-100 warranty lasts five years."
+              },
+              {
+                "n": 5,
+                "text": "Замена корпуса покрывается гарантией."
+              }
+            ]
+          }
+        },
+        {
+          "n": 5,
+          "text": "Замена корпуса покрывается гарантией.",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "conditional",
+            "answer_eligible": false,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 3,
+                "text": "  ## Гипотеза ###"
+              },
+              {
+                "n": 4,
+                "text": "The Zephyr QX-100 warranty lasts five years."
+              },
+              {
+                "n": 5,
+                "text": "Замена корпуса покрывается гарантией."
+              }
+            ]
+          }
+        }
+      ],
+      "projections": [
+        {
+          "n": 4,
+          "view": "discussion",
+          "actual": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "conditional",
+            "answer_eligible": false,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 3,
+                "text": "  ## Гипотеза ###"
+              },
+              {
+                "n": 4,
+                "text": "The Zephyr QX-100 warranty lasts five years."
+              },
+              {
+                "n": 5,
+                "text": "Замена корпуса покрывается гарантией."
+              }
+            ]
+          }
+        },
+        {
+          "n": 5,
+          "view": "discussion",
+          "actual": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "conditional",
+            "answer_eligible": false,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 3,
+                "text": "  ## Гипотеза ###"
+              },
+              {
+                "n": 4,
+                "text": "The Zephyr QX-100 warranty lasts five years."
+              },
+              {
+                "n": 5,
+                "text": "Замена корпуса покрывается гарантией."
+              }
+            ]
+          }
+        }
+      ],
+      "factualEvidence": [
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 warranty lasts five years.",
+          "memory": null,
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "conditional",
+            "answer_eligible": false,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 3,
+                "text": "  ## Гипотеза ###"
+              },
+              {
+                "n": 4,
+                "text": "The Zephyr QX-100 warranty lasts five years."
+              },
+              {
+                "n": 5,
+                "text": "Замена корпуса покрывается гарантией."
+              }
+            ]
+          }
+        },
+        {
+          "n": 5,
+          "text": "Замена корпуса покрывается гарантией.",
+          "memory": null,
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "conditional",
+            "answer_eligible": false,
+            "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 3,
+                "text": "  ## Гипотеза ###"
+              },
+              {
+                "n": 4,
+                "text": "The Zephyr QX-100 warranty lasts five years."
+              },
+              {
+                "n": 5,
+                "text": "Замена корпуса покрывается гарантией."
+              }
+            ]
+          }
+        }
+      ],
+      "factualControl": {
+        "query": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+        "context": {
+          "status": "empty",
+          "note": "no memory evidence was strong enough for automatic injection",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "What hypothetical warranty scenario is recorded for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "ok",
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "hypothetical warranty": false,
+            "scenario recorded": false,
+            "zephyr qx-100": true
+          },
+          "citations": [],
+          "context": [],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "What hypothetical warranty scenario is recorded for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 237,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "reason_code": "no_eligible_evidence",
+          "note": "related memory was found, but it was explicitly noncanonical and cannot ground a factual answer"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    }
+  }
+}

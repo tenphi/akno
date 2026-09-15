@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "52920623be323a2a3368dc01ffe062c0497cb6ff162d14a45f68d0e7f021fe7a",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-rejected-plan",
+      "run": 1,
+      "retentionUseful": false,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The retained English row faithfully records Ada’s rejection of taking the device to a calibration room for rotation-stop-angle measurement, her lack of intent under that proposal, and continuing rejection of the measurement. However, the complete retained set omits two independent material source facts: no appointment has been reserved and no transport arranged. Neither absence follows from rejection alone. Those omissions fail complete retention, while the surviving rejected proposal remains entailed and adequately qualified for the focused question asking which proposal she rejected.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer identifies the rejected trip to a calibration room for measurement of the rotation-stop angle, Ada’s lack of intent under that proposal, and continuing rejection. The Russian angle formulations preserve the rotation-stop/rotation-limit measurement rather than changing it into calibration or repair; the verbs describe conveying the device without asserting an actual trip. The requested language and rejected scope are preserved. The independent absent appointment and transport arrangements are missing from retention, but omitting them does not prevent this focused answer and its retrieved evidence from identifying the rejected proposal. No acceptance, completed trip, measurement, or causal explanation is introduced."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer identifies the rejected trip to a calibration room for measurement of the rotation-stop angle, Ada’s lack of intent under that proposal, and continuing rejection. The Russian angle formulations preserve the rotation-stop/rotation-limit measurement rather than changing it into calibration or repair; the verbs describe conveying the device without asserting an actual trip. The requested language and rejected scope are preserved. The independent absent appointment and transport arrangements are missing from retention, but omitting them does not prevent this focused answer and its retrieved evidence from identifying the rejected proposal. No acceptance, completed trip, measurement, or causal explanation is introduced."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer identifies the rejected trip to a calibration room for measurement of the rotation-stop angle, Ada’s lack of intent under that proposal, and continuing rejection. The Russian angle formulations preserve the rotation-stop/rotation-limit measurement rather than changing it into calibration or repair; the verbs describe conveying the device without asserting an actual trip. The requested language and rejected scope are preserved. The independent absent appointment and transport arrangements are missing from retention, but omitting them does not prevent this focused answer and its retrieved evidence from identifying the rejected proposal. No acceptance, completed trip, measurement, or causal explanation is introduced."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer identifies the rejected trip to a calibration room for measurement of the rotation-stop angle, Ada’s lack of intent under that proposal, and continuing rejection. The Russian angle formulations preserve the rotation-stop/rotation-limit measurement rather than changing it into calibration or repair; the verbs describe conveying the device without asserting an actual trip. The requested language and rejected scope are preserved. The independent absent appointment and transport arrangements are missing from retention, but omitting them does not prevent this focused answer and its retrieved evidence from identifying the rejected proposal. No acceptance, completed trip, measurement, or causal explanation is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer identifies the rejected trip to a calibration room for measurement of the rotation-stop angle, Ada’s lack of intent under that proposal, and continuing rejection. The Russian angle formulations preserve the rotation-stop/rotation-limit measurement rather than changing it into calibration or repair; the verbs describe conveying the device without asserting an actual trip. The requested language and rejected scope are preserved. The independent absent appointment and transport arrangements are missing from retention, but omitting them does not prevent this focused answer and its retrieved evidence from identifying the rejected proposal. No acceptance, completed trip, measurement, or causal explanation is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer identifies the rejected trip to a calibration room for measurement of the rotation-stop angle, Ada’s lack of intent under that proposal, and continuing rejection. The Russian angle formulations preserve the rotation-stop/rotation-limit measurement rather than changing it into calibration or repair; the verbs describe conveying the device without asserting an actual trip. The requested language and rejected scope are preserved. The independent absent appointment and transport arrangements are missing from retention, but omitting them does not prevent this focused answer and its retrieved evidence from identifying the rejected proposal. No acceptance, completed trip, measurement, or causal explanation is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer identifies the rejected trip to a calibration room for measurement of the rotation-stop angle, Ada’s lack of intent under that proposal, and continuing rejection. The Russian angle formulations preserve the rotation-stop/rotation-limit measurement rather than changing it into calibration or repair; the verbs describe conveying the device without asserting an actual trip. The requested language and rejected scope are preserved. The independent absent appointment and transport arrangements are missing from retention, but omitting them does not prevent this focused answer and its retrieved evidence from identifying the rejected proposal. No acceptance, completed trip, measurement, or causal explanation is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer identifies the rejected trip to a calibration room for measurement of the rotation-stop angle, Ada’s lack of intent under that proposal, and continuing rejection. The Russian angle formulations preserve the rotation-stop/rotation-limit measurement rather than changing it into calibration or repair; the verbs describe conveying the device without asserting an actual trip. The requested language and rejected scope are preserved. The independent absent appointment and transport arrangements are missing from retention, but omitting them does not prevent this focused answer and its retrieved evidence from identifying the rejected proposal. No acceptance, completed trip, measurement, or causal explanation is introduced."
+        }
+      ]
+    }
+  ]
+}

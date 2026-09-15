@@ -1,0 +1,14 @@
+{
+  "kind": "isolated-built-cli-socket-start-restart",
+  "assertions": 61,
+  "cycles": 2,
+  "modelCalls": 0,
+  "knowledgeLanguage": "unset",
+  "buildOnlyRedeploy": true,
+  "existingServiceRestarted": false,
+  "memoryViewVersion": "memory-view-v12",
+  "sourceSha256": "1dc087bf1ba5541b10ac193f70c9d6e227eab342577749366905345bfef39d42",
+  "scopeSourceSha256": "90f06868939145069bb3be2cb5eb93ff61b0def83f8dbbacef869f5456372298",
+  "literalSourceSha256": "4cc34a3014988291bd5fb7e66718cd71cd97c42e99583f102dc55b02a42eb28a",
+  "redeployReportedSuccess": true
+}

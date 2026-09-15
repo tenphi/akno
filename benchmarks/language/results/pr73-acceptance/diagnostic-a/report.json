@@ -1,0 +1,2534 @@
+{
+  "schemaVersion": "language-benchmark-v2",
+  "createdAt": "2026-09-15T09:28:19.146Z",
+  "corpusVersion": "language-discourse-v22",
+  "corpusFingerprint": "b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a",
+  "selectedCaseIds": [
+    "v22-held-nested-report",
+    "v22-held-coverage-exclusion"
+  ],
+  "runs": 1,
+  "setup": "separate-writable-fidelity-and-read-only-admission",
+  "queryMatrix": [
+    "query_language",
+    "answer_language",
+    "explicit_view"
+  ],
+  "split": "held-out",
+  "knowledgeLanguage": "en",
+  "proseProjectionVersion": "prose-v3",
+  "memoryViewVersion": "memory-view-v9",
+  "answerPromptVersion": "answer-generation-v68",
+  "answerVerifierVersion": "answer-verifier-v48",
+  "retentionPromptVersion": "retain-extraction-language-v57",
+  "retentionVerifierVersion": "retain-verifier-language-v41",
+  "models": {
+    "retention": "gpt-5.6-luna",
+    "answer": "gpt-5.6-luna",
+    "embedding": "text-embedding-3-small",
+    "expansion": null,
+    "reranker": "gpt-5.6-luna"
+  },
+  "retrievalProfile": "configured",
+  "retrievalConfiguration": {
+    "embeddingDimensions": 1536,
+    "rerankerEnabled": true,
+    "mode": "llm",
+    "topK": 8,
+    "maxChars": 2400,
+    "excludeIrrelevant": true,
+    "scoreOffset": "auto",
+    "maxOutputTokens": 1600,
+    "reasoningEffort": "low"
+  },
+  "modelOutputTokenLimits": {
+    "answer": 2400,
+    "retention": 2400
+  },
+  "indexModelDerivation": false,
+  "independentlyReviewed": false,
+  "releaseEligible": false,
+  "adjudication": "pending: inspect review material; verifier agreement and typed expectations are not independent truth labels",
+  "thresholds": {
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "usefulQualifiedAnswerCoverage": 0.9,
+    "availabilityFailureRate": 0.05,
+    "unsupportedRetainedOutputs": 0,
+    "unsupportedNonnullAnswers": 0
+  },
+  "metrics": {
+    "availabilityFailures": {
+      "numerator": 1,
+      "denominator": 2,
+      "rate": 0.5
+    },
+    "answerOperationFailures": {
+      "numerator": 1,
+      "denominator": 16,
+      "rate": 0.0625
+    },
+    "producedAnswers": {
+      "numerator": 15,
+      "denominator": 16,
+      "rate": 0.9375
+    },
+    "producedAnswersOverRetained": {
+      "numerator": 15,
+      "denominator": 16,
+      "rate": 0.9375
+    },
+    "answerReasons": {
+      "answered": 15,
+      "verification_unavailable": 1
+    },
+    "routingReasons": {
+      "no_admitted_destination": 1
+    },
+    "holdStages": {
+      "placement": 1
+    },
+    "independentlyJudgedQualifiedAnswers": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "independentlyJustifiedAbstentions": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "languagePolicyRejections": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "acceptedLanguageViolations": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "translationQualificationErrors": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "unsafeFactualPromotion": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "noncanonicalEligibilityFlags": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0
+    },
+    "usefulRetentionCoverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "expectedRetentionMisses": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "falseHolds": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "expectedSafeHolds": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "typedSemanticsMatch": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "qualifiedRetrievalCoverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "ordinaryProseQualification": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "sourceByteChanges": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    }
+  },
+  "byLanguage": {
+    "en": 1,
+    "ru": 1,
+    "mixed": 0
+  },
+  "byScenario": {
+    "nested-report": 1,
+    "coverage-exclusion": 1
+  },
+  "cases": [
+    {
+      "id": "v22-held-nested-report",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established.",
+      "language": "ru",
+      "scenario": "nested-report",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          },
+          {
+            "outcome": "held",
+            "reason": "no_writable_destination",
+            "holdStage": "placement",
+            "routingReason": "no_admitted_destination"
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 13934,
+            "input_tokens": 7491,
+            "output_tokens": 1069,
+            "total_tokens": 8560
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 11718,
+            "input_tokens": 9683,
+            "output_tokens": 840,
+            "total_tokens": 10523
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1178,
+              "input_tokens": 588,
+              "output_tokens": 32,
+              "total_tokens": 620
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1264,
+              "input_tokens": 423,
+              "output_tokens": 33,
+              "total_tokens": 456
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_79c4989c",
+            "source_ref": "invented:v22-held-nested-report",
+            "input_hash": "c995dce45037c637c0c15eedfd04a28a40c2869869fdc4c6a171c2cf5946b55d",
+            "evidence": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.\n…\nПо словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.\n…\nОн говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+            "evidence_hash": "ec2e72f76ae09433a92ddaceca1546ec73e3b91d7959bd069d442cffb0b30415",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              },
+              {
+                "quote": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+                "matchingSourceItems": [
+                  "turn-3333"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_79c4989c",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ea11336adc0c875726905ed4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_79c4989c",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ea11336adc0c875726905ed4",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Vulpine Mutual Workshop Policy",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5182,
+              "input_tokens": 6420,
+              "output_tokens": 308,
+              "total_tokens": 6728
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7432,
+              "input_tokens": 11180,
+              "output_tokens": 676,
+              "total_tokens": 11856
+            }
+          },
+          "reviewAnswer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_79c4989c",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ea11336adc0c875726905ed4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_79c4989c",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ea11336adc0c875726905ed4",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Vulpine Mutual Workshop Policy",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 8833,
+              "input_tokens": 6386,
+              "output_tokens": 380,
+              "total_tokens": 6766
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 9094,
+              "input_tokens": 11184,
+              "output_tokens": 801,
+              "total_tokens": 11985
+            }
+          },
+          "reviewAnswer": "**По словам Ada Marlow:** По словам Bo Winters, Vulpine Mutual разрешает принести устройство Zephyr QX-100 в мастерскую, чтобы проверить сопротивление заземляющего контакта, а не заменить контакт. Ada Marlow не видела правил и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_79c4989c",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ea11336adc0c875726905ed4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_79c4989c",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ea11336adc0c875726905ed4",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Vulpine Mutual Workshop Policy",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5689,
+              "input_tokens": 6420,
+              "output_tokens": 341,
+              "total_tokens": 6761
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 10448,
+              "input_tokens": 11180,
+              "output_tokens": 871,
+              "total_tokens": 12051
+            }
+          },
+          "reviewAnswer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_79c4989c",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ea11336adc0c875726905ed4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_79c4989c",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ea11336adc0c875726905ed4",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Vulpine Mutual Workshop Policy",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 8065,
+              "input_tokens": 6387,
+              "output_tokens": 607,
+              "total_tokens": 6994
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 9487,
+              "input_tokens": 11141,
+              "output_tokens": 889,
+              "total_tokens": 12030
+            }
+          },
+          "reviewAnswer": "По словам Ada Marlow: По словам Bo Winters, Vulpine Mutual разрешает принести устройство Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, а не для замены контакта. Ada Marlow не видела правила и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_79c4989c",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ea11336adc0c875726905ed4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_79c4989c",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ea11336adc0c875726905ed4",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Vulpine Mutual Workshop Policy",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7913,
+              "input_tokens": 6425,
+              "output_tokens": 372,
+              "total_tokens": 6797
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 8052,
+              "input_tokens": 11180,
+              "output_tokens": 663,
+              "total_tokens": 11843
+            }
+          },
+          "reviewAnswer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_79c4989c",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ea11336adc0c875726905ed4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_79c4989c",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ea11336adc0c875726905ed4",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Vulpine Mutual Workshop Policy",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 8280,
+              "input_tokens": 6392,
+              "output_tokens": 559,
+              "total_tokens": 6951
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 8405,
+              "input_tokens": 11141,
+              "output_tokens": 752,
+              "total_tokens": 11893
+            }
+          },
+          "reviewAnswer": "По словам Ada Marlow: По словам Bo Winters, Vulpine Mutual разрешает принести устройство Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, а не для замены контакта. Ada Marlow не видела правила и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_79c4989c",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ea11336adc0c875726905ed4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_79c4989c",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ea11336adc0c875726905ed4",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Vulpine Mutual Workshop Policy",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6125,
+              "input_tokens": 6425,
+              "output_tokens": 378,
+              "total_tokens": 6803
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7904,
+              "input_tokens": 11180,
+              "output_tokens": 654,
+              "total_tokens": 11834
+            }
+          },
+          "reviewAnswer": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_79c4989c",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ea11336adc0c875726905ed4",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_79c4989c",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ea11336adc0c875726905ed4",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Vulpine Mutual Workshop Policy",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6374,
+              "input_tokens": 6392,
+              "output_tokens": 469,
+              "total_tokens": 6861
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7818,
+              "input_tokens": 11119,
+              "output_tokens": 642,
+              "total_tokens": 11761
+            }
+          },
+          "reviewAnswer": "По словам Ada Marlow, Bo Winters сообщил, что Vulpine Mutual разрешает принести устройство Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, а не для замены контакта. Ada Marlow не видела правила и не проверяла сообщение Bo Winters. [memory/equipment:7]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_79c4989c",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_ea11336adc0c875726905ed4",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Retain the asserted exclusion of sand damage to the ceramic spacer with negative polarity. Separately preserve that this record does not settle intake-sleeve replacement coverage and does not establish agreement silence. Do not infer inclusion or exclusion for the sleeve.",
+      "language": "en",
+      "scenario": "coverage-exclusion",
+      "expectedHold": false,
+      "nonfactualExpected": false,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": true,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          },
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 7352,
+            "input_tokens": 7424,
+            "output_tokens": 627,
+            "total_tokens": 8051
+          },
+          "repair": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 5969,
+            "input_tokens": 8478,
+            "output_tokens": 482,
+            "total_tokens": 8960
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 6986,
+            "input_tokens": 9252,
+            "output_tokens": 636,
+            "total_tokens": 9888
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1159,
+              "input_tokens": 560,
+              "output_tokens": 16,
+              "total_tokens": 576
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1429,
+              "input_tokens": 586,
+              "output_tokens": 35,
+              "total_tokens": 621
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1385,
+              "input_tokens": 389,
+              "output_tokens": 31,
+              "total_tokens": 420
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1195,
+              "input_tokens": 559,
+              "output_tokens": 30,
+              "total_tokens": 589
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 2,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_3cf96e1f",
+            "source_ref": "invented:v22-held-coverage-exclusion",
+            "input_hash": "05814d9abdd25f26a23e34b707d4755db85cc90a02459883580313a4ddb2192c",
+            "evidence": "I, Ada Marlow, record that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+            "evidence_hash": "113213a3d0ee2bac34ea800591f176f48cc87e4e1835719b8dd72f2a09c6f18a",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "I, Ada Marlow, record that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              }
+            ]
+          },
+          {
+            "memory_id": "mem_6ffe3cb0",
+            "source_ref": "invented:v22-held-coverage-exclusion",
+            "input_hash": "05814d9abdd25f26a23e34b707d4755db85cc90a02459883580313a4ddb2192c",
+            "evidence": "I, Ada Marlow, record that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.\n…\nThis exclusion alone does not answer whether replacement of the intake sleeve is covered. It also does not say that the agreement is silent about that sleeve.",
+            "evidence_hash": "490f64c28496e96ff73ff66c72f95627f85ea0fcf60bcfe653236c7d22c96f4b",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "I, Ada Marlow, record that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "This exclusion alone does not answer whether replacement of the intake sleeve is covered. It also does not say that the agreement is silent about that sleeve.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_6ffe3cb0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3cf96e1f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 9,
+                  "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_6ffe3cb0",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_d91fee730f316749230d9cc7",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_3cf96e1f",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_d91fee730f316749230d9cc7",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Warranty Exclusions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5061,
+              "input_tokens": 5211,
+              "output_tokens": 383,
+              "total_tokens": 5594
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7971,
+              "input_tokens": 10889,
+              "output_tokens": 844,
+              "total_tokens": 11733
+            }
+          },
+          "reviewAnswer": "Ada Marlow’s record establishes that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. It does not establish whether replacement of the intake sleeve is covered, nor does it establish that the agreement is silent about the intake sleeve. [memory/equipment:9] [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_6ffe3cb0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3cf96e1f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 9,
+                  "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_6ffe3cb0",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_d91fee730f316749230d9cc7",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_3cf96e1f",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_d91fee730f316749230d9cc7",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Warranty Exclusions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6440,
+              "input_tokens": 5239,
+              "output_tokens": 443,
+              "total_tokens": 5682
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 14516,
+              "input_tokens": 10951,
+              "output_tokens": 1358,
+              "total_tokens": 12309
+            }
+          },
+          "reviewAnswer": "По записи Ada Marlow, гарантия Zephyr QX-100 исключает повреждение керамической проставки, вызванное песком. Однако это само по себе не устанавливает, покрывается ли гарантией замена впускной втулки, и не означает, что соглашение ничего не говорит об этой втулке. [memory/equipment:9] [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_6ffe3cb0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3cf96e1f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 9,
+                  "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_6ffe3cb0",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_d91fee730f316749230d9cc7",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_3cf96e1f",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_d91fee730f316749230d9cc7",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Warranty Exclusions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6420,
+              "input_tokens": 5213,
+              "output_tokens": 471,
+              "total_tokens": 5684
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7566,
+              "input_tokens": 10891,
+              "output_tokens": 804,
+              "total_tokens": 11695
+            }
+          },
+          "reviewAnswer": "Ada Marlow’s record establishes that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. That exclusion alone does not establish whether replacement of the intake sleeve is covered, nor does it establish that the agreement is silent about the intake sleeve. [memory/equipment:9] [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_6ffe3cb0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3cf96e1f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 9,
+                  "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_6ffe3cb0",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_d91fee730f316749230d9cc7",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_3cf96e1f",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_d91fee730f316749230d9cc7",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Warranty Exclusions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7311,
+              "input_tokens": 5240,
+              "output_tokens": 530,
+              "total_tokens": 5770
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 11571,
+              "input_tokens": 10930,
+              "output_tokens": 1048,
+              "total_tokens": 11978
+            }
+          },
+          "reviewAnswer": "По записи Ada Marlow, гарантия Zephyr QX-100 исключает повреждение керамической проставки, вызванное песком. Однако это исключение само по себе не устанавливает, покрывается ли гарантией замена впускной втулки, и не означает, что договор ничего не говорит об этой втулке. [memory/equipment:9] [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3cf96e1f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_6ffe3cb0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 9,
+                  "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_6ffe3cb0",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_d91fee730f316749230d9cc7",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_3cf96e1f",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_d91fee730f316749230d9cc7",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Warranty Exclusions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 2,
+            "passed_guards": 2,
+            "verified_blocks": 2,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6856,
+              "input_tokens": 5203,
+              "output_tokens": 431,
+              "total_tokens": 5634
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 16711,
+              "input_tokens": 19302,
+              "output_tokens": 1487,
+              "total_tokens": 20789
+            }
+          },
+          "reviewAnswer": "The Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. [memory/equipment:6]\n\nThat exclusion alone does not establish whether replacement of the intake sleeve is covered, nor does it establish that the agreement is silent about the intake sleeve. [memory/equipment:9]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3cf96e1f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_6ffe3cb0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 9,
+                  "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_6ffe3cb0",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_d91fee730f316749230d9cc7",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_3cf96e1f",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_d91fee730f316749230d9cc7",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Warranty Exclusions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 2,
+            "passed_guards": 2,
+            "verified_blocks": 2,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6649,
+              "input_tokens": 5251,
+              "output_tokens": 564,
+              "total_tokens": 5815
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 12774,
+              "input_tokens": 19522,
+              "output_tokens": 1216,
+              "total_tokens": 20738
+            }
+          },
+          "reviewAnswer": "Ада Марлоу записывает, что гарантия Zephyr QX-100 исключает повреждение керамической проставки, вызванное песком. [memory/equipment:6]\n\nАда Марлоу также указывает, что одно лишь это исключение не отвечает на вопрос, покрывается ли гарантией замена впускной втулки; оно также не означает, что соглашение ничего не говорит об этой втулке. [memory/equipment:9]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_6ffe3cb0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3cf96e1f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 9,
+                  "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_6ffe3cb0",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_d91fee730f316749230d9cc7",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_3cf96e1f",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_d91fee730f316749230d9cc7",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Warranty Exclusions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6561,
+              "input_tokens": 5203,
+              "output_tokens": 497,
+              "total_tokens": 5700
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 10259,
+              "input_tokens": 10869,
+              "output_tokens": 998,
+              "total_tokens": 11867
+            }
+          },
+          "reviewAnswer": "The record states that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. That exclusion does not establish whether replacement of the intake sleeve is covered, nor does it state that the agreement is silent about the intake sleeve. [memory/equipment:6] [memory/equipment:9]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_6ffe3cb0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3cf96e1f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 9,
+                  "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_6ffe3cb0",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_d91fee730f316749230d9cc7",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                },
+                {
+                  "n": 6,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_3cf96e1f",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_d91fee730f316749230d9cc7",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Warranty Exclusions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "not_answered",
+          "answerReason": "verification_unavailable",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": null,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model",
+            "answer_verification_failed"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5306,
+              "input_tokens": 5244,
+              "output_tokens": 483,
+              "total_tokens": 5727
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 17691,
+              "input_tokens": 10890,
+              "output_tokens": 2400,
+              "total_tokens": 13290
+            }
+          },
+          "reviewAnswer": null
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_3cf96e1f",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        },
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_6ffe3cb0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "error": null
+    }
+  ]
+}

@@ -1,0 +1,234 @@
+{
+  "schemaVersion": "paired-output-review-v1",
+  "packetSha256": "2ffc88745eef68946978d173d2fb40e87f9d43237969d8d97157546cdf93bad0",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutArmMapping": true
+  },
+  "cases": [
+    {
+      "id": "09d2aac447c1299839f6",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Correctly identifies the case as silver in the requested language. The original empty sibling heading ends the hypothetical section, and equipment:7 supports an ordinary asserted color without any warranty claim."
+    },
+    {
+      "id": "1ae54af241593cdf1fdf",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Correctly identifies the case as silver in the requested language. The original empty sibling heading ends the hypothetical section, and equipment:7 supports an ordinary asserted color without any warranty claim."
+    },
+    {
+      "id": "2bb2bdccae1110d854b6",
+      "useful": false,
+      "sourceEntailed": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsValid": null,
+      "supportedByAvailableEvidence": null,
+      "justifiedNull": true,
+      "reason": "Justified explicit factual exclusion: both original warranty propositions belong to a hypothetical scenario and cannot establish actual duration or coverage. Empty factual evidence is appropriate."
+    },
+    {
+      "id": "4639bcb6f313ccf9f2ee",
+      "useful": false,
+      "sourceEntailed": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsValid": null,
+      "supportedByAvailableEvidence": null,
+      "justifiedNull": false,
+      "reason": "The explicit factual restriction would warrant excluding the hypothetical payload, but this observation reports generation_failed while the supplied body wrongly exposes both unframed warranty propositions as factual. Under the packet rule an availability failure is not credited as a justified source-based abstention. No published claim is graded false, and this does not imply that the original supports an actual warranty answer."
+    },
+    {
+      "id": "4d24e7056a7ad27788a6",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Correctly identifies the case as silver in the requested language. The original empty sibling heading ends the hypothetical section, and equipment:7 supports an ordinary asserted color without any warranty claim."
+    },
+    {
+      "id": "658fffd9289b7e671165",
+      "useful": false,
+      "sourceEntailed": false,
+      "qualificationPreserved": false,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Says that five-year warranty and housing replacement coverage are recorded/established for the device without preserving their hypothetical status. Mere recording does not retain the source's hypothesis condition. The supplied stripped body supports that wording, but the original heading does not establish actual coverage. Language and equipment:4/5 coordinates are valid."
+    },
+    {
+      "id": "6aff92a020cd28c3b8ce",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "The published answer gives only the supported silver case color. Equipment:7 entails it; coordinates 4 and 6 are real but unnecessary. The supplied evidence incorrectly classifies the preceding hypothetical warranty and empty heading as factual, yet the answer does not publish those as claims or make the color hypothetical."
+    },
+    {
+      "id": "6eec17854922a1e0fff5",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Both five-year duration and housing replacement coverage remain within an explicitly hypothetical scenario for the same device. Original heading, supplied frame and equipment:4/5 support the complete answer; casing and корпус preserve the same component."
+    },
+    {
+      "id": "81802918035343d21c35",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Correctly identifies the case as silver in the requested language. The original empty sibling heading ends the hypothetical section, and equipment:7 supports an ordinary asserted color without any warranty claim."
+    },
+    {
+      "id": "9a7ad943728569dced63",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Both five-year duration and housing replacement coverage remain within an explicitly hypothetical scenario for the same device. Original heading, supplied frame and equipment:4/5 support the complete answer; casing and корпус preserve the same component."
+    },
+    {
+      "id": "a4cafe5d0118006cbd6b",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Correctly identifies the case as silver in the requested language. The original empty sibling heading ends the hypothetical section, and equipment:7 supports an ordinary asserted color without any warranty claim."
+    },
+    {
+      "id": "ae9fba5b3223f631e32b",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Both five-year duration and housing replacement coverage remain within an explicitly hypothetical scenario for the same device. Original heading, supplied frame and equipment:4/5 support the complete answer; casing and корпус preserve the same component."
+    },
+    {
+      "id": "b1d132c4ad0a7c3631b4",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": false,
+      "justifiedNull": null,
+      "reason": "The answer describes the recorded warranty scenario, directly answering the question about a hypothetical scenario; both propositions remain under that scenario rather than asserted as actual coverage. This contextual scenario phrasing is faithful to the original. However the supplied unframed body lacks evidence of hypothetical/scenario status. Citation coordinates 4/5 are valid."
+    },
+    {
+      "id": "b480c1d2907d7c0db652",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "The published answer gives only the supported silver case color. Equipment:7 entails it; coordinates 4 and 6 are real but unnecessary. The supplied evidence incorrectly classifies the preceding hypothetical warranty and empty heading as factual, yet the answer does not publish those as claims or make the color hypothetical."
+    },
+    {
+      "id": "b5bf1b2846b83700ae78",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "The published answer gives only the supported silver case color. Equipment:7 entails it; coordinates 4 and 6 are real but unnecessary. The supplied evidence incorrectly classifies the preceding hypothetical warranty and empty heading as factual, yet the answer does not publish those as claims or make the color hypothetical."
+    },
+    {
+      "id": "b89876247eca69f421d2",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "The published answer gives only the supported silver case color. Equipment:7 entails it; coordinates 4 and 6 are real but unnecessary. The supplied evidence incorrectly classifies the preceding hypothetical warranty and empty heading as factual, yet the answer does not publish those as claims or make the color hypothetical."
+    },
+    {
+      "id": "bae8cb53a299ebd54a01",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Both five-year duration and housing replacement coverage remain within an explicitly hypothetical scenario for the same device. Original heading, supplied frame and equipment:4/5 support the complete answer; casing and корпус preserve the same component."
+    },
+    {
+      "id": "bf375e170ae764e71cf8",
+      "useful": false,
+      "sourceEntailed": false,
+      "qualificationPreserved": false,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "Says that five-year warranty and housing replacement coverage are recorded/established for the device without preserving their hypothetical status. Mere recording does not retain the source's hypothesis condition. The supplied stripped body supports that wording, but the original heading does not establish actual coverage. Language and equipment:4/5 coordinates are valid."
+    },
+    {
+      "id": "e6dbf539e46f9eb27db6",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": false,
+      "justifiedNull": null,
+      "reason": "The answer describes the recorded warranty scenario, directly answering the question about a hypothetical scenario; both propositions remain under that scenario rather than asserted as actual coverage. This contextual scenario phrasing is faithful to the original. However the supplied unframed body lacks evidence of hypothetical/scenario status. Citation coordinates 4/5 are valid."
+    },
+    {
+      "id": "f8ee2117fe02ecbd0a79",
+      "useful": true,
+      "sourceEntailed": true,
+      "qualificationPreserved": true,
+      "languageCompliant": true,
+      "citationsValid": true,
+      "supportedByAvailableEvidence": true,
+      "justifiedNull": null,
+      "reason": "The published answer gives only the supported silver case color. Equipment:7 entails it; coordinates 4 and 6 are real but unnecessary. The supplied evidence incorrectly classifies the preceding hypothetical warranty and empty heading as factual, yet the answer does not publish those as claims or make the color hypothetical."
+    }
+  ]
+}

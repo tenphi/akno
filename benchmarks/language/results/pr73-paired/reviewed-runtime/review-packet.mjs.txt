@@ -1,0 +1,34 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+const root=process.argv[2], destination=process.argv[3];
+const hash=x=>createHash('sha256').update(x).digest('hex');
+const fixtures=JSON.parse(fs.readFileSync(path.join(root,'fixtures.json')));
+const files=fs.readdirSync(root).filter(n=>/-repeat-\d+\.json$/.test(n)).sort();
+const seen=new Set(process.argv.slice(4).flatMap(file=>JSON.parse(fs.readFileSync(file)).cases.map(c=>c.id)));
+const cases=[]; const mapping=[];
+for(const file of files){
+ const pair=JSON.parse(fs.readFileSync(path.join(root,file)));
+ const fixture=fixtures.find(f=>f.id===pair.id);
+ for(const arm of ['baseline','candidate']){
+  const result=pair.arms[arm];
+  for(const [kind,queries] of [['main',result.queries],['factual-control',[{query:result.factualControl.query,explicit:true,expectedView:'factual',answers:[result.factualControl.answer]}]]]){
+   for(const query of queries)for(const answer of query.answers){
+    const logical={file,arm,kind,query:query.query,explicit:query.explicit,language:answer.answer_language};
+    const id=hash(JSON.stringify(logical)).slice(0,20); if(seen.has(id))continue;
+    const item={id,fixtureId:fixture.id,kind,question:query.query,requestedAnswerLanguage:answer.answer_language,
+     requestedView:query.explicit?query.expectedView:null,originalSource:fixture.originalSource,
+     frozenAvailableRecords:fixture.records,originalRetentionReview:fixture.originalRetentionReview??null,
+     sourceExpectation:fixture.expectation,answer:answer.answer,reasonCode:answer.reason_code,
+     suppliedEvidence:answer.context??[],citations:answer.citations,
+     citationLines:result.read.map(l=>({n:l.n,text:l.text}))};
+    cases.push(item);mapping.push({id,...logical,run:pair.run});
+   }
+  }
+ }
+}
+cases.sort((a,b)=>a.id.localeCompare(b.id));
+const packet={schemaVersion:'paired-source-review-v1',instructions:'Independently assess each output against original source AND separately frozen available evidence. Never treat empty/partial retained records as proof the original source lacks an answer. Main usefulness is from the original question and any explicitly requested view; an incorrectly inferred runtime view cannot justify a null. Factual controls explicitly request factual evidence and must not promote reports/hypotheses/plans into actual facts. A correct null may be justified by that explicit restriction. Focused answers may omit independent unrelated facts but must preserve coupled scope/qualification, object/component distinctions and all requested details. Return every ID exactly once with useful:boolean (nonnull answers only), sourceEntailed:boolean|null, qualificationPreserved:boolean|null, languageCompliant:boolean|null, citationsValid:boolean|null, supportedByAvailableEvidence:boolean|null, justifiedNull:boolean|null (null for nonnull answers), and concise reason. Null answer implies all five emitted-answer flags null and useful:false. Keep source-level justification separate from artifact-caused absence. Correctly typed availability failure is still unavailable, not a justified source-based abstention. No runtime acceptance or archive judgment overrides original-source reading. Reviewer must check citation coordinates against citationLines and not merely trust runtime flags.',cases};
+fs.writeFileSync(destination,JSON.stringify(packet,null,2)+'\n',{flag:'wx'});
+fs.writeFileSync(destination+'.mapping.json',JSON.stringify({packetSha256:hash(JSON.stringify(packet,null,2)+'\n'),mapping},null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify({files:files.length,outputs:cases.length}));

@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "7965d2c4d2fa9a03efa0f78da0f1e0b33c1dcefd1b15c8fdb4fad0b32f2d9ade",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-scoped-exclusion",
+      "run": 2,
+      "retentionUseful": true,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The complete retained set preserves the specific wax-caused fabric-seal damage exclusion with negative polarity and separately states both limits on what the exclusion establishes: no resolution of hinge-replacement coverage and no proof of contract silence about the hinge. The second row asserts an epistemic limit, not a positive hinge-coverage claim. English hinge matches the source’s explicit mechanical hinge. No broader damage exclusion or invented replacement benefit is introduced.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer covers both requested components: wax-caused fabric-seal damage is excluded, while that exclusion alone settles neither hinge-replacement coverage nor contract silence. All material limits and exact component/cause distinctions survive in the requested language. Both retained rows are retrieved, making this a useful qualified answer without unsupported promotion or broader exclusion."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The Russian answer includes the specific wax-caused fabric-seal exclusion and both hinge limits. «Покрывается ли заменой шарнирной петли» contains a case/inflection error; in this coverage context the intended hinge-replacement coverage question remains recoverable and neither inclusion nor exclusion is asserted. This grammatical defect is not a changed component or material proposition. The answer remains useful and source-entailed, and complete retrieval supports it."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer covers both requested components: wax-caused fabric-seal damage is excluded, while that exclusion alone settles neither hinge-replacement coverage nor contract silence. All material limits and exact component/cause distinctions survive in the requested language. Both retained rows are retrieved, making this a useful qualified answer without unsupported promotion or broader exclusion."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer covers both requested components: wax-caused fabric-seal damage is excluded, while that exclusion alone settles neither hinge-replacement coverage nor contract silence. All material limits and exact component/cause distinctions survive in the requested language. Both retained rows are retrieved, making this a useful qualified answer without unsupported promotion or broader exclusion."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer covers both requested components: wax-caused fabric-seal damage is excluded, while that exclusion alone settles neither hinge-replacement coverage nor contract silence. All material limits and exact component/cause distinctions survive in the requested language. Both retained rows are retrieved, making this a useful qualified answer without unsupported promotion or broader exclusion."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer covers both requested components: wax-caused fabric-seal damage is excluded, while that exclusion alone settles neither hinge-replacement coverage nor contract silence. All material limits and exact component/cause distinctions survive in the requested language. Both retained rows are retrieved, making this a useful qualified answer without unsupported promotion or broader exclusion."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The English answer correctly preserves both hinge-related epistemic limits, but omits the fabric-seal damage exclusion entirely. The query explicitly asks what the record establishes about both the fabric seal and hinge, so this partial response is not a useful complete answer to that query. Its stated claims remain source-entailed and correctly qualified, and retrieval supplies both rows; no unsupported hinge coverage is asserted."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer covers both requested components: wax-caused fabric-seal damage is excluded, while that exclusion alone settles neither hinge-replacement coverage nor contract silence. All material limits and exact component/cause distinctions survive in the requested language. Both retained rows are retrieved, making this a useful qualified answer without unsupported promotion or broader exclusion."
+        }
+      ]
+    }
+  ]
+}

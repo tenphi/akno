@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "e9926502b1475707d46f09082005f2629d36e407bdd96bbe8f97a84b407f804e",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-counterfactual",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "Context is empty for a positive question about the unrealized internal-spring benefit. The writable original source explicitly supports that counterfactual benefit, including the false enrollment antecedent and thirty-three-month usage interval, so this is missed useful activation rather than valid read-only exclusion. Empty context is vacuously source-entailed and emits no distorted qualification, language violation or factual promotion. Neutral safety flags do not imply useful context."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "Context is empty for a positive question about the unrealized internal-spring benefit. The writable original source explicitly supports that counterfactual benefit, including the false enrollment antecedent and thirty-three-month usage interval, so this is missed useful activation rather than valid read-only exclusion. Empty context is vacuously source-entailed and emits no distorted qualification, language violation or factual promotion. Neutral safety flags do not imply useful context."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "Context is empty for a positive question about the unrealized internal-spring benefit. The writable original source explicitly supports that counterfactual benefit, including the false enrollment antecedent and thirty-three-month usage interval, so this is missed useful activation rather than valid read-only exclusion. Empty context is vacuously source-entailed and emits no distorted qualification, language violation or factual promotion. Neutral safety flags do not imply useful context."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "Context is empty for a positive question about the unrealized internal-spring benefit. The writable original source explicitly supports that counterfactual benefit, including the false enrollment antecedent and thirty-three-month usage interval, so this is missed useful activation rather than valid read-only exclusion. Empty context is vacuously source-entailed and emits no distorted qualification, language violation or factual promotion. Neutral safety flags do not imply useful context."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-assumed-interval",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "Context contains the complete eleven-cycle/twelve-cycle hypothetical latch-lubrication unit, Ada’s personal ignorance of the real rule, and her nonassertion of an actual omission. Its hypothesis framing and metadata preserve both clauses together and prevent an actual maintenance requirement or violation. Stored English knowledge framing is compliant for either query language, while the maintenance breadcrumb is only a topic label. This is useful, source-entailed positive context."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "Context contains the complete eleven-cycle/twelve-cycle hypothetical latch-lubrication unit, Ada’s personal ignorance of the real rule, and her nonassertion of an actual omission. Its hypothesis framing and metadata preserve both clauses together and prevent an actual maintenance requirement or violation. Stored English knowledge framing is compliant for either query language, while the maintenance breadcrumb is only a topic label. This is useful, source-entailed positive context."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "Context contains the complete eleven-cycle/twelve-cycle hypothetical latch-lubrication unit, Ada’s personal ignorance of the real rule, and her nonassertion of an actual omission. Its hypothesis framing and metadata preserve both clauses together and prevent an actual maintenance requirement or violation. Stored English knowledge framing is compliant for either query language, while the maintenance breadcrumb is only a topic label. This is useful, source-entailed positive context."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "Context contains the complete eleven-cycle/twelve-cycle hypothetical latch-lubrication unit, Ada’s personal ignorance of the real rule, and her nonassertion of an actual omission. Its hypothesis framing and metadata preserve both clauses together and prevent an actual maintenance requirement or violation. Stored English knowledge framing is compliant for either query language, while the maintenance breadcrumb is only a topic label. This is useful, source-entailed positive context."
+        }
+      ]
+    }
+  ]
+}

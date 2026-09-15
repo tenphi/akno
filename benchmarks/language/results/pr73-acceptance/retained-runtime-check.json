@@ -1,0 +1,20 @@
+{
+  "description": "The unsuccessful specificity verifier was removed. These production modules match the full-retrieval language/ordinary runs; benchmark instrumentation later added V23 and profile metadata.",
+  "modules": [
+    {
+      "module": "memory/intent.js",
+      "measured": "28606feed3799b06b7f60892a27b8a108958021bfbe03aea784aeb6fb5a35dc9",
+      "current": "28606feed3799b06b7f60892a27b8a108958021bfbe03aea784aeb6fb5a35dc9"
+    },
+    {
+      "module": "ops/answer.js",
+      "measured": "446f605895c13287bbb5c83176cab070327e99881c76ccf8c35378f9e7790080",
+      "current": "446f605895c13287bbb5c83176cab070327e99881c76ccf8c35378f9e7790080"
+    },
+    {
+      "module": "ops/answer-source-audit.js",
+      "measured": "121df59c5807151c91d512291369368d9a2f3abb93aadb544febcfadb7b2387c",
+      "current": "121df59c5807151c91d512291369368d9a2f3abb93aadb544febcfadb7b2387c"
+    }
+  ]
+}

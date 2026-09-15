@@ -1,0 +1,595 @@
+{
+  "kind": "incremental-frozen-full-evaluation-review-batch",
+  "corpusFingerprint": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+  "rubric": "Unchanged V23 language-output-review-v2 rubric in the frozen benchmark reviewer; no changed thresholds or expected meanings.",
+  "cases": [
+    {
+      "id": "v23-held-undated-review",
+      "run": 2,
+      "source": {
+        "id": "v23-held-undated-review",
+        "split": "held-out",
+        "language": "ru",
+        "scenario": "relative-unknown-date",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Дата этой реплики неизвестна. Я, Ada Marlow, предлагаю обсудить условия обслуживания Zephyr QX-100 через одиннадцать дней после этой реплики, а не после обработки записи."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Предложение пока не принято. Встреча не назначена."
+          }
+        ],
+        "view": "planning",
+        "admission": "writable",
+        "ordinary": "## Proposal\nAda Marlow proposes discussing the Zephyr QX-100 service conditions eleven days after an utterance of unknown date, not eleven days after processing. The proposal is unaccepted and no meeting is scheduled.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "What unaccepted proposal did Ada Marlow make for discussing Zephyr QX-100 service conditions, and when?",
+          "ru": "Какой план обсуждения условий обслуживания Zephyr QX-100 предложила Ada Marlow и к какому времени он относится?"
+        },
+        "reviewExpectation": "Preserve Ada’s asserted proposal, unaccepted disposition, discussion of service conditions, eleven-day offset from the utterance, unknown utterance date, and absence of a scheduled meeting. Use an unknown tentative time envelope without inventing a calendar date, clock, acceptance or scheduled event. Processing time is explicitly not the anchor."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_d518b599",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_aa66f1cc93f4cc6506778b42",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false,
+            "temporal": {
+              "time": {
+                "relation": "scheduled",
+                "status": "tentative",
+                "precision": "unknown"
+              },
+              "clock_relation": "undated",
+              "actionable": false
+            }
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d518b599",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_aa66f1cc93f4cc6506778b42",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "answer": "**Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d518b599",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_aa66f1cc93f4cc6506778b42",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "answer": "**Предложение · Предварительный срок:** Ada Marlow предложила обсудить условия обслуживания Zephyr QX-100 через одиннадцать дней после реплики, а не через одиннадцать дней после обработки записи; дата реплики неизвестна, и предложение остаётся непринятым. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d518b599",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_aa66f1cc93f4cc6506778b42",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "answer": "**Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d518b599",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_aa66f1cc93f4cc6506778b42",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "answer": "**Предложение · Предварительный срок:** Ada Marlow предложила обсудить условия обслуживания Zephyr QX-100 через одиннадцать дней после реплики, а не через одиннадцать дней после обработки записи; дата реплики неизвестна, и предложение остаётся непринятым. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d518b599",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_aa66f1cc93f4cc6506778b42",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "answer": "**Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d518b599",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_aa66f1cc93f4cc6506778b42",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "answer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d518b599",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_aa66f1cc93f4cc6506778b42",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "answer": "**Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_d518b599",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_aa66f1cc93f4cc6506778b42",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "answer": "**Предложение · Предварительный срок:** Ada Marlow предложила обсудить условия обслуживания Zephyr QX-100 через одиннадцать дней после реплики, а не через одиннадцать дней после обработки записи; дата реплики неизвестна, и предложение остаётся непринятым. [memory/equipment:7]"
+        }
+      ]
+    }
+  ],
+  "extra": [
+    {
+      "id": "v23-held-undated-review",
+      "run": 2,
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_d518b599",
+            "source_ref": "invented:v23-held-undated-review",
+            "input_hash": "77b7d7ec270e3e3a667181d73b21ab0a118c24276ef454a34255a4c3a81f63d6",
+            "evidence": "Дата этой реплики неизвестна. Я, Ada Marlow, предлагаю обсудить условия обслуживания Zephyr QX-100 через одиннадцать дней после этой реплики, а не после обработки записи.\n…\nПредложение пока не принято.",
+            "evidence_hash": "20e789fa11d84b6cac11481f7e1cc6946fb0d813bc191abe75bac0a44146c130",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "Дата этой реплики неизвестна. Я, Ada Marlow, предлагаю обсудить условия обслуживания Zephyr QX-100 через одиннадцать дней после этой реплики, а не после обработки записи.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "Предложение пока не принято.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_d518b599",
+                    "level": 1,
+                    "kind": "plan",
+                    "subject": "ent_aa66f1cc93f4cc6506778b42",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "proposed",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false,
+                    "temporal": {
+                      "time": {
+                        "relation": "scheduled",
+                        "status": "tentative",
+                        "precision": "unknown"
+                      },
+                      "clock_relation": "undated",
+                      "actionable": false
+                    }
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Service Terms Proposal",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_d518b599",
+                    "level": 1,
+                    "kind": "plan",
+                    "subject": "ent_aa66f1cc93f4cc6506778b42",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "proposed",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false,
+                    "temporal": {
+                      "time": {
+                        "relation": "scheduled",
+                        "status": "tentative",
+                        "precision": "unknown"
+                      },
+                      "clock_relation": "undated",
+                      "actionable": false
+                    }
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Service Terms Proposal",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_d518b599",
+                    "level": 1,
+                    "kind": "plan",
+                    "subject": "ent_aa66f1cc93f4cc6506778b42",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "proposed",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false,
+                    "temporal": {
+                      "time": {
+                        "relation": "scheduled",
+                        "status": "tentative",
+                        "precision": "unknown"
+                      },
+                      "clock_relation": "undated",
+                      "actionable": false
+                    }
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Service Terms Proposal",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Proposal · Tentative:** Ada Marlow proposed discussing Zephyr QX-100 service terms eleven days after the utterance, not eleven days after record processing; the utterance date is unknown, and the proposal remains unaccepted.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_d518b599",
+                    "level": 1,
+                    "kind": "plan",
+                    "subject": "ent_aa66f1cc93f4cc6506778b42",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "proposed",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false,
+                    "temporal": {
+                      "time": {
+                        "relation": "scheduled",
+                        "status": "tentative",
+                        "precision": "unknown"
+                      },
+                      "clock_relation": "undated",
+                      "actionable": false
+                    }
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Service Terms Proposal",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ]
+    }
+  ],
+  "packetFingerprint": "fba041513add3d70de82b1ce6eea39d0725cd46d705ab572abc1ad4d545c4a3b"
+}

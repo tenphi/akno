@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "d7341ff2a33e4ff50543e1f9c193c4ac4fa5c95915037bc3d10dd20ec6c30ec4",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-fictional-key",
+      "run": 2,
+      "retentionUseful": true,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The complete retained set separately preserves Ada’s actual proposal to discuss an invented example and the hypothetical loan. The payload retains fictional lender and borrower, the spare physical metal key for the cover rather than an access code, the first thirty-three days after a fictional inspection, and story-only/no-real-agreement scope. Asserted/proposed metadata for the actual proposal and hypothetical metadata for the loan maintain the distinction. No completed real discussion, inspection, or loan is asserted.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves the actual proposal to discuss an invented example and its fictional loan, with the exact spare physical metal cover key rather than an access code, named lender/borrower, and thirty-three-day interval after fictional inspection. It keeps no-real-agreement/story-only scope in the requested language. Complete retrieval supports the useful answer without establishing an actual completed event."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves the actual proposal to discuss an invented example and its fictional loan, with the exact spare physical metal cover key rather than an access code, named lender/borrower, and thirty-three-day interval after fictional inspection. It keeps no-real-agreement/story-only scope in the requested language. Complete retrieval supports the useful answer without establishing an actual completed event."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves the actual proposal to discuss an invented example and its fictional loan, with the exact spare physical metal cover key rather than an access code, named lender/borrower, and thirty-three-day interval after fictional inspection. It keeps no-real-agreement/story-only scope in the requested language. Complete retrieval supports the useful answer without establishing an actual completed event."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves the actual proposal to discuss an invented example and its fictional loan, with the exact spare physical metal cover key rather than an access code, named lender/borrower, and thirty-three-day interval after fictional inspection. It keeps no-real-agreement/story-only scope in the requested language. Complete retrieval supports the useful answer without establishing an actual completed event."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves the actual proposal to discuss an invented example and its fictional loan, with the exact spare physical metal cover key rather than an access code, named lender/borrower, and thirty-three-day interval after fictional inspection. It keeps no-real-agreement/story-only scope in the requested language. Complete retrieval supports the useful answer without establishing an actual completed event."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The default Russian-query Russian answer is null despite complete retrieval of both the actual discussion proposal and the qualified fictional key loan. The source supports a useful Russian response, so this is a missed answer rather than a source-required abstention. The public semantic packet does not identify a runtime cause."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves the actual proposal to discuss an invented example and its fictional loan, with the exact spare physical metal cover key rather than an access code, named lender/borrower, and thirty-three-day interval after fictional inspection. It keeps no-real-agreement/story-only scope in the requested language. Complete retrieval supports the useful answer without establishing an actual completed event."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The focused Russian answer faithfully describes the fictional loan, exact physical metal cover key, lender, borrower, first thirty-three days after fictional inspection, and distinction from an access code. Story-only and no-real-agreement qualifications remain explicit. Omitting a separate restatement of Ada’s actual proposal does not impair the loan-focused answer, and both retained rows are available in retrieval."
+        }
+      ]
+    }
+  ]
+}

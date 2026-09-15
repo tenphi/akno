@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "8f4548547dc17acf5a754121c683a254ca8c4b1e179ccb79e67303448f37f83b",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-assistant-speculation",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is empty for a positive assistant-speculation question. The writable source supports useful tentative, attributed optical-shutter service-term context with the eleven-cycle interval and personal unread/unverified limits. Therefore this is missed activation, not valid read-only or factual exclusion. Empty context is vacuously source-entailed, with no emitted qualification distortion, language violation or factual promotion; those neutral flags do not imply usefulness."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is empty for a positive assistant-speculation question. The writable source supports useful tentative, attributed optical-shutter service-term context with the eleven-cycle interval and personal unread/unverified limits. Therefore this is missed activation, not valid read-only or factual exclusion. Empty context is vacuously source-entailed, with no emitted qualification distortion, language violation or factual promotion; those neutral flags do not imply usefulness."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is empty for a positive assistant-speculation question. The writable source supports useful tentative, attributed optical-shutter service-term context with the eleven-cycle interval and personal unread/unverified limits. Therefore this is missed activation, not valid read-only or factual exclusion. Empty context is vacuously source-entailed, with no emitted qualification distortion, language violation or factual promotion; those neutral flags do not imply usefulness."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is empty for a positive assistant-speculation question. The writable source supports useful tentative, attributed optical-shutter service-term context with the eleven-cycle interval and personal unread/unverified limits. Therefore this is missed activation, not valid read-only or factual exclusion. Empty context is vacuously source-entailed, with no emitted qualification distortion, language violation or factual promotion; those neutral flags do not imply usefulness."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context accurately contains the sand-caused ceramic-spacer exclusion, but not the required source limitations on what this record establishes about intake-sleeve replacement coverage or contract silence. Because the query asks about both components, this partial context is not complete useful qualified evidence, and its required qualification set is incomplete. Its actual statement is source-entailed and adds no unsupported sleeve claim. English knowledge framing is compliant. This is partial positive retrieval, not a required exclusion."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context accurately contains the sand-caused ceramic-spacer exclusion, but not the required source limitations on what this record establishes about intake-sleeve replacement coverage or contract silence. Because the query asks about both components, this partial context is not complete useful qualified evidence, and its required qualification set is incomplete. Its actual statement is source-entailed and adds no unsupported sleeve claim. English knowledge framing is compliant. This is partial positive retrieval, not a required exclusion."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context accurately contains the sand-caused ceramic-spacer exclusion, but not the required source limitations on what this record establishes about intake-sleeve replacement coverage or contract silence. Because the query asks about both components, this partial context is not complete useful qualified evidence, and its required qualification set is incomplete. Its actual statement is source-entailed and adds no unsupported sleeve claim. English knowledge framing is compliant. This is partial positive retrieval, not a required exclusion."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context accurately contains the sand-caused ceramic-spacer exclusion, but not the required source limitations on what this record establishes about intake-sleeve replacement coverage or contract silence. Because the query asks about both components, this partial context is not complete useful qualified evidence, and its required qualification set is incomplete. Its actual statement is source-entailed and adds no unsupported sleeve claim. English knowledge framing is compliant. This is partial positive retrieval, not a required exclusion."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "a0e7c493867dc4da9cf19a268f8eda91ddcb38100f72a2acbdf16cad4611ac27",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-fictional-example",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the correctly named spare control dial, fictional lender and borrower, first forty-four days after fictional repair, and explicit story-only/no-real-agreement limits. It is useful for the focused loan query without asserting a real transaction. It does not repair the retained set’s omission of the separate actual introduction-for-discussion act."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the correctly named spare control dial, fictional lender and borrower, first forty-four days after fictional repair, and explicit story-only/no-real-agreement limits. It is useful for the focused loan query without asserting a real transaction. It does not repair the retained set’s omission of the separate actual introduction-for-discussion act."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the correctly named spare control dial, fictional lender and borrower, first forty-four days after fictional repair, and explicit story-only/no-real-agreement limits. It is useful for the focused loan query without asserting a real transaction. It does not repair the retained set’s omission of the separate actual introduction-for-discussion act."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the correctly named spare control dial, fictional lender and borrower, first forty-four days after fictional repair, and explicit story-only/no-real-agreement limits. It is useful for the focused loan query without asserting a real transaction. It does not repair the retained set’s omission of the separate actual introduction-for-discussion act."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-scoped-exclusion",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves wax-caused fabric-seal damage as the specific excluded risk and includes both coupled hinge limits: exclusion alone resolves neither replacement coverage nor contract silence. This is useful qualified evidence for either query language, with no unsupported factual promotion."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves wax-caused fabric-seal damage as the specific excluded risk and includes both coupled hinge limits: exclusion alone resolves neither replacement coverage nor contract silence. This is useful qualified evidence for either query language, with no unsupported factual promotion."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves wax-caused fabric-seal damage as the specific excluded risk and includes both coupled hinge limits: exclusion alone resolves neither replacement coverage nor contract silence. This is useful qualified evidence for either query language, with no unsupported factual promotion."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves wax-caused fabric-seal damage as the specific excluded risk and includes both coupled hinge limits: exclusion alone resolves neither replacement coverage nor contract silence. This is useful qualified evidence for either query language, with no unsupported factual promotion."
+        }
+      ]
+    }
+  ]
+}

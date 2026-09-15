@@ -1,0 +1,89 @@
+# Luna baseline and bounded completion for PR 73
+
+The owner selected Luna as Akno's economical runtime and approved [bounded closure of issues 61/62](../../pr73-luna-completion-plan.md). This full frozen evaluation **does not meet the original quality gate**. Closure records the implemented scope and measured limitations; it does not redefine the gate, establish a model capability ceiling, or merge PR 73. See the [criterion-by-criterion closure mapping](closure-mapping.md).
+
+## Full frozen baseline
+
+V23 contains 22 invented sources: eleven exposed development cases and eleven independently approved held-out content/wording variants of the same scenario structures. Two repetitions per split give **44 case-runs and 352 answer coordinates**. Four read-only case-runs account for 32 expected abstentions; useful-answer coverage has a **320-coordinate writable denominator**. Source language, query language, requested answer language, and inferred/explicit memory view are separate dimensions. Development cases retain their historical v22-held identifiers but are exposed in this experiment.
+
+| Measurement                                          | Result          |
+| ---------------------------------------------------- | --------------- |
+| Complete retained sets                               | 27/40 (67.5%)   |
+| Useful qualified answers                             | 233/320 (72.8%) |
+| Useful actual auto-recall contexts                   | 130/160 (81.3%) |
+| Published writable answers                           | 276             |
+| Published answers unsupported by the original source | 15              |
+| Retained sets with unsupported saved propositions    | 0               |
+| Incomplete answer qualifications                     | 26              |
+| Incomplete retained qualifications                   | 3               |
+| Wrong-language answers / retained sets               | 0 / 0           |
+| Unsafe answer / retained promotions                  | 0 / 0           |
+| Source-justified read-only abstentions               | 32/32 (100.0%)  |
+| Case-runs with typed availability failure            | 3/44            |
+| Answer-operation failures                            | 1/352           |
+
+Error categories may overlap; they must not be added as disjoint failures. A source-entailed answer may still omit requested content or a coupled qualification. A source-unjustified null is lost useful coverage, not automatically a false verifier rejection: a malformed or unsupported draft may correctly be withheld. Typed unavailable verification is never credited as a correct semantic rejection. HTTP success alone does not establish a usable model result.
+
+| Split / repetition | Complete retention | Useful retrieval | Useful answers | Unsupported published answers | Availability failures |
+| ------------------ | ------------------ | ---------------- | -------------- | ----------------------------- | --------------------- |
+| development, run 1 | 4/10 (40.0%)       | 24/40 (60.0%)    | 42/80 (52.5%)  | 6                             | 2/11 (18.2%)          |
+| development, run 2 | 7/10 (70.0%)       | 40/40 (100.0%)   | 69/80 (86.3%)  | 8                             | 0/11 (0.0%)           |
+| held-out, run 1    | 8/10 (80.0%)       | 36/40 (90.0%)    | 65/80 (81.3%)  | 0                             | 0/11 (0.0%)           |
+| held-out, run 2    | 8/10 (80.0%)       | 32/40 (80.0%)    | 57/80 (71.3%)  | 1                             | 1/11 (9.1%)           |
+
+The unchanged gate requires at least 80% complete retention and useful retrieval, 90% useful answers **in each split/run**, no accepted source/qualification/language/promotion errors, at most 5% availability failures, and source stability. [gate.json](gate.json) preserves the actual adjudication and failed criteria; byte, archive and replay audits are reported separately. Query/explicit-view retrieval and context counts are deduplicated across the two requested answer languages.
+
+| Requested answer language | Useful answers  | Unsupported answers | Qualification omissions | Language violations |
+| ------------------------- | --------------- | ------------------- | ----------------------- | ------------------- |
+| en                        | 129/160 (80.6%) | 0                   | 12                      | 0                   |
+| ru                        | 104/160 (65.0%) | 15                  | 14                      | 0                   |
+
+[summary.json](summary.json) also separates source language, query language and scenario. [failure-ledger.json](failure-ledger.json) preserves every failed writable case and answer/context coordinate with the public typed runtime outcome and independent reason. The sources and per-case observations remain in [development](development/) and [held-out](held-out/). Their built-in structural counters are operational diagnostics; the independently adjudicated gate and summary provide the quality measurements. A nonempty saved set is not automatically complete useful retention.
+
+## Runtime and evidence integrity
+
+The frozen runtime is memory-view-v9, prose-v3, answer generation V68 and source verifier V48. Retention and answers use `gpt-5.6-luna`, Responses, low reasoning, 2,400 output tokens, 120/60-second timeouts and zero provider retries. Retrieval uses populated `text-embedding-3-small` vectors (1,536 dimensions) and Luna LLM reranking: low reasoning, 1,600 output tokens, 30 seconds, top eight, 2,400 characters per item, irrelevant items excluded. Knowledge language is English. Expansion, graph expansion and model-generated index summaries/facts are disabled. The expected `no_expansion_model` diagnostic does not count as an availability failure.
+
+One process per split ran concurrently, each case in an isolated invented knowledge base. The [development manifest](development/manifest.json) and [held-out manifest](held-out/manifest.json) freeze the Git revision, source diff, built runtime trees, runner, corpus and model/retrieval profile before calls. Completion records confirm the runtime remained unchanged. No failed coordinate was rerun or omitted from this baseline.
+
+Source bytes, replay and archived support remained stable in 44/44, 44/44 and 44/44 case-runs respectively. 50 stored support records have verified hashes; 86 quote parts match their original source items exactly. Exact stored evidence does not prove that a generated retained set is complete or semantically correct.
+
+## Review and limitations
+
+The independent Astra reviewer did not author the corpus or tune the runtime, passed the existing [14-control calibration](../pr73-acceptance/independent-calibration.json), and [approved the input expectations](input-review.json) before live outputs. It reviewed originals, retained text, retrieved evidence, published answers and actual context evidence under the unchanged V2 rubric. Runtime verifier decisions were not ground truth. The implementing assistant also [inspected every published answer](primary-inspection.json). This is source-based model-assisted adjudication with preserved reasons, not infallible human ground truth.
+
+The [canonical packet](review-packet.json), [answer/retention review](output-review.json), [context review](context-review.json) and [batch provenance](review-provenance.json) bind every judgment to the final observations. Incremental packet cases and context/archive payloads were checked against the canonical full reports before grades were merged. The [independent aggregate audit](baseline-audit.json) passes 2,396 checks without changing any grade. It independently recomputes evidence hashes and exact source matches; source-byte/rebuild/replay stability remains a frozen runner observation, not a fresh reconstruction of the discarded temporary knowledge bases.
+
+Two repetitions and eleven scenario structures per split do not estimate everyday Akno accuracy or prove that all improvements on Luna are exhausted. Correlated answers from one retained record are not independent trials. The held-out variants had not been run live or used to adjust this frozen runtime before launch; they become regression cases after this run. Accepted-proposal transitions, late corrections and unresolved-reference resolution from the original issue scope lack live coverage here. Broader implicit discourse, oversized frames, model index synthesis, graph expansion and longitudinal maintenance are not established by this matrix.
+
+Concrete triage distinguishes the [strict verifier-contract holds](initial-triage.json) from the [numeric source-clock coverage gap and semantic miss](clock-triage.json). The completion round repairs the reproducible query-routing defect below. It does not add another prompt/audit/fallback loop or claim exhaustive date-language recognition. The previous specificity audit failed to detect the frozen translation errors and was withdrawn; the [earlier diagnostic archive](../pr73-acceptance/README.md) remains unchanged.
+
+## Separate routing repair
+
+After the full baseline was frozen and adjudicated, a bounded finite-past Russian rejection cue was added for proposals, plans and options. Independent code review found that its first version also matched negated and conditional rejection. Final memory-view-v11 excludes negation and both conditional particles, `бы` and `б`, within the bounded clause and retains future/infinitive controls and higher-priority report/discussion views. This deliberately conservative cue can also leave actual delayed rejection or subject-focus negation at the prior planning fallback; explicit history remains available. The [intermediate v10 measurement](post-repair/summary.json) remains visible: 14/16 useful answers, 1/2 complete retained sets, 8/8 useful contexts, one unsupported sensor narrowing and one incomplete component rendering. The [review finding](post-repair/routing-code-review.json) and [final code review](final-repair/code-review.json) record the correction. The [built view matrix](final-repair/view-matrix.json) improves V23 from 43/44 to 44/44 and keeps V22 at 44/44. The [isolated built CLI/socket check](final-repair/built-check.json) exercises the repaired query through startup and restart.
+
+Two fresh executions of the now-exposed rejected-inspection case use the identical Luna profile. They produce 14/16 (87.5%) useful answers and 8/8 (100.0%) useful contexts; the inferred Russian view selects history in 2/2 unique queries. Complete retained sets are 0/2 (0.0%); 2 published answers are unsupported by the original source and 0 omit required qualifications. [The final repair summary](final-repair/summary.json) includes both repetitions, independent reviews, remaining failures and the matching baseline coordinates. The intermediate and final sets of 16 answers are **not pooled** into the 352-coordinate baseline and do not constitute a new full quality-gate pass. Retention randomness also prevents attributing every coverage difference to routing alone.
+
+## Ordinary Markdown and follow-up
+
+The separately frozen [ordinary supplement](../pr73-acceptance/README.md) has 47/48 useful answers, 24/24 useful contexts and 18/18 safe factual-negative controls across two repetitions. Its 47 published answers preserve source meaning, qualification, language and citations. Four ordinary cases are bounded evidence, not comprehensive Markdown/generalization coverage; these counts are not pooled with retained-memory results.
+
+Issue 66 carries the residual source regressions, omissions, translation/qualification errors, withheld answers and typed availability failures. The repaired routing cases remain regression controls. This one-cycle baseline does not implement 66's later retention/consolidation/correction/retraction sequence or establish recovery from propagated errors.
+
+## Usage and reproduction
+
+| Runtime model          | Requests | HTTP success | Requests with usage | Known input tokens | Known output tokens | Known total tokens |
+| ---------------------- | -------- | ------------ | ------------------- | ------------------ | ------------------- | ------------------ |
+| text-embedding-3-small | 1144     | 1144         | 1144                | 52962              | 0                   | 52962              |
+| gpt-5.6-luna           | 1551     | 1551         | 1551                | 6051652            | 430049              | 6481701            |
+
+Token sums include only supplied usage; missing usage is unknown, not zero. Reviewer/Codex usage is outside these provider receipts. Request latency distributions are in [summary.json](summary.json); they are per-request latency, not end-to-end answer latency. No monetary cost is inferred because provider billing was not supplied. The repair has separate receipts.
+
+Build the revision recorded in the relevant manifest, set AKNO_BENCH_CONFIG to a private provider-config path with the declared profile, and use fresh output directories:
+
+```sh
+node scripts/measure-language-acceptance.mjs --live --config "$AKNO_BENCH_CONFIG" --corpus v23 --split development --runs 2 --output /tmp/akno-new-development
+node scripts/measure-language-acceptance.mjs --live --config "$AKNO_BENCH_CONFIG" --corpus v23 --split held-out --runs 2 --output /tmp/akno-new-held-out
+```
+
+[Runtime snapshots](runtime/) preserve the runners and adjudication/audit helpers. [artifact-manifest.json](artifact-manifest.json) binds all final evidence files. Frozen historical artifacts are not reformatted or replaced. Build/typecheck, lint, knip, all 4,068 tests across 154 files, 34 smoke checks, formatting and repository safety are recorded in [validation.json](validation.json). This checkout has no configured live service: build-only redeploy and isolated socket tests are separate from restarting an existing deployment.

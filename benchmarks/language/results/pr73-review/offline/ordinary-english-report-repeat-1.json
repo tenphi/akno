@@ -1,0 +1,1814 @@
+{
+  "id": "ordinary-english-report",
+  "run": 1,
+  "order": [
+    "baseline",
+    "candidate"
+  ],
+  "arms": {
+    "baseline": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+          "explicit": false,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": []
+              }
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "assistant report": false,
+                "zephyr qx-100": true,
+                "maintenance plan": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What did the assistant report about the Zephyr QX-100 maintenance plan?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 98,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+          "explicit": true,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": []
+              }
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "assistant report": false,
+                "zephyr qx-100": true,
+                "maintenance plan": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What did the assistant report about the Zephyr QX-100 maintenance plan?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 98,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Что ассистент сообщил о плане обслуживания Zephyr QX-100?",
+          "explicit": false,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": []
+              }
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "что ассистент": false,
+                "сообщил плане": false,
+                "обслуживания zephyr": false,
+                "qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Что ассистент сообщил о плане обслуживания Zephyr QX-100?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 98,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Что ассистент сообщил о плане обслуживания Zephyr QX-100?",
+          "explicit": true,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": []
+              }
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "что ассистент": false,
+                "сообщил плане": false,
+                "обслуживания zephyr": false,
+                "qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Что ассистент сообщил о плане обслуживания Zephyr QX-100?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 98,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "mixed",
+          "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+          "explicit": false,
+          "expectedView": "reports",
+          "view": "planning",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": []
+              }
+            }
+          ],
+          "contextView": "planning",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "assistant report": false,
+                "zephyr qx-100": true,
+                "план обслуживания": false
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What did the assistant report about the Zephyr QX-100 план обслуживания?"
+              ],
+              "memory_view": "planning",
+              "budget_used": {
+                "retrieval_tokens": 98,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "mixed",
+          "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+          "explicit": true,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": []
+              }
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "assistant report": false,
+                "zephyr qx-100": true,
+                "план обслуживания": false
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "factual",
+                        "reason": "asserted",
+                        "answer_eligible": true,
+                        "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                        "frame": []
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What did the assistant report about the Zephyr QX-100 план обслуживания?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 98,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "  ## Assistant ###"
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+            "frame": []
+          }
+        }
+      ],
+      "projections": [
+        {
+          "n": 4,
+          "view": "reports",
+          "actual": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+            "frame": []
+          }
+        }
+      ],
+      "factualEvidence": [
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+          "memory": null,
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+            "frame": []
+          }
+        }
+      ],
+      "factualControl": {
+        "query": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+        "context": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "note": "automatic injection requires calibrated qualification for ambiguous evidence",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "What did the assistant report about the Zephyr QX-100 maintenance plan?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index",
+            "no_answer_model"
+          ],
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "assistant report": false,
+            "zephyr qx-100": true,
+            "maintenance plan": true
+          },
+          "citations": [],
+          "context": [
+            {
+              "type": "page",
+              "slug": "equipment",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": []
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "What did the assistant report about the Zephyr QX-100 maintenance plan?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 98,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "reason_code": "generation_unavailable",
+          "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+        }
+      },
+      "unsafeFactualProjections": [
+        {
+          "n": 4,
+          "view": "reports",
+          "actual": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+            "frame": []
+          }
+        }
+      ],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    },
+    "candidate": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+          "explicit": false,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "speaker",
+                "answer_eligible": false,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Assistant ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                  }
+                ]
+              }
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "assistant report": false,
+                "zephyr qx-100": true,
+                "maintenance plan": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "reports",
+                        "reason": "speaker",
+                        "answer_eligible": false,
+                        "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                        "frame": [
+                          {
+                            "n": 1,
+                            "text": "# Zephyr QX-100"
+                          },
+                          {
+                            "n": 3,
+                            "text": "  ## Assistant ###"
+                          },
+                          {
+                            "n": 4,
+                            "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What did the assistant report about the Zephyr QX-100 maintenance plan?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 140,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+          "explicit": true,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "speaker",
+                "answer_eligible": false,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Assistant ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                  }
+                ]
+              }
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "assistant report": false,
+                "zephyr qx-100": true,
+                "maintenance plan": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "reports",
+                        "reason": "speaker",
+                        "answer_eligible": false,
+                        "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                        "frame": [
+                          {
+                            "n": 1,
+                            "text": "# Zephyr QX-100"
+                          },
+                          {
+                            "n": 3,
+                            "text": "  ## Assistant ###"
+                          },
+                          {
+                            "n": 4,
+                            "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What did the assistant report about the Zephyr QX-100 maintenance plan?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 140,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Что ассистент сообщил о плане обслуживания Zephyr QX-100?",
+          "explicit": false,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "speaker",
+                "answer_eligible": false,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Assistant ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                  }
+                ]
+              }
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "что ассистент": false,
+                "сообщил плане": false,
+                "обслуживания zephyr": false,
+                "qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "reports",
+                        "reason": "speaker",
+                        "answer_eligible": false,
+                        "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                        "frame": [
+                          {
+                            "n": 1,
+                            "text": "# Zephyr QX-100"
+                          },
+                          {
+                            "n": 3,
+                            "text": "  ## Assistant ###"
+                          },
+                          {
+                            "n": 4,
+                            "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Что ассистент сообщил о плане обслуживания Zephyr QX-100?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 140,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Что ассистент сообщил о плане обслуживания Zephyr QX-100?",
+          "explicit": true,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "speaker",
+                "answer_eligible": false,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Assistant ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                  }
+                ]
+              }
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "что ассистент": false,
+                "сообщил плане": false,
+                "обслуживания zephyr": false,
+                "qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "reports",
+                        "reason": "speaker",
+                        "answer_eligible": false,
+                        "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                        "frame": [
+                          {
+                            "n": 1,
+                            "text": "# Zephyr QX-100"
+                          },
+                          {
+                            "n": 3,
+                            "text": "  ## Assistant ###"
+                          },
+                          {
+                            "n": 4,
+                            "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Что ассистент сообщил о плане обслуживания Zephyr QX-100?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 140,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "mixed",
+          "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+          "explicit": false,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "speaker",
+                "answer_eligible": false,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Assistant ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                  }
+                ]
+              }
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "assistant report": false,
+                "zephyr qx-100": true,
+                "план обслуживания": false
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "reports",
+                        "reason": "speaker",
+                        "answer_eligible": false,
+                        "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                        "frame": [
+                          {
+                            "n": 1,
+                            "text": "# Zephyr QX-100"
+                          },
+                          {
+                            "n": 3,
+                            "text": "  ## Assistant ###"
+                          },
+                          {
+                            "n": 4,
+                            "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What did the assistant report about the Zephyr QX-100 план обслуживания?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 140,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "mixed",
+          "query": "What did the assistant report about the Zephyr QX-100 план обслуживания?",
+          "explicit": true,
+          "expectedView": "reports",
+          "view": "reports",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "memory": null,
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "speaker",
+                "answer_eligible": false,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Assistant ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                  }
+                ]
+              }
+            }
+          ],
+          "contextView": "reports",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "assistant report": false,
+                "zephyr qx-100": true,
+                "план обслуживания": false
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                      "prose": {
+                        "status": "qualified",
+                        "view": "reports",
+                        "reason": "speaker",
+                        "answer_eligible": false,
+                        "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                        "frame": [
+                          {
+                            "n": 1,
+                            "text": "# Zephyr QX-100"
+                          },
+                          {
+                            "n": 3,
+                            "text": "  ## Assistant ###"
+                          },
+                          {
+                            "n": 4,
+                            "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What did the assistant report about the Zephyr QX-100 план обслуживания?"
+              ],
+              "memory_view": "reports",
+              "budget_used": {
+                "retrieval_tokens": 140,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "  ## Assistant ###",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+            "frame": [
+              {
+                "n": 3,
+                "text": "  ## Assistant ###"
+              }
+            ]
+          }
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+          "prose": {
+            "status": "qualified",
+            "view": "reports",
+            "reason": "speaker",
+            "answer_eligible": false,
+            "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 3,
+                "text": "  ## Assistant ###"
+              },
+              {
+                "n": 4,
+                "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+              }
+            ]
+          }
+        }
+      ],
+      "projections": [
+        {
+          "n": 4,
+          "view": "reports",
+          "actual": {
+            "status": "qualified",
+            "view": "reports",
+            "reason": "speaker",
+            "answer_eligible": false,
+            "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 3,
+                "text": "  ## Assistant ###"
+              },
+              {
+                "n": 4,
+                "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+              }
+            ]
+          }
+        }
+      ],
+      "factualEvidence": [
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+          "memory": null,
+          "prose": {
+            "status": "qualified",
+            "view": "reports",
+            "reason": "speaker",
+            "answer_eligible": false,
+            "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 3,
+                "text": "  ## Assistant ###"
+              },
+              {
+                "n": 4,
+                "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+              }
+            ]
+          }
+        }
+      ],
+      "factualControl": {
+        "query": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+        "context": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "note": "no memory evidence was strong enough for automatic injection",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "What did the assistant report about the Zephyr QX-100 maintenance plan?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "degraded",
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "assistant report": false,
+            "zephyr qx-100": true,
+            "maintenance plan": true
+          },
+          "citations": [],
+          "context": [],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "What did the assistant report about the Zephyr QX-100 maintenance plan?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 140,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "reason_code": "no_eligible_evidence",
+          "note": "related memory was found, but it was explicitly noncanonical and cannot ground a factual answer"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    }
+  },
+  "upgrade": {
+    "baseline": [
+      {
+        "n": 1,
+        "text": "# Zephyr QX-100",
+        "prose": {
+          "status": "qualified",
+          "view": "discussion",
+          "reason": "heading",
+          "answer_eligible": false,
+          "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+          "frame": [
+            {
+              "n": 1,
+              "text": "# Zephyr QX-100"
+            }
+          ]
+        }
+      },
+      {
+        "n": 3,
+        "text": "  ## Assistant ###"
+      },
+      {
+        "n": 4,
+        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+        "prose": {
+          "status": "qualified",
+          "view": "factual",
+          "reason": "asserted",
+          "answer_eligible": true,
+          "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+          "frame": []
+        }
+      }
+    ],
+    "baselineVersion": "prose-v2",
+    "baselineStoredProjections": [
+      {
+        "line": 4,
+        "view": "factual",
+        "eligible": 1
+      }
+    ],
+    "candidate": [
+      {
+        "n": 1,
+        "text": "# Zephyr QX-100",
+        "prose": {
+          "status": "qualified",
+          "view": "discussion",
+          "reason": "heading",
+          "answer_eligible": false,
+          "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+          "frame": [
+            {
+              "n": 1,
+              "text": "# Zephyr QX-100"
+            }
+          ]
+        }
+      },
+      {
+        "n": 3,
+        "text": "  ## Assistant ###",
+        "prose": {
+          "status": "qualified",
+          "view": "discussion",
+          "reason": "heading",
+          "answer_eligible": false,
+          "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+          "frame": [
+            {
+              "n": 3,
+              "text": "  ## Assistant ###"
+            }
+          ]
+        }
+      },
+      {
+        "n": 4,
+        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+        "prose": {
+          "status": "qualified",
+          "view": "reports",
+          "reason": "speaker",
+          "answer_eligible": false,
+          "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+          "frame": [
+            {
+              "n": 1,
+              "text": "# Zephyr QX-100"
+            },
+            {
+              "n": 3,
+              "text": "  ## Assistant ###"
+            },
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+            }
+          ]
+        }
+      }
+    ],
+    "candidateVersion": "prose-v4",
+    "candidateStoredProjections": [
+      {
+        "line": 4,
+        "view": "reports",
+        "eligible": 1
+      }
+    ],
+    "bytesStable": true
+  }
+}

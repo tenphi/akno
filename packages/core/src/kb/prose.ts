@@ -1,8 +1,9 @@
 import type { Line, MemoryView, ProseQualification } from '@tenphi/akno-protocol';
+import { fromMarkdown } from 'mdast-util-from-markdown';
 import { parseFrontmatter } from './frontmatter.ts';
 import { sha256 } from '../store/ids.ts';
 
-export const PROSE_PROJECTION_VERSION = 'prose-v2';
+export const PROSE_PROJECTION_VERSION = 'prose-v4';
 type Meaning = Pick<ProseQualification, 'view' | 'reason'>;
 const FACTUAL: Meaning = { view: 'factual', reason: 'asserted' };
 const CONDITIONAL =
@@ -17,6 +18,83 @@ const PLANNED =
   /\b(?:plan(?:s|ned|ning)? to|propos(?:e|ed|al)|intend(?:s)? to)\b|(?:планиру\p{L}*|намерева\p{L}*|предлага\p{L}*)/iu;
 const SPEAKER =
   /^\s*(?:[-*]\s*)?(?:\*\*)?(?:user|assistant|system|external|пользователь|ассистент|система)(?:\*\*)?\s*:/iu;
+// The paragraph boundary and heading reader must agree, including empty sibling headings.
+// Otherwise a recognized boundary can be skipped without opening or closing its scope.
+const ATX_HEADING = /^ {0,3}(#{1,6})(?:[ \t]+(.*)|[ \t]*)\r?$/;
+
+interface SyntaxNode {
+  type: string;
+  children?: SyntaxNode[];
+  position?: { start: { line: number }; end: { line: number } };
+}
+interface ListHeadingScope {
+  content: string[];
+  lastParagraph: number[];
+}
+
+function expandTabs(text: string): string {
+  let column = 0;
+  return [...text]
+    .map((char) => {
+      const value = char === '\t' ? ' '.repeat(4 - (column % 4)) : char;
+      column += value.length;
+      return value;
+    })
+    .join('');
+}
+
+/** CommonMark determines item boundaries: only paragraphs admit lazy continuation. */
+function listHeadingScopes(lines: string[], first: number): Map<number, ListHeadingScope> {
+  const scopes = new Map<number, ListHeadingScope>();
+  if (!lines.some((line) => /^(?:[ \t]+| {0,3}(?:[-+*]|\d{1,9}[.)])[ \t]+)#{1,6}(?:[ \t]|$)/.test(line)))
+    return scopes;
+  const root = fromMarkdown(lines.map((line, i) => (i < first ? '' : line)).join('\n'));
+  const items: { start: number; end: number; heading: boolean; paragraph: SyntaxNode | null }[] = [];
+  const pending: { node: SyntaxNode; parents: typeof items }[] = [{ node: root, parents: [] }];
+  while (pending.length) {
+    const { node, parents } = pending.pop()!;
+    let owners = parents;
+    if (node.type === 'listItem' && node.position) {
+      const item = {
+        start: node.position.start.line - 1,
+        end: node.position.end.line,
+        heading: false,
+        paragraph: null,
+      };
+      items.push(item);
+      owners = [...parents, item];
+    }
+    if (node.type === 'heading') for (const owner of owners) owner.heading = true;
+    if (node.type === 'paragraph') for (const owner of owners) owner.paragraph = node;
+    for (const child of [...(node.children ?? [])].reverse()) pending.push({ node: child, parents: owners });
+  }
+  for (const item of items) {
+    if (scopes.has(item.start)) continue;
+    const text = expandTabs(lines[item.start]!);
+    const prefix = /^( *(?:[-+*]|\d{1,9}[.)]))( *)/.exec(text);
+    if (!prefix) continue;
+    const padding = prefix[2]!.length;
+    const indent = prefix[1]!.length + (padding >= 1 && padding <= 4 ? padding : 1);
+    const content = lines.slice(item.start, item.end).map((line, i) => {
+      const expanded = expandTabs(line);
+      return i === 0 || /^ */.exec(expanded)![0].length >= indent ? expanded.slice(indent) : expanded;
+    });
+    // Heading-looking text in a list-contained code/comment block also needs container isolation.
+    if (!item.heading && !content.some((line) => ATX_HEADING.test(line))) continue;
+    // Removing the bullet must not turn an unchecked task into an asserted statement.
+    if (/^\[ \](?:\s|$)/.test(content[0]!)) content[0] = `- ${content[0]}`;
+    const paragraph = item.paragraph?.position;
+    const lastParagraph =
+      paragraph?.end.line === item.end
+        ? Array.from(
+            { length: paragraph.end.line - paragraph.start.line + 1 },
+            (_, i) => paragraph.start.line - 1 + i,
+          )
+        : [];
+    scopes.set(item.start, { content, lastParagraph });
+  }
+  return scopes;
+}
 
 function categoryHeading(text: string): Meaning | null {
   const title = text
@@ -47,6 +125,7 @@ function categoryHeading(text: string): Meaning | null {
 }
 
 function meaning(text: string, heading = false): Meaning {
+  if (heading) text = text.replace(/\s+#+\s*$/, '').trim();
   const category = heading ? categoryHeading(text) : null;
   if (category) return category;
   if (CONDITIONAL.test(text)) return { view: 'discussion', reason: 'conditional' };
@@ -91,13 +170,24 @@ function meaning(text: string, heading = false): Meaning {
  * Unresolved frames remain inspectable, but cannot acquire factual eligibility from truncation.
  */
 export function proseQualifications(fileLines: string[]): Map<number, ProseQualification> {
+  return projectProse(fileLines, fileLines, 0);
+}
+
+function projectProse(
+  fileLines: string[],
+  authoredLines: string[],
+  listDepth: number,
+  inherited?: Meaning,
+  sourceScope = false,
+): Map<number, ProseQualification> {
   const content = fileLines.join('\n');
   const first = parseFrontmatter(content).bodyLine - 1;
   const hash = sha256(content);
+  const listScopes = listHeadingScopes(fileLines, first);
   const result = new Map<number, ProseQualification>();
   const headings: { depth: number; index: number; meaning: Meaning }[] = [];
   let carried: { index: number; meaning: Meaning } | null = null;
-  let source = false;
+  let source = sourceScope;
   let commentStart: number | null = null;
   let fenced: { char: string; length: number; start: number } | null = null;
   let ownedPayload = false;
@@ -112,7 +202,7 @@ export function proseQualifications(fileLines: string[]): Map<number, ProseQuali
     for (const index of indexes)
       result.set(index + 1, {
         status,
-        ...selected,
+        view: selected.view,
         reason: tooLarge ? 'context_limit' : selected.reason,
         answer_eligible: status === 'qualified' && selected.view === 'factual',
         source_hash: hash,
@@ -147,8 +237,9 @@ export function proseQualifications(fileLines: string[]): Map<number, ProseQuali
       i++;
       continue;
     }
-    if (/^\s*<!--\s*source\s*-->\s*$/.test(text)) source = true;
-    if (/^\s*<!--\s*akno:(?:item|observation)\b/.test(text)) {
+    // Normalizing a list marker cannot manufacture server-owned syntax from literal prose.
+    if (/^\s*<!--\s*source\s*-->\s*$/.test(authoredLines[i]!)) source = true;
+    if (/^\s*<!--\s*akno:(?:item|observation)\b/.test(authoredLines[i]!)) {
       ownedPayload = true;
       i++;
       continue;
@@ -168,12 +259,54 @@ export function proseQualifications(fileLines: string[]): Map<number, ProseQuali
       i++;
       continue;
     }
+    const listScope = listScopes.get(i);
+    if (listScope) {
+      if (listDepth >= 12) {
+        qualify(
+          Array.from({ length: listScope.content.length }, (_, n) => i + n),
+          { view: 'discussion', reason: 'context_limit' },
+          [],
+          true,
+        );
+        i += listScope.content.length;
+        previousParagraph = [];
+        continue;
+      }
+      const outer = source
+        ? { view: 'reports' as const, reason: 'quotation' as const }
+        : ([...headings].reverse().find((entry) => entry.meaning.view !== 'factual')?.meaning ??
+          inherited ??
+          carried?.meaning);
+      const outerFrame = [...headings.map((entry) => entry.index), ...(carried ? [carried.index] : [])];
+      // The leading blank prevents list content from being mistaken for document frontmatter.
+      for (const [line, qualification] of projectProse(
+        ['', ...listScope.content],
+        ['', ...authoredLines.slice(i, i + listScope.content.length)],
+        listDepth + 1,
+        outer,
+        source,
+      )) {
+        const index = i + line - 2;
+        const selected = qualification;
+        qualify(
+          [index],
+          selected,
+          selected.view === 'factual'
+            ? []
+            : [...outerFrame, i, index, ...qualification.frame.map((entry) => i + entry.n - 2)],
+          qualification.status === 'unresolved',
+        );
+      }
+      previousParagraph = listScope.lastParagraph;
+      i += listScope.content.length;
+      continue;
+    }
     const setext = /^\s{0,3}(=+|-+)\s*$/.exec(fileLines[i + 1] ?? '');
     const heading =
-      /^(#{1,6})\s+(.+)$/.exec(text) ?? (setext ? ['', setext[1]![0] === '=' ? '#' : '##', text] : null);
+      ATX_HEADING.exec(text) ?? (setext ? ['', setext[1]![0] === '=' ? '#' : '##', text] : null);
     if (heading) {
       while (headings.length && headings.at(-1)!.depth >= heading[1]!.length) headings.pop();
-      headings.push({ depth: heading[1]!.length, index: i, meaning: meaning(heading[2]!, true) });
+      headings.push({ depth: heading[1]!.length, index: i, meaning: meaning(heading[2] ?? '', true) });
       carried = null;
       previousParagraph = [];
       // Headings supply context; by themselves they establish no proposition.
@@ -185,7 +318,9 @@ export function proseQualifications(fileLines: string[]): Map<number, ProseQuali
     while (
       i < fileLines.length &&
       fileLines[i]!.trim() &&
-      !/^\s*(?:#{1,6}\s|<!--|`{3,}|~{3,})/.test(fileLines[i]!)
+      (i === start || !listScopes.has(i)) &&
+      !ATX_HEADING.test(fileLines[i]!) &&
+      !/^\s*(?:<!--|`{3,}|~{3,})/.test(fileLines[i]!)
     )
       i++;
     if (i === start) {
@@ -204,7 +339,7 @@ export function proseQualifications(fileLines: string[]): Map<number, ProseQuali
       carried = decisive;
     const selected = source
       ? { view: 'reports' as const, reason: 'quotation' as const }
-      : (scoped?.meaning ?? carried?.meaning ?? decisive?.meaning ?? FACTUAL);
+      : (scoped?.meaning ?? inherited ?? carried?.meaning ?? decisive?.meaning ?? FACTUAL);
     const context =
       selected.view === 'factual'
         ? []
@@ -218,7 +353,11 @@ export function proseQualifications(fileLines: string[]): Map<number, ProseQuali
         fileLines[start]!,
       )
     ) {
-      qualify(previousParagraph, selected, [...previousParagraph, ...context]);
+      qualify(previousParagraph, selected, [
+        ...previousParagraph,
+        ...previousParagraph.flatMap((index) => result.get(index + 1)?.frame.map((line) => line.n - 1) ?? []),
+        ...context,
+      ]);
     }
     qualify(indexes, selected, context);
     previousParagraph = indexes;

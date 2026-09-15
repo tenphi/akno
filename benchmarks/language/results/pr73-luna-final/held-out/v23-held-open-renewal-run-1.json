@@ -1,0 +1,991 @@
+{
+  "id": "v23-held-open-renewal",
+  "run": 1,
+  "admission": "writable",
+  "reviewExpectation": "Retain the unanswered question about a new paper inspection certificate being required for service-plan renewal, with question kind and no commitment to either answer. Preserve Ada’s personal lack of an answer, the distinction from contract silence, and separately her assertion that she has not submitted a renewal request. Do not establish a requirement, exemption, renewal or submission.",
+  "language": "mixed",
+  "scenario": "open-question",
+  "expectedHold": false,
+  "nonfactualExpected": true,
+  "retentionAvailabilityFailure": false,
+  "availabilityFailure": false,
+  "languageRejected": false,
+  "retention": {
+    "status": "ok",
+    "outcome": "ok",
+    "reason": null,
+    "candidates": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "usage": {
+      "extraction": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 6409,
+        "input_tokens": 7414,
+        "output_tokens": 511,
+        "total_tokens": 7925
+      },
+      "verification": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 4717,
+        "input_tokens": 7998,
+        "output_tokens": 405,
+        "total_tokens": 8403
+      },
+      "placement": [
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1353,
+          "input_tokens": 595,
+          "output_tokens": 16,
+          "total_tokens": 611
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 2425,
+          "input_tokens": 427,
+          "output_tokens": 29,
+          "total_tokens": 456
+        }
+      ]
+    },
+    "degraded": []
+  },
+  "retainedItems": 1,
+  "noncanonicalEligibilityFlag": false,
+  "semanticsMatch": true,
+  "ordinaryCorrect": true,
+  "ordinaryInspection": {
+    "status": "ok",
+    "results": 1
+  },
+  "bytesStable": true,
+  "replayOutcome": "replayed",
+  "sourceArchive": {
+    "stableAcrossRebuildReplay": true,
+    "supports": [
+      {
+        "memory_id": "mem_1c532ef2",
+        "source_ref": "invented:v23-held-open-renewal",
+        "input_hash": "267dd461d68770ed17aeb21eda25549bb4c3499e80789d6771f163cbb1c16585",
+        "evidence": "Для Zephyr QX-100 у меня, Ada Marlow, остаётся открытый вопрос: does renewing the service plan require a new paper inspection certificate?\n…\nI do not yet have an answer. My unanswered question does not establish that the agreement is silent, and I have not submitted a renewal request.",
+        "evidence_hash": "a32b39a3ae939e2da183cfdaa1c46b1df35a7046f477047d1e48605e8ee309b7",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "Для Zephyr QX-100 у меня, Ada Marlow, остаётся открытый вопрос: does renewing the service plan require a new paper inspection certificate?",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          },
+          {
+            "quote": "I do not yet have an answer. My unanswered question does not establish that the agreement is silent, and I have not submitted a renewal request.",
+            "matchingSourceItems": [
+              "turn-2222"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "queries": [
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "questions",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_1c532ef2",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_346873427fe35a3ad4b453e5",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "exact",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": false,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_1c532ef2",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_346873427fe35a3ad4b453e5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Open Questions",
+          "updated": "2026-09-15",
+          "relevance": 0.8512,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 4510,
+          "input_tokens": 6382,
+          "output_tokens": 258,
+          "total_tokens": 6640
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7524,
+          "input_tokens": 10630,
+          "output_tokens": 642,
+          "total_tokens": 11272
+        }
+      },
+      "reviewAnswer": "**Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "questions",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_1c532ef2",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_346873427fe35a3ad4b453e5",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "exact",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": false,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_1c532ef2",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_346873427fe35a3ad4b453e5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Open Questions",
+          "updated": "2026-09-15",
+          "relevance": 0.8512,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5721,
+          "input_tokens": 6352,
+          "output_tokens": 373,
+          "total_tokens": 6725
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8596,
+          "input_tokens": 10540,
+          "output_tokens": 815,
+          "total_tokens": 11355
+        }
+      },
+      "reviewAnswer": "Открытый вопрос: у Ada Marlow к Zephyr QX-100 остаётся вопрос, требует ли продление плана обслуживания нового бумажного сертификата инспекции. У Ada Marlow пока нет ответа; этот вопрос без ответа не устанавливает, что в соглашении ничего не сказано, и она не подавала запрос на продление. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "questions",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_1c532ef2",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_346873427fe35a3ad4b453e5",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "exact",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": false,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_1c532ef2",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_346873427fe35a3ad4b453e5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Open Questions",
+          "updated": "2026-09-15",
+          "relevance": 0.8512,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6366,
+          "input_tokens": 6382,
+          "output_tokens": 343,
+          "total_tokens": 6725
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8908,
+          "input_tokens": 10630,
+          "output_tokens": 833,
+          "total_tokens": 11463
+        }
+      },
+      "reviewAnswer": "**Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "questions",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_1c532ef2",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_346873427fe35a3ad4b453e5",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "exact",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": false,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_1c532ef2",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_346873427fe35a3ad4b453e5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Open Questions",
+          "updated": "2026-09-15",
+          "relevance": 0.8512,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6330,
+          "input_tokens": 6354,
+          "output_tokens": 414,
+          "total_tokens": 6768
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8955,
+          "input_tokens": 10608,
+          "output_tokens": 788,
+          "total_tokens": 11396
+        }
+      },
+      "reviewAnswer": "**Открытый вопрос:** Ada Marlow спрашивает в отношении Zephyr QX-100: требует ли продление плана обслуживания нового бумажного сертификата проверки? Ada Marlow пока не знает ответа; этот оставшийся без ответа вопрос не устанавливает, что соглашение умалчивает об этом, и она не подавала запрос на продление. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "questions",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_1c532ef2",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_346873427fe35a3ad4b453e5",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_1c532ef2",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_346873427fe35a3ad4b453e5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Open Questions",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 4703,
+          "input_tokens": 6386,
+          "output_tokens": 244,
+          "total_tokens": 6630
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7922,
+          "input_tokens": 10630,
+          "output_tokens": 697,
+          "total_tokens": 11327
+        }
+      },
+      "reviewAnswer": "**Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "questions",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_1c532ef2",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_346873427fe35a3ad4b453e5",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_1c532ef2",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_346873427fe35a3ad4b453e5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Open Questions",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 4783,
+          "input_tokens": 6359,
+          "output_tokens": 358,
+          "total_tokens": 6717
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8532,
+          "input_tokens": 10675,
+          "output_tokens": 929,
+          "total_tokens": 11604
+        }
+      },
+      "reviewAnswer": "**Открытый вопрос:** у Ada Marlow остаётся открытый вопрос о Zephyr QX-100: требует ли продление плана обслуживания новый бумажный сертификат инспекции? Ada Marlow пока не знает ответа; этот вопрос без ответа не устанавливает, что в договоре нет соответствующего положения, и она не подавала запрос на продление. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "questions",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_1c532ef2",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_346873427fe35a3ad4b453e5",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_1c532ef2",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_346873427fe35a3ad4b453e5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Open Questions",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6048,
+          "input_tokens": 6386,
+          "output_tokens": 342,
+          "total_tokens": 6728
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6954,
+          "input_tokens": 10630,
+          "output_tokens": 637,
+          "total_tokens": 11267
+        }
+      },
+      "reviewAnswer": "**Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "questions",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_1c532ef2",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_346873427fe35a3ad4b453e5",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_1c532ef2",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_346873427fe35a3ad4b453e5",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Open Questions",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5413,
+          "input_tokens": 6359,
+          "output_tokens": 377,
+          "total_tokens": 6736
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7465,
+          "input_tokens": 10609,
+          "output_tokens": 639,
+          "total_tokens": 11248
+        }
+      },
+      "reviewAnswer": "**Открытый вопрос:** у Ada Marlow остаётся открытый вопрос о Zephyr QX-100: требует ли продление плана обслуживания новый бумажный сертификат проверки? У Ada Marlow пока нет ответа; этот вопрос без ответа не устанавливает, что соглашение ничего не говорит по этому поводу, и она не подавала запрос на продление. [memory/equipment:7]"
+    }
+  ],
+  "reviewKnowledge": [
+    {
+      "text": "- **Open question:** Ada Marlow has an open question for Zephyr QX-100: does renewing the service plan require a new paper inspection certificate? Ada Marlow does not yet have an answer; this unanswered question does not establish that the agreement is silent, and she has not submitted a renewal request.",
+      "qualification": {
+        "status": "qualified",
+        "id": "mem_1c532ef2",
+        "level": 1,
+        "kind": "question",
+        "subject": "ent_346873427fe35a3ad4b453e5",
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "commitment": "none",
+        "disposition": "active",
+        "polarity": "affirmed",
+        "basis": "self_attested",
+        "answer_eligible": false,
+        "current_eligible": false
+      }
+    }
+  ],
+  "error": null
+}

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "ce14c94c16087c7023f94c86c33228e1f60561cfd76c0f58828ccce895403e34",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-undated-review",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context supplies an entailed but incomplete proposal: service terms, eleven days after the utterance rather than processing, and nonacceptance. Its metadata preserves an undated unknown tentative envelope, yet neither that envelope nor nonacceptance states the source’s explicit absence of a scheduled meeting. The prose also lacks the explicit unknown date of the utterance. The full timing/status qualifications are not preserved, so this is not a complete useful qualified context. No unsupported date or actual appointment is asserted, and the English knowledge framing is compliant."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context supplies an entailed but incomplete proposal: service terms, eleven days after the utterance rather than processing, and nonacceptance. Its metadata preserves an undated unknown tentative envelope, yet neither that envelope nor nonacceptance states the source’s explicit absence of a scheduled meeting. The prose also lacks the explicit unknown date of the utterance. The full timing/status qualifications are not preserved, so this is not a complete useful qualified context. No unsupported date or actual appointment is asserted, and the English knowledge framing is compliant."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context supplies an entailed but incomplete proposal: service terms, eleven days after the utterance rather than processing, and nonacceptance. Its metadata preserves an undated unknown tentative envelope, yet neither that envelope nor nonacceptance states the source’s explicit absence of a scheduled meeting. The prose also lacks the explicit unknown date of the utterance. The full timing/status qualifications are not preserved, so this is not a complete useful qualified context. No unsupported date or actual appointment is asserted, and the English knowledge framing is compliant."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context supplies an entailed but incomplete proposal: service terms, eleven days after the utterance rather than processing, and nonacceptance. Its metadata preserves an undated unknown tentative envelope, yet neither that envelope nor nonacceptance states the source’s explicit absence of a scheduled meeting. The prose also lacks the explicit unknown date of the utterance. The full timing/status qualifications are not preserved, so this is not a complete useful qualified context. No unsupported date or actual appointment is asserted, and the English knowledge framing is compliant."
+        }
+      ]
+    }
+  ]
+}

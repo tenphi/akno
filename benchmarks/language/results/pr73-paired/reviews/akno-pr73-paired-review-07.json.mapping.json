@@ -1,0 +1,505 @@
+{
+  "packetSha256": "67902a33439ac777660460fdd343eeb99dcb30964fc1ff908fb4ab7f1d5a6ee6",
+  "mapping": [
+    {
+      "id": "27ee09f2acaa8a198d15",
+      "file": "v22-held-nested-report-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "3246371ce570dd37847e",
+      "file": "v22-held-nested-report-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "43654ab5ddeb7244da12",
+      "file": "v22-held-nested-report-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "3a4b72336da464748cbe",
+      "file": "v22-held-nested-report-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "bd71f991d4b6c976bdcc",
+      "file": "v22-held-nested-report-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "fce2bc8551ffd7ff2ef4",
+      "file": "v22-held-nested-report-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "06e87f5f47704184187f",
+      "file": "v22-held-nested-report-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "7d8aed5c7f38d95fe921",
+      "file": "v22-held-nested-report-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "6698ddaf3db0e88f8398",
+      "file": "v22-held-nested-report-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "f5771dcc86222a886466",
+      "file": "v22-held-nested-report-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "a6c8ac29521d7ba8ae7f",
+      "file": "v23-held-assistant-reading-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "c36fe228711042eb7dcb",
+      "file": "v23-held-assistant-reading-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "07463ab6f87e98aaf422",
+      "file": "v23-held-assistant-reading-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "34c732a5f50f45a6579d",
+      "file": "v23-held-assistant-reading-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "e2f415f003e600360ad8",
+      "file": "v23-held-assistant-reading-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "26f8c77518b7b9bd3a1e",
+      "file": "v23-held-assistant-reading-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "21b0dcc0c3dc92f89291",
+      "file": "v23-held-assistant-reading-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "051be19d90becaf78cbe",
+      "file": "v23-held-assistant-reading-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "7153dd41879413f89c83",
+      "file": "v23-held-assistant-reading-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "528fbef04d5ff9ee8ec9",
+      "file": "v23-held-assistant-reading-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "5e49687dc1b7bd1dd15d",
+      "file": "v23-held-fictional-key-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "06bba970754642055d8a",
+      "file": "v23-held-fictional-key-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "3fccbdda7c8c0f54a587",
+      "file": "v23-held-fictional-key-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "6ba51a76828c00d05340",
+      "file": "v23-held-fictional-key-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "45f3bd606ec2c4b16f71",
+      "file": "v23-held-fictional-key-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "ea1e867db5debea4d2ac",
+      "file": "v23-held-fictional-key-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "3032f628d3b6d3e2579e",
+      "file": "v23-held-fictional-key-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "a0a753cb9551f2c79a6c",
+      "file": "v23-held-fictional-key-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "d986107697c1cc048039",
+      "file": "v23-held-fictional-key-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "61230f11ef3ad29f117d",
+      "file": "v23-held-fictional-key-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "What fictional key loan did Ada Marlow propose discussing for Zephyr QX-100?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "fc82e59199c303dcfc27",
+      "file": "v23-held-rejected-inspection-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "6559fac43de41adc52af",
+      "file": "v23-held-rejected-inspection-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "2fe8762ba7b8718fb4f4",
+      "file": "v23-held-rejected-inspection-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "ae758ed87e3db15d0cac",
+      "file": "v23-held-rejected-inspection-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "219a27ed3aac4bc03c71",
+      "file": "v23-held-rejected-inspection-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "3efe31ad5534ea091d45",
+      "file": "v23-held-rejected-inspection-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "3b959957125ba112ccca",
+      "file": "v23-held-rejected-inspection-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "d8972ca6fb8cd9288e7d",
+      "file": "v23-held-rejected-inspection-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "4987096f66053b379241",
+      "file": "v23-held-rejected-inspection-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "816efb35c579c2ed7a23",
+      "file": "v23-held-rejected-inspection-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "6913a32119cbdce0625a",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "d699a44f4d5a47b70cc0",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "e950f61a7d66be054fb5",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "5c7f220eee2911b0adb6",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "main",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "1bb6aa20a6beb714d4c2",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-2.json",
+      "arm": "baseline",
+      "kind": "factual-control",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "13b33923c45a18783152",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": false,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "8aa566a2a42d556cc973",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": false,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "8e121eb2609d2ee39739",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    },
+    {
+      "id": "ece3d36eeec5cf1f11d2",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "main",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": true,
+      "language": "ru",
+      "run": 2
+    },
+    {
+      "id": "e908f8ddd72f510b5c56",
+      "file": "v23-held-scoped-exclusion-run-1-repeat-2.json",
+      "arm": "candidate",
+      "kind": "factual-control",
+      "query": "Что запись Ada Marlow об исключении из гарантии Zephyr QX-100 устанавливает о тканевом уплотнителе и петле?",
+      "explicit": true,
+      "language": "en",
+      "run": 2
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "307116dd03d82895b52f1a91d1ab92a694d1ad55c3ad9ee44e606177aae0aa13",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-nested-report",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Context evidence retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translating quoted context. No separately localized context narrative is present in this packet.",
+          "languageFramingCompliant": true,
+          "reason": "The context contains the nested Ada → Bo report, the resistance-check purpose and workshop destination, and Ada’s personal unread/unverified limits, with matching source_report metadata. These are useful, source-entailed qualifications for the focused report query. The breadcrumb is a navigation topic label, not independent proof of the alleged policy. The omitted unpacked-device fact is a separate full-retention defect; the source does not require that fact to interpret this focused report context. The checking/replacement contrast must remain a description of the reported purpose, not a general prohibition."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Context evidence retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translating quoted context. No separately localized context narrative is present in this packet.",
+          "languageFramingCompliant": true,
+          "reason": "The context contains the nested Ada → Bo report, the resistance-check purpose and workshop destination, and Ada’s personal unread/unverified limits, with matching source_report metadata. These are useful, source-entailed qualifications for the focused report query. The breadcrumb is a navigation topic label, not independent proof of the alleged policy. The omitted unpacked-device fact is a separate full-retention defect; the source does not require that fact to interpret this focused report context. The checking/replacement contrast must remain a description of the reported purpose, not a general prohibition."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Context evidence retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translating quoted context. No separately localized context narrative is present in this packet.",
+          "languageFramingCompliant": true,
+          "reason": "The context contains the nested Ada → Bo report, the resistance-check purpose and workshop destination, and Ada’s personal unread/unverified limits, with matching source_report metadata. These are useful, source-entailed qualifications for the focused report query. The breadcrumb is a navigation topic label, not independent proof of the alleged policy. The omitted unpacked-device fact is a separate full-retention defect; the source does not require that fact to interpret this focused report context. The checking/replacement contrast must remain a description of the reported purpose, not a general prohibition."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Context evidence retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translating quoted context. No separately localized context narrative is present in this packet.",
+          "languageFramingCompliant": true,
+          "reason": "The context contains the nested Ada → Bo report, the resistance-check purpose and workshop destination, and Ada’s personal unread/unverified limits, with matching source_report metadata. These are useful, source-entailed qualifications for the focused report query. The breadcrumb is a navigation topic label, not independent proof of the alleged policy. The omitted unpacked-device fact is a separate full-retention defect; the source does not require that fact to interpret this focused report context. The checking/replacement contrast must remain a description of the reported purpose, not a general prohibition."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-fictional-example",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Context evidence retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translating quoted context. No separately localized context narrative is present in this packet.",
+          "languageFramingCompliant": true,
+          "reason": "The context contains the complete story-scoped loan with fictional actors, exact control dial, spare status, the first forty-four days after a fictional repair, and an explicit no-real-agreement limit. Its hypothetical metadata agrees with the prose. This is useful evidence for the loan question in either query language; the missing independently asserted introduction is a full-retention defect, not a reason to discard the qualified loan context. No evidence line establishes an actual loan or repair."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Context evidence retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translating quoted context. No separately localized context narrative is present in this packet.",
+          "languageFramingCompliant": true,
+          "reason": "The context contains the complete story-scoped loan with fictional actors, exact control dial, spare status, the first forty-four days after a fictional repair, and an explicit no-real-agreement limit. Its hypothetical metadata agrees with the prose. This is useful evidence for the loan question in either query language; the missing independently asserted introduction is a full-retention defect, not a reason to discard the qualified loan context. No evidence line establishes an actual loan or repair."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Context evidence retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translating quoted context. No separately localized context narrative is present in this packet.",
+          "languageFramingCompliant": true,
+          "reason": "The context contains the complete story-scoped loan with fictional actors, exact control dial, spare status, the first forty-four days after a fictional repair, and an explicit no-real-agreement limit. Its hypothetical metadata agrees with the prose. This is useful evidence for the loan question in either query language; the missing independently asserted introduction is a full-retention defect, not a reason to discard the qualified loan context. No evidence line establishes an actual loan or repair."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingPolicy": "Context evidence retains the stored English knowledge prose and source-linked qualification metadata. Query language and requested answer language do not require translating quoted context. No separately localized context narrative is present in this packet.",
+          "languageFramingCompliant": true,
+          "reason": "The context contains the complete story-scoped loan with fictional actors, exact control dial, spare status, the first forty-four days after a fictional repair, and an explicit no-real-agreement limit. Its hypothetical metadata agrees with the prose. This is useful evidence for the loan question in either query language; the missing independently asserted introduction is a full-retention defect, not a reason to discard the qualified loan context. No evidence line establishes an actual loan or repair."
+        }
+      ]
+    }
+  ]
+}

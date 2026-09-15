@@ -1,0 +1,59 @@
+{
+  "completed": [
+    {
+      "id": "ordinary-english-report",
+      "run": 1,
+      "completed": true,
+      "answers": 6
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 1,
+      "completed": true,
+      "answers": 6
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "completed": true,
+      "answers": 6
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 1,
+      "completed": true,
+      "answers": 6
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 2,
+      "completed": true,
+      "answers": 6
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 2,
+      "completed": true,
+      "answers": 6
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "completed": true,
+      "answers": 6
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 2,
+      "completed": true,
+      "answers": 6
+    }
+  ],
+  "attemptedTargetAnswers": 48,
+  "expectedTargetAnswers": 48,
+  "nonnullAnswers": 47,
+  "networkRequests": 411,
+  "adjudication": "pending source-based review; nonnull answers are not correctness labels",
+  "independentlyReviewed": false,
+  "releaseEligible": false
+}
