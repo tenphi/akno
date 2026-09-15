@@ -1,5 +1,9 @@
 # PR 73 acceptance work for issues 61 and 62
 
+The owner-approved [Luna completion plan](pr73-luna-completion-plan.md) now governs issue closure. It retains
+the original gate as a reported measurement while allowing bounded implementation closure with documented
+limits and follow-up in #66. The original acceptance work plan below records the stricter earlier scope.
+
 Continue the existing PR through the remaining language/discourse acceptance work. Preserve the completed
 `pr73-live` focused run unchanged; its 82/84 result is not the broader gate.
 
