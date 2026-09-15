@@ -1,0 +1,753 @@
+{
+  "id": "retained-russian-report",
+  "path": "retained",
+  "sourceLanguage": "ru",
+  "run": 1,
+  "startedAt": "2026-09-15T08:23:03.156Z",
+  "retrieval": [
+    {
+      "queryLanguage": "en",
+      "inferredView": "reports",
+      "explicitView": "reports",
+      "inferredFocus": true,
+      "explicitFocus": true,
+      "evidence": [
+        {
+          "n": 7,
+          "text": "- **Reported by assistant:** According to the assistant, the Zephyr QX-100 service plan includes a body inspection every eleven months. The assistant has not independently verified this message.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_7c4cf77b",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_e426586c7f065bf2d76cfe74",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "status": "degraded",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "contextStatus": "degraded",
+      "contextActivation": {
+        "activated": false,
+        "basis": "none",
+        "candidates": 1,
+        "selected": 0,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "contextDegraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "knowledgeLanguage": "en"
+    },
+    {
+      "queryLanguage": "ru",
+      "inferredView": "reports",
+      "explicitView": "reports",
+      "inferredFocus": true,
+      "explicitFocus": true,
+      "evidence": [
+        {
+          "n": 7,
+          "text": "- **Reported by assistant:** According to the assistant, the Zephyr QX-100 service plan includes a body inspection every eleven months. The assistant has not independently verified this message.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_7c4cf77b",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_e426586c7f065bf2d76cfe74",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "status": "degraded",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "contextStatus": "degraded",
+      "contextActivation": {
+        "activated": false,
+        "basis": "none",
+        "candidates": 1,
+        "selected": 0,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "contextDegraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "knowledgeLanguage": "en"
+    },
+    {
+      "queryLanguage": "mixed",
+      "inferredView": "reports",
+      "explicitView": "reports",
+      "inferredFocus": true,
+      "explicitFocus": true,
+      "evidence": [
+        {
+          "n": 7,
+          "text": "- **Reported by assistant:** According to the assistant, the Zephyr QX-100 service plan includes a body inspection every eleven months. The assistant has not independently verified this message.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_7c4cf77b",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_e426586c7f065bf2d76cfe74",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "status": "degraded",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "contextStatus": "degraded",
+      "contextActivation": {
+        "activated": false,
+        "basis": "none",
+        "candidates": 1,
+        "selected": 0,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "contextDegraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "knowledgeLanguage": "en"
+    }
+  ],
+  "answers": [
+    {
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "**Reported by assistant:** According to the assistant, the Zephyr QX-100 service plan includes a body inspection every eleven months. The assistant has not independently verified this message. [memory/equipment:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by assistant:** According to the assistant, the Zephyr QX-100 service plan includes a body inspection every eleven months. The assistant has not independently verified this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_7c4cf77b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e426586c7f065bf2d76cfe74",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "memory/equipment",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5203,
+          "input_tokens": 6250,
+          "output_tokens": 285,
+          "total_tokens": 6535
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 9180,
+          "input_tokens": 9720,
+          "output_tokens": 632,
+          "total_tokens": 10352
+        }
+      }
+    },
+    {
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "По словам ассистента, план обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев. Ассистент не проверил это сообщение независимо. [memory/equipment:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by assistant:** According to the assistant, the Zephyr QX-100 service plan includes a body inspection every eleven months. The assistant has not independently verified this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_7c4cf77b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e426586c7f065bf2d76cfe74",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "memory/equipment",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5279,
+          "input_tokens": 6216,
+          "output_tokens": 351,
+          "total_tokens": 6567
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8672,
+          "input_tokens": 9721,
+          "output_tokens": 770,
+          "total_tokens": 10491
+        }
+      }
+    },
+    {
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "**Reported by assistant:** According to the assistant, the Zephyr QX-100 service plan includes a body inspection every eleven months. The assistant has not independently verified this message. [memory/equipment:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by assistant:** According to the assistant, the Zephyr QX-100 service plan includes a body inspection every eleven months. The assistant has not independently verified this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_7c4cf77b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e426586c7f065bf2d76cfe74",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "memory/equipment",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5133,
+          "input_tokens": 6249,
+          "output_tokens": 273,
+          "total_tokens": 6522
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8608,
+          "input_tokens": 9720,
+          "output_tokens": 603,
+          "total_tokens": 10323
+        }
+      }
+    },
+    {
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "**Сообщено ассистентом:** По словам ассистента, план обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев. Ассистент не проверял это сообщение независимо. [memory/equipment:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by assistant:** According to the assistant, the Zephyr QX-100 service plan includes a body inspection every eleven months. The assistant has not independently verified this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_7c4cf77b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e426586c7f065bf2d76cfe74",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "memory/equipment",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6238,
+          "input_tokens": 6224,
+          "output_tokens": 431,
+          "total_tokens": 6655
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6991,
+          "input_tokens": 9730,
+          "output_tokens": 627,
+          "total_tokens": 10357
+        }
+      }
+    },
+    {
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "**Reported by assistant:** According to the assistant, the Zephyr QX-100 service plan includes a body inspection every eleven months. The assistant has not independently verified this message. [memory/equipment:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by assistant:** According to the assistant, the Zephyr QX-100 service plan includes a body inspection every eleven months. The assistant has not independently verified this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_7c4cf77b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e426586c7f065bf2d76cfe74",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "memory/equipment",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6420,
+          "input_tokens": 6250,
+          "output_tokens": 298,
+          "total_tokens": 6548
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7353,
+          "input_tokens": 9720,
+          "output_tokens": 548,
+          "total_tokens": 10268
+        }
+      }
+    },
+    {
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "**Сообщено ассистентом:** По словам ассистента, план обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев. Ассистент не проверял это сообщение независимо. [memory/equipment:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by assistant:** According to the assistant, the Zephyr QX-100 service plan includes a body inspection every eleven months. The assistant has not independently verified this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_7c4cf77b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e426586c7f065bf2d76cfe74",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "memory/equipment",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5497,
+          "input_tokens": 6225,
+          "output_tokens": 374,
+          "total_tokens": 6599
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6776,
+          "input_tokens": 9730,
+          "output_tokens": 587,
+          "total_tokens": 10317
+        }
+      }
+    }
+  ],
+  "negativeControls": [
+    {
+      "queryLanguage": "en",
+      "answer": null,
+      "reason": "no_eligible_evidence",
+      "context": [],
+      "memoryView": "factual",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ]
+    },
+    {
+      "queryLanguage": "ru",
+      "answer": null,
+      "reason": "no_eligible_evidence",
+      "context": [],
+      "memoryView": "factual",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ]
+    },
+    {
+      "queryLanguage": "mixed",
+      "answer": null,
+      "reason": "no_eligible_evidence",
+      "context": [],
+      "memoryView": "factual",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ]
+    }
+  ],
+  "indexBytesStable": true,
+  "retention": {
+    "status": "ok",
+    "degraded": [],
+    "sources": [
+      {
+        "outcome": "ok",
+        "reason": null,
+        "knowledgeLanguage": "en",
+        "modelUsage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 6410,
+            "input_tokens": 7320,
+            "output_tokens": 417,
+            "total_tokens": 7737
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 4186,
+            "input_tokens": 7647,
+            "output_tokens": 286,
+            "total_tokens": 7933
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1310,
+              "input_tokens": 572,
+              "output_tokens": 16,
+              "total_tokens": 588
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2334,
+              "input_tokens": 402,
+              "output_tokens": 66,
+              "total_tokens": 468
+            }
+          ]
+        },
+        "candidates": [
+          {
+            "outcome": "written",
+            "slug": "memory/equipment",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ]
+      }
+    ]
+  },
+  "replayOutcome": "replayed",
+  "rebuildReplayBytesStable": true,
+  "knowledge": [
+    {
+      "slug": "memory/equipment",
+      "lines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "56d86f8d0617df75789e22ebc3d406c7deed666962d41031ee4c28591fb7daaf",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 4,
+          "text": "## Service Plan",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "56d86f8d0617df75789e22ebc3d406c7deed666962d41031ee4c28591fb7daaf",
+            "frame": [
+              {
+                "n": 4,
+                "text": "## Service Plan"
+              }
+            ]
+          }
+        },
+        {
+          "n": 6,
+          "text": "<!-- akno:item mem_7c4cf77b v=2 supports=5e2d1531c17df0a4f303adfa@6edd0aca76be373b0f9ce083@230443c2f5280b3a3123eae4@extracted level=1 kind=claim subject=ent_e426586c7f065bf2d76cfe74 source-role=assistant speaker=assistant reports=0 commitment=asserted disposition=active polarity=affirmed basis=source_report -->"
+        },
+        {
+          "n": 7,
+          "text": "- **Reported by assistant:** According to the assistant, the Zephyr QX-100 service plan includes a body inspection every eleven months. The assistant has not independently verified this message.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_7c4cf77b",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_e426586c7f065bf2d76cfe74",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ]
+    }
+  ],
+  "readBytesStable": true,
+  "completed": true,
+  "finishedAt": "2026-09-15T08:24:45.409Z"
+}

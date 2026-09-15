@@ -1,0 +1,194 @@
+{
+  "kind": "focused-language-reliability",
+  "corpusVersion": "pr73-language-discourse-diagnostic-v1",
+  "createdAt": "2026-09-15T08:18:32.079Z",
+  "runtimeCommit": "ed3d73697286de7836259cced3cb955e2fce30da",
+  "runnerSha256": "9bf4577e3360974c6213ed6cf3569e9854d5121bab4594de1786e0b4495c9670",
+  "corpusSha256": "72e1cf157c97b456c56a34f50f6f30f695b52bc51f412a0cc4147754b7c47940",
+  "builtCoreSha256": "3c1b5da61aef0701eaa9d581c92cfc6240c7069950ae1f0766fccb6234024806",
+  "builtProtocolSha256": "d7bd438419c98847729e22afea4f6c2409940ec843ec4c3f1921b8f17aebc3d9",
+  "versions": {
+    "prose": "prose-v3",
+    "view": "memory-view-v8",
+    "extraction": "retain-extraction-language-v57",
+    "retentionVerification": "retain-verifier-language-v41",
+    "answer": "answer-generation-v68",
+    "answerVerification": "answer-verifier-v48"
+  },
+  "runs": 2,
+  "cases": 7,
+  "targetAnswerCoordinates": 84,
+  "knowledgeLanguage": "en",
+  "staticChecks": [
+    {
+      "id": "ordinary-english-report",
+      "views": {
+        "en": "reports",
+        "ru": "reports",
+        "mixed": "reports"
+      },
+      "prose": {
+        "status": "qualified",
+        "view": "reports",
+        "reason": "speaker",
+        "answer_eligible": false,
+        "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+        "frame": [
+          {
+            "n": 1,
+            "text": "# Zephyr QX-100"
+          },
+          {
+            "n": 3,
+            "text": "  ## Assistant ###"
+          },
+          {
+            "n": 4,
+            "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+          }
+        ]
+      }
+    },
+    {
+      "id": "ordinary-russian-report",
+      "views": {
+        "en": "reports",
+        "ru": "reports",
+        "mixed": "reports"
+      },
+      "prose": {
+        "status": "qualified",
+        "view": "reports",
+        "reason": "heading_scope",
+        "answer_eligible": false,
+        "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+        "frame": [
+          {
+            "n": 1,
+            "text": "# Zephyr QX-100"
+          },
+          {
+            "n": 3,
+            "text": "   ## Сообщение ассистента"
+          },
+          {
+            "n": 4,
+            "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+          }
+        ]
+      }
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "views": {
+        "en": "discussion",
+        "ru": "discussion",
+        "mixed": "discussion"
+      },
+      "prose": {
+        "status": "qualified",
+        "view": "discussion",
+        "reason": "conditional",
+        "answer_eligible": false,
+        "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+        "frame": [
+          {
+            "n": 1,
+            "text": "# Zephyr QX-100"
+          },
+          {
+            "n": 3,
+            "text": "  ## Гипотеза ###"
+          },
+          {
+            "n": 4,
+            "text": "The Zephyr QX-100 warranty lasts five years."
+          },
+          {
+            "n": 5,
+            "text": "Замена корпуса покрывается гарантией."
+          }
+        ]
+      }
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "views": {
+        "en": "factual",
+        "ru": "factual",
+        "mixed": "factual"
+      },
+      "prose": {
+        "status": "qualified",
+        "view": "factual",
+        "reason": "asserted",
+        "answer_eligible": true,
+        "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+        "frame": []
+      }
+    },
+    {
+      "id": "retained-english-report",
+      "views": {
+        "en": "reports",
+        "ru": "reports",
+        "mixed": "reports"
+      },
+      "prose": null
+    },
+    {
+      "id": "retained-russian-report",
+      "views": {
+        "en": "reports",
+        "ru": "reports",
+        "mixed": "reports"
+      },
+      "prose": null
+    },
+    {
+      "id": "retained-mixed-report",
+      "views": {
+        "en": "reports",
+        "ru": "reports",
+        "mixed": "reports"
+      },
+      "prose": null
+    }
+  ],
+  "independentlyReviewed": false,
+  "releaseEligible": false,
+  "models": {
+    "derive": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "api": "responses",
+      "timeoutMs": 120000,
+      "maxOutputTokens": 2400,
+      "reasoningEffort": "low",
+      "providerRetries": 0
+    },
+    "answer": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "api": "responses",
+      "timeoutMs": 60000,
+      "maxOutputTokens": 2400,
+      "reasoningEffort": "low",
+      "providerRetries": 0
+    },
+    "embedding": {
+      "id": "text-embedding-3-small",
+      "enabled": true,
+      "api": "responses",
+      "timeoutMs": 60000,
+      "maxOutputTokens": null,
+      "reasoningEffort": null,
+      "providerRetries": 0
+    }
+  },
+  "overrides": [
+    "Isolated invented knowledge bases; English knowledge policy.",
+    "Index summaries/facts, expansion, reranking and graph expansion disabled to focus the measured path.",
+    "Generation, verification and embedding roles inherit the supplied provider configuration."
+  ]
+}

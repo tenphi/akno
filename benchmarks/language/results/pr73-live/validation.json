@@ -1,0 +1,27 @@
+{
+  "runtimeCommit": "ed3d73697286de7836259cced3cb955e2fce30da",
+  "tests": {
+    "files": 154,
+    "passed": 4008
+  },
+  "buildTypecheck": "passed",
+  "lint": "passed",
+  "knip": "passed",
+  "repositorySafety": "passed",
+  "runnerFormatting": "passed",
+  "smoke": {
+    "core": 26,
+    "demo": 8
+  },
+  "redeploy": {
+    "build": "passed",
+    "restart": false,
+    "configuration": "isolated invented knowledge base; no configured live service"
+  },
+  "priorSocketVerification": {
+    "assertions": 26,
+    "modelCalls": 0,
+    "startupAndRestart": true
+  },
+  "artifactPrivacyAudit": "no credential or private home paths in published evidence"
+}

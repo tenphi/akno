@@ -1,0 +1,1917 @@
+{
+  "reviewer": "Implementing assistant; source-based review separate from runtime verification, not independent adjudication",
+  "initialGradesPreserved": true,
+  "corrections": [],
+  "caseReviews": [
+    {
+      "id": "ordinary-english-report",
+      "run": 1,
+      "reviewer": "Implementing assistant",
+      "note": "Preserves assistant report attribution, case inspection and eleven-month interval. The en/ru null is a coverage miss; the rejected draft is unavailable, so the guard rejection cannot be adjudicated as true or false.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": false,
+          "sourceSupported": null,
+          "qualificationPreserved": null,
+          "languageCompliant": null,
+          "citationsSupported": null,
+          "reason": "draft_rejected_unknown_draft"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        }
+      ],
+      "negativeControlsReviewed": true,
+      "negativeControlsCorrect": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 1,
+      "reviewer": "Implementing assistant",
+      "note": "Preserves assistant report attribution, housing inspection and eleven-month interval. English housing/casing and Russian корпус/проверка paraphrases preserve the source meaning.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        }
+      ],
+      "negativeControlsReviewed": true,
+      "negativeControlsCorrect": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "reviewer": "Implementing assistant",
+      "note": "Preserves both five-year warranty duration and housing replacement coverage inside the hypothetical scenario, in the requested answer language.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        }
+      ],
+      "negativeControlsReviewed": true,
+      "negativeControlsCorrect": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 1,
+      "reviewer": "Implementing assistant",
+      "note": "Correctly answers silver case color as an ordinary assertion, without importing hypothetical warranty content.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        }
+      ],
+      "negativeControlsReviewed": true,
+      "negativeControlsCorrect": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 1,
+      "reviewer": "Implementing assistant",
+      "note": "English retained knowledge preserves assistant attribution, case inspection, eleven-month interval, device identity, and explicit lack of independent verification. All six answers preserve those obligations in the requested language. Original support spans are not exposed in these captured read records and are not independently checked here.",
+      "retentionUseful": true,
+      "knowledgeLanguageCompliant": true,
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        }
+      ],
+      "negativeControlsReviewed": true,
+      "negativeControlsCorrect": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 1,
+      "reviewer": "Implementing assistant",
+      "note": "Russian source produces English knowledge preserving assistant attribution and lack of independent verification. In this device context, body inspection translates осмотр корпуса without changing the subject or action. All six answers preserve these qualifications, the eleven-month interval and device identity. Support spans are not exposed in the captured records.",
+      "retentionUseful": true,
+      "knowledgeLanguageCompliant": true,
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        }
+      ],
+      "negativeControlsReviewed": true,
+      "negativeControlsCorrect": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 1,
+      "reviewer": "Implementing assistant",
+      "note": "Mixed-language source produces English retained knowledge with assistant attribution and explicit lack of independent checking. All six answers preserve that limit, case inspection, eleven-month interval and device identity.",
+      "retentionUseful": true,
+      "knowledgeLanguageCompliant": true,
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        }
+      ],
+      "negativeControlsReviewed": true,
+      "negativeControlsCorrect": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 2,
+      "reviewer": "Implementing assistant",
+      "note": "All six answers preserve assistant attribution, case inspection, eleven-month interval and device identity, in the requested language.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        }
+      ],
+      "negativeControlsReviewed": true,
+      "negativeControlsCorrect": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 2,
+      "reviewer": "Implementing assistant",
+      "note": "All six answers preserve assistant report attribution, device identity, casing/body inspection and the eleven-month interval. Body denotes the device корпус in this source context; no person or different object is introduced.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        }
+      ],
+      "negativeControlsReviewed": true,
+      "negativeControlsCorrect": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "reviewer": "Implementing assistant",
+      "note": "All six answers preserve five-year warranty duration and casing replacement coverage under the same hypothetical scenario, in the requested language.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        }
+      ],
+      "negativeControlsReviewed": true,
+      "negativeControlsCorrect": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 2,
+      "reviewer": "Implementing assistant",
+      "note": "Five published answers correctly state silver case color without hypothetical warranty content. The mixed/en coordinate returns generation_failed with language_mismatch after HTTP-successful model calls. Its rejected text is not exposed, so this is a typed language-related generation coverage miss; a true versus false language rejection cannot be adjudicated.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": false,
+          "sourceSupported": null,
+          "qualificationPreserved": null,
+          "languageCompliant": null,
+          "citationsSupported": null,
+          "reason": "generation_language_mismatch_unknown_draft"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        }
+      ],
+      "negativeControlsReviewed": true,
+      "negativeControlsCorrect": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 2,
+      "reviewer": "Implementing assistant",
+      "note": "English retained prose and all six answers preserve assistant report attribution, the eleven-month casing inspection, and explicit lack of independent verification. Russian отчёт is a more formal rendering of report but remains attributed to the assistant and adds no asserted external document or verification.",
+      "retentionUseful": true,
+      "knowledgeLanguageCompliant": true,
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        }
+      ],
+      "negativeControlsReviewed": true,
+      "negativeControlsCorrect": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 2,
+      "reviewer": "Implementing assistant",
+      "note": "Russian source produces English retained knowledge preserving the reported plan and explicit lack of independent verification. All six answers preserve assistant attribution, device identity, body/casing inspection and the eleven-month interval. Russian заявленный/сообщаемый describe the attributed plan and do not establish it as verified.",
+      "retentionUseful": true,
+      "knowledgeLanguageCompliant": true,
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        }
+      ],
+      "negativeControlsReviewed": true,
+      "negativeControlsCorrect": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 2,
+      "reviewer": "Implementing assistant",
+      "note": "Mixed source produces English retained knowledge. All six answers preserve assistant attribution, case inspection every eleven months, device identity, and the explicitly unverified status. No qualification is promoted to established world truth.",
+      "retentionUseful": true,
+      "knowledgeLanguageCompliant": true,
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceSupported": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupported": true,
+          "reason": "source_supported_useful"
+        }
+      ],
+      "negativeControlsReviewed": true,
+      "negativeControlsCorrect": true
+    }
+  ],
+  "ordinaryFrameChecks": [
+    {
+      "id": "ordinary-english-report",
+      "run": 1,
+      "queryLanguage": "en",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 1,
+      "queryLanguage": "ru",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 2,
+      "queryLanguage": "en",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 2,
+      "queryLanguage": "ru",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 1,
+      "queryLanguage": "en",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 1,
+      "queryLanguage": "ru",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 2,
+      "queryLanguage": "en",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 2,
+      "queryLanguage": "ru",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "queryLanguage": "en",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "queryLanguage": "en",
+      "line": 5,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "queryLanguage": "ru",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "queryLanguage": "ru",
+      "line": 5,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "line": 5,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "queryLanguage": "en",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "queryLanguage": "en",
+      "line": 5,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "queryLanguage": "ru",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "queryLanguage": "ru",
+      "line": 5,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "line": 4,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "line": 5,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 1,
+      "queryLanguage": "en",
+      "line": 7,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 1,
+      "queryLanguage": "ru",
+      "line": 7,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "line": 7,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 2,
+      "queryLanguage": "en",
+      "line": 7,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 2,
+      "queryLanguage": "ru",
+      "line": 7,
+      "exactText": true,
+      "exactFrame": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "line": 7,
+      "exactText": true,
+      "exactFrame": true
+    }
+  ],
+  "preservationChecks": [
+    {
+      "id": "ordinary-english-report",
+      "run": 1,
+      "index": true,
+      "rebuildReplay": true,
+      "read": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 2,
+      "index": true,
+      "rebuildReplay": true,
+      "read": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 1,
+      "index": true,
+      "rebuildReplay": true,
+      "read": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 2,
+      "index": true,
+      "rebuildReplay": true,
+      "read": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "index": true,
+      "rebuildReplay": true,
+      "read": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "index": true,
+      "rebuildReplay": true,
+      "read": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 1,
+      "index": true,
+      "rebuildReplay": true,
+      "read": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 2,
+      "index": true,
+      "rebuildReplay": true,
+      "read": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 1,
+      "index": true,
+      "rebuildReplay": true,
+      "read": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 2,
+      "index": true,
+      "rebuildReplay": true,
+      "read": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 1,
+      "index": true,
+      "rebuildReplay": true,
+      "read": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 2,
+      "index": true,
+      "rebuildReplay": true,
+      "read": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 1,
+      "index": true,
+      "rebuildReplay": true,
+      "read": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 2,
+      "index": true,
+      "rebuildReplay": true,
+      "read": true
+    }
+  ],
+  "citationChecks": [
+    {
+      "id": "ordinary-english-report",
+      "run": 1,
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 1,
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 1,
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 2,
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 2,
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 2,
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 2,
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 1,
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 1,
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 1,
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 1,
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 2,
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 2,
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 2,
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 2,
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 1,
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 1,
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 1,
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 1,
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 2,
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 2,
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 2,
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 2,
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 1,
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 1,
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 1,
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 1,
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 2,
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 2,
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 2,
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 2,
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 1,
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 1,
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 1,
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 1,
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 2,
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 2,
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 2,
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 2,
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 1,
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 1,
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 1,
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 1,
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 1,
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 2,
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 2,
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 2,
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 2,
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "valid": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "valid": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 2,
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "valid": true
+    }
+  ]
+}

@@ -1,0 +1,614 @@
+{
+  "id": "ordinary-empty-heading-fact",
+  "path": "ordinary",
+  "sourceLanguage": "en",
+  "run": 2,
+  "startedAt": "2026-09-15T08:28:42.383Z",
+  "retrieval": [
+    {
+      "queryLanguage": "en",
+      "inferredView": "factual",
+      "explicitView": "factual",
+      "inferredFocus": true,
+      "explicitFocus": true,
+      "evidence": [
+        {
+          "n": 7,
+          "text": "The Zephyr QX-100 case is silver.",
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": []
+          }
+        }
+      ],
+      "status": "degraded",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "contextStatus": "degraded",
+      "contextActivation": {
+        "activated": false,
+        "basis": "none",
+        "candidates": 1,
+        "selected": 0,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "contextDegraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "knowledgeLanguage": "en"
+    },
+    {
+      "queryLanguage": "ru",
+      "inferredView": "factual",
+      "explicitView": "factual",
+      "inferredFocus": true,
+      "explicitFocus": true,
+      "evidence": [
+        {
+          "n": 7,
+          "text": "The Zephyr QX-100 case is silver.",
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": []
+          }
+        }
+      ],
+      "status": "degraded",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "contextStatus": "degraded",
+      "contextActivation": {
+        "activated": false,
+        "basis": "none",
+        "candidates": 1,
+        "selected": 0,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "contextDegraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "knowledgeLanguage": "en"
+    },
+    {
+      "queryLanguage": "mixed",
+      "inferredView": "factual",
+      "explicitView": "factual",
+      "inferredFocus": true,
+      "explicitFocus": true,
+      "evidence": [
+        {
+          "n": 7,
+          "text": "The Zephyr QX-100 case is silver.",
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": []
+          }
+        }
+      ],
+      "status": "degraded",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "contextStatus": "degraded",
+      "contextActivation": {
+        "activated": false,
+        "basis": "none",
+        "candidates": 1,
+        "selected": 0,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "contextDegraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "knowledgeLanguage": "en"
+    }
+  ],
+  "answers": [
+    {
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "factual",
+      "answer": "The Zephyr QX-100 case is silver. [authored/passage:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "authored/passage",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "The Zephyr QX-100 case is silver.",
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "authored/passage",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 3695,
+          "input_tokens": 4746,
+          "output_tokens": 103,
+          "total_tokens": 4849
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1550,
+          "input_tokens": 6750,
+          "output_tokens": 113,
+          "total_tokens": 6863
+        }
+      }
+    },
+    {
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "factual",
+      "answer": "Корпус Zephyr QX-100 серебристый. [authored/passage:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "authored/passage",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "The Zephyr QX-100 case is silver.",
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "authored/passage",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 3256,
+          "input_tokens": 4748,
+          "output_tokens": 101,
+          "total_tokens": 4849
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 2449,
+          "input_tokens": 6752,
+          "output_tokens": 156,
+          "total_tokens": 6908
+        }
+      }
+    },
+    {
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "factual",
+      "answer": "The Zephyr QX-100 case is silver. [authored/passage:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "authored/passage",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "The Zephyr QX-100 case is silver.",
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "authored/passage",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 2735,
+          "input_tokens": 4745,
+          "output_tokens": 116,
+          "total_tokens": 4861
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 2013,
+          "input_tokens": 6749,
+          "output_tokens": 162,
+          "total_tokens": 6911
+        }
+      }
+    },
+    {
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "factual",
+      "answer": "Корпус Zephyr QX-100 серебристого цвета. [authored/passage:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "authored/passage",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "The Zephyr QX-100 case is silver.",
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "authored/passage",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 2805,
+          "input_tokens": 4748,
+          "output_tokens": 112,
+          "total_tokens": 4860
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 2240,
+          "input_tokens": 6752,
+          "output_tokens": 153,
+          "total_tokens": 6905
+        }
+      }
+    },
+    {
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason": "generation_failed",
+      "memoryView": "factual",
+      "answer": null,
+      "context": [
+        {
+          "type": "page",
+          "slug": "authored/passage",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "The Zephyr QX-100 case is silver.",
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [],
+      "degraded": [
+        "partial_index",
+        "no_vector_index",
+        "language_mismatch"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 4037,
+          "input_tokens": 4747,
+          "output_tokens": 170,
+          "total_tokens": 4917
+        },
+        "verification": null
+      }
+    },
+    {
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "factual",
+      "answer": "Корпус Zephyr QX-100 серебристого цвета. [authored/passage:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "authored/passage",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "The Zephyr QX-100 case is silver.",
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "authored/passage",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 3052,
+          "input_tokens": 4748,
+          "output_tokens": 107,
+          "total_tokens": 4855
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 2440,
+          "input_tokens": 6752,
+          "output_tokens": 155,
+          "total_tokens": 6907
+        }
+      }
+    }
+  ],
+  "negativeControls": [],
+  "indexBytesStable": true,
+  "rebuildReplayBytesStable": true,
+  "knowledge": [
+    {
+      "slug": "authored/passage",
+      "lines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "  ## Hypothesis",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": [
+              {
+                "n": 3,
+                "text": "  ## Hypothesis"
+              }
+            ]
+          }
+        },
+        {
+          "n": 4,
+          "text": "The Zephyr QX-100 warranty lasts eleven years.",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading_scope",
+            "answer_eligible": false,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              },
+              {
+                "n": 3,
+                "text": "  ## Hypothesis"
+              },
+              {
+                "n": 4,
+                "text": "The Zephyr QX-100 warranty lasts eleven years."
+              }
+            ]
+          }
+        },
+        {
+          "n": 6,
+          "text": "##",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": [
+              {
+                "n": 6,
+                "text": "##"
+              }
+            ]
+          }
+        },
+        {
+          "n": 7,
+          "text": "The Zephyr QX-100 case is silver.",
+          "prose": {
+            "status": "qualified",
+            "view": "factual",
+            "reason": "asserted",
+            "answer_eligible": true,
+            "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+            "frame": []
+          }
+        }
+      ]
+    }
+  ],
+  "readBytesStable": true,
+  "completed": true,
+  "finishedAt": "2026-09-15T08:29:16.790Z"
+}

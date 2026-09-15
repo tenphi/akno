@@ -1,0 +1,753 @@
+{
+  "id": "retained-mixed-report",
+  "path": "retained",
+  "sourceLanguage": "mixed",
+  "run": 1,
+  "startedAt": "2026-09-15T08:24:45.410Z",
+  "retrieval": [
+    {
+      "queryLanguage": "en",
+      "inferredView": "reports",
+      "explicitView": "reports",
+      "inferredFocus": true,
+      "explicitFocus": true,
+      "evidence": [
+        {
+          "n": 7,
+          "text": "- **Reported by assistant:** The Zephyr QX-100 maintenance plan reportedly includes a case inspection every eleven months. The assistant has not independently checked this message.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_b8f1c8dd",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_84d8c63c03f25290ba7a2caa",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "status": "degraded",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "contextStatus": "degraded",
+      "contextActivation": {
+        "activated": false,
+        "basis": "none",
+        "candidates": 1,
+        "selected": 0,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "contextDegraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "knowledgeLanguage": "en"
+    },
+    {
+      "queryLanguage": "ru",
+      "inferredView": "reports",
+      "explicitView": "reports",
+      "inferredFocus": true,
+      "explicitFocus": true,
+      "evidence": [
+        {
+          "n": 7,
+          "text": "- **Reported by assistant:** The Zephyr QX-100 maintenance plan reportedly includes a case inspection every eleven months. The assistant has not independently checked this message.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_b8f1c8dd",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_84d8c63c03f25290ba7a2caa",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "status": "degraded",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "contextStatus": "degraded",
+      "contextActivation": {
+        "activated": false,
+        "basis": "none",
+        "candidates": 1,
+        "selected": 0,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "contextDegraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "knowledgeLanguage": "en"
+    },
+    {
+      "queryLanguage": "mixed",
+      "inferredView": "reports",
+      "explicitView": "reports",
+      "inferredFocus": true,
+      "explicitFocus": true,
+      "evidence": [
+        {
+          "n": 7,
+          "text": "- **Reported by assistant:** The Zephyr QX-100 maintenance plan reportedly includes a case inspection every eleven months. The assistant has not independently checked this message.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_b8f1c8dd",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_84d8c63c03f25290ba7a2caa",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "status": "degraded",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "contextStatus": "degraded",
+      "contextActivation": {
+        "activated": false,
+        "basis": "none",
+        "candidates": 1,
+        "selected": 0,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "contextDegraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "knowledgeLanguage": "en"
+    }
+  ],
+  "answers": [
+    {
+      "queryLanguage": "en",
+      "answerLanguage": "en",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "**Reported by assistant:** The Zephyr QX-100 maintenance plan reportedly includes a case inspection every eleven months. The assistant has not independently checked this message. [memory/equipment:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by assistant:** The Zephyr QX-100 maintenance plan reportedly includes a case inspection every eleven months. The assistant has not independently checked this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_b8f1c8dd",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_84d8c63c03f25290ba7a2caa",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "memory/equipment",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7011,
+          "input_tokens": 6234,
+          "output_tokens": 401,
+          "total_tokens": 6635
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7852,
+          "input_tokens": 9604,
+          "output_tokens": 722,
+          "total_tokens": 10326
+        }
+      }
+    },
+    {
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "По словам ассистента, план технического обслуживания Zephyr QX-100, как сообщается, включает проверку корпуса каждые одиннадцать месяцев. Ассистент не проверял это сообщение независимо. [memory/equipment:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by assistant:** The Zephyr QX-100 maintenance plan reportedly includes a case inspection every eleven months. The assistant has not independently checked this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_b8f1c8dd",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_84d8c63c03f25290ba7a2caa",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "memory/equipment",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5955,
+          "input_tokens": 6211,
+          "output_tokens": 382,
+          "total_tokens": 6593
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8021,
+          "input_tokens": 9616,
+          "output_tokens": 690,
+          "total_tokens": 10306
+        }
+      }
+    },
+    {
+      "queryLanguage": "ru",
+      "answerLanguage": "en",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "**Reported by assistant:** The Zephyr QX-100 maintenance plan reportedly includes a case inspection every eleven months. The assistant has not independently checked this message. [memory/equipment:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by assistant:** The Zephyr QX-100 maintenance plan reportedly includes a case inspection every eleven months. The assistant has not independently checked this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_b8f1c8dd",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_84d8c63c03f25290ba7a2caa",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "memory/equipment",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5547,
+          "input_tokens": 6233,
+          "output_tokens": 337,
+          "total_tokens": 6570
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6652,
+          "input_tokens": 9604,
+          "output_tokens": 577,
+          "total_tokens": 10181
+        }
+      }
+    },
+    {
+      "queryLanguage": "ru",
+      "answerLanguage": "ru",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "По словам ассистента, в план обслуживания Zephyr QX-100, как сообщается, входит проверка корпуса каждые одиннадцать месяцев. Ассистент не проверял это сообщение независимо. [memory/equipment:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by assistant:** The Zephyr QX-100 maintenance plan reportedly includes a case inspection every eleven months. The assistant has not independently checked this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_b8f1c8dd",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_84d8c63c03f25290ba7a2caa",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "memory/equipment",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5221,
+          "input_tokens": 6209,
+          "output_tokens": 399,
+          "total_tokens": 6608
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 9117,
+          "input_tokens": 9615,
+          "output_tokens": 697,
+          "total_tokens": 10312
+        }
+      }
+    },
+    {
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "**Reported by assistant:** The Zephyr QX-100 maintenance plan reportedly includes a case inspection every eleven months. The assistant has not independently checked this message. [memory/equipment:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by assistant:** The Zephyr QX-100 maintenance plan reportedly includes a case inspection every eleven months. The assistant has not independently checked this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_b8f1c8dd",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_84d8c63c03f25290ba7a2caa",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "memory/equipment",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5244,
+          "input_tokens": 6234,
+          "output_tokens": 262,
+          "total_tokens": 6496
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 9474,
+          "input_tokens": 9604,
+          "output_tokens": 708,
+          "total_tokens": 10312
+        }
+      }
+    },
+    {
+      "queryLanguage": "mixed",
+      "answerLanguage": "ru",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason": "answered",
+      "memoryView": "reports",
+      "answer": "По словам ассистента, в план обслуживания Zephyr QX-100, как сообщается, входит проверка корпуса каждые одиннадцать месяцев. Ассистент не проверял это сообщение независимо. [memory/equipment:7]",
+      "context": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Reported by assistant:** The Zephyr QX-100 maintenance plan reportedly includes a case inspection every eleven months. The assistant has not independently checked this message.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_b8f1c8dd",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_84d8c63c03f25290ba7a2caa",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "evidence_id": "E1"
+        }
+      ],
+      "citations": [
+        {
+          "id": "E1",
+          "type": "page",
+          "slug": "memory/equipment",
+          "lines": [
+            7
+          ]
+        }
+      ],
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ],
+      "modelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6481,
+          "input_tokens": 6210,
+          "output_tokens": 392,
+          "total_tokens": 6602
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8018,
+          "input_tokens": 9615,
+          "output_tokens": 537,
+          "total_tokens": 10152
+        }
+      }
+    }
+  ],
+  "negativeControls": [
+    {
+      "queryLanguage": "en",
+      "answer": null,
+      "reason": "no_eligible_evidence",
+      "context": [],
+      "memoryView": "factual",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ]
+    },
+    {
+      "queryLanguage": "ru",
+      "answer": null,
+      "reason": "no_eligible_evidence",
+      "context": [],
+      "memoryView": "factual",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ]
+    },
+    {
+      "queryLanguage": "mixed",
+      "answer": null,
+      "reason": "no_eligible_evidence",
+      "context": [],
+      "memoryView": "factual",
+      "degraded": [
+        "partial_index",
+        "no_vector_index"
+      ]
+    }
+  ],
+  "indexBytesStable": true,
+  "retention": {
+    "status": "ok",
+    "degraded": [],
+    "sources": [
+      {
+        "outcome": "ok",
+        "reason": null,
+        "knowledgeLanguage": "en",
+        "modelUsage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 6934,
+            "input_tokens": 7312,
+            "output_tokens": 439,
+            "total_tokens": 7751
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 4395,
+            "input_tokens": 8103,
+            "output_tokens": 307,
+            "total_tokens": 8410
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 857,
+              "input_tokens": 568,
+              "output_tokens": 16,
+              "total_tokens": 584
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1555,
+              "input_tokens": 398,
+              "output_tokens": 61,
+              "total_tokens": 459
+            }
+          ]
+        },
+        "candidates": [
+          {
+            "outcome": "written",
+            "slug": "memory/equipment",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ]
+      }
+    ]
+  },
+  "replayOutcome": "replayed",
+  "rebuildReplayBytesStable": true,
+  "knowledge": [
+    {
+      "slug": "memory/equipment",
+      "lines": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "732eddae4ed928a1e9ad66a0c84f45e01e17d9b75c81a50e6bb314a0f0b4232b",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 4,
+          "text": "## Maintenance Plan",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "732eddae4ed928a1e9ad66a0c84f45e01e17d9b75c81a50e6bb314a0f0b4232b",
+            "frame": [
+              {
+                "n": 4,
+                "text": "## Maintenance Plan"
+              }
+            ]
+          }
+        },
+        {
+          "n": 6,
+          "text": "<!-- akno:item mem_b8f1c8dd v=2 supports=3ca27895b037d0d97963b739@c044e55f9170a6f91eddaf3b@7a4aa452d84b4af6fce3c4ec@extracted level=1 kind=claim subject=ent_84d8c63c03f25290ba7a2caa source-role=assistant speaker=assistant reports=0 commitment=asserted disposition=active polarity=affirmed basis=source_report -->"
+        },
+        {
+          "n": 7,
+          "text": "- **Reported by assistant:** The Zephyr QX-100 maintenance plan reportedly includes a case inspection every eleven months. The assistant has not independently checked this message.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_b8f1c8dd",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_84d8c63c03f25290ba7a2caa",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ]
+    }
+  ],
+  "readBytesStable": true,
+  "completed": true,
+  "finishedAt": "2026-09-15T08:26:30.695Z"
+}

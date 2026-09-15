@@ -1,0 +1,253 @@
+{
+  "reviewedBy": "Implementing assistant; source-based review separate from runtime verification, not independent adjudication",
+  "caseRunsCompleted": 14,
+  "expectedCaseRuns": 14,
+  "usefulAnswers": 82,
+  "targetAnswers": 84,
+  "acceptedErrors": 0,
+  "groups": [
+    {
+      "path": "ordinary",
+      "run": 1,
+      "useful": 23,
+      "total": 24,
+      "rate": 0.9583333333333334,
+      "coverageGatePassed": true
+    },
+    {
+      "path": "ordinary",
+      "run": 2,
+      "useful": 23,
+      "total": 24,
+      "rate": 0.9583333333333334,
+      "coverageGatePassed": true
+    },
+    {
+      "path": "retained",
+      "run": 1,
+      "useful": 18,
+      "total": 18,
+      "rate": 1,
+      "coverageGatePassed": true
+    },
+    {
+      "path": "retained",
+      "run": 2,
+      "useful": 18,
+      "total": 18,
+      "rate": 1,
+      "coverageGatePassed": true
+    }
+  ],
+  "bySourceLanguage": [
+    {
+      "language": "en",
+      "useful": 34,
+      "total": 36
+    },
+    {
+      "language": "ru",
+      "useful": 24,
+      "total": 24
+    },
+    {
+      "language": "mixed",
+      "useful": 24,
+      "total": 24
+    }
+  ],
+  "byQueryLanguage": [
+    {
+      "language": "en",
+      "useful": 27,
+      "total": 28
+    },
+    {
+      "language": "ru",
+      "useful": 28,
+      "total": 28
+    },
+    {
+      "language": "mixed",
+      "useful": 27,
+      "total": 28
+    }
+  ],
+  "byAnswerLanguage": [
+    {
+      "language": "en",
+      "useful": 41,
+      "total": 42
+    },
+    {
+      "language": "ru",
+      "useful": 41,
+      "total": 42
+    }
+  ],
+  "targetOutcomeReasons": {
+    "answered": 82,
+    "draft_rejected": 1,
+    "generation_failed": 1
+  },
+  "correctViews": {
+    "correct": 42,
+    "total": 42
+  },
+  "usefulQualifiedRecall": {
+    "correct": 42,
+    "total": 42
+  },
+  "factualExclusion": {
+    "correct": 36,
+    "total": 36
+  },
+  "autoRecall": {
+    "activated": 0,
+    "total": 42
+  },
+  "retained": [
+    {
+      "id": "retained-english-report",
+      "run": 1,
+      "sourceOutcome": "ok",
+      "candidateOutcomes": [
+        "written"
+      ],
+      "replayOutcome": "replayed",
+      "useful": true,
+      "english": true
+    },
+    {
+      "id": "retained-english-report",
+      "run": 2,
+      "sourceOutcome": "ok",
+      "candidateOutcomes": [
+        "written"
+      ],
+      "replayOutcome": "replayed",
+      "useful": true,
+      "english": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 1,
+      "sourceOutcome": "ok",
+      "candidateOutcomes": [
+        "written"
+      ],
+      "replayOutcome": "replayed",
+      "useful": true,
+      "english": true
+    },
+    {
+      "id": "retained-russian-report",
+      "run": 2,
+      "sourceOutcome": "ok",
+      "candidateOutcomes": [
+        "written"
+      ],
+      "replayOutcome": "replayed",
+      "useful": true,
+      "english": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 1,
+      "sourceOutcome": "ok",
+      "candidateOutcomes": [
+        "written"
+      ],
+      "replayOutcome": "replayed",
+      "useful": true,
+      "english": true
+    },
+    {
+      "id": "retained-mixed-report",
+      "run": 2,
+      "sourceOutcome": "ok",
+      "candidateOutcomes": [
+        "written"
+      ],
+      "replayOutcome": "replayed",
+      "useful": true,
+      "english": true
+    }
+  ],
+  "sourcePreservation": {
+    "passed": 14,
+    "total": 14
+  },
+  "originalOrdinaryEvidence": {
+    "passed": 30,
+    "total": 30
+  },
+  "citationAddresses": {
+    "passed": 82,
+    "total": 82
+  },
+  "answerDegradation": {
+    "partial_index": 84,
+    "no_vector_index": 84,
+    "language_mismatch": 1
+  },
+  "network": {
+    "requests": 604,
+    "httpFailures": 0,
+    "models": [
+      "text-embedding-3-small",
+      "gpt-5.6-luna"
+    ],
+    "tokenCeilings": [
+      null,
+      220,
+      300,
+      1024,
+      1536,
+      2224,
+      2400
+    ],
+    "totalReportedTokens": 1280555
+  },
+  "misses": [
+    {
+      "id": "ordinary-english-report",
+      "path": "ordinary",
+      "run": 1,
+      "sourceLanguage": "en",
+      "queryLanguage": "en",
+      "answerLanguage": "ru",
+      "useful": false,
+      "sourceSupported": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsSupported": null,
+      "reason": "draft_rejected_unknown_draft"
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "path": "ordinary",
+      "run": 2,
+      "sourceLanguage": "en",
+      "queryLanguage": "mixed",
+      "answerLanguage": "en",
+      "useful": false,
+      "sourceSupported": null,
+      "qualificationPreserved": null,
+      "languageCompliant": null,
+      "citationsSupported": null,
+      "reason": "generation_language_mismatch_unknown_draft"
+    }
+  ],
+  "focusedGatePassed": true,
+  "fullIssueAcceptanceEstablished": false,
+  "independentlyReviewed": false,
+  "limits": [
+    "Exposed diagnostic sources; no held-out generalization claim.",
+    "Provider profile differs from historical comparison; no like-for-like live baseline.",
+    "Structural indexing leaves partial_index/no_vector_index degradation; useful automatic context activation is measured separately.",
+    "Rejected draft text is not exposed: nulls are coverage misses, not adjudicated safe or false rejections.",
+    "Captured retained read records do not expose original support/frame spans; their byte equality is not independently verified by this run.",
+    "Empty-heading live fixture does not isolate the baseline regression; deterministic tests cover that boundary."
+  ]
+}
