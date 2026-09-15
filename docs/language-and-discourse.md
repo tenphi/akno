@@ -202,6 +202,27 @@ cases must be assessed separately from model quality.
 
 ## Current evaluated scope
 
+The latest [PR 73 acceptance evidence](../benchmarks/language/results/pr73-acceptance/README.md)
+uses an active vector index, the configured reranker and independent source-based review. Bounded
+English/Russian query-view inference improves from 36/44 to 44/44 on the exposed corpus. The ordinary
+Markdown supplement produces 47/48 useful answers, 24/24 useful auto-recall contexts and 18/18 safe
+factual-negative controls across two repetitions. All published answers in that supplement preserve
+source meaning, qualification, requested language and supporting citations; one answer is falsely held.
+
+Cross-language acceptance remains unmet. Four exposed retained-source diagnostics produce 29/32 useful
+answers but only 2/4 complete retained sets and two accepted translation errors. Increasing reasoning
+and output budgets yields 21/32 useful answers and 1/4 complete retained sets under a different profile.
+A proposed translation-specificity audit detects neither frozen error and was withdrawn. Nano also
+fails the verification contract on 11/16 frozen drafts, so no fallback verifier is added.
+
+Stored support quotations and hashes, original source-item matches, source bytes and replay were inspected
+in the retained diagnostics. These prove stored evidence fidelity, not completeness of the saved knowledge.
+Corpus V23 has independently approved fresh held-out content/wording variants, but has not been run live.
+The full repeated development/held-out matrix and zero-accepted-error gate remain pending; issues #61/#62
+are still open. These focused profiles do not replace or alter the historical comparison below.
+
+### Historical fixed comparison
+
 The current implementation provides an opt-in English knowledge language and bounded English/Russian
 discourse handling. The fixed comparison below measures retention, qualified retrieval and answers from
 22 invented sources, each run twice with all eight query-language, requested-answer-language and
@@ -246,7 +267,7 @@ The integration removes the forced report rewrite before source verification, jo
 
 A final deterministic consistency fix at `9045eda` recognizes the exact Russian source-clock sentence already prescribed by generation, including day references. It passes the local language/discourse/semantic controls, but is outside this frozen live score: no coordinate was rerun or credited for it.
 
-This closes the bounded PR work within seven of the ten allowed iterations. The opt-in language policy and bounded Markdown protections are implemented; reliability acceptance remains unmet and issues #61/#62 remain open.
+That earlier bounded PR work stopped within seven of its ten allowed iterations. The opt-in language policy and bounded Markdown protections were implemented; reliability acceptance remained unmet. The latest acceptance work is reported above.
 
 The separate [release profile smoke](../benchmarks/language/results/release-profile-smoke/README.md)
 checks the shipped 2,400-token answer ceiling under default and English language targeting. Both reports

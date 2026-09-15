@@ -1,0 +1,58 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { spawn, execFileSync } from 'node:child_process';
+import { once } from 'node:events';
+import { createHash } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
+const repo=process.cwd();
+const out=path.join(repo,'benchmarks/language/results/pr73-acceptance');
+const temp=fs.mkdtempSync(path.join(os.tmpdir(),'akno-pr73-built-'));
+const kb=path.join(temp,'kb');fs.mkdirSync(kb);
+const state=path.join(temp,'state'), socket=path.join(temp,'akno.sock');
+const env={...Object.fromEntries(Object.entries(process.env).filter(([k])=>!k.startsWith('AKNO_'))),AKNO_ISOLATED:'1',AKNO_PATH:kb,AKNO_STATE_DIR:state,AKNO_SOCKET:socket};
+const source='# Zephyr QX-100\n\n  ## Assistant report\nThe case is silver.\n\n##\nThe handle is blue.\n';
+fs.writeFileSync(path.join(kb,'equipment.md'),source);
+let child,client;let assertions=0;
+const check=(condition)=>{assert(condition);assertions++;};
+async function stop(){await client?.close();client=null;if(child){const done=once(child,'exit');child.kill('SIGTERM');await done;child=null;}}
+try{
+  const redeploy=execFileSync('pnpm',['akno','redeploy','--no-restart','--json'],{cwd:repo,env,encoding:'utf8'});
+  const {connect}=await import(pathToFileURL(path.join(repo,'packages/client/dist/index.js')));
+  const {inferMemoryView,MEMORY_VIEW_VERSION}=await import(pathToFileURL(path.join(repo,'packages/core/dist/memory/intent.js')));
+  const {LANGUAGE_CORPUS_V22}=await import(pathToFileURL(path.join(repo,'packages/core/dist/bench/language-corpus-v22.js')));
+  const oldPath=path.join(temp,'old-intent.ts');
+  fs.writeFileSync(oldPath,execFileSync('git',['show','HEAD:packages/core/src/memory/intent.ts'],{cwd:repo}));
+  const old=await import(pathToFileURL(oldPath));
+  const views=LANGUAGE_CORPUS_V22.flatMap(c=>Object.entries(c.queries).map(([language,query])=>({id:c.id,language,query,expected:c.view,before:old.inferMemoryView(query),after:inferMemoryView(query)})));
+  check(views.every(v=>v.expected===v.after));
+  fs.writeFileSync(path.join(out,'view-matrix.json'),JSON.stringify({beforeVersion:old.MEMORY_VIEW_VERSION,afterVersion:MEMORY_VIEW_VERSION,beforeCorrect:views.filter(v=>v.before===v.expected).length,afterCorrect:views.filter(v=>v.after===v.expected).length,total:views.length,views},null,2)+'\n',{flag:'wx'});
+  for(const cycle of [1,2]){
+    child=spawn(process.execPath,[path.join(repo,'packages/cli/dist/bin.js'),'serve','--no-watch','--index-on-start'],{env,stdio:['ignore','ignore','ignore']});
+    for(let attempt=0;attempt<100;attempt++){
+      try{client=await connect({socket,actor:'user',timeoutMs:1000});break;}catch{await new Promise(resolve=>setTimeout(resolve,100));}
+    }
+    check(!!client);
+    const read=await client.read({slug:'equipment'});
+    const lines=read.page.lines;
+    check(lines.some(l=>l.n===4&&l.prose?.view==='reports'&&l.prose.answer_eligible===false));
+    check(lines.some(l=>l.n===4&&l.prose?.frame.some(f=>f.n===3&&f.text==='  ## Assistant report')));
+    check(lines.some(l=>l.n===7&&l.prose?.view==='factual'&&l.prose.answer_eligible===true));
+    for(const [query,view] of [
+      ['Какое сообщение о Zephyr QX-100 пересказала Ada Marlow?','reports'],
+      ['What did the assistant speculate about Zephyr QX-100?','reports'],
+      ['What fictional equipment loan did Ada Marlow introduce for discussion?','discussion'],
+      ['Какое сообщение об ошибке показал дисплей Zephyr QX-100?','factual'],
+    ]){
+      const result=await client.recall({query,expand:false,rerank:false,graph:false});check(result.memory_view===view);
+    }
+    const factual=await client.recall({query:'Zephyr QX-100 case silver',memory_view:'factual',expand:false,rerank:false,graph:false});
+    check(factual.results.every(r=>r.type!=='page'||r.lines.every(l=>l.n!==4)));
+    check(fs.readFileSync(path.join(kb,'equipment.md'),'utf8')===source);
+    check(JSON.stringify(fs.readdirSync(kb))===JSON.stringify(['equipment.md']));
+    await stop();
+  }
+  fs.writeFileSync(path.join(out,'built-check.json'),JSON.stringify({kind:'isolated-built-cli-socket-start-restart',assertions,cycles:2,modelCalls:0,knowledgeLanguage:'unset',buildOnlyRedeploy:true,existingServiceRestarted:false,memoryViewVersion:MEMORY_VIEW_VERSION,sourceSha256:createHash('sha256').update(source).digest('hex'),redeployReportedSuccess:redeploy.includes('"ok": true')||redeploy.includes('"build"')},null,2)+'\n',{flag:'wx'});
+  console.log(JSON.stringify({assertions,viewMatrix:[views.filter(v=>v.before===v.expected).length,views.filter(v=>v.after===v.expected).length,views.length],buildOnlyRedeploy:true,socketCycles:2}));
+}finally{await stop();fs.rmSync(temp,{recursive:true,force:true});}

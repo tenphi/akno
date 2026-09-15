@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "evidence-readme-review-v1",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "auditedFiles": {
+    "readme": "benchmarks/language/results/pr73-acceptance/README.md",
+    "readmeSha256": "31ea9687d2816ac55cf421cedaa46fccbe7af037c4a5bf53a0aed4dda4507783",
+    "summary": "benchmarks/language/results/pr73-acceptance/summary.json",
+    "summarySha256": "257579de6b54302e9b0e90ec0021453434de9b358735b45e9d771049d4a5aa8e"
+  },
+  "approvedWithinAuditedScope": true,
+  "corrections": [],
+  "checks": [
+    {
+      "check": "Review-derived diagnostic and ordinary counts",
+      "passed": true,
+      "reason": "Headline ratios, unsupported-answer counts, language counts, complete retained-set counts, per-case rows, and per-query/per-answer-language breakdowns match the frozen independent reviews. Published answer language is not treated as failed merely because another coordinate is null."
+    },
+    {
+      "check": "Medium coverage qualification failures",
+      "passed": true,
+      "reason": "Exactly eight medium answers, all in v22-held-coverage-exclusion, are source-entailed subsets with qualificationPreserved=false and usefulQualifiedAnswer=false. The README explicitly explains the omitted sleeve-coverage and contract-silence limits, and summary.answerQualificationErrors correctly equals eight. These are separate from the three unsupported fiction translations, not fabricated sleeve assertions."
+    },
+    {
+      "check": "Retrieval deduplication",
+      "passed": true,
+      "reason": "Grouping by case id, run, queryLanguage and explicitView yields sixteen retrieval rows per diagnostic. Each group contains the two requested answer languages, and both grades agree within every group. Low has sixteen useful groups; medium has twelve, with all four coverage groups incomplete. The 32 answer rows are not incorrectly counted as 32 unique retrievals."
+    },
+    {
+      "check": "Null-answer causes and availability distinction",
+      "passed": true,
+      "reason": "Frozen low coverage metadata gives verification_unavailable for the Russian query/Russian answer with explicit view; the ordinary English-report second-run mixed-query/Russian-answer metadata gives draft_rejected with no degradation. The README correctly distinguishes low unavailability from the ordinary false hold and does not equate successful HTTP transport with useful verification."
+    },
+    {
+      "check": "Verifier experiment conclusions",
+      "passed": true,
+      "reason": "Specificity baseline and candidate each have fourteen correct acceptances, two wrong acceptances, zero false holds and zero unavailable coordinates. Nano has four correct acceptances, one false hold and eleven unavailable coordinates; both unsupported drafts are unavailable. The README correctly rejects both changes as unsupported by these experiments and distinguishes verifier-only evidence from generation/retention evaluation."
+    },
+    {
+      "check": "Full acceptance gate and V23 status",
+      "passed": true,
+      "reason": "releaseEligible=false and completeMatrix=false agree with the displayed failures. The README keeps both issues open, identifies one-pass four-case exposed diagnostics, preserves the V23 never-executed status, binds the final 22/22 pre-output input review to the correct corpus hash, and accurately states the acceptance plan’s per-split/repetition retention, retrieval, answer, availability, zero-error, byte-stability and replay requirements. It does not pool historical runs or claim broader structural generalization."
+    },
+    {
+      "check": "Graph and maintenance coverage labeling",
+      "passed": true,
+      "reason": "The README explicitly says graph expansion and index model summaries/facts are disabled in these live runs and that separate deterministic tests cover graph/maintenance boundaries. The maintenance acceptance row explicitly labels policy/authority coverage deterministic; graph-related rows cite test files/suites rather than live model scores. No table claim establishes live-model graph or generated-maintenance coverage."
+    },
+    {
+      "check": "Ordinary positive and negative denominators",
+      "passed": true,
+      "reason": "Four cases × two runs × three query languages × two requested answer languages produces 48 positive answer coordinates; context is counted once per query, yielding 24. Three nonfactual cases × two runs × three query languages produces eighteen factual-negative controls. The 47 published answers are all independently graded source-entailed, qualified, language-compliant and citation-supported."
+    }
+  ],
+  "verifiedRatios": {
+    "low": {
+      "completeRetention": "2/4",
+      "usefulAnswers": "29/32",
+      "acceptedUnsupportedAnswers": 2,
+      "qualificationIncompleteAnswers": 0,
+      "usefulUniqueRetrievals": "16/16",
+      "usefulContexts": "16/16"
+    },
+    "medium": {
+      "completeRetention": "1/4",
+      "usefulAnswers": "21/32",
+      "acceptedUnsupportedAnswers": 3,
+      "qualificationIncompleteAnswers": 8,
+      "usefulUniqueRetrievals": "12/16",
+      "usefulContexts": "12/16"
+    },
+    "ordinary": {
+      "usefulAnswers": "47/48",
+      "publishedSourceEntailedQualifiedLanguageAndCitationSupported": "47/47",
+      "usefulContexts": "24/24",
+      "safeFactualNegativeControls": "18/18"
+    }
+  },
+  "scopeLimit": "This review audits evidence narration, review-derived counts, referenced gate requirements and frozen null-outcome metadata. It does not independently verify runtime implementation, code-version claims, test execution totals, build hashes or deployment; those remain the implementing agent’s separate validation work."
+}

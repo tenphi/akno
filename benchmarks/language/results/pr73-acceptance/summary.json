@@ -1,0 +1,286 @@
+{
+  "kind": "independently-reviewed-diagnostics-not-full-acceptance",
+  "releaseEligible": false,
+  "low": {
+    "completeMatrix": false,
+    "repetitions": 1,
+    "cases": 4,
+    "completeRetention": {
+      "numerator": 2,
+      "denominator": 4
+    },
+    "usefulAnswers": {
+      "numerator": 29,
+      "denominator": 32
+    },
+    "acceptedUnsupportedAnswers": 2,
+    "unsupportedRetainedSets": 0,
+    "answerLanguageErrors": 0,
+    "retainedLanguageErrors": 0,
+    "answerQualificationErrors": 0,
+    "unsafeAnswerPromotions": 0,
+    "nullAnswers": 1,
+    "answerAvailabilityFailures": 1,
+    "caseAvailabilityFailures": 1,
+    "usefulUniqueRetrievals": {
+      "numerator": 16,
+      "denominator": 16
+    },
+    "usefulContexts": {
+      "numerator": 16,
+      "denominator": 16
+    },
+    "sourceBytesStable": {
+      "numerator": 4,
+      "denominator": 4
+    },
+    "unchangedReplay": {
+      "numerator": 4,
+      "denominator": 4
+    },
+    "supportArchiveStable": {
+      "numerator": 4,
+      "denominator": 4
+    },
+    "supportRecordsWithValidHashes": 5,
+    "exactMatchedStoredQuoteParts": 10,
+    "network": {
+      "calls": 275,
+      "httpSuccess": 275
+    },
+    "byQueryLanguage": {
+      "en": {
+        "numerator": 14,
+        "denominator": 16
+      },
+      "ru": {
+        "numerator": 15,
+        "denominator": 16
+      }
+    },
+    "byAnswerLanguage": {
+      "en": {
+        "numerator": 16,
+        "denominator": 16
+      },
+      "ru": {
+        "numerator": 13,
+        "denominator": 16
+      }
+    },
+    "byCase": [
+      {
+        "id": "v22-held-coverage-exclusion",
+        "completeRetention": true,
+        "usefulAnswers": {
+          "numerator": 7,
+          "denominator": 8
+        }
+      },
+      {
+        "id": "v22-held-nested-report",
+        "completeRetention": false,
+        "usefulAnswers": {
+          "numerator": 8,
+          "denominator": 8
+        }
+      },
+      {
+        "id": "v22-held-competing-hypotheses",
+        "completeRetention": true,
+        "usefulAnswers": {
+          "numerator": 8,
+          "denominator": 8
+        }
+      },
+      {
+        "id": "v22-held-fictional-example",
+        "completeRetention": false,
+        "usefulAnswers": {
+          "numerator": 6,
+          "denominator": 8
+        }
+      }
+    ]
+  },
+  "medium": {
+    "completeMatrix": false,
+    "repetitions": 1,
+    "cases": 4,
+    "completeRetention": {
+      "numerator": 1,
+      "denominator": 4
+    },
+    "usefulAnswers": {
+      "numerator": 21,
+      "denominator": 32
+    },
+    "acceptedUnsupportedAnswers": 3,
+    "unsupportedRetainedSets": 0,
+    "answerLanguageErrors": 0,
+    "retainedLanguageErrors": 0,
+    "answerQualificationErrors": 8,
+    "unsafeAnswerPromotions": 0,
+    "nullAnswers": 0,
+    "answerAvailabilityFailures": 0,
+    "caseAvailabilityFailures": 0,
+    "usefulUniqueRetrievals": {
+      "numerator": 12,
+      "denominator": 16
+    },
+    "usefulContexts": {
+      "numerator": 12,
+      "denominator": 16
+    },
+    "sourceBytesStable": {
+      "numerator": 4,
+      "denominator": 4
+    },
+    "unchangedReplay": {
+      "numerator": 4,
+      "denominator": 4
+    },
+    "supportArchiveStable": {
+      "numerator": 4,
+      "denominator": 4
+    },
+    "supportRecordsWithValidHashes": 4,
+    "exactMatchedStoredQuoteParts": 8,
+    "network": {
+      "calls": 264,
+      "httpSuccess": 264
+    },
+    "byQueryLanguage": {
+      "en": {
+        "numerator": 10,
+        "denominator": 16
+      },
+      "ru": {
+        "numerator": 11,
+        "denominator": 16
+      }
+    },
+    "byAnswerLanguage": {
+      "en": {
+        "numerator": 12,
+        "denominator": 16
+      },
+      "ru": {
+        "numerator": 9,
+        "denominator": 16
+      }
+    },
+    "byCase": [
+      {
+        "id": "v22-held-fictional-example",
+        "completeRetention": false,
+        "usefulAnswers": {
+          "numerator": 5,
+          "denominator": 8
+        }
+      },
+      {
+        "id": "v22-held-nested-report",
+        "completeRetention": false,
+        "usefulAnswers": {
+          "numerator": 8,
+          "denominator": 8
+        }
+      },
+      {
+        "id": "v22-held-competing-hypotheses",
+        "completeRetention": true,
+        "usefulAnswers": {
+          "numerator": 8,
+          "denominator": 8
+        }
+      },
+      {
+        "id": "v22-held-coverage-exclusion",
+        "completeRetention": false,
+        "usefulAnswers": {
+          "numerator": 0,
+          "denominator": 8
+        }
+      }
+    ]
+  },
+  "ordinary": {
+    "cases": 4,
+    "repetitions": 2,
+    "usefulAnswers": {
+      "numerator": 47,
+      "denominator": 48
+    },
+    "acceptedUnsupportedAnswers": 0,
+    "usefulContexts": {
+      "numerator": 24,
+      "denominator": 24
+    },
+    "safeFactualNegativeControls": {
+      "numerator": 18,
+      "denominator": 18
+    },
+    "sourceBytesStable": {
+      "numerator": 8,
+      "denominator": 8
+    },
+    "byAnswerLanguage": {
+      "en": {
+        "numerator": 24,
+        "denominator": 24
+      },
+      "ru": {
+        "numerator": 23,
+        "denominator": 24
+      }
+    },
+    "byQueryLanguage": {
+      "en": {
+        "numerator": 16,
+        "denominator": 16
+      },
+      "ru": {
+        "numerator": 16,
+        "denominator": 16
+      },
+      "mixed": {
+        "numerator": 15,
+        "denominator": 16
+      }
+    }
+  },
+  "frozenDraftVerifierComparison": {
+    "before": {
+      "total": 16,
+      "expectedSupported": 14,
+      "correctAccepted": 14,
+      "wrongAccepted": 2,
+      "falseHolds": 0,
+      "unavailable": 0
+    },
+    "candidate": {
+      "total": 16,
+      "expectedSupported": 14,
+      "correctAccepted": 14,
+      "wrongAccepted": 2,
+      "falseHolds": 0,
+      "unavailable": 0
+    }
+  },
+  "nanoVerifierDiagnostic": {
+    "before": {
+      "total": 16,
+      "expectedSupported": 14,
+      "correctAccepted": 4,
+      "wrongAccepted": 0,
+      "falseHolds": 1,
+      "unavailable": 11
+    }
+  },
+  "heldOut": {
+    "corpus": "v23",
+    "fingerprint": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+    "liveExecuted": false
+  }
+}

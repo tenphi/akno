@@ -1,0 +1,254 @@
+{
+  "schemaVersion": "final-experiment-review-v1",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "scope": "Independent audit of frozen fixed-draft verifier comparisons and confirmation of existing independent output-review denominators. No runtime or corpus edits.",
+  "experiments": [
+    {
+      "name": "specificity-comparison",
+      "model": {
+        "id": "gpt-5.6-luna",
+        "api": "responses",
+        "reasoningEffort": "low",
+        "maxOutputTokens": 4096,
+        "timeoutMs": 120000,
+        "providerRetries": 0
+      },
+      "packetFingerprint": "307116dd03d82895b52f1a91d1ab92a694d1ad55c3ad9ee44e606177aae0aa13",
+      "inputsFingerprint": "7f5dd51cc2a20d6448869eb1b5e597d0dbd0c94b9229e6a03966425eae8ab8f6",
+      "sourceCases": 2,
+      "uniqueDraftTexts": 8,
+      "coordinates": 16,
+      "labelAndDraftComparison": {
+        "matchesPriorIndependentReview": true,
+        "mismatches": [],
+        "referenceReview": "diagnostic-review-first.json",
+        "reviewerFingerprintMatchesCompactJSON": true,
+        "packetFingerprintMatches": true
+      },
+      "resultsMatchFrozenSummary": true,
+      "variants": [
+        {
+          "variant": "before",
+          "coordinates": 16,
+          "expectedSupported": 14,
+          "expectedUnsupported": 2,
+          "available": 16,
+          "unavailable": 0,
+          "accepted": 16,
+          "correctAccepted": 14,
+          "wrongAccepted": 2,
+          "falseHolds": 0,
+          "correctRejections": 0,
+          "supportedUnavailable": 0,
+          "unsupportedUnavailable": 0,
+          "unavailableReasons": [],
+          "wrongAcceptedIds": [
+            "v22-held-fictional-example/en/ru/false",
+            "v22-held-fictional-example/en/ru/true"
+          ],
+          "falseHoldIds": []
+        },
+        {
+          "variant": "candidate",
+          "coordinates": 16,
+          "expectedSupported": 14,
+          "expectedUnsupported": 2,
+          "available": 16,
+          "unavailable": 0,
+          "accepted": 16,
+          "correctAccepted": 14,
+          "wrongAccepted": 2,
+          "falseHolds": 0,
+          "correctRejections": 0,
+          "supportedUnavailable": 0,
+          "unsupportedUnavailable": 0,
+          "unavailableReasons": [],
+          "wrongAcceptedIds": [
+            "v22-held-fictional-example/en/ru/false",
+            "v22-held-fictional-example/en/ru/true"
+          ],
+          "falseHoldIds": []
+        }
+      ],
+      "supportsShippingVerifierChange": false,
+      "conclusion": "The before and candidate variants both accept all sixteen drafts, including both independently rejected Russian component translations. Both remain available and create no false holds, but the proposed specificity change demonstrates no improvement on its target failures: zero of two unsupported drafts is rejected. This exposed one-pass comparison does not support shipping the change."
+    },
+    {
+      "name": "nano-verifier-comparison",
+      "model": {
+        "id": "gpt-5.4-nano",
+        "api": "responses",
+        "reasoningEffort": "high",
+        "maxOutputTokens": 8192,
+        "timeoutMs": 120000,
+        "providerRetries": 0
+      },
+      "packetFingerprint": "307116dd03d82895b52f1a91d1ab92a694d1ad55c3ad9ee44e606177aae0aa13",
+      "inputsFingerprint": "7f5dd51cc2a20d6448869eb1b5e597d0dbd0c94b9229e6a03966425eae8ab8f6",
+      "sourceCases": 2,
+      "uniqueDraftTexts": 8,
+      "coordinates": 16,
+      "labelAndDraftComparison": {
+        "matchesPriorIndependentReview": true,
+        "mismatches": [],
+        "referenceReview": "diagnostic-review-first.json",
+        "reviewerFingerprintMatchesCompactJSON": true,
+        "packetFingerprintMatches": true
+      },
+      "resultsMatchFrozenSummary": true,
+      "variants": [
+        {
+          "variant": "before",
+          "coordinates": 16,
+          "expectedSupported": 14,
+          "expectedUnsupported": 2,
+          "available": 5,
+          "unavailable": 11,
+          "accepted": 4,
+          "correctAccepted": 4,
+          "wrongAccepted": 0,
+          "falseHolds": 1,
+          "correctRejections": 0,
+          "supportedUnavailable": 9,
+          "unsupportedUnavailable": 2,
+          "unavailableReasons": [
+            "bad_response"
+          ],
+          "wrongAcceptedIds": [],
+          "falseHoldIds": [
+            "v22-held-nested-report/en/ru/false"
+          ]
+        }
+      ],
+      "supportsShippingVerifierChange": false,
+      "conclusion": "The unchanged verifier under the declared nano/high profile returns only five usable decisions: four correct acceptances and one false hold. Eleven coordinates are unavailable with bad_response, including both unsupported drafts. Thus zero wrong acceptances does not show detection of either bad draft; both negative examples lack a valid decision. Nine supported drafts also fail availability. This experiment does not support shipping a provider/profile change."
+    }
+  ],
+  "confirmedSummaries": {
+    "ordinaryFull": {
+      "review": "ordinary-output-review.json",
+      "packetFingerprint": "3f9e43e1e0cc1b394261137120a098873bc785ddf7158ab6d59fb20c2f3bbea1",
+      "sourceCases": 4,
+      "caseRuns": 8,
+      "answers": 48,
+      "publishedAnswers": 47,
+      "usefulAnswers": {
+        "numerator": 47,
+        "denominator": 48
+      },
+      "sourceEntailedPublishedAnswers": {
+        "numerator": 47,
+        "denominator": 47
+      },
+      "languageCompliantPublishedAnswers": {
+        "numerator": 47,
+        "denominator": 47
+      },
+      "citationSupportedPublishedAnswers": {
+        "numerator": 47,
+        "denominator": 47
+      },
+      "usefulContexts": {
+        "numerator": 24,
+        "denominator": 24
+      },
+      "safeNegativeFactualControls": {
+        "numerator": 18,
+        "denominator": 18
+      },
+      "avoidableMisses": 1,
+      "design": "Four source cases × two runs × three query languages × two answer languages = 48 answer coordinates; 24 context coordinates; three nonfactual cases × two runs × three query languages = 18 negative factual controls."
+    },
+    "diagnosticLow": {
+      "review": "diagnostic-review-all.json",
+      "contextReview": "context-review-all.json",
+      "packetFingerprint": "5e446a8b69129d94f06e4d26540996b94b98ec5153fe9943d9989bd5a57ccdc0",
+      "cases": 4,
+      "answers": 32,
+      "publishedAnswers": 31,
+      "completeRetention": {
+        "numerator": 2,
+        "denominator": 4
+      },
+      "usefulAnswers": {
+        "numerator": 29,
+        "denominator": 32
+      },
+      "sourceEntailedPublishedAnswers": {
+        "numerator": 29,
+        "denominator": 31
+      },
+      "languageCompliantPublishedAnswers": {
+        "numerator": 31,
+        "denominator": 31
+      },
+      "usefulRetrievals": {
+        "numerator": 32,
+        "denominator": 32
+      },
+      "usefulContexts": {
+        "numerator": 16,
+        "denominator": 16
+      },
+      "unsafeFactualPromotions": {
+        "numerator": 0,
+        "denominator": 31
+      },
+      "avoidableNullAnswers": 1,
+      "design": "Four exposed cases × one run × two query languages × two requested answer languages × default/explicit view = 32 answer coordinates; context deduplicates answer language, yielding 16 coordinates. This is not an eleven-case held-out result."
+    },
+    "diagnosticMedium": {
+      "review": "diagnostic-review-medium.json",
+      "contextReview": "context-review-medium.json",
+      "packetFingerprint": "3a2fd3cc453c4fbeb556ea678c3ba6e6e2c1a17e802c0e125a14c2798431d9c0",
+      "cases": 4,
+      "answers": 32,
+      "publishedAnswers": 32,
+      "completeRetention": {
+        "numerator": 1,
+        "denominator": 4
+      },
+      "usefulAnswers": {
+        "numerator": 21,
+        "denominator": 32
+      },
+      "sourceEntailedPublishedAnswers": {
+        "numerator": 29,
+        "denominator": 32
+      },
+      "languageCompliantPublishedAnswers": {
+        "numerator": 32,
+        "denominator": 32
+      },
+      "usefulRetrievals": {
+        "numerator": 24,
+        "denominator": 32
+      },
+      "usefulContexts": {
+        "numerator": 12,
+        "denominator": 16
+      },
+      "unsafeFactualPromotions": {
+        "numerator": 0,
+        "denominator": 32
+      },
+      "avoidableNullAnswers": 0,
+      "design": "Four exposed cases × one run × two query languages × two requested answer languages × default/explicit view = 32 answer coordinates; context deduplicates answer language, yielding 16 coordinates. This is not an eleven-case held-out result."
+    }
+  },
+  "reviewArtifactsMatchOriginalTemporaryReviews": true,
+  "limitations": [
+    "Both comparisons reuse sixteen reviewed coordinates from only two exposed sources and eight distinct draft texts; repeated coordinates are not independent source cases.",
+    "Expected labels concern the complete focused answer, not complete retention of every source fact. The nested-report source frame omits Ada’s independent packing fact; these verifier-only experiments cannot measure or repair that retention omission.",
+    "The two unsupported labels correspond to the previously reviewed Russian control-disk and generic-regulator translations. Neither experiment contains a broader set of false actor, polarity, temporal, or qualification controls.",
+    "Unavailable decisions are reported separately from semantic false holds and correct rejections. Nano’s two unavailable unsupported drafts must not be counted as successful detections.",
+    "No new generation, retention, broad generalization, or repeated-run verifier stability is established."
+  ],
+  "overallConclusion": "Neither experiment supports shipping a verifier change. The specificity candidate does not reduce the observed false acceptances; the nano profile loses availability and provides no valid verdict on either unsupported draft."
+}

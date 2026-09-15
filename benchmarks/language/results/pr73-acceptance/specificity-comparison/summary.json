@@ -1,0 +1,662 @@
+{
+  "results": [
+    {
+      "index": 0,
+      "id": "v22-held-nested-report/en/en/false",
+      "variant": "before",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 13487.785833,
+        "usage": {
+          "inputTokens": 11180,
+          "outputTokens": 1027,
+          "totalTokens": 12207,
+          "cachedInputTokens": 11177,
+          "reasoningOutputTokens": 516
+        }
+      }
+    },
+    {
+      "index": 1,
+      "id": "v22-held-nested-report/en/en/false",
+      "variant": "candidate",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 7426.48175,
+        "usage": {
+          "inputTokens": 11575,
+          "outputTokens": 638,
+          "totalTokens": 12213,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 147
+        }
+      }
+    },
+    {
+      "index": 2,
+      "id": "v22-held-nested-report/en/ru/false",
+      "variant": "before",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 9461.399167,
+        "usage": {
+          "inputTokens": 11184,
+          "outputTokens": 673,
+          "totalTokens": 11857,
+          "cachedInputTokens": 11181,
+          "reasoningOutputTokens": 169
+        }
+      }
+    },
+    {
+      "index": 3,
+      "id": "v22-held-nested-report/en/ru/false",
+      "variant": "candidate",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 10665.448333,
+        "usage": {
+          "inputTokens": 11579,
+          "outputTokens": 821,
+          "totalTokens": 12400,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 301
+        }
+      }
+    },
+    {
+      "index": 4,
+      "id": "v22-held-nested-report/en/en/true",
+      "variant": "before",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 8477.762917,
+        "usage": {
+          "inputTokens": 11180,
+          "outputTokens": 666,
+          "totalTokens": 11846,
+          "cachedInputTokens": 11177,
+          "reasoningOutputTokens": 181
+        }
+      }
+    },
+    {
+      "index": 5,
+      "id": "v22-held-nested-report/en/en/true",
+      "variant": "candidate",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 9109.847583000002,
+        "usage": {
+          "inputTokens": 11575,
+          "outputTokens": 794,
+          "totalTokens": 12369,
+          "cachedInputTokens": 11572,
+          "reasoningOutputTokens": 289
+        }
+      }
+    },
+    {
+      "index": 6,
+      "id": "v22-held-nested-report/en/ru/true",
+      "variant": "before",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 6895.350583000001,
+        "usage": {
+          "inputTokens": 11141,
+          "outputTokens": 729,
+          "totalTokens": 11870,
+          "cachedInputTokens": 11138,
+          "reasoningOutputTokens": 193
+        }
+      }
+    },
+    {
+      "index": 7,
+      "id": "v22-held-nested-report/en/ru/true",
+      "variant": "candidate",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 10762.970416999999,
+        "usage": {
+          "inputTokens": 11536,
+          "outputTokens": 879,
+          "totalTokens": 12415,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 390
+        }
+      }
+    },
+    {
+      "index": 8,
+      "id": "v22-held-nested-report/ru/en/false",
+      "variant": "before",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 9497.688333000002,
+        "usage": {
+          "inputTokens": 11180,
+          "outputTokens": 737,
+          "totalTokens": 11917,
+          "cachedInputTokens": 11177,
+          "reasoningOutputTokens": 238
+        }
+      }
+    },
+    {
+      "index": 9,
+      "id": "v22-held-nested-report/ru/en/false",
+      "variant": "candidate",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 8607.182834,
+        "usage": {
+          "inputTokens": 11575,
+          "outputTokens": 726,
+          "totalTokens": 12301,
+          "cachedInputTokens": 11572,
+          "reasoningOutputTokens": 170
+        }
+      }
+    },
+    {
+      "index": 10,
+      "id": "v22-held-nested-report/ru/ru/false",
+      "variant": "before",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 6696.86925,
+        "usage": {
+          "inputTokens": 11141,
+          "outputTokens": 665,
+          "totalTokens": 11806,
+          "cachedInputTokens": 11138,
+          "reasoningOutputTokens": 171
+        }
+      }
+    },
+    {
+      "index": 11,
+      "id": "v22-held-nested-report/ru/ru/false",
+      "variant": "candidate",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 10012.512374999998,
+        "usage": {
+          "inputTokens": 11536,
+          "outputTokens": 901,
+          "totalTokens": 12437,
+          "cachedInputTokens": 11533,
+          "reasoningOutputTokens": 384
+        }
+      }
+    },
+    {
+      "index": 12,
+      "id": "v22-held-nested-report/ru/en/true",
+      "variant": "before",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 10990.869083000001,
+        "usage": {
+          "inputTokens": 11180,
+          "outputTokens": 767,
+          "totalTokens": 11947,
+          "cachedInputTokens": 11177,
+          "reasoningOutputTokens": 237
+        }
+      }
+    },
+    {
+      "index": 13,
+      "id": "v22-held-nested-report/ru/en/true",
+      "variant": "candidate",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 8082.096417000004,
+        "usage": {
+          "inputTokens": 11575,
+          "outputTokens": 734,
+          "totalTokens": 12309,
+          "cachedInputTokens": 11572,
+          "reasoningOutputTokens": 208
+        }
+      }
+    },
+    {
+      "index": 14,
+      "id": "v22-held-nested-report/ru/ru/true",
+      "variant": "before",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 9652.063417000001,
+        "usage": {
+          "inputTokens": 11119,
+          "outputTokens": 730,
+          "totalTokens": 11849,
+          "cachedInputTokens": 11116,
+          "reasoningOutputTokens": 228
+        }
+      }
+    },
+    {
+      "index": 15,
+      "id": "v22-held-nested-report/ru/ru/true",
+      "variant": "candidate",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 12761.450667000005,
+        "usage": {
+          "inputTokens": 11514,
+          "outputTokens": 759,
+          "totalTokens": 12273,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 214
+        }
+      }
+    },
+    {
+      "index": 16,
+      "id": "v22-held-fictional-example/en/en/false",
+      "variant": "before",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 6028.838250000001,
+        "usage": {
+          "inputTokens": 10920,
+          "outputTokens": 620,
+          "totalTokens": 11540,
+          "cachedInputTokens": 10917,
+          "reasoningOutputTokens": 126
+        }
+      }
+    },
+    {
+      "index": 17,
+      "id": "v22-held-fictional-example/en/en/false",
+      "variant": "candidate",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 6343.147041999997,
+        "usage": {
+          "inputTokens": 11315,
+          "outputTokens": 642,
+          "totalTokens": 11957,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 130
+        }
+      }
+    },
+    {
+      "index": 18,
+      "id": "v22-held-fictional-example/en/ru/false",
+      "variant": "before",
+      "expectedSupported": false,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 8111.202125000003,
+        "usage": {
+          "inputTokens": 11003,
+          "outputTokens": 819,
+          "totalTokens": 11822,
+          "cachedInputTokens": 11000,
+          "reasoningOutputTokens": 298
+        }
+      }
+    },
+    {
+      "index": 19,
+      "id": "v22-held-fictional-example/en/ru/false",
+      "variant": "candidate",
+      "expectedSupported": false,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 9011.472167,
+        "usage": {
+          "inputTokens": 11398,
+          "outputTokens": 766,
+          "totalTokens": 12164,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 238
+        }
+      }
+    },
+    {
+      "index": 20,
+      "id": "v22-held-fictional-example/en/en/true",
+      "variant": "before",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 8019.540832999999,
+        "usage": {
+          "inputTokens": 10920,
+          "outputTokens": 707,
+          "totalTokens": 11627,
+          "cachedInputTokens": 10917,
+          "reasoningOutputTokens": 169
+        }
+      }
+    },
+    {
+      "index": 21,
+      "id": "v22-held-fictional-example/en/en/true",
+      "variant": "candidate",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 6976.887290999999,
+        "usage": {
+          "inputTokens": 11315,
+          "outputTokens": 607,
+          "totalTokens": 11922,
+          "cachedInputTokens": 11312,
+          "reasoningOutputTokens": 98
+        }
+      }
+    },
+    {
+      "index": 22,
+      "id": "v22-held-fictional-example/en/ru/true",
+      "variant": "before",
+      "expectedSupported": false,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 8832.606500000002,
+        "usage": {
+          "inputTokens": 10960,
+          "outputTokens": 869,
+          "totalTokens": 11829,
+          "cachedInputTokens": 10957,
+          "reasoningOutputTokens": 333
+        }
+      }
+    },
+    {
+      "index": 23,
+      "id": "v22-held-fictional-example/en/ru/true",
+      "variant": "candidate",
+      "expectedSupported": false,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 6316.782417000002,
+        "usage": {
+          "inputTokens": 11355,
+          "outputTokens": 695,
+          "totalTokens": 12050,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 179
+        }
+      }
+    },
+    {
+      "index": 24,
+      "id": "v22-held-fictional-example/ru/en/false",
+      "variant": "before",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 6869.493291999999,
+        "usage": {
+          "inputTokens": 10920,
+          "outputTokens": 624,
+          "totalTokens": 11544,
+          "cachedInputTokens": 10917,
+          "reasoningOutputTokens": 127
+        }
+      }
+    },
+    {
+      "index": 25,
+      "id": "v22-held-fictional-example/ru/en/false",
+      "variant": "candidate",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 6886.562333000002,
+        "usage": {
+          "inputTokens": 11315,
+          "outputTokens": 659,
+          "totalTokens": 11974,
+          "cachedInputTokens": 11312,
+          "reasoningOutputTokens": 141
+        }
+      }
+    },
+    {
+      "index": 26,
+      "id": "v22-held-fictional-example/ru/ru/false",
+      "variant": "before",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 7395.306833999995,
+        "usage": {
+          "inputTokens": 11030,
+          "outputTokens": 657,
+          "totalTokens": 11687,
+          "cachedInputTokens": 11027,
+          "reasoningOutputTokens": 140
+        }
+      }
+    },
+    {
+      "index": 27,
+      "id": "v22-held-fictional-example/ru/ru/false",
+      "variant": "candidate",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 7064.275167,
+        "usage": {
+          "inputTokens": 11425,
+          "outputTokens": 746,
+          "totalTokens": 12171,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 206
+        }
+      }
+    },
+    {
+      "index": 28,
+      "id": "v22-held-fictional-example/ru/en/true",
+      "variant": "before",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 6678.382124999996,
+        "usage": {
+          "inputTokens": 10920,
+          "outputTokens": 647,
+          "totalTokens": 11567,
+          "cachedInputTokens": 10917,
+          "reasoningOutputTokens": 139
+        }
+      }
+    },
+    {
+      "index": 29,
+      "id": "v22-held-fictional-example/ru/en/true",
+      "variant": "candidate",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 5790.587875000005,
+        "usage": {
+          "inputTokens": 11315,
+          "outputTokens": 607,
+          "totalTokens": 11922,
+          "cachedInputTokens": 11312,
+          "reasoningOutputTokens": 90
+        }
+      }
+    },
+    {
+      "index": 30,
+      "id": "v22-held-fictional-example/ru/ru/true",
+      "variant": "before",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 7378.712292000004,
+        "usage": {
+          "inputTokens": 11030,
+          "outputTokens": 696,
+          "totalTokens": 11726,
+          "cachedInputTokens": 11027,
+          "reasoningOutputTokens": 168
+        }
+      }
+    },
+    {
+      "index": 31,
+      "id": "v22-held-fictional-example/ru/ru/true",
+      "variant": "candidate",
+      "expectedSupported": true,
+      "available": true,
+      "accepted": true,
+      "outcome": {
+        "ok": true,
+        "reason": null,
+        "latencyMs": 6898.173541999997,
+        "usage": {
+          "inputTokens": 11425,
+          "outputTokens": 701,
+          "totalTokens": 12126,
+          "cachedInputTokens": 11422,
+          "reasoningOutputTokens": 164
+        }
+      }
+    }
+  ],
+  "groups": {
+    "before": {
+      "total": 16,
+      "expectedSupported": 14,
+      "correctAccepted": 14,
+      "wrongAccepted": 2,
+      "falseHolds": 0,
+      "unavailable": 0
+    },
+    "candidate": {
+      "total": 16,
+      "expectedSupported": 14,
+      "correctAccepted": 14,
+      "wrongAccepted": 2,
+      "falseHolds": 0,
+      "unavailable": 0
+    }
+  }
+}

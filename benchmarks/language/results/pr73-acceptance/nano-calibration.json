@@ -1,0 +1,110 @@
+{
+  "model": "gpt-5.4-nano",
+  "reasoningEffort": "high",
+  "maxOutputTokens": 6000,
+  "controlSha256": "1f7ff97f6988bc5b9014aba55b4fe6f3041c0bb9dbc38977592867337d2cf12b",
+  "status": 200,
+  "latencyMs": 9967,
+  "usage": {
+    "input_tokens": 1211,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1255,
+    "output_tokens_details": {
+      "reasoning_tokens": 688
+    },
+    "total_tokens": 2466
+  },
+  "complete": true,
+  "correct": 13,
+  "total": 14,
+  "passed": false,
+  "judgments": [
+    {
+      "id": "control-1-1",
+      "expected": true,
+      "actual": true,
+      "reason": "Candidate preserves that the assistant reported a five-year warranty and that the assistant has not verified the report."
+    },
+    {
+      "id": "control-1-2",
+      "expected": false,
+      "actual": false,
+      "reason": "Candidate contradicts the source’s qualification that the assistant has not verified (it claims the warranty is verified)."
+    },
+    {
+      "id": "control-2-1",
+      "expected": true,
+      "actual": true,
+      "reason": "Candidate keeps the same reporting structure (Ada relayed Bo’s statement) and the same unverified/check-not-done qualification."
+    },
+    {
+      "id": "control-2-2",
+      "expected": false,
+      "actual": false,
+      "reason": "Candidate swaps who said what (it makes Bo report that Ada said it), which changes the source-supported roles."
+    },
+    {
+      "id": "control-3-1",
+      "expected": true,
+      "actual": false,
+      "reason": "Candidate drops the source’s limiting qualifier “Только в этой гипотезе” (“only in this hypothesis”), weakening the restriction about when the rule would be violated."
+    },
+    {
+      "id": "control-3-2",
+      "expected": false,
+      "actual": false,
+      "reason": "Candidate removes the hypothetical framing and asserts violation of the real rule, while the source keeps it as only under the assumption and says the real rule is unknown."
+    },
+    {
+      "id": "control-4-1",
+      "expected": true,
+      "actual": true,
+      "reason": "Candidate is an equivalent restatement of the source’s “does not establish whether … made a rattling sound.”"
+    },
+    {
+      "id": "control-4-2",
+      "expected": false,
+      "actual": false,
+      "reason": "Candidate asserts the opposite of the source (it claims it did not rattle rather than merely that the note doesn’t establish it)."
+    },
+    {
+      "id": "control-5-1",
+      "expected": true,
+      "actual": true,
+      "reason": "Candidate preserves the scope of the proposed repair (one knob, not the whole panel) and that it has not been approved."
+    },
+    {
+      "id": "control-5-2",
+      "expected": false,
+      "actual": false,
+      "reason": "Candidate reverses the described replacement scope (whole panel vs. single knob), contradicting the source."
+    },
+    {
+      "id": "control-6-1",
+      "expected": true,
+      "actual": true,
+      "reason": "Candidate matches the source: Ada Marlow doesn’t know inclusion, and the note establishes neither inclusion nor exclusion."
+    },
+    {
+      "id": "control-6-2",
+      "expected": false,
+      "actual": false,
+      "reason": "Candidate changes the actor (“Nobody knows” vs. “Ada Marlow does not know”) and replaces the source’s note-based epistemic claim with an added contract statement."
+    },
+    {
+      "id": "control-7-1",
+      "expected": true,
+      "actual": true,
+      "reason": "Candidate matches the source: Ada Marlow rejected the inspection proposal and no appointment was arranged."
+    },
+    {
+      "id": "control-7-2",
+      "expected": false,
+      "actual": false,
+      "reason": "Candidate contradicts the source by claiming Ada approved the proposal and that an appointment was arranged."
+    }
+  ]
+}

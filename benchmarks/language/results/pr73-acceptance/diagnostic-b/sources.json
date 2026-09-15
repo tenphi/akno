@@ -1,0 +1,62 @@
+[
+  {
+    "id": "v22-held-fictional-example",
+    "split": "held-out",
+    "language": "en",
+    "scenario": "fictional-example",
+    "items": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement."
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "In the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story."
+      }
+    ],
+    "view": "discussion",
+    "commitment": "hypothetical",
+    "admission": "writable",
+    "ordinary": "## Fictional example\nAda Marlow introduces a story, not a real agreement. In it, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair.",
+    "ordinaryFactual": false,
+    "queries": {
+      "en": "What fictional control-dial loan did Ada Marlow introduce for discussion?",
+      "ru": "Какой вымышленный заём ручки управления Ada Marlow предложила обсудить?"
+    },
+    "reviewExpectation": "Preserve Ada’s actual introduction of an invented example and the story-scoped loan: fictional Vulpine Mutual lends fictional Bo a spare control dial for forty-four days after a fictional repair. No real agreement, repair, loan, or elapsed calendar period is established."
+  },
+  {
+    "id": "v22-held-competing-hypotheses",
+    "split": "held-out",
+    "language": "ru",
+    "scenario": "competing-hypotheses",
+    "items": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Я, Ada Marlow, рассматриваю две конкурирующие предварительные причины дребезга Zephyr QX-100: деформированная шайба или плохо закреплённая крышка фильтра."
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "Я не выбрала ни одну причину. Для обеих версий пока нет подтверждающих данных; сам дребезг этой записью также не подтверждается."
+      }
+    ],
+    "view": "discussion",
+    "commitment": "tentative",
+    "admission": "writable",
+    "ordinary": "## Предварительные версии\nAda Marlow рассматривает деформированную шайбу и плохо закреплённую крышку фильтра как конкурирующие причины возможного дребезга Zephyr QX-100. Ни одна причина не выбрана и не подтверждена; сам дребезг записью не подтверждён.",
+    "ordinaryFactual": false,
+    "queries": {
+      "en": "Which competing rattle hypotheses did Ada Marlow consider for Zephyr QX-100?",
+      "ru": "Какие конкурирующие версии причины дребезга Zephyr QX-100 рассматривала Ada Marlow?"
+    },
+    "reviewExpectation": "Keep both tentative competing causes: a deformed washer and an inadequately secured filter cover. Ada selected neither, evidence supports neither, and the record does not itself confirm the rattle. Do not establish either fault or collapse them into one cause."
+  }
+]

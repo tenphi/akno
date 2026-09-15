@@ -1,0 +1,754 @@
+[
+  {
+    "id": "v22-held-nested-report/en/en/false",
+    "question": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?",
+    "memoryView": "reports",
+    "draft": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+    "evidence": [
+      {
+        "type": "page",
+        "slug": "memory/equipment",
+        "title": "Zephyr QX-100",
+        "role": "knowledge",
+        "score": 1,
+        "lines": [
+          {
+            "n": 7,
+            "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+            "memory": {
+              "status": "qualified",
+              "id": "mem_79c4989c",
+              "level": 1,
+              "kind": "claim",
+              "subject": "ent_ea11336adc0c875726905ed4",
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "commitment": "asserted",
+              "disposition": "active",
+              "polarity": "affirmed",
+              "basis": "source_report",
+              "answer_eligible": false,
+              "current_eligible": false
+            }
+          }
+        ],
+        "matched_by": [
+          "lexical",
+          "vector"
+        ],
+        "breadcrumb": "Zephyr QX-100 › Vulpine Mutual Workshop Policy",
+        "updated": "2026-09-15",
+        "relevance": 1,
+        "summary": null,
+        "evidence_id": "E1"
+      }
+    ],
+    "sourceFrame": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.\n…\nПо словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.\n…\nОн говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+    "expectedSupported": true
+  },
+  {
+    "id": "v22-held-nested-report/en/ru/false",
+    "question": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?",
+    "memoryView": "reports",
+    "draft": "**По словам Ada Marlow:** По словам Bo Winters, Vulpine Mutual разрешает принести устройство Zephyr QX-100 в мастерскую, чтобы проверить сопротивление заземляющего контакта, а не заменить контакт. Ada Marlow не видела правил и не проверяла сообщение Bo Winters.",
+    "evidence": [
+      {
+        "type": "page",
+        "slug": "memory/equipment",
+        "title": "Zephyr QX-100",
+        "role": "knowledge",
+        "score": 1,
+        "lines": [
+          {
+            "n": 7,
+            "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+            "memory": {
+              "status": "qualified",
+              "id": "mem_79c4989c",
+              "level": 1,
+              "kind": "claim",
+              "subject": "ent_ea11336adc0c875726905ed4",
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "commitment": "asserted",
+              "disposition": "active",
+              "polarity": "affirmed",
+              "basis": "source_report",
+              "answer_eligible": false,
+              "current_eligible": false
+            }
+          }
+        ],
+        "matched_by": [
+          "lexical",
+          "vector"
+        ],
+        "breadcrumb": "Zephyr QX-100 › Vulpine Mutual Workshop Policy",
+        "updated": "2026-09-15",
+        "relevance": 1,
+        "summary": null,
+        "evidence_id": "E1"
+      }
+    ],
+    "sourceFrame": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.\n…\nПо словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.\n…\nОн говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+    "expectedSupported": true
+  },
+  {
+    "id": "v22-held-nested-report/en/en/true",
+    "question": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?",
+    "memoryView": "reports",
+    "draft": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+    "evidence": [
+      {
+        "type": "page",
+        "slug": "memory/equipment",
+        "title": "Zephyr QX-100",
+        "role": "knowledge",
+        "score": 1,
+        "lines": [
+          {
+            "n": 7,
+            "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+            "memory": {
+              "status": "qualified",
+              "id": "mem_79c4989c",
+              "level": 1,
+              "kind": "claim",
+              "subject": "ent_ea11336adc0c875726905ed4",
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "commitment": "asserted",
+              "disposition": "active",
+              "polarity": "affirmed",
+              "basis": "source_report",
+              "answer_eligible": false,
+              "current_eligible": false
+            }
+          }
+        ],
+        "matched_by": [
+          "lexical",
+          "vector"
+        ],
+        "breadcrumb": "Zephyr QX-100 › Vulpine Mutual Workshop Policy",
+        "updated": "2026-09-15",
+        "relevance": 1,
+        "summary": null,
+        "evidence_id": "E1"
+      }
+    ],
+    "sourceFrame": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.\n…\nПо словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.\n…\nОн говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+    "expectedSupported": true
+  },
+  {
+    "id": "v22-held-nested-report/en/ru/true",
+    "question": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?",
+    "memoryView": "reports",
+    "draft": "По словам Ada Marlow: По словам Bo Winters, Vulpine Mutual разрешает принести устройство Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, а не для замены контакта. Ada Marlow не видела правила и не проверяла сообщение Bo Winters.",
+    "evidence": [
+      {
+        "type": "page",
+        "slug": "memory/equipment",
+        "title": "Zephyr QX-100",
+        "role": "knowledge",
+        "score": 1,
+        "lines": [
+          {
+            "n": 7,
+            "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+            "memory": {
+              "status": "qualified",
+              "id": "mem_79c4989c",
+              "level": 1,
+              "kind": "claim",
+              "subject": "ent_ea11336adc0c875726905ed4",
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "commitment": "asserted",
+              "disposition": "active",
+              "polarity": "affirmed",
+              "basis": "source_report",
+              "answer_eligible": false,
+              "current_eligible": false
+            }
+          }
+        ],
+        "matched_by": [
+          "lexical",
+          "vector"
+        ],
+        "breadcrumb": "Zephyr QX-100 › Vulpine Mutual Workshop Policy",
+        "updated": "2026-09-15",
+        "relevance": 1,
+        "summary": null,
+        "evidence_id": "E1"
+      }
+    ],
+    "sourceFrame": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.\n…\nПо словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.\n…\nОн говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+    "expectedSupported": true
+  },
+  {
+    "id": "v22-held-nested-report/ru/en/false",
+    "question": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+    "memoryView": "reports",
+    "draft": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+    "evidence": [
+      {
+        "type": "page",
+        "slug": "memory/equipment",
+        "title": "Zephyr QX-100",
+        "role": "knowledge",
+        "score": 1,
+        "lines": [
+          {
+            "n": 7,
+            "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+            "memory": {
+              "status": "qualified",
+              "id": "mem_79c4989c",
+              "level": 1,
+              "kind": "claim",
+              "subject": "ent_ea11336adc0c875726905ed4",
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "commitment": "asserted",
+              "disposition": "active",
+              "polarity": "affirmed",
+              "basis": "source_report",
+              "answer_eligible": false,
+              "current_eligible": false
+            }
+          }
+        ],
+        "matched_by": [
+          "lexical",
+          "vector"
+        ],
+        "breadcrumb": "Zephyr QX-100 › Vulpine Mutual Workshop Policy",
+        "updated": "2026-09-15",
+        "relevance": 1,
+        "summary": null,
+        "evidence_id": "E1"
+      }
+    ],
+    "sourceFrame": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.\n…\nПо словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.\n…\nОн говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+    "expectedSupported": true
+  },
+  {
+    "id": "v22-held-nested-report/ru/ru/false",
+    "question": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+    "memoryView": "reports",
+    "draft": "По словам Ada Marlow: По словам Bo Winters, Vulpine Mutual разрешает принести устройство Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, а не для замены контакта. Ada Marlow не видела правила и не проверяла сообщение Bo Winters.",
+    "evidence": [
+      {
+        "type": "page",
+        "slug": "memory/equipment",
+        "title": "Zephyr QX-100",
+        "role": "knowledge",
+        "score": 1,
+        "lines": [
+          {
+            "n": 7,
+            "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+            "memory": {
+              "status": "qualified",
+              "id": "mem_79c4989c",
+              "level": 1,
+              "kind": "claim",
+              "subject": "ent_ea11336adc0c875726905ed4",
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "commitment": "asserted",
+              "disposition": "active",
+              "polarity": "affirmed",
+              "basis": "source_report",
+              "answer_eligible": false,
+              "current_eligible": false
+            }
+          }
+        ],
+        "matched_by": [
+          "lexical",
+          "vector"
+        ],
+        "breadcrumb": "Zephyr QX-100 › Vulpine Mutual Workshop Policy",
+        "updated": "2026-09-15",
+        "relevance": 1,
+        "summary": null,
+        "evidence_id": "E1"
+      }
+    ],
+    "sourceFrame": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.\n…\nПо словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.\n…\nОн говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+    "expectedSupported": true
+  },
+  {
+    "id": "v22-held-nested-report/ru/en/true",
+    "question": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+    "memoryView": "reports",
+    "draft": "**Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+    "evidence": [
+      {
+        "type": "page",
+        "slug": "memory/equipment",
+        "title": "Zephyr QX-100",
+        "role": "knowledge",
+        "score": 1,
+        "lines": [
+          {
+            "n": 7,
+            "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+            "memory": {
+              "status": "qualified",
+              "id": "mem_79c4989c",
+              "level": 1,
+              "kind": "claim",
+              "subject": "ent_ea11336adc0c875726905ed4",
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "commitment": "asserted",
+              "disposition": "active",
+              "polarity": "affirmed",
+              "basis": "source_report",
+              "answer_eligible": false,
+              "current_eligible": false
+            }
+          }
+        ],
+        "matched_by": [
+          "lexical",
+          "vector"
+        ],
+        "breadcrumb": "Zephyr QX-100 › Vulpine Mutual Workshop Policy",
+        "updated": "2026-09-15",
+        "relevance": 1,
+        "summary": null,
+        "evidence_id": "E1"
+      }
+    ],
+    "sourceFrame": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.\n…\nПо словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.\n…\nОн говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+    "expectedSupported": true
+  },
+  {
+    "id": "v22-held-nested-report/ru/ru/true",
+    "question": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?",
+    "memoryView": "reports",
+    "draft": "По словам Ada Marlow, Bo Winters сообщил, что Vulpine Mutual разрешает принести устройство Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, а не для замены контакта. Ada Marlow не видела правила и не проверяла сообщение Bo Winters.",
+    "evidence": [
+      {
+        "type": "page",
+        "slug": "memory/equipment",
+        "title": "Zephyr QX-100",
+        "role": "knowledge",
+        "score": 1,
+        "lines": [
+          {
+            "n": 7,
+            "text": "- **Reported by Ada Marlow:** According to Bo Winters, Vulpine Mutual permits bringing the Zephyr QX-100 device to a workshop to check the grounding contact's resistance, not to replace the contact. Ada Marlow has not seen the rules or verified Bo Winters's message.",
+            "memory": {
+              "status": "qualified",
+              "id": "mem_79c4989c",
+              "level": 1,
+              "kind": "claim",
+              "subject": "ent_ea11336adc0c875726905ed4",
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "commitment": "asserted",
+              "disposition": "active",
+              "polarity": "affirmed",
+              "basis": "source_report",
+              "answer_eligible": false,
+              "current_eligible": false
+            }
+          }
+        ],
+        "matched_by": [
+          "lexical",
+          "vector"
+        ],
+        "breadcrumb": "Zephyr QX-100 › Vulpine Mutual Workshop Policy",
+        "updated": "2026-09-15",
+        "relevance": 1,
+        "summary": null,
+        "evidence_id": "E1"
+      }
+    ],
+    "sourceFrame": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение.\n…\nПо словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта.\n…\nОн говорил именно о проверке сопротивления контакта, а не о замене контакта.",
+    "expectedSupported": true
+  },
+  {
+    "id": "v22-held-fictional-example/en/en/false",
+    "question": "What fictional control-dial loan did Ada Marlow introduce for discussion?",
+    "memoryView": "discussion",
+    "draft": "**Hypothetical:** In Ada Marlow's invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; this loan exists only in the story and describes no real agreement.",
+    "evidence": [
+      {
+        "type": "page",
+        "slug": "memory/equipment",
+        "title": "Zephyr QX-100",
+        "role": "knowledge",
+        "score": 1,
+        "lines": [
+          {
+            "n": 7,
+            "text": "- **Hypothetical:** In Ada Marlow's invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; this loan exists only in the story and describes no real agreement.",
+            "memory": {
+              "status": "qualified",
+              "id": "mem_3a0e4156",
+              "level": 1,
+              "kind": "claim",
+              "subject": "ent_1e8a33d188d251f039102cc4",
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "commitment": "hypothetical",
+              "disposition": "active",
+              "polarity": "affirmed",
+              "basis": "self_attested",
+              "answer_eligible": false,
+              "current_eligible": false
+            }
+          }
+        ],
+        "matched_by": [
+          "lexical",
+          "vector"
+        ],
+        "breadcrumb": "Zephyr QX-100 › Fictional Story Context",
+        "updated": "2026-09-15",
+        "relevance": 1,
+        "summary": null,
+        "evidence_id": "E1"
+      }
+    ],
+    "sourceFrame": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement.\n…\nIn the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story.",
+    "expectedSupported": true
+  },
+  {
+    "id": "v22-held-fictional-example/en/ru/false",
+    "question": "What fictional control-dial loan did Ada Marlow introduce for discussion?",
+    "memoryView": "discussion",
+    "draft": "**Гипотетически:** В вымышленной истории Ada Marlow вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасной диск управления Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта; этот заём существует только в истории и не описывает реального соглашения.",
+    "evidence": [
+      {
+        "type": "page",
+        "slug": "memory/equipment",
+        "title": "Zephyr QX-100",
+        "role": "knowledge",
+        "score": 1,
+        "lines": [
+          {
+            "n": 7,
+            "text": "- **Hypothetical:** In Ada Marlow's invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; this loan exists only in the story and describes no real agreement.",
+            "memory": {
+              "status": "qualified",
+              "id": "mem_3a0e4156",
+              "level": 1,
+              "kind": "claim",
+              "subject": "ent_1e8a33d188d251f039102cc4",
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "commitment": "hypothetical",
+              "disposition": "active",
+              "polarity": "affirmed",
+              "basis": "self_attested",
+              "answer_eligible": false,
+              "current_eligible": false
+            }
+          }
+        ],
+        "matched_by": [
+          "lexical",
+          "vector"
+        ],
+        "breadcrumb": "Zephyr QX-100 › Fictional Story Context",
+        "updated": "2026-09-15",
+        "relevance": 1,
+        "summary": null,
+        "evidence_id": "E1"
+      }
+    ],
+    "sourceFrame": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement.\n…\nIn the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story.",
+    "expectedSupported": false
+  },
+  {
+    "id": "v22-held-fictional-example/en/en/true",
+    "question": "What fictional control-dial loan did Ada Marlow introduce for discussion?",
+    "memoryView": "discussion",
+    "draft": "**Hypothetical:** In Ada Marlow's invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; this loan exists only in the story and describes no real agreement.",
+    "evidence": [
+      {
+        "type": "page",
+        "slug": "memory/equipment",
+        "title": "Zephyr QX-100",
+        "role": "knowledge",
+        "score": 1,
+        "lines": [
+          {
+            "n": 7,
+            "text": "- **Hypothetical:** In Ada Marlow's invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; this loan exists only in the story and describes no real agreement.",
+            "memory": {
+              "status": "qualified",
+              "id": "mem_3a0e4156",
+              "level": 1,
+              "kind": "claim",
+              "subject": "ent_1e8a33d188d251f039102cc4",
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "commitment": "hypothetical",
+              "disposition": "active",
+              "polarity": "affirmed",
+              "basis": "self_attested",
+              "answer_eligible": false,
+              "current_eligible": false
+            }
+          }
+        ],
+        "matched_by": [
+          "lexical",
+          "vector"
+        ],
+        "breadcrumb": "Zephyr QX-100 › Fictional Story Context",
+        "updated": "2026-09-15",
+        "relevance": 1,
+        "summary": null,
+        "evidence_id": "E1"
+      }
+    ],
+    "sourceFrame": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement.\n…\nIn the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story.",
+    "expectedSupported": true
+  },
+  {
+    "id": "v22-held-fictional-example/en/ru/true",
+    "question": "What fictional control-dial loan did Ada Marlow introduce for discussion?",
+    "memoryView": "discussion",
+    "draft": "**Гипотетический контекст:** В вымышленной истории Ada Marlow вымышленная Vulpine Mutual предоставляет вымышленному Bo Winters запасной регулятор управления Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта; этот заём существует только в истории и не описывает реального соглашения.",
+    "evidence": [
+      {
+        "type": "page",
+        "slug": "memory/equipment",
+        "title": "Zephyr QX-100",
+        "role": "knowledge",
+        "score": 1,
+        "lines": [
+          {
+            "n": 7,
+            "text": "- **Hypothetical:** In Ada Marlow's invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; this loan exists only in the story and describes no real agreement.",
+            "memory": {
+              "status": "qualified",
+              "id": "mem_3a0e4156",
+              "level": 1,
+              "kind": "claim",
+              "subject": "ent_1e8a33d188d251f039102cc4",
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "commitment": "hypothetical",
+              "disposition": "active",
+              "polarity": "affirmed",
+              "basis": "self_attested",
+              "answer_eligible": false,
+              "current_eligible": false
+            }
+          }
+        ],
+        "matched_by": [
+          "lexical",
+          "vector"
+        ],
+        "breadcrumb": "Zephyr QX-100 › Fictional Story Context",
+        "updated": "2026-09-15",
+        "relevance": 1,
+        "summary": null,
+        "evidence_id": "E1"
+      }
+    ],
+    "sourceFrame": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement.\n…\nIn the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story.",
+    "expectedSupported": false
+  },
+  {
+    "id": "v22-held-fictional-example/ru/en/false",
+    "question": "Какой вымышленный заём ручки управления Ada Marlow предложила обсудить?",
+    "memoryView": "discussion",
+    "draft": "**Hypothetical:** In Ada Marlow's invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; this loan exists only in the story and describes no real agreement.",
+    "evidence": [
+      {
+        "type": "page",
+        "slug": "memory/equipment",
+        "title": "Zephyr QX-100",
+        "role": "knowledge",
+        "score": 1,
+        "lines": [
+          {
+            "n": 7,
+            "text": "- **Hypothetical:** In Ada Marlow's invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; this loan exists only in the story and describes no real agreement.",
+            "memory": {
+              "status": "qualified",
+              "id": "mem_3a0e4156",
+              "level": 1,
+              "kind": "claim",
+              "subject": "ent_1e8a33d188d251f039102cc4",
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "commitment": "hypothetical",
+              "disposition": "active",
+              "polarity": "affirmed",
+              "basis": "self_attested",
+              "answer_eligible": false,
+              "current_eligible": false
+            }
+          }
+        ],
+        "matched_by": [
+          "lexical",
+          "vector"
+        ],
+        "breadcrumb": "Zephyr QX-100 › Fictional Story Context",
+        "updated": "2026-09-15",
+        "relevance": 1,
+        "summary": null,
+        "evidence_id": "E1"
+      }
+    ],
+    "sourceFrame": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement.\n…\nIn the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story.",
+    "expectedSupported": true
+  },
+  {
+    "id": "v22-held-fictional-example/ru/ru/false",
+    "question": "Какой вымышленный заём ручки управления Ada Marlow предложила обсудить?",
+    "memoryView": "discussion",
+    "draft": "**Гипотетический контекст:** В вымышленной истории Ada Marlow вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасную ручку управления Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта; этот заём существует только в истории и не описывает никакого реального соглашения.",
+    "evidence": [
+      {
+        "type": "page",
+        "slug": "memory/equipment",
+        "title": "Zephyr QX-100",
+        "role": "knowledge",
+        "score": 1,
+        "lines": [
+          {
+            "n": 7,
+            "text": "- **Hypothetical:** In Ada Marlow's invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; this loan exists only in the story and describes no real agreement.",
+            "memory": {
+              "status": "qualified",
+              "id": "mem_3a0e4156",
+              "level": 1,
+              "kind": "claim",
+              "subject": "ent_1e8a33d188d251f039102cc4",
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "commitment": "hypothetical",
+              "disposition": "active",
+              "polarity": "affirmed",
+              "basis": "self_attested",
+              "answer_eligible": false,
+              "current_eligible": false
+            }
+          }
+        ],
+        "matched_by": [
+          "lexical",
+          "vector"
+        ],
+        "breadcrumb": "Zephyr QX-100 › Fictional Story Context",
+        "updated": "2026-09-15",
+        "relevance": 1,
+        "summary": null,
+        "evidence_id": "E1"
+      }
+    ],
+    "sourceFrame": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement.\n…\nIn the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story.",
+    "expectedSupported": true
+  },
+  {
+    "id": "v22-held-fictional-example/ru/en/true",
+    "question": "Какой вымышленный заём ручки управления Ada Marlow предложила обсудить?",
+    "memoryView": "discussion",
+    "draft": "**Hypothetical:** In Ada Marlow's invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; this loan exists only in the story and describes no real agreement.",
+    "evidence": [
+      {
+        "type": "page",
+        "slug": "memory/equipment",
+        "title": "Zephyr QX-100",
+        "role": "knowledge",
+        "score": 1,
+        "lines": [
+          {
+            "n": 7,
+            "text": "- **Hypothetical:** In Ada Marlow's invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; this loan exists only in the story and describes no real agreement.",
+            "memory": {
+              "status": "qualified",
+              "id": "mem_3a0e4156",
+              "level": 1,
+              "kind": "claim",
+              "subject": "ent_1e8a33d188d251f039102cc4",
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "commitment": "hypothetical",
+              "disposition": "active",
+              "polarity": "affirmed",
+              "basis": "self_attested",
+              "answer_eligible": false,
+              "current_eligible": false
+            }
+          }
+        ],
+        "matched_by": [
+          "lexical",
+          "vector"
+        ],
+        "breadcrumb": "Zephyr QX-100 › Fictional Story Context",
+        "updated": "2026-09-15",
+        "relevance": 1,
+        "summary": null,
+        "evidence_id": "E1"
+      }
+    ],
+    "sourceFrame": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement.\n…\nIn the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story.",
+    "expectedSupported": true
+  },
+  {
+    "id": "v22-held-fictional-example/ru/ru/true",
+    "question": "Какой вымышленный заём ручки управления Ada Marlow предложила обсудить?",
+    "memoryView": "discussion",
+    "draft": "**Гипотетический контекст:** В вымышленной истории Ada Marlow вымышленная Vulpine Mutual одалживает вымышленному Bo Winters запасную ручку управления Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта; этот заём существует только в истории и не описывает никакого реального соглашения.",
+    "evidence": [
+      {
+        "type": "page",
+        "slug": "memory/equipment",
+        "title": "Zephyr QX-100",
+        "role": "knowledge",
+        "score": 1,
+        "lines": [
+          {
+            "n": 7,
+            "text": "- **Hypothetical:** In Ada Marlow's invented story, fictional Vulpine Mutual lends fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair; this loan exists only in the story and describes no real agreement.",
+            "memory": {
+              "status": "qualified",
+              "id": "mem_3a0e4156",
+              "level": 1,
+              "kind": "claim",
+              "subject": "ent_1e8a33d188d251f039102cc4",
+              "source_role": "user",
+              "source_speaker": "Ada Marlow",
+              "commitment": "hypothetical",
+              "disposition": "active",
+              "polarity": "affirmed",
+              "basis": "self_attested",
+              "answer_eligible": false,
+              "current_eligible": false
+            }
+          }
+        ],
+        "matched_by": [
+          "lexical",
+          "vector"
+        ],
+        "breadcrumb": "Zephyr QX-100 › Fictional Story Context",
+        "updated": "2026-09-15",
+        "relevance": 1,
+        "summary": null,
+        "evidence_id": "E1"
+      }
+    ],
+    "sourceFrame": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement.\n…\nIn the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story.",
+    "expectedSupported": true
+  }
+]

@@ -1,0 +1,124 @@
+{
+  "schemaVersion": "language-input-review-v1",
+  "corpusFingerprint": "b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutOutputs": true
+  },
+  "cases": [
+    {
+      "id": "v20-held-report",
+      "approved": true,
+      "reason": "Approved against the conversation: the queries target Ada’s unverified relay of Bo’s account, including permission to send Zephyr QX-100 to a workshop to measure the latch gap, not to replace the latch. The expectation preserves Ada’s unread agreement, unchecked account, and separately unarranged delivery. The ordinary annual-inspection hypothesis is appropriately nonfactual as an eligibility-only control; it does not cover these report details and cannot establish equivalent-source retention."
+    },
+    {
+      "id": "v20-held-hypothesis",
+      "approved": true,
+      "reason": "The source, bilingual queries, and expectation agree on Ada introducing a hypothetical three-month mesh-screen inspection rule and a missed-inspection consequence valid only within that assumption. Her ignorance of real requirements and absence of a reported actual omission are preserved. The separate ordinary annual-inspection hypothesis is correctly nonfactual, although it supplies different hypothetical content."
+    },
+    {
+      "id": "v20-held-counterfactual",
+      "approved": true,
+      "reason": "Coherent: Ada actually refused and did not buy the optional extension, and only the unrealized purchase would have provided fifth-year wheel-hub repair coverage. The expectation preserves that antecedent and its conditional benefit; the denial of actual coverage must be understood as this extension’s benefit, not denial of all conceivable warranty coverage. Fifth year is a relative duration. The separate ordinary annual-inspection hypothesis is correctly nonfactual and is not an equivalent counterfactual source."
+    },
+    {
+      "id": "v20-held-question",
+      "approved": true,
+      "reason": "Coherent: Ada has an unresolved question about regular seal lubrication under the service contract and has no answer; neither inclusion nor exclusion is established. Both queries ask for that question, and the expectation correctly prevents contract-silence or external-asking inferences. The ordinary hypothetical inspection source is correctly nonfactual but contains a different subject."
+    },
+    {
+      "id": "v20-held-exclusion",
+      "approved": true,
+      "reason": "The conversation and expectation correctly limit the asserted negative coverage fact to a cracked base plate, leave drive-shaft-repair coverage unsettled by this record, and avoid claiming that the entire contract is silent. Queries cover both components. The ordinary source is correctly factual for eligibility purposes, but its exclusion of base-plate damage is broader than the conversation’s cracked-base-plate exclusion and omits the drive-shaft qualification; it cannot be used as an equivalent source for answer fidelity."
+    },
+    {
+      "id": "v20-held-assistant",
+      "approved": true,
+      "reason": "Coherent and complete: the assistant tentatively suggests a possible contractual provision for monthly connector-continuity testing, has not read the agreement, and has not verified that interpretation. Both queries preserve assistant attribution; the expectation prevents a real duty, device state, or global absence-of-evidence claim. The separate ordinary annual-inspection hypothesis is correctly nonfactual and differs in content."
+    },
+    {
+      "id": "v20-held-fiction",
+      "approved": true,
+      "reason": "The source and expectation distinguish Ada’s actual proposal to discuss from the story-only promise by Vulpine Mutual to fictional Bo Winters of free hinge-pin replacements in the first eleven days of ownership. No performed discussion or real agreement is asserted. Both queries address the proposed fictional promise. The ordinary annual-inspection hypothesis is correctly nonfactual but is a different fictional or hypothetical subject."
+    },
+    {
+      "id": "v20-held-rejected",
+      "approved": true,
+      "reason": "Coherent: Ada rejected the offered shipment to a service room for visual pressure-valve inspection, does not intend to send the device under that offer, and independently reports no arranged carrier collection. The queries and expectation retain purpose, destination, rejection, and lack of intent without asserting shipment or causation. The separate ordinary inspection hypothesis is correctly nonfactual and is not an equivalent account of the rejection."
+    },
+    {
+      "id": "v20-held-undated",
+      "approved": true,
+      "reason": "Coherent: Ada actually proposes reviewing repair terms next month relative to the original undated record, has not accepted a plan or organized a meeting, and explicitly rejects anchoring the month to processing. Both queries and the expectation preserve unknown calendar placement without making the proposal’s occurrence uncertain. The ordinary annual-inspection hypothesis is correctly nonfactual but contains no equivalent proposal."
+    },
+    {
+      "id": "v20-held-alternatives",
+      "approved": true,
+      "reason": "Coherent: Ada considers a bent guide rail and a loose belt fastener as competing preliminary causes; she has selected neither, and neither has supporting evidence. The queries and expectation preserve both component-specific alternatives and distinguish consideration from a performed discussion or confirmed fault. The separate ordinary inspection hypothesis is appropriately nonfactual but tests different content."
+    },
+    {
+      "id": "v20-held-admission",
+      "approved": true,
+      "reason": "The source and both queries consistently identify Ada’s recorded thirty-three-month warranty. The read-only admission and hold expectation are coherent operational conditions: the semantic source is present, but policy blocks retention, so the hold must not imply missing knowledge or service failure. The ordinary warranty statement is correctly factual for its separate eligibility control."
+    },
+    {
+      "id": "v22-held-nested-report",
+      "approved": true,
+      "reason": "Approved for conversation retention: Ada relays Bo’s report about Vulpine Mutual permitting workshop delivery for a grounding-contact resistance check, with a clarification that Bo discussed checking rather than replacement. Ada personally has not seen the rules, verified his report, or packed her device. Both queries and the expectation preserve attribution and limits. The ordinary report is correctly nonfactual, but its wording “но не для его замены” can suggest that replacement delivery is forbidden, whereas the conversation only limits what Bo discussed. That separate control must not be treated as an equivalent source or as evidence of a replacement prohibition."
+    },
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "approved": true,
+      "reason": "Coherent and complete: the six-week drain-channel clearing schedule is assumed solely for analysis, and seven weeks uncleared would breach only that assumed schedule. Ada does not know the real rule and reports no actual missed clearing. Both queries and the expectation retain the full conditional and its scope. The ordinary source preserves hypothetical status, so ordinaryFactual=false is appropriate."
+    },
+    {
+      "id": "v22-held-counterfactual",
+      "approved": true,
+      "reason": "Coherent: actual non-enrollment in the optional corrosion plan is paired with the unrealized benefit of free internal-spring replacement after thirty-three months of use if enrollment had occurred. Queries target that benefit, and the expectation correctly requires the false antecedent and relative usage interval without asserting current coverage. The ordinary source is explicitly counterfactual and correctly nonfactual for the scoped benefit."
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "approved": true,
+      "reason": "Coherent and complete: the asserted exclusion is specifically sand-caused damage to the ceramic spacer. This exclusion alone establishes neither the status of intake-sleeve replacement coverage nor silence in the agreement. Both queries cover both components, and the expectation preserves damage cause, polarity, and evidentiary scope. The ordinary source has the same factual exclusion, making ordinaryFactual=true appropriate."
+    },
+    {
+      "id": "v22-held-assistant-speculation",
+      "approved": true,
+      "reason": "Coherent: the assistant’s mixed-language statement is a tentative guess about an optical-shutter check every eleven operating cycles as a possible service term, not an established duty or device condition. The assistant personally has neither read the agreement nor verified the guess. Both queries and the expectation preserve all material qualifications. The ordinary assistant report is correctly nonfactual."
+    },
+    {
+      "id": "v22-held-fictional-example",
+      "approved": true,
+      "reason": "Coherent: Ada actually introduces an invented example for discussion, while the story alone contains fictional Vulpine Mutual lending fictional Bo a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. Both queries identify that fictional loan, and the expectation retains actors, object, duration, and fictional repair anchor. The Russian query is a broad paraphrase of introducing the example for discussion; it must not require an additional external proposal event. The ordinary fictional example is correctly nonfactual."
+    },
+    {
+      "id": "v22-held-relative-unknown-date",
+      "approved": true,
+      "reason": "Coherent and complete: Ada proposes comparison of cleaning instructions two weeks after the original undated record, with no agreed meeting. The missing source date prevents a calendar date, and processing time is expressly not the anchor. Both queries and the expectation target this actual proposal with unresolved temporal placement. The ordinary proposal is correctly nonfactual for proposed future work."
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "approved": true,
+      "reason": "Coherent: Ada considers a deformed washer and an inadequately secured filter cover as competing tentative explanations, chooses neither, and says neither has supporting evidence. The record also does not confirm that rattling occurred. Queries and expectation preserve both hypotheses and that additional event-level uncertainty. The ordinary source is appropriately nonfactual, though its shorthand “не подтверждена” does not by itself express the conversation’s stronger absence-of-supporting-data qualification; original conversation items remain the fidelity source."
+    },
+    {
+      "id": "v22-held-open-question",
+      "approved": true,
+      "reason": "Coherent: Ada has no answer to her question whether the service plan includes annual folding-handle alignment, and this note establishes neither inclusion nor exclusion. Both queries ask for her unresolved question, and the expectation preserves personal knowledge and note-level evidentiary scope. The ordinary source is correctly nonfactual; its “asks whether” should be understood as presenting the open question, not evidence of an external asking action."
+    },
+    {
+      "id": "v22-held-rejected-plan",
+      "approved": true,
+      "reason": "Coherent and complete: Ada rejects taking the device to a calibration room to measure its rotation-stop angle, lacks intent to proceed under that proposal, and independently reports no reserved appointment or arranged transport. The bilingual queries identify the proposal; the expectation properly requires the angle measurement even though their shorter wording does not repeat “angle.” The ordinary rejected proposal is correctly nonfactual for the proposed action."
+    },
+    {
+      "id": "v22-held-read-only-admission",
+      "approved": true,
+      "reason": "Coherent: the source explicitly requests retention in a folder that denies writes and supplies a fifty-five-month protective-ring replacement interval by Vulpine Mutual. Both queries target that request. The typed admission hold and preservation of source bytes are consistent with the declared read-only destination and must not be confused with absent knowledge, empty retrieval, or unavailability. The ordinary maintenance statement is correctly factual as a separate eligibility control."
+    }
+  ]
+}

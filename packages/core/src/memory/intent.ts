@@ -1,7 +1,7 @@
 import type { MemoryQualification, MemoryView, RecallMode } from '@tenphi/akno-protocol';
 
 export type QualifiedMemory = Extract<MemoryQualification, { status: 'qualified' }>;
-export const MEMORY_VIEW_VERSION = 'memory-view-v8';
+export const MEMORY_VIEW_VERSION = 'memory-view-v9';
 
 /** The subset shared by protocol qualifications and the rebuildable SQL projection. */
 export interface MemorySemantics {
@@ -22,7 +22,12 @@ export function inferMemoryView(query: string, mode: RecallMode = 'lookup'): Mem
   const russian = russianMemoryView(query);
   // Apply the same precedence to both languages. Resolving Russian first lets a lower-priority
   // topic cue (such as a plan) hide an explicit English request for a report about that topic.
-  if (russian === 'reports' || ENGLISH_TENTATIVE_ASSISTANT_REPORT.test(query)) return 'reports';
+  if (
+    russian === 'reports' ||
+    ENGLISH_TENTATIVE_ASSISTANT_REPORT.test(query) ||
+    ENGLISH_ASSISTANT_SPECULATION.test(query)
+  )
+    return 'reports';
   if (/\b(report|reported|reports|said|says|according to|told|claimed|claims)\b/i.test(query)) {
     return 'reports';
   }
@@ -37,6 +42,8 @@ export function inferMemoryView(query: string, mode: RecallMode = 'lookup'): Mem
   if (
     russian === 'discussion' ||
     ENGLISH_FICTION_CONTENT.test(query) ||
+    ENGLISH_FICTIONAL_DISCUSSION.test(query) ||
+    ENGLISH_UNREALIZED_DISCUSSION.test(query) ||
     /\b(hypothetical|hypotheses|hypothesis|counterfactual|what if|suppose|scenario|scenarios|alternative|alternatives|competing (?:[a-z-]+ ){0,3}explanations?|ideas? considered|discussed options?|tentative beliefs?|unconfirmed hypotheses)\b/i.test(
       query,
     )
@@ -134,14 +141,41 @@ const RUSSIAN_QUALIFIED_REPORT = boundedDiscoursePhrase(
   String.raw`(?:записал[аи]?|дал[аи]?|передал[аи]?|пересказал[аи]?|пересказыва(?:ет|ют))`,
 );
 const RUSSIAN_UNREALIZED_DISCUSSION = boundedDiscoursePhrase(
-  String.raw`(?:нереализованн|несостоявш)\p{L}* (?:${DISCOURSE_WORD} ){0,3}вариант\p{L}*`,
+  String.raw`(?:нереализованн|несостоявш)\p{L}* (?:${DISCOURSE_WORD} ){0,3}(?:вариант|льгот|следстви|преимуществ)\p{L}*`,
   String.raw`(?:описал[аи]?|рассмотрел[аи]?|обсудил[аи]?)`,
+);
+const ENGLISH_UNREALIZED_DISCUSSION = boundedDiscoursePhrase(
+  String.raw`unreali[sz]ed (?:${DISCOURSE_WORD} ){0,3}(?:benefits?|consequences?|outcomes?|options?)`,
+  String.raw`(?:describ(?:e[sd]?|ing)|consider(?:s|ed|ing)?|discuss(?:es|ed|ing)?)`,
+);
+// Narrative predicates bind fiction to the requested material without enumerating story objects.
+const ENGLISH_FICTIONAL_DISCUSSION = boundedDiscoursePhrase(
+  'fictional',
+  String.raw`(?:introduc(?:e[sd]?|ing)|describ(?:e[sd]?|ing)|discuss(?:es|ed|ing)?)`,
+);
+const RUSSIAN_FICTIONAL_DISCUSSION = boundedDiscoursePhrase(
+  String.raw`вымышленн\p{L}*`,
+  String.raw`(?:предложил[аи]? обсудить|обсуждал[аи]?|описал[аи]?)`,
+);
+const RUSSIAN_RELAYED_REPORT = boundedDiscoursePhrase(
+  String.raw`сообщени\p{L}*`,
+  String.raw`(?:пересказал[аи]?|пересказыва(?:ет|ют)|передал[аи]?|переда[её]т)`,
+);
+const RUSSIAN_COMPETING_DISCUSSION = boundedDiscoursePhrase(
+  String.raw`конкурирующ\p{L}* (?:${DISCOURSE_WORD} ){0,3}(?:верси|объяснени)\p{L}*`,
+  String.raw`(?:рассматривал[аи]?|рассмотрел[аи]?|обсуждал[аи]?|обсудил[аи]?)`,
 );
 // Suggesting a possible claim is a report; suggesting an action alone is not. Keep the
 // tentative phrase, reporting actor and modal predicate within one bounded construction.
 const ENGLISH_TENTATIVE_ASSISTANT_REPORT = new RegExp(
   String.raw`\b(?:(?:tentative|preliminary|unverified) (?:${DISCOURSE_WORD} ){0,5}(?:did|does) (?:the )?assistant (?:suggest|indicate|estimate) (?:may|might|could)\b|(?:the )?assistant (?:tentatively|provisionally) (?:suggests?|suggested|indicates?|indicated) that (?:${DISCOURSE_WORD} ){0,5}(?:may|might|could)\b)`,
   'iu',
+);
+const ENGLISH_ASSISTANT_SPECULATION =
+  /\bassistant(?: (?:has|had))? (?:speculat(?:e[sd]?|ing)|conjectur(?:e[sd]?|ing))\b/iu;
+const RUSSIAN_ASSISTANT_SPECULATION = boundedDiscoursePhrase(
+  String.raw`(?:предположени|догадк)\p{L}*`,
+  String.raw`(?:(?:высказал[аи]?|предложил[аи]?) ассистент|ассистент (?:высказал[аи]?|предложил[аи]?))`,
 );
 const RUSSIAN_ASSISTANT_READING = boundedDiscoursePhrase(
   String.raw`(?:предварительн|неподтвержд[её]нн)\p{L}* (?:верси|предположени|прочтени)\p{L}*`,
@@ -153,7 +187,13 @@ const RUSSIAN_FICTIONAL_PROMISE = boundedDiscoursePhrase(
 );
 
 function russianMemoryView(query: string): MemoryView | null {
-  if (RUSSIAN_QUALIFIED_REPORT.test(query) || RUSSIAN_ASSISTANT_READING.test(query)) return 'reports';
+  if (
+    RUSSIAN_QUALIFIED_REPORT.test(query) ||
+    RUSSIAN_RELAYED_REPORT.test(query) ||
+    RUSSIAN_ASSISTANT_READING.test(query) ||
+    RUSSIAN_ASSISTANT_SPECULATION.test(query)
+  )
+    return 'reports';
   if (
     /(?:^|[^\p{L}])(?:сообщил|сообщила|сообщает|сказал|сказала|по словам|со слов|согласно|утверждает)(?=$|[^\p{L}])/iu.test(
       query,
@@ -162,7 +202,13 @@ function russianMemoryView(query: string): MemoryView | null {
     return 'reports';
   if (/вопрос\p{L}* (?:остал|открыт|не реш)|нереш[её]нн\p{L}* вопрос|открыт\p{L}* вопрос/iu.test(query))
     return 'questions';
-  if (RUSSIAN_UNREALIZED_DISCUSSION.test(query) || RUSSIAN_FICTIONAL_PROMISE.test(query)) return 'discussion';
+  if (
+    RUSSIAN_UNREALIZED_DISCUSSION.test(query) ||
+    RUSSIAN_FICTIONAL_PROMISE.test(query) ||
+    RUSSIAN_FICTIONAL_DISCUSSION.test(query) ||
+    RUSSIAN_COMPETING_DISCUSSION.test(query)
+  )
+    return 'discussion';
   if (/гипотез|гипотетическ|контрфактическ|что если|предположим|сценари|альтернатив|обсуждал/iu.test(query))
     return 'discussion';
   // The noun "replacement" asks about coverage too; only an explicit completed replacement

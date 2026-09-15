@@ -1,0 +1,2161 @@
+{
+  "schemaVersion": "language-benchmark-v2",
+  "createdAt": "2026-09-15T09:36:12.130Z",
+  "corpusVersion": "language-discourse-v22",
+  "corpusFingerprint": "b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a",
+  "selectedCaseIds": [
+    "v22-held-coverage-exclusion",
+    "v22-held-competing-hypotheses"
+  ],
+  "runs": 1,
+  "setup": "separate-writable-fidelity-and-read-only-admission",
+  "queryMatrix": [
+    "query_language",
+    "answer_language",
+    "explicit_view"
+  ],
+  "split": "held-out",
+  "knowledgeLanguage": "en",
+  "proseProjectionVersion": "prose-v3",
+  "memoryViewVersion": "memory-view-v9",
+  "answerPromptVersion": "answer-generation-v68",
+  "answerVerifierVersion": "answer-verifier-v48",
+  "retentionPromptVersion": "retain-extraction-language-v57",
+  "retentionVerifierVersion": "retain-verifier-language-v41",
+  "models": {
+    "retention": "gpt-5.6-luna",
+    "answer": "gpt-5.6-luna",
+    "embedding": "text-embedding-3-small",
+    "expansion": null,
+    "reranker": "gpt-5.6-luna"
+  },
+  "retrievalProfile": "configured",
+  "retrievalConfiguration": {
+    "embeddingDimensions": 1536,
+    "rerankerEnabled": true,
+    "mode": "llm",
+    "topK": 8,
+    "maxChars": 2400,
+    "excludeIrrelevant": true,
+    "scoreOffset": "auto",
+    "maxOutputTokens": 1600,
+    "reasoningEffort": "low"
+  },
+  "modelOutputTokenLimits": {
+    "answer": 4096,
+    "retention": 8192
+  },
+  "indexModelDerivation": false,
+  "independentlyReviewed": false,
+  "releaseEligible": false,
+  "adjudication": "pending: inspect review material; verifier agreement and typed expectations are not independent truth labels",
+  "thresholds": {
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "usefulQualifiedAnswerCoverage": 0.9,
+    "availabilityFailureRate": 0.05,
+    "unsupportedRetainedOutputs": 0,
+    "unsupportedNonnullAnswers": 0
+  },
+  "metrics": {
+    "availabilityFailures": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "answerOperationFailures": {
+      "numerator": 0,
+      "denominator": 16,
+      "rate": 0
+    },
+    "producedAnswers": {
+      "numerator": 16,
+      "denominator": 16,
+      "rate": 1
+    },
+    "producedAnswersOverRetained": {
+      "numerator": 16,
+      "denominator": 16,
+      "rate": 1
+    },
+    "answerReasons": {
+      "answered": 16
+    },
+    "routingReasons": {},
+    "holdStages": {
+      "verification": 1
+    },
+    "independentlyJudgedQualifiedAnswers": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "independentlyJustifiedAbstentions": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "languagePolicyRejections": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "acceptedLanguageViolations": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "translationQualificationErrors": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "unsafeFactualPromotion": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "noncanonicalEligibilityFlags": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0
+    },
+    "usefulRetentionCoverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "expectedRetentionMisses": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "falseHolds": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "expectedSafeHolds": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "typedSemanticsMatch": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "qualifiedRetrievalCoverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "ordinaryProseQualification": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "sourceByteChanges": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    }
+  },
+  "byLanguage": {
+    "en": 1,
+    "ru": 1,
+    "mixed": 0
+  },
+  "byScenario": {
+    "coverage-exclusion": 1,
+    "competing-hypotheses": 1
+  },
+  "cases": [
+    {
+      "id": "v22-held-coverage-exclusion",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Retain the asserted exclusion of sand damage to the ceramic spacer with negative polarity. Separately preserve that this record does not settle intake-sleeve replacement coverage and does not establish agreement silence. Do not infer inclusion or exclusion for the sleeve.",
+      "language": "en",
+      "scenario": "coverage-exclusion",
+      "expectedHold": false,
+      "nonfactualExpected": false,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "held",
+            "reason": "discourse_uncertain",
+            "holdStage": "verification",
+            "routingReason": null
+          },
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 10417,
+            "input_tokens": 7420,
+            "output_tokens": 938,
+            "total_tokens": 8358
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 16716,
+            "input_tokens": 8979,
+            "output_tokens": 1962,
+            "total_tokens": 10941
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1550,
+              "input_tokens": 562,
+              "output_tokens": 54,
+              "total_tokens": 616
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2430,
+              "input_tokens": 388,
+              "output_tokens": 58,
+              "total_tokens": 446
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_e1780cf6",
+            "source_ref": "invented:v22-held-coverage-exclusion",
+            "input_hash": "05814d9abdd25f26a23e34b707d4755db85cc90a02459883580313a4ddb2192c",
+            "evidence": "I, Ada Marlow, record that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+            "evidence_hash": "113213a3d0ee2bac34ea800591f176f48cc87e4e1835719b8dd72f2a09c6f18a",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "I, Ada Marlow, record that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e1780cf6",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9ef753e0f0c91292de56a7e6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 2,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 warranty",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e1780cf6",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9ef753e0f0c91292de56a7e6",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 warranty › Warranty exclusions",
+              "updated": "2026-09-15",
+              "relevance": 0.6667,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5649,
+              "input_tokens": 6247,
+              "output_tokens": 415,
+              "total_tokens": 6662
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7349,
+              "input_tokens": 9152,
+              "output_tokens": 672,
+              "total_tokens": 9824
+            }
+          },
+          "reviewAnswer": "Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e1780cf6",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9ef753e0f0c91292de56a7e6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 2,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 warranty",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e1780cf6",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9ef753e0f0c91292de56a7e6",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 warranty › Warranty exclusions",
+              "updated": "2026-09-15",
+              "relevance": 0.6667,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6442,
+              "input_tokens": 6205,
+              "output_tokens": 430,
+              "total_tokens": 6635
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 9605,
+              "input_tokens": 9173,
+              "output_tokens": 887,
+              "total_tokens": 10060
+            }
+          },
+          "reviewAnswer": "Ada Marlow фиксирует, что гарантия на Zephyr QX-100 не покрывает повреждение керамической распорки, вызванное песком. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e1780cf6",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9ef753e0f0c91292de56a7e6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 2,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 warranty",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e1780cf6",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9ef753e0f0c91292de56a7e6",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 warranty › Warranty exclusions",
+              "updated": "2026-09-15",
+              "relevance": 0.6667,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4947,
+              "input_tokens": 6247,
+              "output_tokens": 325,
+              "total_tokens": 6572
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7550,
+              "input_tokens": 9152,
+              "output_tokens": 712,
+              "total_tokens": 9864
+            }
+          },
+          "reviewAnswer": "Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e1780cf6",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9ef753e0f0c91292de56a7e6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 2,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 warranty",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e1780cf6",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9ef753e0f0c91292de56a7e6",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 warranty › Warranty exclusions",
+              "updated": "2026-09-15",
+              "relevance": 0.6667,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7357,
+              "input_tokens": 6205,
+              "output_tokens": 549,
+              "total_tokens": 6754
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6664,
+              "input_tokens": 9162,
+              "output_tokens": 705,
+              "total_tokens": 9867
+            }
+          },
+          "reviewAnswer": "Ada Marlow фиксирует, что гарантия Zephyr QX-100 не покрывает повреждение керамической проставки, вызванное песком. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e1780cf6",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9ef753e0f0c91292de56a7e6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 2,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 warranty",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e1780cf6",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9ef753e0f0c91292de56a7e6",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 warranty › Warranty exclusions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7744,
+              "input_tokens": 6251,
+              "output_tokens": 519,
+              "total_tokens": 6770
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7154,
+              "input_tokens": 9152,
+              "output_tokens": 656,
+              "total_tokens": 9808
+            }
+          },
+          "reviewAnswer": "Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e1780cf6",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9ef753e0f0c91292de56a7e6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 2,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 warranty",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e1780cf6",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9ef753e0f0c91292de56a7e6",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 warranty › Warranty exclusions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5491,
+              "input_tokens": 6209,
+              "output_tokens": 437,
+              "total_tokens": 6646
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6012,
+              "input_tokens": 9162,
+              "output_tokens": 603,
+              "total_tokens": 9765
+            }
+          },
+          "reviewAnswer": "Ada Marlow записывает, что гарантия Zephyr QX-100 не покрывает повреждение керамической проставки, вызванное песком. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e1780cf6",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9ef753e0f0c91292de56a7e6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 2,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 warranty",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e1780cf6",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9ef753e0f0c91292de56a7e6",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 warranty › Warranty exclusions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4952,
+              "input_tokens": 6251,
+              "output_tokens": 331,
+              "total_tokens": 6582
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6385,
+              "input_tokens": 9152,
+              "output_tokens": 568,
+              "total_tokens": 9720
+            }
+          },
+          "reviewAnswer": "Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_e1780cf6",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_9ef753e0f0c91292de56a7e6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 2,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/zephyr-qx-100",
+              "title": "Zephyr QX-100 warranty",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 14,
+                  "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_e1780cf6",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_9ef753e0f0c91292de56a7e6",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "active",
+                    "polarity": "negated",
+                    "basis": "self_attested",
+                    "answer_eligible": true,
+                    "current_eligible": true
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 warranty › Warranty exclusions",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6559,
+              "input_tokens": 6210,
+              "output_tokens": 510,
+              "total_tokens": 6720
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7188,
+              "input_tokens": 9163,
+              "output_tokens": 724,
+              "total_tokens": 9887
+            }
+          },
+          "reviewAnswer": "Ada Marlow фиксирует, что гарантия Zephyr QX-100 не распространяется на повреждение керамической проставки, вызванное песком. [memory/zephyr-qx-100:14]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_e1780cf6",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_9ef753e0f0c91292de56a7e6",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Keep both tentative competing causes: a deformed washer and an inadequately secured filter cover. Ada selected neither, evidence supports neither, and the record does not itself confirm the rattle. Do not establish either fault or collapse them into one cause.",
+      "language": "ru",
+      "scenario": "competing-hypotheses",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 9754,
+            "input_tokens": 7428,
+            "output_tokens": 807,
+            "total_tokens": 8235
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 4535,
+            "input_tokens": 8161,
+            "output_tokens": 489,
+            "total_tokens": 8650
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1187,
+              "input_tokens": 594,
+              "output_tokens": 33,
+              "total_tokens": 627
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1742,
+              "input_tokens": 424,
+              "output_tokens": 82,
+              "total_tokens": 506
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_17349143",
+            "source_ref": "invented:v22-held-competing-hypotheses",
+            "input_hash": "c6b6a6b79ec9458cd20fdd0109a3989d38ece5cf3131fc7bfa065687a6d2365a",
+            "evidence": "Я, Ada Marlow, рассматриваю две конкурирующие предварительные причины дребезга Zephyr QX-100: деформированная шайба или плохо закреплённая крышка фильтра.\n…\nЯ не выбрала ни одну причину. Для обеих версий пока нет подтверждающих данных; сам дребезг этой записью также не подтверждается.",
+            "evidence_hash": "3b18a976667127dd95bd8bdb50464353f98d9bf34ed3de5a5cb0daf2172c120b",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "Я, Ada Marlow, рассматриваю две конкурирующие предварительные причины дребезга Zephyr QX-100: деформированная шайба или плохо закреплённая крышка фильтра.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "Я не выбрала ни одну причину. Для обеих версий пока нет подтверждающих данных; сам дребезг этой записью также не подтверждается.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_17349143",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6959,
+              "input_tokens": 6394,
+              "output_tokens": 438,
+              "total_tokens": 6832
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 16903,
+              "input_tokens": 11063,
+              "output_tokens": 1780,
+              "total_tokens": 12843
+            }
+          },
+          "reviewAnswer": "**Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_17349143",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 8345,
+              "input_tokens": 6379,
+              "output_tokens": 690,
+              "total_tokens": 7069
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 15750,
+              "input_tokens": 11019,
+              "output_tokens": 999,
+              "total_tokens": 12018
+            }
+          },
+          "reviewAnswer": "**Предварительно:** Ada Marlow рассматривает два конкурирующих предварительных объяснения дребезга Zephyr QX-100: деформированную шайбу или плохо закреплённую крышку фильтра. Она не выбрала ни одно из них; ни одно объяснение пока не имеет подтверждающих данных, и эта запись не подтверждает, что сам дребезг произошёл. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_17349143",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6314,
+              "input_tokens": 6394,
+              "output_tokens": 425,
+              "total_tokens": 6819
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 10961,
+              "input_tokens": 11063,
+              "output_tokens": 1016,
+              "total_tokens": 12079
+            }
+          },
+          "reviewAnswer": "**Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_17349143",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 9292,
+              "input_tokens": 6381,
+              "output_tokens": 754,
+              "total_tokens": 7135
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 12617,
+              "input_tokens": 11087,
+              "output_tokens": 956,
+              "total_tokens": 12043
+            }
+          },
+          "reviewAnswer": "**Предварительный статус:** Ada Marlow рассматривает два конкурирующих предварительных объяснения дребезга Zephyr QX-100: деформированную шайбу или плохо закреплённую крышку фильтра. Она не выбрала ни одно из них; для обоих объяснений пока нет подтверждающих данных, и эта запись не подтверждает, что сам дребезг имел место. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_17349143",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 9469,
+              "input_tokens": 6401,
+              "output_tokens": 505,
+              "total_tokens": 6906
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 19001,
+              "input_tokens": 11063,
+              "output_tokens": 1800,
+              "total_tokens": 12863
+            }
+          },
+          "reviewAnswer": "**Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_17349143",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 9929,
+              "input_tokens": 6385,
+              "output_tokens": 782,
+              "total_tokens": 7167
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 10891,
+              "input_tokens": 11018,
+              "output_tokens": 1089,
+              "total_tokens": 12107
+            }
+          },
+          "reviewAnswer": "Предварительно: Ada Marlow рассматривает две конкурирующие предварительные версии причины дребезга Zephyr QX-100: деформированную шайбу или плохо закреплённую крышку фильтра. Она не выбрала ни одну из них; ни одна версия пока не имеет подтверждающих данных, и эта запись также не подтверждает, что сам дребезг произошёл. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_17349143",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5554,
+              "input_tokens": 6401,
+              "output_tokens": 369,
+              "total_tokens": 6770
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 11652,
+              "input_tokens": 11063,
+              "output_tokens": 1019,
+              "total_tokens": 12082
+            }
+          },
+          "reviewAnswer": "**Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_expansion_model"
+          ],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "ok",
+          "contextDegraded": [],
+          "contextActivated": true,
+          "contextActivation": {
+            "activated": true,
+            "basis": "qualified",
+            "candidates": 1,
+            "selected": 1,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "reviewContext": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_17349143",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "contextKnowledgeLanguage": "en",
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [
+            "no_expansion_model"
+          ],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7727,
+              "input_tokens": 6388,
+              "output_tokens": 619,
+              "total_tokens": 7007
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 20253,
+              "input_tokens": 11021,
+              "output_tokens": 1735,
+              "total_tokens": 12756
+            }
+          },
+          "reviewAnswer": "**Предварительно:** Ada Marlow рассматривает два конкурирующих предварительных объяснения дребезга Zephyr QX-100: деформированная шайба или плохо закреплённая крышка фильтра. Она не выбрала ни одно из них; пока ни одно из объяснений не имеет подтверждающих данных, и эта запись не подтверждает, что сам дребезг имел место. [memory/equipment:7]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_17349143",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "error": null
+    }
+  ]
+}

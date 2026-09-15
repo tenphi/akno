@@ -1,0 +1,4983 @@
+{
+  "kind": "ordinary-prose-full-retrieval-public-output-review",
+  "cases": [
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 1,
+      "source": {
+        "id": "ordinary-empty-heading-fact",
+        "path": "ordinary",
+        "sourceLanguage": "en",
+        "view": "factual",
+        "markdown": "# Zephyr QX-100\n\n  ## Hypothesis\nThe Zephyr QX-100 warranty lasts eleven years.\n\n##\nThe Zephyr QX-100 case is silver.\n",
+        "focusLine": 7,
+        "queries": {
+          "en": "What color is the Zephyr QX-100 case?",
+          "ru": "Какого цвета корпус Zephyr QX-100?",
+          "mixed": "What color is корпус Zephyr QX-100?"
+        },
+        "expectation": "The case is silver as an ordinary authored assertion. The empty sibling heading ends the hypothetical section. Do not describe the case color as hypothetical or add the hypothetical eleven-year warranty to the answer."
+      },
+      "knowledge": [
+        {
+          "slug": "authored/passage",
+          "lines": [
+            {
+              "n": 1,
+              "text": "# Zephyr QX-100",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 3,
+              "text": "  ## Hypothesis",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": [
+                  {
+                    "n": 3,
+                    "text": "  ## Hypothesis"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts eleven years.",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading_scope",
+                "answer_eligible": false,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Hypothesis"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 warranty lasts eleven years."
+                  }
+                ]
+              }
+            },
+            {
+              "n": 6,
+              "text": "##",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": [
+                  {
+                    "n": 6,
+                    "text": "##"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 7,
+              "text": "The Zephyr QX-100 case is silver.",
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            }
+          ]
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "answer": "The Zephyr QX-100 case is silver. [authored/passage:7]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                7
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "answer": "Корпус Zephyr QX-100 серебристого цвета. [authored/passage:7]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                7
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "answer": "The Zephyr QX-100 case is silver. [authored/passage:7]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                7
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "answer": "Корпус Zephyr QX-100 серебристого цвета. [authored/passage:7]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                7
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "answer": "The Zephyr QX-100 case is silver. [authored/passage:7]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                7
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "answer": "Корпус Zephyr QX-100 серебристого цвета. [authored/passage:7]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                7
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        }
+      ],
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "inferredView": "factual",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "inferredView": "factual",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "mixed",
+          "inferredView": "factual",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ],
+      "negativeControls": []
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 2,
+      "source": {
+        "id": "ordinary-empty-heading-fact",
+        "path": "ordinary",
+        "sourceLanguage": "en",
+        "view": "factual",
+        "markdown": "# Zephyr QX-100\n\n  ## Hypothesis\nThe Zephyr QX-100 warranty lasts eleven years.\n\n##\nThe Zephyr QX-100 case is silver.\n",
+        "focusLine": 7,
+        "queries": {
+          "en": "What color is the Zephyr QX-100 case?",
+          "ru": "Какого цвета корпус Zephyr QX-100?",
+          "mixed": "What color is корпус Zephyr QX-100?"
+        },
+        "expectation": "The case is silver as an ordinary authored assertion. The empty sibling heading ends the hypothetical section. Do not describe the case color as hypothetical or add the hypothetical eleven-year warranty to the answer."
+      },
+      "knowledge": [
+        {
+          "slug": "authored/passage",
+          "lines": [
+            {
+              "n": 1,
+              "text": "# Zephyr QX-100",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 3,
+              "text": "  ## Hypothesis",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": [
+                  {
+                    "n": 3,
+                    "text": "  ## Hypothesis"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts eleven years.",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading_scope",
+                "answer_eligible": false,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Hypothesis"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 warranty lasts eleven years."
+                  }
+                ]
+              }
+            },
+            {
+              "n": 6,
+              "text": "##",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": [
+                  {
+                    "n": 6,
+                    "text": "##"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 7,
+              "text": "The Zephyr QX-100 case is silver.",
+              "prose": {
+                "status": "qualified",
+                "view": "factual",
+                "reason": "asserted",
+                "answer_eligible": true,
+                "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                "frame": []
+              }
+            }
+          ]
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "answer": "The Zephyr QX-100 case is silver. [authored/passage:7]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                7
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "answer": "Корпус Zephyr QX-100 серебристого цвета. [authored/passage:7]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                7
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "answer": "The Zephyr QX-100 case is silver. [authored/passage:7]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                7
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "answer": "Корпус Zephyr QX-100 серебристого цвета. [authored/passage:7]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                7
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "answer": "The Zephyr QX-100 case is silver. [authored/passage:7]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                7
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "answer": "Корпус Zephyr QX-100 серебристого цвета. [authored/passage:7]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                7
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        }
+      ],
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "inferredView": "factual",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "inferredView": "factual",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "mixed",
+          "inferredView": "factual",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "The Zephyr QX-100 case is silver.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "factual",
+                    "reason": "asserted",
+                    "answer_eligible": true,
+                    "source_hash": "0fa4e0cc0bd97f176e8f33045ec977e075f4d319bea10efa12de8f307b2a0160",
+                    "frame": []
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ],
+      "negativeControls": []
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 1,
+      "source": {
+        "id": "ordinary-english-report",
+        "path": "ordinary",
+        "sourceLanguage": "en",
+        "view": "reports",
+        "markdown": "# Zephyr QX-100\n\n  ## Assistant ###\nThe Zephyr QX-100 maintenance plan includes a case inspection every eleven months.\n",
+        "focusLine": 4,
+        "queries": {
+          "en": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+          "ru": "Что ассистент сообщил о плане обслуживания Zephyr QX-100?",
+          "mixed": "What did the assistant report about the Zephyr QX-100 план обслуживания?"
+        },
+        "expectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity."
+      },
+      "knowledge": [
+        {
+          "slug": "authored/passage",
+          "lines": [
+            {
+              "n": 1,
+              "text": "# Zephyr QX-100",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 3,
+              "text": "  ## Assistant ###",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": [
+                  {
+                    "n": 3,
+                    "text": "  ## Assistant ###"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "speaker",
+                "answer_eligible": false,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Assistant ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes a case inspection every eleven months. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "answer": "Ассистент сообщил, что план технического обслуживания Zephyr QX-100 включает проверку корпуса каждые одиннадцать месяцев. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes a case inspection every eleven months. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "answer": "Ассистент сообщил, что план обслуживания Zephyr QX-100 включает проверку корпуса каждые одиннадцать месяцев. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes a case inspection every eleven months. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "answer": "Ассистент сообщил, что план обслуживания Zephyr QX-100 включает проверку корпуса каждые одиннадцать месяцев. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        }
+      ],
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "inferredView": "reports",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "inferredView": "reports",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "mixed",
+          "inferredView": "reports",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ],
+      "negativeControls": [
+        {
+          "queryLanguage": "en",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        },
+        {
+          "queryLanguage": "ru",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        },
+        {
+          "queryLanguage": "mixed",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        }
+      ]
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 2,
+      "source": {
+        "id": "ordinary-english-report",
+        "path": "ordinary",
+        "sourceLanguage": "en",
+        "view": "reports",
+        "markdown": "# Zephyr QX-100\n\n  ## Assistant ###\nThe Zephyr QX-100 maintenance plan includes a case inspection every eleven months.\n",
+        "focusLine": 4,
+        "queries": {
+          "en": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+          "ru": "Что ассистент сообщил о плане обслуживания Zephyr QX-100?",
+          "mixed": "What did the assistant report about the Zephyr QX-100 план обслуживания?"
+        },
+        "expectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity."
+      },
+      "knowledge": [
+        {
+          "slug": "authored/passage",
+          "lines": [
+            {
+              "n": 1,
+              "text": "# Zephyr QX-100",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 3,
+              "text": "  ## Assistant ###",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": [
+                  {
+                    "n": 3,
+                    "text": "  ## Assistant ###"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "speaker",
+                "answer_eligible": false,
+                "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Assistant ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes a case inspection every eleven months. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "answer": "Ассистент сообщил, что план технического обслуживания Zephyr QX-100 включает проверку корпуса каждые одиннадцать месяцев. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes a case inspection every eleven months. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "answer": "Ассистент сообщил, что план обслуживания Zephyr QX-100 включает проверку корпуса каждые одиннадцать месяцев. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes a case inspection every eleven months. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "answer": null,
+          "citations": [],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        }
+      ],
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "inferredView": "reports",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "inferredView": "reports",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "mixed",
+          "inferredView": "reports",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "speaker",
+                    "answer_eligible": false,
+                    "source_hash": "2d7b6fff774d4d71790103b85f1da5fcb830d133a616906a3530e4a179c334a8",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Assistant ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 maintenance plan includes a case inspection every eleven months."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ],
+      "negativeControls": [
+        {
+          "queryLanguage": "en",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        },
+        {
+          "queryLanguage": "ru",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        },
+        {
+          "queryLanguage": "mixed",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        }
+      ]
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "source": {
+        "id": "ordinary-mixed-hypothesis",
+        "path": "ordinary",
+        "sourceLanguage": "mixed",
+        "view": "discussion",
+        "markdown": "# Zephyr QX-100\n\n  ## Гипотеза ###\nThe Zephyr QX-100 warranty lasts five years.\nЗамена корпуса покрывается гарантией.\n",
+        "focusLine": 4,
+        "queries": {
+          "en": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+          "ru": "Какой гипотетический сценарий гарантии записан для Zephyr QX-100?",
+          "mixed": "What hypothetical scenario is recorded о гарантии Zephyr QX-100?"
+        },
+        "expectation": "Both the five-year warranty duration and housing replacement coverage belong to one hypothetical scenario. A useful answer preserves both propositions and their hypothetical status. Neither proposition establishes actual warranty coverage."
+      },
+      "knowledge": [
+        {
+          "slug": "authored/passage",
+          "lines": [
+            {
+              "n": 1,
+              "text": "# Zephyr QX-100",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 3,
+              "text": "  ## Гипотеза ###",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": [
+                  {
+                    "n": 3,
+                    "text": "  ## Гипотеза ###"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts five years.",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "conditional",
+                "answer_eligible": false,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Гипотеза ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 warranty lasts five years."
+                  },
+                  {
+                    "n": 5,
+                    "text": "Замена корпуса покрывается гарантией."
+                  }
+                ]
+              }
+            },
+            {
+              "n": 5,
+              "text": "Замена корпуса покрывается гарантией.",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "conditional",
+                "answer_eligible": false,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Гипотеза ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 warranty lasts five years."
+                  },
+                  {
+                    "n": 5,
+                    "text": "Замена корпуса покрывается гарантией."
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "answer": "The recorded hypothetical scenario is that the Zephyr QX-100 warranty lasts five years and covers replacement of the casing. [authored/passage:4,5]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4,
+                5
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "answer": "В гипотетическом сценарии гарантия на Zephyr QX-100 действует пять лет, а замена корпуса покрывается гарантией. [authored/passage:4,5]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4,
+                5
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "answer": "The hypothetical scenario states that the Zephyr QX-100 warranty lasts five years and that replacing its housing is covered by the warranty. [authored/passage:4,5]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4,
+                5
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "answer": "В записанной гипотезе для Zephyr QX-100 гарантия действует пять лет, а замена корпуса покрывается гарантией. [authored/passage:4,5]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4,
+                5
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "answer": "The recorded hypothetical scenario is that the Zephyr QX-100 warranty lasts five years and covers replacement of the housing. [authored/passage:4,5]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4,
+                5
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "answer": "В гипотетическом сценарии гарантия Zephyr QX-100 действует пять лет, а замена корпуса покрывается гарантией. [authored/passage:4,5]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4,
+                5
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        }
+      ],
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "inferredView": "discussion",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "inferredView": "discussion",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "mixed",
+          "inferredView": "discussion",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ],
+      "negativeControls": [
+        {
+          "queryLanguage": "en",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        },
+        {
+          "queryLanguage": "ru",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        },
+        {
+          "queryLanguage": "mixed",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        }
+      ]
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "source": {
+        "id": "ordinary-mixed-hypothesis",
+        "path": "ordinary",
+        "sourceLanguage": "mixed",
+        "view": "discussion",
+        "markdown": "# Zephyr QX-100\n\n  ## Гипотеза ###\nThe Zephyr QX-100 warranty lasts five years.\nЗамена корпуса покрывается гарантией.\n",
+        "focusLine": 4,
+        "queries": {
+          "en": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+          "ru": "Какой гипотетический сценарий гарантии записан для Zephyr QX-100?",
+          "mixed": "What hypothetical scenario is recorded о гарантии Zephyr QX-100?"
+        },
+        "expectation": "Both the five-year warranty duration and housing replacement coverage belong to one hypothetical scenario. A useful answer preserves both propositions and their hypothetical status. Neither proposition establishes actual warranty coverage."
+      },
+      "knowledge": [
+        {
+          "slug": "authored/passage",
+          "lines": [
+            {
+              "n": 1,
+              "text": "# Zephyr QX-100",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 3,
+              "text": "  ## Гипотеза ###",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": [
+                  {
+                    "n": 3,
+                    "text": "  ## Гипотеза ###"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 4,
+              "text": "The Zephyr QX-100 warranty lasts five years.",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "conditional",
+                "answer_eligible": false,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Гипотеза ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 warranty lasts five years."
+                  },
+                  {
+                    "n": 5,
+                    "text": "Замена корпуса покрывается гарантией."
+                  }
+                ]
+              }
+            },
+            {
+              "n": 5,
+              "text": "Замена корпуса покрывается гарантией.",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "conditional",
+                "answer_eligible": false,
+                "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "  ## Гипотеза ###"
+                  },
+                  {
+                    "n": 4,
+                    "text": "The Zephyr QX-100 warranty lasts five years."
+                  },
+                  {
+                    "n": 5,
+                    "text": "Замена корпуса покрывается гарантией."
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "answer": "In the hypothetical scenario, the Zephyr QX-100 warranty lasts five years, and replacement of the casing is covered by the warranty. [authored/passage:4,5]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4,
+                5
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "answer": "Записан гипотетический сценарий, согласно которому гарантия на Zephyr QX-100 действует пять лет, а замена корпуса покрывается гарантией. [authored/passage:4,5]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4,
+                5
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "answer": "In the hypothetical scenario, the Zephyr QX-100 warranty lasts five years, and replacement of the casing is covered by the warranty. [authored/passage:4,5]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4,
+                5
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "answer": "В гипотетическом сценарии для Zephyr QX-100 гарантия действует пять лет, а замена корпуса покрывается гарантией. [authored/passage:4,5]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4,
+                5
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "answer": "In the hypothetical scenario, the Zephyr QX-100 warranty lasts five years, and replacement of the casing is covered by the warranty. [authored/passage:4,5]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4,
+                5
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "answer": "В гипотетическом сценарии гарантия Zephyr QX-100 действует пять лет, а замена корпуса покрывается гарантией. [authored/passage:4,5]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4,
+                5
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        }
+      ],
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "inferredView": "discussion",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "inferredView": "discussion",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "mixed",
+          "inferredView": "discussion",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "The Zephyr QX-100 warranty lasts five years.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "n": 5,
+                  "text": "Замена корпуса покрывается гарантией.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "discussion",
+                    "reason": "conditional",
+                    "answer_eligible": false,
+                    "source_hash": "37872e133d5434689753eba4b7cbb5ea2c0ccc12720fb2280282fc8eb72ddd83",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "  ## Гипотеза ###"
+                      },
+                      {
+                        "n": 4,
+                        "text": "The Zephyr QX-100 warranty lasts five years."
+                      },
+                      {
+                        "n": 5,
+                        "text": "Замена корпуса покрывается гарантией."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ],
+      "negativeControls": [
+        {
+          "queryLanguage": "en",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        },
+        {
+          "queryLanguage": "ru",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        },
+        {
+          "queryLanguage": "mixed",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        }
+      ]
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 1,
+      "source": {
+        "id": "ordinary-russian-report",
+        "path": "ordinary",
+        "sourceLanguage": "ru",
+        "view": "reports",
+        "markdown": "# Zephyr QX-100\n\n   ## Сообщение ассистента\nПлан обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.\n",
+        "focusLine": 4,
+        "queries": {
+          "en": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+          "ru": "Что ассистент сообщил о плане обслуживания Zephyr QX-100?",
+          "mixed": "What did the assistant report about the Zephyr QX-100 план обслуживания?"
+        },
+        "expectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity. Authored Russian text and its exact heading frame remain unchanged."
+      },
+      "knowledge": [
+        {
+          "slug": "authored/passage",
+          "lines": [
+            {
+              "n": 1,
+              "text": "# Zephyr QX-100",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 3,
+              "text": "   ## Сообщение ассистента",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                "frame": [
+                  {
+                    "n": 3,
+                    "text": "   ## Сообщение ассистента"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 4,
+              "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "heading_scope",
+                "answer_eligible": false,
+                "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "   ## Сообщение ассистента"
+                  },
+                  {
+                    "n": 4,
+                    "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes inspecting the housing every eleven months. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "answer": "Ассистент сообщил, что план обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes inspecting the body every eleven months. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "answer": "Ассистент сообщил, что план обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes an inspection of the casing every eleven months. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "answer": "Ассистент сообщил, что план обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        }
+      ],
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "inferredView": "reports",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "inferredView": "reports",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "mixed",
+          "inferredView": "reports",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ],
+      "negativeControls": [
+        {
+          "queryLanguage": "en",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        },
+        {
+          "queryLanguage": "ru",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        },
+        {
+          "queryLanguage": "mixed",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        }
+      ]
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 2,
+      "source": {
+        "id": "ordinary-russian-report",
+        "path": "ordinary",
+        "sourceLanguage": "ru",
+        "view": "reports",
+        "markdown": "# Zephyr QX-100\n\n   ## Сообщение ассистента\nПлан обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.\n",
+        "focusLine": 4,
+        "queries": {
+          "en": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+          "ru": "Что ассистент сообщил о плане обслуживания Zephyr QX-100?",
+          "mixed": "What did the assistant report about the Zephyr QX-100 план обслуживания?"
+        },
+        "expectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity. Authored Russian text and its exact heading frame remain unchanged."
+      },
+      "knowledge": [
+        {
+          "slug": "authored/passage",
+          "lines": [
+            {
+              "n": 1,
+              "text": "# Zephyr QX-100",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 3,
+              "text": "   ## Сообщение ассистента",
+              "prose": {
+                "status": "qualified",
+                "view": "discussion",
+                "reason": "heading",
+                "answer_eligible": false,
+                "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                "frame": [
+                  {
+                    "n": 3,
+                    "text": "   ## Сообщение ассистента"
+                  }
+                ]
+              }
+            },
+            {
+              "n": 4,
+              "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+              "prose": {
+                "status": "qualified",
+                "view": "reports",
+                "reason": "heading_scope",
+                "answer_eligible": false,
+                "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                "frame": [
+                  {
+                    "n": 1,
+                    "text": "# Zephyr QX-100"
+                  },
+                  {
+                    "n": 3,
+                    "text": "   ## Сообщение ассистента"
+                  },
+                  {
+                    "n": 4,
+                    "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes an inspection of the casing every eleven months. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "answer": "Ассистент сообщил, что план обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes an inspection of the casing every eleven months. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "answer": "Ассистент сообщил, что план обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "answer": "The assistant reported that the Zephyr QX-100 maintenance plan includes an inspection of the housing every eleven months. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "answer": "По сообщению ассистента, план обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев. [authored/passage:4]",
+          "citations": [
+            {
+              "id": "E1",
+              "type": "page",
+              "slug": "authored/passage",
+              "lines": [
+                1,
+                3,
+                4
+              ]
+            }
+          ],
+          "context": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_id": "E1"
+            }
+          ]
+        }
+      ],
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "inferredView": "reports",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "inferredView": "reports",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "mixed",
+          "inferredView": "reports",
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "authored/passage",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 4,
+                  "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.",
+                  "prose": {
+                    "status": "qualified",
+                    "view": "reports",
+                    "reason": "heading_scope",
+                    "answer_eligible": false,
+                    "source_hash": "d319c148d94e28b44856b00ec6c0c4c2e3c6b799a4af19490205fca69b53b671",
+                    "frame": [
+                      {
+                        "n": 1,
+                        "text": "# Zephyr QX-100"
+                      },
+                      {
+                        "n": 3,
+                        "text": "   ## Сообщение ассистента"
+                      },
+                      {
+                        "n": 4,
+                        "text": "План обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ],
+      "negativeControls": [
+        {
+          "queryLanguage": "en",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        },
+        {
+          "queryLanguage": "ru",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        },
+        {
+          "queryLanguage": "mixed",
+          "memoryView": "factual",
+          "answer": null,
+          "answerContext": [],
+          "contextEvidence": []
+        }
+      ]
+    }
+  ],
+  "packetFingerprint": "3f9e43e1e0cc1b394261137120a098873bc785ddf7158ab6d59fb20c2f3bbea1"
+}

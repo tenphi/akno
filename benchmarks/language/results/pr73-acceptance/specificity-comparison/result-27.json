@@ -1,0 +1,20 @@
+{
+  "index": 26,
+  "id": "v22-held-fictional-example/ru/ru/false",
+  "variant": "before",
+  "expectedSupported": true,
+  "available": true,
+  "accepted": true,
+  "outcome": {
+    "ok": true,
+    "reason": null,
+    "latencyMs": 7395.306833999995,
+    "usage": {
+      "inputTokens": 11030,
+      "outputTokens": 657,
+      "totalTokens": 11687,
+      "cachedInputTokens": 11027,
+      "reasoningOutputTokens": 140
+    }
+  }
+}

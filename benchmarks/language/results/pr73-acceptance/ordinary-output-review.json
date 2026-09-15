@@ -1,0 +1,901 @@
+{
+  "schemaVersion": "ordinary-prose-output-review-v1",
+  "packetFingerprint": "3f9e43e1e0cc1b394261137120a098873bc785ddf7158ab6d59fb20c2f3bbea1",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 1,
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer correctly identifies the Zephyr QX-100 case color as silver in the requested en language. The empty sibling heading on source line 6 ends the Hypothesis section, so line 7 is an ordinary authored assertion and need not be hedged as hypothetical. The answer does not import the unrelated hypothetical eleven-year warranty. Its citation points to line 7 and the supplied citation context contains that exact color assertion. This evaluates faithful use of the authored source, not independent verification of real-world color."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer correctly identifies the Zephyr QX-100 case color as silver (серебристого цвета) in the requested ru language. The empty sibling heading on source line 6 ends the Hypothesis section, so line 7 is an ordinary authored assertion and need not be hedged as hypothetical. The answer does not import the unrelated hypothetical eleven-year warranty. Its citation points to line 7 and the supplied citation context contains that exact color assertion. This evaluates faithful use of the authored source, not independent verification of real-world color."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer correctly identifies the Zephyr QX-100 case color as silver in the requested en language. The empty sibling heading on source line 6 ends the Hypothesis section, so line 7 is an ordinary authored assertion and need not be hedged as hypothetical. The answer does not import the unrelated hypothetical eleven-year warranty. Its citation points to line 7 and the supplied citation context contains that exact color assertion. This evaluates faithful use of the authored source, not independent verification of real-world color."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer correctly identifies the Zephyr QX-100 case color as silver (серебристого цвета) in the requested ru language. The empty sibling heading on source line 6 ends the Hypothesis section, so line 7 is an ordinary authored assertion and need not be hedged as hypothetical. The answer does not import the unrelated hypothetical eleven-year warranty. Its citation points to line 7 and the supplied citation context contains that exact color assertion. This evaluates faithful use of the authored source, not independent verification of real-world color."
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer correctly identifies the Zephyr QX-100 case color as silver in the requested en language. The empty sibling heading on source line 6 ends the Hypothesis section, so line 7 is an ordinary authored assertion and need not be hedged as hypothetical. The answer does not import the unrelated hypothetical eleven-year warranty. Its citation points to line 7 and the supplied citation context contains that exact color assertion. This evaluates faithful use of the authored source, not independent verification of real-world color."
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer correctly identifies the Zephyr QX-100 case color as silver (серебристого цвета) in the requested ru language. The empty sibling heading on source line 6 ends the Hypothesis section, so line 7 is an ordinary authored assertion and need not be hedged as hypothetical. The answer does not import the unrelated hypothetical eleven-year warranty. Its citation points to line 7 and the supplied citation context contains that exact color assertion. This evaluates faithful use of the authored source, not independent verification of real-world color."
+        }
+      ],
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains only the relevant silver-case assertion on source line 7, with factual metadata consistent with the empty sibling heading ending the earlier hypothetical section. It is useful for the color query, contains no unsupported details, and does not inject the unrelated eleven-year hypothetical warranty. The evidence is authored English, matching the configured knowledge language."
+        },
+        {
+          "queryLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains only the relevant silver-case assertion on source line 7, with factual metadata consistent with the empty sibling heading ending the earlier hypothetical section. It is useful for the color query, contains no unsupported details, and does not inject the unrelated eleven-year hypothetical warranty. The evidence is authored English, matching the configured knowledge language."
+        },
+        {
+          "queryLanguage": "mixed",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains only the relevant silver-case assertion on source line 7, with factual metadata consistent with the empty sibling heading ending the earlier hypothetical section. It is useful for the color query, contains no unsupported details, and does not inject the unrelated eleven-year hypothetical warranty. The evidence is authored English, matching the configured knowledge language."
+        }
+      ],
+      "negativeControls": []
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "run": 2,
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer correctly identifies the Zephyr QX-100 case color as silver in the requested en language. The empty sibling heading on source line 6 ends the Hypothesis section, so line 7 is an ordinary authored assertion and need not be hedged as hypothetical. The answer does not import the unrelated hypothetical eleven-year warranty. Its citation points to line 7 and the supplied citation context contains that exact color assertion. This evaluates faithful use of the authored source, not independent verification of real-world color."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer correctly identifies the Zephyr QX-100 case color as silver (серебристого цвета) in the requested ru language. The empty sibling heading on source line 6 ends the Hypothesis section, so line 7 is an ordinary authored assertion and need not be hedged as hypothetical. The answer does not import the unrelated hypothetical eleven-year warranty. Its citation points to line 7 and the supplied citation context contains that exact color assertion. This evaluates faithful use of the authored source, not independent verification of real-world color."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer correctly identifies the Zephyr QX-100 case color as silver in the requested en language. The empty sibling heading on source line 6 ends the Hypothesis section, so line 7 is an ordinary authored assertion and need not be hedged as hypothetical. The answer does not import the unrelated hypothetical eleven-year warranty. Its citation points to line 7 and the supplied citation context contains that exact color assertion. This evaluates faithful use of the authored source, not independent verification of real-world color."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer correctly identifies the Zephyr QX-100 case color as silver (серебристого цвета) in the requested ru language. The empty sibling heading on source line 6 ends the Hypothesis section, so line 7 is an ordinary authored assertion and need not be hedged as hypothetical. The answer does not import the unrelated hypothetical eleven-year warranty. Its citation points to line 7 and the supplied citation context contains that exact color assertion. This evaluates faithful use of the authored source, not independent verification of real-world color."
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer correctly identifies the Zephyr QX-100 case color as silver in the requested en language. The empty sibling heading on source line 6 ends the Hypothesis section, so line 7 is an ordinary authored assertion and need not be hedged as hypothetical. The answer does not import the unrelated hypothetical eleven-year warranty. Its citation points to line 7 and the supplied citation context contains that exact color assertion. This evaluates faithful use of the authored source, not independent verification of real-world color."
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer correctly identifies the Zephyr QX-100 case color as silver (серебристого цвета) in the requested ru language. The empty sibling heading on source line 6 ends the Hypothesis section, so line 7 is an ordinary authored assertion and need not be hedged as hypothetical. The answer does not import the unrelated hypothetical eleven-year warranty. Its citation points to line 7 and the supplied citation context contains that exact color assertion. This evaluates faithful use of the authored source, not independent verification of real-world color."
+        }
+      ],
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains only the relevant silver-case assertion on source line 7, with factual metadata consistent with the empty sibling heading ending the earlier hypothetical section. It is useful for the color query, contains no unsupported details, and does not inject the unrelated eleven-year hypothetical warranty. The evidence is authored English, matching the configured knowledge language."
+        },
+        {
+          "queryLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains only the relevant silver-case assertion on source line 7, with factual metadata consistent with the empty sibling heading ending the earlier hypothetical section. It is useful for the color query, contains no unsupported details, and does not inject the unrelated eleven-year hypothetical warranty. The evidence is authored English, matching the configured knowledge language."
+        },
+        {
+          "queryLanguage": "mixed",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains only the relevant silver-case assertion on source line 7, with factual metadata consistent with the empty sibling heading ending the earlier hypothetical section. It is useful for the color query, contains no unsupported details, and does not inject the unrelated eleven-year hypothetical warranty. The evidence is authored English, matching the configured knowledge language."
+        }
+      ],
+      "negativeControls": []
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 1,
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. The Russian проверка корпуса is an acceptable general rendering of case inspection here and does not invent a particular test, repair, or component replacement. The answer uses the requested en language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Assistant heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. The Russian проверка корпуса is an acceptable general rendering of case inspection here and does not invent a particular test, repair, or component replacement. The answer uses the requested ru language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Assistant heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. The Russian проверка корпуса is an acceptable general rendering of case inspection here and does not invent a particular test, repair, or component replacement. The answer uses the requested en language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Assistant heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. The Russian проверка корпуса is an acceptable general rendering of case inspection here and does not invent a particular test, repair, or component replacement. The answer uses the requested ru language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Assistant heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. The Russian проверка корпуса is an acceptable general rendering of case inspection here and does not invent a particular test, repair, or component replacement. The answer uses the requested en language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Assistant heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. The Russian проверка корпуса is an acceptable general rendering of case inspection here and does not invent a particular test, repair, or component replacement. The answer uses the requested ru language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Assistant heading that supports attribution. No abstention is required for a useful report-scoped response."
+        }
+      ],
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains the full case-inspection statement and an accessible frame with the exact two-space-indented Assistant heading with closing hashes heading. The reports qualification preserves attribution, so the embedded maintenance provision is useful without being established as an actual obligation. The eleven-month interval and product identity are intact. The authored English context matches the configured knowledge language."
+        },
+        {
+          "queryLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains the full case-inspection statement and an accessible frame with the exact two-space-indented Assistant heading with closing hashes heading. The reports qualification preserves attribution, so the embedded maintenance provision is useful without being established as an actual obligation. The eleven-month interval and product identity are intact. The authored English context matches the configured knowledge language."
+        },
+        {
+          "queryLanguage": "mixed",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains the full case-inspection statement and an accessible frame with the exact two-space-indented Assistant heading with closing hashes heading. The reports qualification preserves attribution, so the embedded maintenance provision is useful without being established as an actual obligation. The eleven-month interval and product identity are intact. The authored English context matches the configured knowledge language."
+        }
+      ],
+      "negativeControls": [
+        {
+          "queryLanguage": "en",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. The assistant’s embedded maintenance-plan proposition is neither published nor injected as a factual obligation. This is appropriate exclusion for the factual control and does not imply the source report is unavailable in reports scope."
+        },
+        {
+          "queryLanguage": "ru",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. The assistant’s embedded maintenance-plan proposition is neither published nor injected as a factual obligation. This is appropriate exclusion for the factual control and does not imply the source report is unavailable in reports scope."
+        },
+        {
+          "queryLanguage": "mixed",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. The assistant’s embedded maintenance-plan proposition is neither published nor injected as a factual obligation. This is appropriate exclusion for the factual control and does not imply the source report is unavailable in reports scope."
+        }
+      ]
+    },
+    {
+      "id": "ordinary-english-report",
+      "run": 2,
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. The Russian проверка корпуса is an acceptable general rendering of case inspection here and does not invent a particular test, repair, or component replacement. The answer uses the requested en language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Assistant heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. The Russian проверка корпуса is an acceptable general rendering of case inspection here and does not invent a particular test, repair, or component replacement. The answer uses the requested ru language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Assistant heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. The Russian проверка корпуса is an acceptable general rendering of case inspection here and does not invent a particular test, repair, or component replacement. The answer uses the requested en language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Assistant heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. The Russian проверка корпуса is an acceptable general rendering of case inspection here and does not invent a particular test, repair, or component replacement. The answer uses the requested ru language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Assistant heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. The Russian проверка корпуса is an acceptable general rendering of case inspection here and does not invent a particular test, repair, or component replacement. The answer uses the requested en language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Assistant heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": false,
+          "sourceEntailed": null,
+          "qualificationPreserved": true,
+          "languageCompliant": null,
+          "citationsSupportAnswer": false,
+          "justifiedAbstention": false,
+          "reason": "Avoidable missed useful answer: the mixed-language report query requests Russian, but no answer or citations are published. The supplied answer context still contains the full eleven-month case-inspection statement and the exact Assistant heading frame, so a useful attributed Russian answer is source-supported. The source and requested report scope do not justify abstention. Entailment and language are null because no answer exists; citationsSupportAnswer is false because no cited answer was published, not because the context is deficient. No unsafe factual assertion was emitted."
+        }
+      ],
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains the full case-inspection statement and an accessible frame with the exact two-space-indented Assistant heading with closing hashes heading. The reports qualification preserves attribution, so the embedded maintenance provision is useful without being established as an actual obligation. The eleven-month interval and product identity are intact. The authored English context matches the configured knowledge language."
+        },
+        {
+          "queryLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains the full case-inspection statement and an accessible frame with the exact two-space-indented Assistant heading with closing hashes heading. The reports qualification preserves attribution, so the embedded maintenance provision is useful without being established as an actual obligation. The eleven-month interval and product identity are intact. The authored English context matches the configured knowledge language."
+        },
+        {
+          "queryLanguage": "mixed",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains the full case-inspection statement and an accessible frame with the exact two-space-indented Assistant heading with closing hashes heading. The reports qualification preserves attribution, so the embedded maintenance provision is useful without being established as an actual obligation. The eleven-month interval and product identity are intact. The authored English context matches the configured knowledge language."
+        }
+      ],
+      "negativeControls": [
+        {
+          "queryLanguage": "en",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. The assistant’s embedded maintenance-plan proposition is neither published nor injected as a factual obligation. This is appropriate exclusion for the factual control and does not imply the source report is unavailable in reports scope."
+        },
+        {
+          "queryLanguage": "ru",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. The assistant’s embedded maintenance-plan proposition is neither published nor injected as a factual obligation. This is appropriate exclusion for the factual control and does not imply the source report is unavailable in reports scope."
+        },
+        {
+          "queryLanguage": "mixed",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. The assistant’s embedded maintenance-plan proposition is neither published nor injected as a factual obligation. This is appropriate exclusion for the factual control and does not imply the source report is unavailable in reports scope."
+        }
+      ]
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 1,
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer is useful and source-entailed: it preserves both the five-year warranty duration and coverage for housing/casing replacement, with the hypothetical frame governing both propositions. Housing and casing are faithful renderings of корпус here. It neither establishes actual coverage nor adds a performed replacement. The requested en language is used throughout the answer apart from the stable product identifier and citation. The displayed citation points to both body lines 4 and 5, while the structured citation includes lines 1 and 3 and the supplied frame retains the exact Гипотеза heading, supporting the governing qualification as well as both propositions."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer is useful and source-entailed: it preserves both the five-year warranty duration and coverage for housing/casing replacement, with the hypothetical frame governing both propositions. Housing and casing are faithful renderings of корпус here. It neither establishes actual coverage nor adds a performed replacement. The requested ru language is used throughout the answer apart from the stable product identifier and citation. The displayed citation points to both body lines 4 and 5, while the structured citation includes lines 1 and 3 and the supplied frame retains the exact Гипотеза heading, supporting the governing qualification as well as both propositions."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer is useful and source-entailed: it preserves both the five-year warranty duration and coverage for housing/casing replacement, with the hypothetical frame governing both propositions. Housing and casing are faithful renderings of корпус here. It neither establishes actual coverage nor adds a performed replacement. The requested en language is used throughout the answer apart from the stable product identifier and citation. The displayed citation points to both body lines 4 and 5, while the structured citation includes lines 1 and 3 and the supplied frame retains the exact Гипотеза heading, supporting the governing qualification as well as both propositions."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer is useful and source-entailed: it preserves both the five-year warranty duration and coverage for housing/casing replacement, with the hypothetical frame governing both propositions. Housing and casing are faithful renderings of корпус here. It neither establishes actual coverage nor adds a performed replacement. The requested ru language is used throughout the answer apart from the stable product identifier and citation. The displayed citation points to both body lines 4 and 5, while the structured citation includes lines 1 and 3 and the supplied frame retains the exact Гипотеза heading, supporting the governing qualification as well as both propositions."
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer is useful and source-entailed: it preserves both the five-year warranty duration and coverage for housing/casing replacement, with the hypothetical frame governing both propositions. Housing and casing are faithful renderings of корпус here. It neither establishes actual coverage nor adds a performed replacement. The requested en language is used throughout the answer apart from the stable product identifier and citation. The displayed citation points to both body lines 4 and 5, while the structured citation includes lines 1 and 3 and the supplied frame retains the exact Гипотеза heading, supporting the governing qualification as well as both propositions."
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer is useful and source-entailed: it preserves both the five-year warranty duration and coverage for housing/casing replacement, with the hypothetical frame governing both propositions. Housing and casing are faithful renderings of корпус here. It neither establishes actual coverage nor adds a performed replacement. The requested ru language is used throughout the answer apart from the stable product identifier and citation. The displayed citation points to both body lines 4 and 5, while the structured citation includes lines 1 and 3 and the supplied frame retains the exact Гипотеза heading, supporting the governing qualification as well as both propositions."
+        }
+      ],
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context includes both source lines 4 and 5, and each retains a frame with the exact two-space-indented Гипотеза heading and closing hashes. Thus the five-year duration and housing replacement coverage stay in one hypothetical scenario; neither bare body line is presented without its accessible governing qualification. The discussion view matches that scope. English knowledge-language framing is compliant: quoted authored Russian and mixed-language source bytes and headings remain unchanged rather than being silently rewritten. No unsupported synthesized narrative is added."
+        },
+        {
+          "queryLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context includes both source lines 4 and 5, and each retains a frame with the exact two-space-indented Гипотеза heading and closing hashes. Thus the five-year duration and housing replacement coverage stay in one hypothetical scenario; neither bare body line is presented without its accessible governing qualification. The discussion view matches that scope. English knowledge-language framing is compliant: quoted authored Russian and mixed-language source bytes and headings remain unchanged rather than being silently rewritten. No unsupported synthesized narrative is added."
+        },
+        {
+          "queryLanguage": "mixed",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context includes both source lines 4 and 5, and each retains a frame with the exact two-space-indented Гипотеза heading and closing hashes. Thus the five-year duration and housing replacement coverage stay in one hypothetical scenario; neither bare body line is presented without its accessible governing qualification. The discussion view matches that scope. English knowledge-language framing is compliant: quoted authored Russian and mixed-language source bytes and headings remain unchanged rather than being silently rewritten. No unsupported synthesized narrative is added."
+        }
+      ],
+      "negativeControls": [
+        {
+          "queryLanguage": "en",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. Neither the hypothetical five-year duration nor hypothetical housing-replacement coverage is published or injected as fact. This is appropriate exclusion for the requested factual control; the same source remains answerable in discussion scope."
+        },
+        {
+          "queryLanguage": "ru",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. Neither the hypothetical five-year duration nor hypothetical housing-replacement coverage is published or injected as fact. This is appropriate exclusion for the requested factual control; the same source remains answerable in discussion scope."
+        },
+        {
+          "queryLanguage": "mixed",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. Neither the hypothetical five-year duration nor hypothetical housing-replacement coverage is published or injected as fact. This is appropriate exclusion for the requested factual control; the same source remains answerable in discussion scope."
+        }
+      ]
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "run": 2,
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer is useful and source-entailed: it preserves both the five-year warranty duration and coverage for housing/casing replacement, with the hypothetical frame governing both propositions. Housing and casing are faithful renderings of корпус here. It neither establishes actual coverage nor adds a performed replacement. The requested en language is used throughout the answer apart from the stable product identifier and citation. The displayed citation points to both body lines 4 and 5, while the structured citation includes lines 1 and 3 and the supplied frame retains the exact Гипотеза heading, supporting the governing qualification as well as both propositions."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer is useful and source-entailed: it preserves both the five-year warranty duration and coverage for housing/casing replacement, with the hypothetical frame governing both propositions. Housing and casing are faithful renderings of корпус here. It neither establishes actual coverage nor adds a performed replacement. The requested ru language is used throughout the answer apart from the stable product identifier and citation. The displayed citation points to both body lines 4 and 5, while the structured citation includes lines 1 and 3 and the supplied frame retains the exact Гипотеза heading, supporting the governing qualification as well as both propositions."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer is useful and source-entailed: it preserves both the five-year warranty duration and coverage for housing/casing replacement, with the hypothetical frame governing both propositions. Housing and casing are faithful renderings of корпус here. It neither establishes actual coverage nor adds a performed replacement. The requested en language is used throughout the answer apart from the stable product identifier and citation. The displayed citation points to both body lines 4 and 5, while the structured citation includes lines 1 and 3 and the supplied frame retains the exact Гипотеза heading, supporting the governing qualification as well as both propositions."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer is useful and source-entailed: it preserves both the five-year warranty duration and coverage for housing/casing replacement, with the hypothetical frame governing both propositions. Housing and casing are faithful renderings of корпус here. It neither establishes actual coverage nor adds a performed replacement. The requested ru language is used throughout the answer apart from the stable product identifier and citation. The displayed citation points to both body lines 4 and 5, while the structured citation includes lines 1 and 3 and the supplied frame retains the exact Гипотеза heading, supporting the governing qualification as well as both propositions."
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer is useful and source-entailed: it preserves both the five-year warranty duration and coverage for housing/casing replacement, with the hypothetical frame governing both propositions. Housing and casing are faithful renderings of корпус here. It neither establishes actual coverage nor adds a performed replacement. The requested en language is used throughout the answer apart from the stable product identifier and citation. The displayed citation points to both body lines 4 and 5, while the structured citation includes lines 1 and 3 and the supplied frame retains the exact Гипотеза heading, supporting the governing qualification as well as both propositions."
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer is useful and source-entailed: it preserves both the five-year warranty duration and coverage for housing/casing replacement, with the hypothetical frame governing both propositions. Housing and casing are faithful renderings of корпус here. It neither establishes actual coverage nor adds a performed replacement. The requested ru language is used throughout the answer apart from the stable product identifier and citation. The displayed citation points to both body lines 4 and 5, while the structured citation includes lines 1 and 3 and the supplied frame retains the exact Гипотеза heading, supporting the governing qualification as well as both propositions."
+        }
+      ],
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context includes both source lines 4 and 5, and each retains a frame with the exact two-space-indented Гипотеза heading and closing hashes. Thus the five-year duration and housing replacement coverage stay in one hypothetical scenario; neither bare body line is presented without its accessible governing qualification. The discussion view matches that scope. English knowledge-language framing is compliant: quoted authored Russian and mixed-language source bytes and headings remain unchanged rather than being silently rewritten. No unsupported synthesized narrative is added."
+        },
+        {
+          "queryLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context includes both source lines 4 and 5, and each retains a frame with the exact two-space-indented Гипотеза heading and closing hashes. Thus the five-year duration and housing replacement coverage stay in one hypothetical scenario; neither bare body line is presented without its accessible governing qualification. The discussion view matches that scope. English knowledge-language framing is compliant: quoted authored Russian and mixed-language source bytes and headings remain unchanged rather than being silently rewritten. No unsupported synthesized narrative is added."
+        },
+        {
+          "queryLanguage": "mixed",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context includes both source lines 4 and 5, and each retains a frame with the exact two-space-indented Гипотеза heading and closing hashes. Thus the five-year duration and housing replacement coverage stay in one hypothetical scenario; neither bare body line is presented without its accessible governing qualification. The discussion view matches that scope. English knowledge-language framing is compliant: quoted authored Russian and mixed-language source bytes and headings remain unchanged rather than being silently rewritten. No unsupported synthesized narrative is added."
+        }
+      ],
+      "negativeControls": [
+        {
+          "queryLanguage": "en",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. Neither the hypothetical five-year duration nor hypothetical housing-replacement coverage is published or injected as fact. This is appropriate exclusion for the requested factual control; the same source remains answerable in discussion scope."
+        },
+        {
+          "queryLanguage": "ru",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. Neither the hypothetical five-year duration nor hypothetical housing-replacement coverage is published or injected as fact. This is appropriate exclusion for the requested factual control; the same source remains answerable in discussion scope."
+        },
+        {
+          "queryLanguage": "mixed",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. Neither the hypothetical five-year duration nor hypothetical housing-replacement coverage is published or injected as fact. This is appropriate exclusion for the requested factual control; the same source remains answerable in discussion scope."
+        }
+      ]
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 1,
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. Inspection of the housing, casing, or device body faithfully renders осмотр корпуса; the Russian answers preserve осмотр корпуса directly. The answer uses the requested en language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Сообщение ассистента heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. Inspection of the housing, casing, or device body faithfully renders осмотр корпуса; the Russian answers preserve осмотр корпуса directly. The answer uses the requested ru language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Сообщение ассистента heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. Inspection of the housing, casing, or device body faithfully renders осмотр корпуса; the Russian answers preserve осмотр корпуса directly. The answer uses the requested en language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Сообщение ассистента heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. Inspection of the housing, casing, or device body faithfully renders осмотр корпуса; the Russian answers preserve осмотр корпуса directly. The answer uses the requested ru language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Сообщение ассистента heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. Inspection of the housing, casing, or device body faithfully renders осмотр корпуса; the Russian answers preserve осмотр корпуса directly. The answer uses the requested en language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Сообщение ассистента heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. Inspection of the housing, casing, or device body faithfully renders осмотр корпуса; the Russian answers preserve осмотр корпуса directly. The answer uses the requested ru language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Сообщение ассистента heading that supports attribution. No abstention is required for a useful report-scoped response."
+        }
+      ],
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains the full case-inspection statement and an accessible frame with the exact three-space-indented Сообщение ассистента heading. The reports qualification preserves attribution, so the embedded maintenance provision is useful without being established as an actual obligation. The eleven-month interval and product identity are intact. Keeping the authored Russian body and heading unchanged is compliant with the ordinary-source framing policy; the configured English knowledge language does not require rewriting quoted source bytes."
+        },
+        {
+          "queryLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains the full case-inspection statement and an accessible frame with the exact three-space-indented Сообщение ассистента heading. The reports qualification preserves attribution, so the embedded maintenance provision is useful without being established as an actual obligation. The eleven-month interval and product identity are intact. Keeping the authored Russian body and heading unchanged is compliant with the ordinary-source framing policy; the configured English knowledge language does not require rewriting quoted source bytes."
+        },
+        {
+          "queryLanguage": "mixed",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains the full case-inspection statement and an accessible frame with the exact three-space-indented Сообщение ассистента heading. The reports qualification preserves attribution, so the embedded maintenance provision is useful without being established as an actual obligation. The eleven-month interval and product identity are intact. Keeping the authored Russian body and heading unchanged is compliant with the ordinary-source framing policy; the configured English knowledge language does not require rewriting quoted source bytes."
+        }
+      ],
+      "negativeControls": [
+        {
+          "queryLanguage": "en",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. The assistant’s embedded maintenance-plan proposition is neither published nor injected as a factual obligation. This is appropriate exclusion for the factual control and does not imply the source report is unavailable in reports scope."
+        },
+        {
+          "queryLanguage": "ru",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. The assistant’s embedded maintenance-plan proposition is neither published nor injected as a factual obligation. This is appropriate exclusion for the factual control and does not imply the source report is unavailable in reports scope."
+        },
+        {
+          "queryLanguage": "mixed",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. The assistant’s embedded maintenance-plan proposition is neither published nor injected as a factual obligation. This is appropriate exclusion for the factual control and does not imply the source report is unavailable in reports scope."
+        }
+      ]
+    },
+    {
+      "id": "ordinary-russian-report",
+      "run": 2,
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. Inspection of the housing, casing, or device body faithfully renders осмотр корпуса; the Russian answers preserve осмотр корпуса directly. The answer uses the requested en language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Сообщение ассистента heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. Inspection of the housing, casing, or device body faithfully renders осмотр корпуса; the Russian answers preserve осмотр корпуса directly. The answer uses the requested ru language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Сообщение ассистента heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. Inspection of the housing, casing, or device body faithfully renders осмотр корпуса; the Russian answers preserve осмотр корпуса directly. The answer uses the requested en language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Сообщение ассистента heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. Inspection of the housing, casing, or device body faithfully renders осмотр корпуса; the Russian answers preserve осмотр корпуса directly. The answer uses the requested ru language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Сообщение ассистента heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. Inspection of the housing, casing, or device body faithfully renders осмотр корпуса; the Russian answers preserve осмотр корпуса directly. The answer uses the requested en language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Сообщение ассистента heading that supports attribution. No abstention is required for a useful report-scoped response."
+        },
+        {
+          "queryLanguage": "mixed",
+          "answerLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageCompliant": true,
+          "citationsSupportAnswer": true,
+          "justifiedAbstention": false,
+          "reason": "The answer preserves explicit assistant attribution, Zephyr QX-100 identity, inspection of the case/housing, and the eleven-month interval without promoting the reported maintenance provision to established fact. Inspection of the housing, casing, or device body faithfully renders осмотр корпуса; the Russian answers preserve осмотр корпуса directly. The answer uses the requested ru language. Its displayed citation points to source line 4, and the structured citation and supplied context also retain lines 1 and 3, including the exact Сообщение ассистента heading that supports attribution. No abstention is required for a useful report-scoped response."
+        }
+      ],
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains the full case-inspection statement and an accessible frame with the exact three-space-indented Сообщение ассистента heading. The reports qualification preserves attribution, so the embedded maintenance provision is useful without being established as an actual obligation. The eleven-month interval and product identity are intact. Keeping the authored Russian body and heading unchanged is compliant with the ordinary-source framing policy; the configured English knowledge language does not require rewriting quoted source bytes."
+        },
+        {
+          "queryLanguage": "ru",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains the full case-inspection statement and an accessible frame with the exact three-space-indented Сообщение ассистента heading. The reports qualification preserves attribution, so the embedded maintenance provision is useful without being established as an actual obligation. The eleven-month interval and product identity are intact. Keeping the authored Russian body and heading unchanged is compliant with the ordinary-source framing policy; the configured English knowledge language does not require rewriting quoted source bytes."
+        },
+        {
+          "queryLanguage": "mixed",
+          "useful": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "knowledgeLanguageCompliant": true,
+          "reason": "The context contains the full case-inspection statement and an accessible frame with the exact three-space-indented Сообщение ассистента heading. The reports qualification preserves attribution, so the embedded maintenance provision is useful without being established as an actual obligation. The eleven-month interval and product identity are intact. Keeping the authored Russian body and heading unchanged is compliant with the ordinary-source framing policy; the configured English knowledge language does not require rewriting quoted source bytes."
+        }
+      ],
+      "negativeControls": [
+        {
+          "queryLanguage": "en",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. The assistant’s embedded maintenance-plan proposition is neither published nor injected as a factual obligation. This is appropriate exclusion for the factual control and does not imply the source report is unavailable in reports scope."
+        },
+        {
+          "queryLanguage": "ru",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. The assistant’s embedded maintenance-plan proposition is neither published nor injected as a factual obligation. This is appropriate exclusion for the factual control and does not imply the source report is unavailable in reports scope."
+        },
+        {
+          "queryLanguage": "mixed",
+          "safeFactualExclusion": true,
+          "reason": "Under the explicit factual view, the public answer is null and both answer context and context evidence are empty. The assistant’s embedded maintenance-plan proposition is neither published nor injected as a factual obligation. This is appropriate exclusion for the factual control and does not imply the source report is unavailable in reports scope."
+        }
+      ]
+    }
+  ]
+}

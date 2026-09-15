@@ -13,6 +13,7 @@ const { values } = parseArgs({
     runs: { type: 'string', default: '1' },
     case: { type: 'string', multiple: true },
     'answer-output-tokens': { type: 'string' },
+    'full-retrieval': { type: 'boolean' },
   },
 });
 if (
@@ -41,13 +42,14 @@ if (
     'v20',
     'v21',
     'v22',
+    'v23',
   ].includes(values.corpus) ||
   !/^[1-5]$/.test(values.runs) ||
   (values['answer-output-tokens'] !== undefined &&
     (!/^[1-9][0-9]*$/.test(values['answer-output-tokens']) || Number(values['answer-output-tokens']) > 8192))
 ) {
   console.error(
-    'Usage: pnpm bench:language --live --split development|held-out [--corpus v1|v2|v3|v4|v5|v6|v7|v8|v9|v10|v11|v12|v13|v14|v15|v16|v17|v18|v19|v20|v21|v22] [--runs 1..5] [--case ID] [--answer-output-tokens 1..8192] [--output bench-results/language.json]\nThis opt-in run sends only the frozen invented corpus to your configured model providers.',
+    'Usage: pnpm bench:language --live --split development|held-out [--corpus v1|v2|v3|v4|v5|v6|v7|v8|v9|v10|v11|v12|v13|v14|v15|v16|v17|v18|v19|v20|v21|v22|v23] [--runs 1..5] [--case ID] [--answer-output-tokens 1..8192] [--full-retrieval] [--output bench-results/language.json]\nThis opt-in run sends only the frozen invented corpus to your configured model providers.',
   );
   process.exitCode = 2;
 } else {
@@ -64,6 +66,7 @@ if (
     corpus: values.corpus,
     runs: Number(values.runs),
     caseIds: values.case,
+    fullRetrieval: values['full-retrieval'],
     onProgress: (id, done, total) => console.error(`${done}/${total}: ${id}`),
   });
   const output = values.output ?? `bench-results/language-${values.split}.json`;

@@ -1,0 +1,72 @@
+{
+  "kind": "exposed-case-diagnostic",
+  "createdAt": "2026-09-15T09:21:24.337Z",
+  "head": "c794f2231075c66f6e954732f40aac870e7a4133",
+  "sourceDiffSha256": "3ff484f20a93b2f927cc5be1b2b085e63b316b3fbd118b2794ba2cb7bf3ade94",
+  "runnerSha256": "52a268c910cf9f56d1d6f382dbb592950fe3285139222304f96906ce9a2a7307",
+  "runtime": {
+    "core": "c16ab4c07437c54fc9fd7bd0ea36c538efb1112f7f2eb02fa34bd79782f5d9f6",
+    "protocol": "0e3d190ecc3e069c1642c5e77208c4d3ad3743052ecc15678f2432eed5ec1b0a"
+  },
+  "corpusFingerprint": "b0e1d4871ac78007863609b90dd432588d7ef4d8e1c441f1255bdbf7bd564c8a",
+  "split": "held-out",
+  "runs": 1,
+  "selectedCaseIds": [
+    "v22-held-nested-report",
+    "v22-held-coverage-exclusion"
+  ],
+  "models": {
+    "derive": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "timeoutMs": 120000,
+      "maxOutputTokens": 2400,
+      "reasoningEffort": "low",
+      "api": "responses",
+      "providerRetries": 0
+    },
+    "answer": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "timeoutMs": 60000,
+      "maxOutputTokens": 2400,
+      "reasoningEffort": "low",
+      "api": "responses",
+      "providerRetries": 0
+    },
+    "embedding": {
+      "id": "text-embedding-3-small",
+      "enabled": true,
+      "timeoutMs": 60000,
+      "dimensions": 1536,
+      "api": "responses",
+      "providerRetries": 0
+    },
+    "expansion": {
+      "id": null,
+      "enabled": false,
+      "timeoutMs": 30000,
+      "maxOutputTokens": 1024
+    },
+    "reranker": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "timeoutMs": 30000,
+      "maxOutputTokens": 1600,
+      "reasoningEffort": "low",
+      "rerankerMode": "llm",
+      "topK": 8,
+      "maxChars": 2400,
+      "excludeIrrelevant": true,
+      "scoreOffset": "auto",
+      "api": "responses",
+      "providerRetries": 0
+    }
+  },
+  "fullRetrieval": true,
+  "limitations": [
+    "Previously exposed corpus; this is not fresh held-out generalization.",
+    "Published text requires independent source-based review.",
+    "Summaries/facts and expansion disabled; graph expansion disabled."
+  ]
+}

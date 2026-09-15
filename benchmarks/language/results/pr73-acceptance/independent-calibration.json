@@ -1,0 +1,81 @@
+{
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "control-1-1",
+      "accepted": true,
+      "reason": "Preserves that the assistant reported, rather than established, the five-year Zephyr QX-100 warranty and that the assistant has not verified the report. English matches the requested language."
+    },
+    {
+      "id": "control-1-2",
+      "accepted": false,
+      "reason": "Changes an explicitly unverified report by the assistant into an asserted verified warranty, reversing verification status and removing attribution."
+    },
+    {
+      "id": "control-2-1",
+      "accepted": true,
+      "reason": "Preserves both attribution levels: Ada relays that Bo said the inspection is free. Also preserves that Ada has not checked Bo’s statement. English matches the requested language."
+    },
+    {
+      "id": "control-2-2",
+      "accepted": false,
+      "reason": "Reverses the speakers: the source has Ada relaying Bo’s statement, while the candidate has Bo attributing the statement to Ada."
+    },
+    {
+      "id": "control-3-1",
+      "accepted": true,
+      "reason": "Russian paraphrase preserves the six-week cleaning interval as hypothetical, the seven-week violation as conditional on that hypothesis, and the real rule as unknown."
+    },
+    {
+      "id": "control-3-2",
+      "accepted": false,
+      "reason": "Turns the hypothetical six-week rule and conditional violation into real requirements and an actual violation, contradicting the explicit statement that the real rule is unknown."
+    },
+    {
+      "id": "control-4-1",
+      "accepted": true,
+      "reason": "Rattled is an equivalent paraphrase of made a rattling sound. Preserves only the note’s failure to establish whether it happened, without asserting occurrence or nonoccurrence. English matches the request."
+    },
+    {
+      "id": "control-4-2",
+      "accepted": false,
+      "reason": "Infers nonoccurrence from lack of establishment. The source leaves whether rattling occurred unresolved; it does not say the device did not rattle."
+    },
+    {
+      "id": "control-5-1",
+      "accepted": true,
+      "reason": "Russian translation preserves the proposed replacement of exactly one rotary control knob, expressly excludes replacement of the whole control panel, and preserves that the repair is not approved."
+    },
+    {
+      "id": "control-5-2",
+      "accepted": false,
+      "reason": "Reverses the component scope: the source proposes one rotary control knob and excludes the whole panel, whereas the candidate proposes the whole panel and excludes one knob."
+    },
+    {
+      "id": "control-6-1",
+      "accepted": true,
+      "reason": "Preserves Ada as the person who does not know and this note as the evidence that establishes neither inclusion nor exclusion. English matches the request."
+    },
+    {
+      "id": "control-6-2",
+      "accepted": false,
+      "reason": "Broadens Ada’s lack of knowledge to nobody and changes the evidentiary subject from this note to a contract. A note establishing neither inclusion nor exclusion does not imply that the contract says nothing."
+    },
+    {
+      "id": "control-7-1",
+      "accepted": true,
+      "reason": "Russian translation preserves Ada’s rejection of the inspection proposal and the absence of an arranged appointment, including both negative outcomes."
+    },
+    {
+      "id": "control-7-2",
+      "accepted": false,
+      "reason": "Reverses both material outcomes: rejected becomes approved, and no appointment arranged becomes an appointment arranged."
+    }
+  ]
+}

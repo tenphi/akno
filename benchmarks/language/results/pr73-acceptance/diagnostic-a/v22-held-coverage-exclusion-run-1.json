@@ -1,0 +1,1349 @@
+{
+  "id": "v22-held-coverage-exclusion",
+  "run": 1,
+  "admission": "writable",
+  "reviewExpectation": "Retain the asserted exclusion of sand damage to the ceramic spacer with negative polarity. Separately preserve that this record does not settle intake-sleeve replacement coverage and does not establish agreement silence. Do not infer inclusion or exclusion for the sleeve.",
+  "language": "en",
+  "scenario": "coverage-exclusion",
+  "expectedHold": false,
+  "nonfactualExpected": false,
+  "retentionAvailabilityFailure": false,
+  "availabilityFailure": true,
+  "languageRejected": false,
+  "retention": {
+    "status": "ok",
+    "outcome": "ok",
+    "reason": null,
+    "candidates": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "usage": {
+      "extraction": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 7352,
+        "input_tokens": 7424,
+        "output_tokens": 627,
+        "total_tokens": 8051
+      },
+      "repair": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 5969,
+        "input_tokens": 8478,
+        "output_tokens": 482,
+        "total_tokens": 8960
+      },
+      "verification": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 6986,
+        "input_tokens": 9252,
+        "output_tokens": 636,
+        "total_tokens": 9888
+      },
+      "placement": [
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1159,
+          "input_tokens": 560,
+          "output_tokens": 16,
+          "total_tokens": 576
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1429,
+          "input_tokens": 586,
+          "output_tokens": 35,
+          "total_tokens": 621
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1385,
+          "input_tokens": 389,
+          "output_tokens": 31,
+          "total_tokens": 420
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1195,
+          "input_tokens": 559,
+          "output_tokens": 30,
+          "total_tokens": 589
+        }
+      ]
+    },
+    "degraded": []
+  },
+  "retainedItems": 2,
+  "noncanonicalEligibilityFlag": false,
+  "semanticsMatch": true,
+  "ordinaryCorrect": true,
+  "ordinaryInspection": {
+    "status": "ok",
+    "results": 1
+  },
+  "bytesStable": true,
+  "replayOutcome": "replayed",
+  "sourceArchive": {
+    "stableAcrossRebuildReplay": true,
+    "supports": [
+      {
+        "memory_id": "mem_3cf96e1f",
+        "source_ref": "invented:v22-held-coverage-exclusion",
+        "input_hash": "05814d9abdd25f26a23e34b707d4755db85cc90a02459883580313a4ddb2192c",
+        "evidence": "I, Ada Marlow, record that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+        "evidence_hash": "113213a3d0ee2bac34ea800591f176f48cc87e4e1835719b8dd72f2a09c6f18a",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "I, Ada Marlow, record that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          }
+        ]
+      },
+      {
+        "memory_id": "mem_6ffe3cb0",
+        "source_ref": "invented:v22-held-coverage-exclusion",
+        "input_hash": "05814d9abdd25f26a23e34b707d4755db85cc90a02459883580313a4ddb2192c",
+        "evidence": "I, Ada Marlow, record that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.\n…\nThis exclusion alone does not answer whether replacement of the intake sleeve is covered. It also does not say that the agreement is silent about that sleeve.",
+        "evidence_hash": "490f64c28496e96ff73ff66c72f95627f85ea0fcf60bcfe653236c7d22c96f4b",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "I, Ada Marlow, record that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          },
+          {
+            "quote": "This exclusion alone does not answer whether replacement of the intake sleeve is covered. It also does not say that the agreement is silent about that sleeve.",
+            "matchingSourceItems": [
+              "turn-2222"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "queries": [
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "factual",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 2,
+      "reviewRetrieval": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_6ffe3cb0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        },
+        {
+          "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_3cf96e1f",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 9,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_6ffe3cb0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "n": 6,
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_3cf96e1f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Warranty Exclusions",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5061,
+          "input_tokens": 5211,
+          "output_tokens": 383,
+          "total_tokens": 5594
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7971,
+          "input_tokens": 10889,
+          "output_tokens": 844,
+          "total_tokens": 11733
+        }
+      },
+      "reviewAnswer": "Ada Marlow’s record establishes that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. It does not establish whether replacement of the intake sleeve is covered, nor does it establish that the agreement is silent about the intake sleeve. [memory/equipment:9] [memory/equipment:6]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "factual",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 2,
+      "reviewRetrieval": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_6ffe3cb0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        },
+        {
+          "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_3cf96e1f",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 9,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_6ffe3cb0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "n": 6,
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_3cf96e1f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Warranty Exclusions",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6440,
+          "input_tokens": 5239,
+          "output_tokens": 443,
+          "total_tokens": 5682
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 14516,
+          "input_tokens": 10951,
+          "output_tokens": 1358,
+          "total_tokens": 12309
+        }
+      },
+      "reviewAnswer": "По записи Ada Marlow, гарантия Zephyr QX-100 исключает повреждение керамической проставки, вызванное песком. Однако это само по себе не устанавливает, покрывается ли гарантией замена впускной втулки, и не означает, что соглашение ничего не говорит об этой втулке. [memory/equipment:9] [memory/equipment:6]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "factual",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 2,
+      "reviewRetrieval": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_6ffe3cb0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        },
+        {
+          "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_3cf96e1f",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 9,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_6ffe3cb0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "n": 6,
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_3cf96e1f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Warranty Exclusions",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6420,
+          "input_tokens": 5213,
+          "output_tokens": 471,
+          "total_tokens": 5684
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7566,
+          "input_tokens": 10891,
+          "output_tokens": 804,
+          "total_tokens": 11695
+        }
+      },
+      "reviewAnswer": "Ada Marlow’s record establishes that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. That exclusion alone does not establish whether replacement of the intake sleeve is covered, nor does it establish that the agreement is silent about the intake sleeve. [memory/equipment:9] [memory/equipment:6]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "factual",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 2,
+      "reviewRetrieval": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_6ffe3cb0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        },
+        {
+          "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_3cf96e1f",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 9,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_6ffe3cb0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "n": 6,
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_3cf96e1f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Warranty Exclusions",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7311,
+          "input_tokens": 5240,
+          "output_tokens": 530,
+          "total_tokens": 5770
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 11571,
+          "input_tokens": 10930,
+          "output_tokens": 1048,
+          "total_tokens": 11978
+        }
+      },
+      "reviewAnswer": "По записи Ada Marlow, гарантия Zephyr QX-100 исключает повреждение керамической проставки, вызванное песком. Однако это исключение само по себе не устанавливает, покрывается ли гарантией замена впускной втулки, и не означает, что договор ничего не говорит об этой втулке. [memory/equipment:9] [memory/equipment:6]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "factual",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 2,
+      "reviewRetrieval": [
+        {
+          "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_3cf96e1f",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        },
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_6ffe3cb0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 9,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_6ffe3cb0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "n": 6,
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_3cf96e1f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Warranty Exclusions",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 2,
+        "passed_guards": 2,
+        "verified_blocks": 2,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6856,
+          "input_tokens": 5203,
+          "output_tokens": 431,
+          "total_tokens": 5634
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 16711,
+          "input_tokens": 19302,
+          "output_tokens": 1487,
+          "total_tokens": 20789
+        }
+      },
+      "reviewAnswer": "The Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. [memory/equipment:6]\n\nThat exclusion alone does not establish whether replacement of the intake sleeve is covered, nor does it establish that the agreement is silent about the intake sleeve. [memory/equipment:9]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "factual",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 2,
+      "reviewRetrieval": [
+        {
+          "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_3cf96e1f",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        },
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_6ffe3cb0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 9,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_6ffe3cb0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "n": 6,
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_3cf96e1f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Warranty Exclusions",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 2,
+        "passed_guards": 2,
+        "verified_blocks": 2,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6649,
+          "input_tokens": 5251,
+          "output_tokens": 564,
+          "total_tokens": 5815
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 12774,
+          "input_tokens": 19522,
+          "output_tokens": 1216,
+          "total_tokens": 20738
+        }
+      },
+      "reviewAnswer": "Ада Марлоу записывает, что гарантия Zephyr QX-100 исключает повреждение керамической проставки, вызванное песком. [memory/equipment:6]\n\nАда Марлоу также указывает, что одно лишь это исключение не отвечает на вопрос, покрывается ли гарантией замена впускной втулки; оно также не означает, что соглашение ничего не говорит об этой втулке. [memory/equipment:9]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "factual",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 2,
+      "reviewRetrieval": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_6ffe3cb0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        },
+        {
+          "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_3cf96e1f",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 9,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_6ffe3cb0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "n": 6,
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_3cf96e1f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Warranty Exclusions",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6561,
+          "input_tokens": 5203,
+          "output_tokens": 497,
+          "total_tokens": 5700
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 10259,
+          "input_tokens": 10869,
+          "output_tokens": 998,
+          "total_tokens": 11867
+        }
+      },
+      "reviewAnswer": "The record states that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand. That exclusion does not establish whether replacement of the intake sleeve is covered, nor does it state that the agreement is silent about the intake sleeve. [memory/equipment:6] [memory/equipment:9]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "factual",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 2,
+      "reviewRetrieval": [
+        {
+          "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_6ffe3cb0",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        },
+        {
+          "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_3cf96e1f",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_d91fee730f316749230d9cc7",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 9,
+              "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_6ffe3cb0",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            },
+            {
+              "n": 6,
+              "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_3cf96e1f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_d91fee730f316749230d9cc7",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Warranty Exclusions",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "not_answered",
+      "answerReason": "verification_unavailable",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": null,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model",
+        "answer_verification_failed"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5306,
+          "input_tokens": 5244,
+          "output_tokens": 483,
+          "total_tokens": 5727
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 17691,
+          "input_tokens": 10890,
+          "output_tokens": 2400,
+          "total_tokens": 13290
+        }
+      },
+      "reviewAnswer": null
+    }
+  ],
+  "reviewKnowledge": [
+    {
+      "text": "- Ada Marlow records that the Zephyr QX-100 warranty excludes damage to the ceramic spacer caused by sand.",
+      "qualification": {
+        "status": "qualified",
+        "id": "mem_3cf96e1f",
+        "level": 1,
+        "kind": "claim",
+        "subject": "ent_d91fee730f316749230d9cc7",
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "commitment": "asserted",
+        "disposition": "active",
+        "polarity": "negated",
+        "basis": "self_attested",
+        "answer_eligible": true,
+        "current_eligible": true
+      }
+    },
+    {
+      "text": "- Ada Marlow states that the Zephyr QX-100 warranty exclusion for sand-caused damage to the ceramic spacer alone does not answer whether replacement of the intake sleeve is covered, and does not say that the agreement is silent about that sleeve.",
+      "qualification": {
+        "status": "qualified",
+        "id": "mem_6ffe3cb0",
+        "level": 1,
+        "kind": "claim",
+        "subject": "ent_d91fee730f316749230d9cc7",
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "commitment": "asserted",
+        "disposition": "active",
+        "polarity": "affirmed",
+        "basis": "self_attested",
+        "answer_eligible": true,
+        "current_eligible": true
+      }
+    }
+  ],
+  "error": null
+}

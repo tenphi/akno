@@ -1,0 +1,63 @@
+{
+  "version": "pr73-language-discourse-diagnostic-v1",
+  "knowledgeLanguage": "en",
+  "runs": 2,
+  "cases": [
+    {
+      "id": "ordinary-english-report",
+      "path": "ordinary",
+      "sourceLanguage": "en",
+      "view": "reports",
+      "markdown": "# Zephyr QX-100\n\n  ## Assistant ###\nThe Zephyr QX-100 maintenance plan includes a case inspection every eleven months.\n",
+      "focusLine": 4,
+      "queries": {
+        "en": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+        "ru": "Что ассистент сообщил о плане обслуживания Zephyr QX-100?",
+        "mixed": "What did the assistant report about the Zephyr QX-100 план обслуживания?"
+      },
+      "expectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity."
+    },
+    {
+      "id": "ordinary-russian-report",
+      "path": "ordinary",
+      "sourceLanguage": "ru",
+      "view": "reports",
+      "markdown": "# Zephyr QX-100\n\n   ## Сообщение ассистента\nПлан обслуживания Zephyr QX-100 включает осмотр корпуса каждые одиннадцать месяцев.\n",
+      "focusLine": 4,
+      "queries": {
+        "en": "What did the assistant report about the Zephyr QX-100 maintenance plan?",
+        "ru": "Что ассистент сообщил о плане обслуживания Zephyr QX-100?",
+        "mixed": "What did the assistant report about the Zephyr QX-100 план обслуживания?"
+      },
+      "expectation": "The assistant report describes a case inspection every eleven months. The answer must retain attribution and must not establish that the maintenance plan actually requires this inspection. Preserve case inspection, the eleven-month interval, and the device identity. Authored Russian text and its exact heading frame remain unchanged."
+    },
+    {
+      "id": "ordinary-mixed-hypothesis",
+      "path": "ordinary",
+      "sourceLanguage": "mixed",
+      "view": "discussion",
+      "markdown": "# Zephyr QX-100\n\n  ## Гипотеза ###\nThe Zephyr QX-100 warranty lasts five years.\nЗамена корпуса покрывается гарантией.\n",
+      "focusLine": 4,
+      "queries": {
+        "en": "What hypothetical warranty scenario is recorded for Zephyr QX-100?",
+        "ru": "Какой гипотетический сценарий гарантии записан для Zephyr QX-100?",
+        "mixed": "What hypothetical scenario is recorded о гарантии Zephyr QX-100?"
+      },
+      "expectation": "Both the five-year warranty duration and housing replacement coverage belong to one hypothetical scenario. A useful answer preserves both propositions and their hypothetical status. Neither proposition establishes actual warranty coverage."
+    },
+    {
+      "id": "ordinary-empty-heading-fact",
+      "path": "ordinary",
+      "sourceLanguage": "en",
+      "view": "factual",
+      "markdown": "# Zephyr QX-100\n\n  ## Hypothesis\nThe Zephyr QX-100 warranty lasts eleven years.\n\n##\nThe Zephyr QX-100 case is silver.\n",
+      "focusLine": 7,
+      "queries": {
+        "en": "What color is the Zephyr QX-100 case?",
+        "ru": "Какого цвета корпус Zephyr QX-100?",
+        "mixed": "What color is корпус Zephyr QX-100?"
+      },
+      "expectation": "The case is silver as an ordinary authored assertion. The empty sibling heading ends the hypothetical section. Do not describe the case color as hypothetical or add the hypothetical eleven-year warranty to the answer."
+    }
+  ]
+}

@@ -1,0 +1,991 @@
+{
+  "id": "v22-held-competing-hypotheses",
+  "run": 1,
+  "admission": "writable",
+  "reviewExpectation": "Keep both tentative competing causes: a deformed washer and an inadequately secured filter cover. Ada selected neither, evidence supports neither, and the record does not itself confirm the rattle. Do not establish either fault or collapse them into one cause.",
+  "language": "ru",
+  "scenario": "competing-hypotheses",
+  "expectedHold": false,
+  "nonfactualExpected": true,
+  "retentionAvailabilityFailure": false,
+  "availabilityFailure": false,
+  "languageRejected": false,
+  "retention": {
+    "status": "ok",
+    "outcome": "ok",
+    "reason": null,
+    "candidates": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "usage": {
+      "extraction": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 9754,
+        "input_tokens": 7428,
+        "output_tokens": 807,
+        "total_tokens": 8235
+      },
+      "verification": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 4535,
+        "input_tokens": 8161,
+        "output_tokens": 489,
+        "total_tokens": 8650
+      },
+      "placement": [
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1187,
+          "input_tokens": 594,
+          "output_tokens": 33,
+          "total_tokens": 627
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1742,
+          "input_tokens": 424,
+          "output_tokens": 82,
+          "total_tokens": 506
+        }
+      ]
+    },
+    "degraded": []
+  },
+  "retainedItems": 1,
+  "noncanonicalEligibilityFlag": false,
+  "semanticsMatch": true,
+  "ordinaryCorrect": true,
+  "ordinaryInspection": {
+    "status": "ok",
+    "results": 1
+  },
+  "bytesStable": true,
+  "replayOutcome": "replayed",
+  "sourceArchive": {
+    "stableAcrossRebuildReplay": true,
+    "supports": [
+      {
+        "memory_id": "mem_17349143",
+        "source_ref": "invented:v22-held-competing-hypotheses",
+        "input_hash": "c6b6a6b79ec9458cd20fdd0109a3989d38ece5cf3131fc7bfa065687a6d2365a",
+        "evidence": "Я, Ada Marlow, рассматриваю две конкурирующие предварительные причины дребезга Zephyr QX-100: деформированная шайба или плохо закреплённая крышка фильтра.\n…\nЯ не выбрала ни одну причину. Для обеих версий пока нет подтверждающих данных; сам дребезг этой записью также не подтверждается.",
+        "evidence_hash": "3b18a976667127dd95bd8bdb50464353f98d9bf34ed3de5a5cb0daf2172c120b",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "Я, Ada Marlow, рассматриваю две конкурирующие предварительные причины дребезга Zephyr QX-100: деформированная шайба или плохо закреплённая крышка фильтра.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          },
+          {
+            "quote": "Я не выбрала ни одну причину. Для обеих версий пока нет подтверждающих данных; сам дребезг этой записью также не подтверждается.",
+            "matchingSourceItems": [
+              "turn-2222"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "queries": [
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_17349143",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6959,
+          "input_tokens": 6394,
+          "output_tokens": 438,
+          "total_tokens": 6832
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 16903,
+          "input_tokens": 11063,
+          "output_tokens": 1780,
+          "total_tokens": 12843
+        }
+      },
+      "reviewAnswer": "**Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_17349143",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8345,
+          "input_tokens": 6379,
+          "output_tokens": 690,
+          "total_tokens": 7069
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 15750,
+          "input_tokens": 11019,
+          "output_tokens": 999,
+          "total_tokens": 12018
+        }
+      },
+      "reviewAnswer": "**Предварительно:** Ada Marlow рассматривает два конкурирующих предварительных объяснения дребезга Zephyr QX-100: деформированную шайбу или плохо закреплённую крышку фильтра. Она не выбрала ни одно из них; ни одно объяснение пока не имеет подтверждающих данных, и эта запись не подтверждает, что сам дребезг произошёл. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_17349143",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6314,
+          "input_tokens": 6394,
+          "output_tokens": 425,
+          "total_tokens": 6819
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 10961,
+          "input_tokens": 11063,
+          "output_tokens": 1016,
+          "total_tokens": 12079
+        }
+      },
+      "reviewAnswer": "**Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_17349143",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 9292,
+          "input_tokens": 6381,
+          "output_tokens": 754,
+          "total_tokens": 7135
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 12617,
+          "input_tokens": 11087,
+          "output_tokens": 956,
+          "total_tokens": 12043
+        }
+      },
+      "reviewAnswer": "**Предварительный статус:** Ada Marlow рассматривает два конкурирующих предварительных объяснения дребезга Zephyr QX-100: деформированную шайбу или плохо закреплённую крышку фильтра. Она не выбрала ни одно из них; для обоих объяснений пока нет подтверждающих данных, и эта запись не подтверждает, что сам дребезг имел место. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_17349143",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 9469,
+          "input_tokens": 6401,
+          "output_tokens": 505,
+          "total_tokens": 6906
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 19001,
+          "input_tokens": 11063,
+          "output_tokens": 1800,
+          "total_tokens": 12863
+        }
+      },
+      "reviewAnswer": "**Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_17349143",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 9929,
+          "input_tokens": 6385,
+          "output_tokens": 782,
+          "total_tokens": 7167
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 10891,
+          "input_tokens": 11018,
+          "output_tokens": 1089,
+          "total_tokens": 12107
+        }
+      },
+      "reviewAnswer": "Предварительно: Ada Marlow рассматривает две конкурирующие предварительные версии причины дребезга Zephyr QX-100: деформированную шайбу или плохо закреплённую крышку фильтра. Она не выбрала ни одну из них; ни одна версия пока не имеет подтверждающих данных, и эта запись также не подтверждает, что сам дребезг произошёл. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_17349143",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5554,
+          "input_tokens": 6401,
+          "output_tokens": 369,
+          "total_tokens": 6770
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 11652,
+          "input_tokens": 11063,
+          "output_tokens": 1019,
+          "total_tokens": 12082
+        }
+      },
+      "reviewAnswer": "**Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_17349143",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_17349143",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Rattling Investigation",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7727,
+          "input_tokens": 6388,
+          "output_tokens": 619,
+          "total_tokens": 7007
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 20253,
+          "input_tokens": 11021,
+          "output_tokens": 1735,
+          "total_tokens": 12756
+        }
+      },
+      "reviewAnswer": "**Предварительно:** Ada Marlow рассматривает два конкурирующих предварительных объяснения дребезга Zephyr QX-100: деформированная шайба или плохо закреплённая крышка фильтра. Она не выбрала ни одно из них; пока ни одно из объяснений не имеет подтверждающих данных, и эта запись не подтверждает, что сам дребезг имел место. [memory/equipment:7]"
+    }
+  ],
+  "reviewKnowledge": [
+    {
+      "text": "- **Tentative:** Ada Marlow is considering two competing tentative explanations for the rattling of Zephyr QX-100: a deformed washer or a poorly secured filter cover. She has selected neither; neither explanation has supporting evidence yet, and this record does not confirm that the rattling itself occurred.",
+      "qualification": {
+        "status": "qualified",
+        "id": "mem_17349143",
+        "level": 1,
+        "kind": "claim",
+        "subject": "ent_ad70ffbe9f7f9ea41cb4fa78",
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "commitment": "tentative",
+        "disposition": "active",
+        "polarity": "affirmed",
+        "basis": "self_attested",
+        "answer_eligible": false,
+        "current_eligible": false
+      }
+    }
+  ],
+  "error": null
+}

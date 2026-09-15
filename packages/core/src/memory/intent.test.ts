@@ -11,6 +11,35 @@ const factual: MemorySemantics = {
 
 describe('memory-view inference', () => {
   it.each([
+    ['Какое сообщение об осмотре пересказала Ada Marlow?', 'reports'],
+    ['Ada Marlow передаёт сообщение Bo Winters о гарантийном осмотре.', 'reports'],
+    ['What did the assistant speculate about the inspection interval?', 'reports'],
+    ['The assistant has conjectured that the inspection may be covered.', 'reports'],
+    ['Какую догадку о сроке осмотра высказал ассистент?', 'reports'],
+    ['Ассистент высказал предположение о покрытии осмотра.', 'reports'],
+    ['What unrealized inspection benefit did Ada Marlow describe?', 'discussion'],
+    ['Какую нереализованную льготу по осмотру описала Ada Marlow?', 'discussion'],
+    ['What fictional equipment loan did Ada Marlow introduce for discussion?', 'discussion'],
+    ['Какой вымышленный заём оборудования Ada Marlow предложила обсудить?', 'discussion'],
+    ['Какие конкурирующие версии причины шума рассматривала Ada Marlow?', 'discussion'],
+    ['Which report did the assistant give about the fictional loan?', 'reports'],
+    ['Какое сообщение об ошибке показал дисплей?', 'factual'],
+    ['Сообщение появилось, пока Ada Marlow пересказала рассказ.', 'factual'],
+    ['What inspection did the assistant perform?', 'factual'],
+    ['Who speculated about the assistant?', 'factual'],
+    ['Какое предположение подтвердилось? Ассистент высказал благодарность.', 'factual'],
+    ['Какое предположение подтвердилось и ассистент высказал благодарность?', 'factual'],
+    ['What unrealized benefit disappeared while Ada Marlow described the device?', 'factual'],
+    ['Какую нереализованную льготу отменили, пока Ada Marlow описала устройство?', 'history'],
+    ['What fictional label faded while Ada Marlow described the casing?', 'factual'],
+    ['Какой вымышленный персонаж изображён на корпусе?', 'factual'],
+    ['Какие конкурирующие версии установлены на устройствах?', 'factual'],
+    ['Конкурирующие версии исчезли. Ada Marlow рассматривала корпус.', 'factual'],
+  ] as const)('recognizes a bounded discourse request without crossing clauses: %s', (query, view) => {
+    expect(inferMemoryView(query)).toBe(view);
+  });
+
+  it.each([
     ['What did Ada Marlow report about план осмотра?', 'reports'],
     ['What did Ada Marlow report about гипотезу?', 'reports'],
     ['Which open questions remain about план осмотра?', 'questions'],
@@ -81,7 +110,9 @@ describe('memory-view inference', () => {
     ['Какую предварительную версию корпуса выпустили? Ассистент предложил осмотр.', 'planning'],
     ['Какое предварительное сообщение появилось? Ada Marlow пересказала рассказ.', 'factual'],
     ['Какое предварительное сообщение появилось и Ada Marlow пересказала рассказ?', 'factual'],
-    ['Какое предварительное устройство и сообщение пересказала Ada Marlow?', 'factual'],
+    // A relayed message establishes report intent independently of the adjacent adjective.
+    ['Какое предварительное устройство и сообщение пересказала Ada Marlow?', 'reports'],
+    ['Какое предварительное устройство и сообщение показала Ada Marlow?', 'factual'],
     ['Какой несостоявшийся вариант корпуса исчез пока Ada Marlow описала цвет?', 'factual'],
     ['Какое предварительное сообщение появилось, пока Ada Marlow пересказала рассказ?', 'factual'],
     ['Какой рассказ пересказала Ada Marlow?', 'factual'],
