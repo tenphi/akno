@@ -1,5 +1,25 @@
 # @tenphi/akno-core
 
+## 0.13.1
+
+### Patch Changes
+
+- [#73](https://github.com/tenphi/akno/pull/73) [`20cb951`](https://github.com/tenphi/akno/commit/20cb9515337e8d3a40a4fa45d5f04820f1cb14c1) Thanks [@tenphi](https://github.com/tenphi)! - Recognize bounded English and Russian queries about relayed reports, assistant speculation, unrealized benefits, fictional examples and competing hypotheses. Preserve clause boundaries so unrelated narrative words do not change factual queries into discourse inspection.
+
+- [#73](https://github.com/tenphi/akno/pull/73) [`745a8c4`](https://github.com/tenphi/akno/commit/745a8c45bceb6c03da7d26c3de19a3fae5450760) Thanks [@tenphi](https://github.com/tenphi)! - Preserve ordinary Markdown qualification under indented and closed ATX headings, and correctly end scope
+  at empty sibling headings. Reindexing upgrades existing derived classifications without editing source files.
+
+  Use consistent evidence-view precedence for mixed English/Russian queries, so a planning topic cannot hide
+  an explicit report, question, discussion, or history request in the other language. Explicit view and answer
+  language settings remain authoritative. These deterministic corrections do not establish live-model quality
+  or resolve the remaining language and discourse reliability limitations.
+
+- [#73](https://github.com/tenphi/akno/pull/73) [`558954d`](https://github.com/tenphi/akno/commit/558954da1198b309e4c1cbfa0800636a43c6e649) Thanks [@tenphi](https://github.com/tenphi)! - Keep indented headings inside their Markdown list item, preserving enclosing qualifications and rebuilding stale projections. Narrow multilingual routing so device error messages, incidental assistant speculation, conditional rejection and document titles do not hide the requested evidence.
+
+- [#73](https://github.com/tenphi/akno/pull/73) [`60db7e3`](https://github.com/tenphi/akno/commit/60db7e3a962d4e4d6a42f559f223ab0e9392807d) Thanks [@tenphi](https://github.com/tenphi)! - Route bounded Russian requests about rejected proposals, plans and options to history, excluding negated and conditional rejection while preserving clause boundaries and higher-priority report or discussion views.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.13.1
+
 ## 0.13.0
 
 ### Minor Changes
