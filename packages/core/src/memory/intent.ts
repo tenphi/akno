@@ -1,7 +1,7 @@
 import type { MemoryQualification, MemoryView, RecallMode } from '@tenphi/akno-protocol';
 
 export type QualifiedMemory = Extract<MemoryQualification, { status: 'qualified' }>;
-export const MEMORY_VIEW_VERSION = 'memory-view-v9';
+export const MEMORY_VIEW_VERSION = 'memory-view-v10';
 
 /** The subset shared by protocol qualifications and the rebuildable SQL projection. */
 export interface MemorySemantics {
@@ -186,6 +186,11 @@ const RUSSIAN_FICTIONAL_PROMISE = boundedDiscoursePhrase(
   String.raw`(?:предложил[аи]? обсудить|обсуждал[аи]?|описал[аи]?)`,
 );
 
+const RUSSIAN_REJECTED_PROPOSAL = boundedDiscoursePhrase(
+  String.raw`(?:предложени(?:е|я|ю|ем|и|й|ям|ями|ях)|(?:план|вариант)(?:а|у|ом|е|ы|ов|ам|ами|ах)?)`,
+  String.raw`отверг(?:ла|ло|ли)?`,
+);
+
 function russianMemoryView(query: string): MemoryView | null {
   if (
     RUSSIAN_QUALIFIED_REPORT.test(query) ||
@@ -211,6 +216,9 @@ function russianMemoryView(query: string): MemoryView | null {
     return 'discussion';
   if (/гипотез|гипотетическ|контрфактическ|что если|предположим|сценари|альтернатив|обсуждал/iu.test(query))
     return 'discussion';
+  // Bind finite past rejection to a proposal in the same clause so future or unrelated
+  // rejection cannot hide a planning request behind the history view.
+  if (RUSSIAN_REJECTED_PROPOSAL.test(query)) return 'history';
   // The noun "replacement" asks about coverage too; only an explicit completed replacement
   // denotes history. A stem match used to hide factual coverage from Russian questions.
   if (/истори|раньше|прежде|отклон|отмен|заверш|был[аои]? замен|замен[её]н|было решено/iu.test(query))

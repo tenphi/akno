@@ -11,6 +11,25 @@ const factual: MemorySemantics = {
 
 describe('memory-view inference', () => {
   it.each([
+    ['Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?', 'history'],
+    ['Ada Marlow отвергла предложение об осмотре.', 'history'],
+    ['Какой план отверг Bo Winters?', 'history'],
+    ['Какие варианты отвергли Ada Marlow и Bo Winters?', 'history'],
+    ['Какую строку отвергла программа?', 'factual'],
+    ['Какое предложение исчезло, пока Ada Marlow отвергла жалобу?', 'planning'],
+    ['Какое предложение изменилось и Ada Marlow отвергла жалобу?', 'planning'],
+    ['Какое предложение будет отвергнуто?', 'planning'],
+    ['Ada Marlow может отвергнуть предложение об осмотре.', 'planning'],
+    ['Какие гипотетические варианты отвергла Ada Marlow?', 'discussion'],
+    ['What did Ada Marlow report about the отвергла предложение wording?', 'reports'],
+  ] as const)(
+    'distinguishes a rejected Russian proposal from future or unrelated rejection: %s',
+    (query, view) => {
+      expect(inferMemoryView(query)).toBe(view);
+    },
+  );
+
+  it.each([
     ['Какое сообщение об осмотре пересказала Ada Marlow?', 'reports'],
     ['Ada Marlow передаёт сообщение Bo Winters о гарантийном осмотре.', 'reports'],
     ['What did the assistant speculate about the inspection interval?', 'reports'],
