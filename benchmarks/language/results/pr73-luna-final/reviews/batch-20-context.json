@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "f302d74c6cf20714c74a5da02ccc8a59e90de2f5c3a344e4e6e1da2e4529d264",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-coverage-exclusion",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the entire coverage record, including exact sand-caused ceramic-spacer damage exclusion, unresolved sleeve-replacement coverage from this exclusion alone, and nonestablishment of agreement silence. Negative metadata matches the exclusion without deciding the sleeve issue. English knowledge framing is appropriate for both query languages, and the actual evidence is useful and source-supported."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the entire coverage record, including exact sand-caused ceramic-spacer damage exclusion, unresolved sleeve-replacement coverage from this exclusion alone, and nonestablishment of agreement silence. Negative metadata matches the exclusion without deciding the sleeve issue. English knowledge framing is appropriate for both query languages, and the actual evidence is useful and source-supported."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the entire coverage record, including exact sand-caused ceramic-spacer damage exclusion, unresolved sleeve-replacement coverage from this exclusion alone, and nonestablishment of agreement silence. Negative metadata matches the exclusion without deciding the sleeve issue. English knowledge framing is appropriate for both query languages, and the actual evidence is useful and source-supported."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the entire coverage record, including exact sand-caused ceramic-spacer damage exclusion, unresolved sleeve-replacement coverage from this exclusion alone, and nonestablishment of agreement silence. Negative metadata matches the exclusion without deciding the sleeve issue. English knowledge framing is appropriate for both query languages, and the actual evidence is useful and source-supported."
+        }
+      ]
+    }
+  ]
+}

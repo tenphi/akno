@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "43bdc74c8ade0b7c6cdbb35a064b147d717c7fb674d0a1e75c00fa0c983a166a",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-relative-unknown-date",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is useful planning evidence: it preserves Ada’s actual proposal and all timing and agreement limits, with asserted commitment, proposed disposition and an undated tentative time. English stored knowledge is appropriate for either query language. Neither a calendar date nor an agreed meeting is injected."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is useful planning evidence: it preserves Ada’s actual proposal and all timing and agreement limits, with asserted commitment, proposed disposition and an undated tentative time. English stored knowledge is appropriate for either query language. Neither a calendar date nor an agreed meeting is injected."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is useful planning evidence: it preserves Ada’s actual proposal and all timing and agreement limits, with asserted commitment, proposed disposition and an undated tentative time. English stored knowledge is appropriate for either query language. Neither a calendar date nor an agreed meeting is injected."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is useful planning evidence: it preserves Ada’s actual proposal and all timing and agreement limits, with asserted commitment, proposed disposition and an undated tentative time. English stored knowledge is appropriate for either query language. Neither a calendar date nor an agreed meeting is injected."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-assistant-reading",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves assistant attribution, tentative possibility, personal unread/unverified terms, and the limits against inferring an arranged return or scheduled shipment. It is useful reports evidence with matching qualification metadata. English stored knowledge is appropriate for either query language; no speculation is injected as contractual fact."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves assistant attribution, tentative possibility, personal unread/unverified terms, and the limits against inferring an arranged return or scheduled shipment. It is useful reports evidence with matching qualification metadata. English stored knowledge is appropriate for either query language; no speculation is injected as contractual fact."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves assistant attribution, tentative possibility, personal unread/unverified terms, and the limits against inferring an arranged return or scheduled shipment. It is useful reports evidence with matching qualification metadata. English stored knowledge is appropriate for either query language; no speculation is injected as contractual fact."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves assistant attribution, tentative possibility, personal unread/unverified terms, and the limits against inferring an arranged return or scheduled shipment. It is useful reports evidence with matching qualification metadata. English stored knowledge is appropriate for either query language; no speculation is injected as contractual fact."
+        }
+      ]
+    }
+  ]
+}

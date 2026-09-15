@@ -1,0 +1,182 @@
+{
+  "schemaVersion": "language-final-publication-audit-v1",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "status": "ready_for_final_packaging",
+  "corrections": [],
+  "scope": "Final README, closure mapping, Current evaluated scope documentation, final v11 repair summary, frozen independent review copies and raw observations. Original semantic grades and thresholds remain unchanged.",
+  "programmaticChecks": {
+    "baselineRecheck": 2396,
+    "finalPublicationChecks": 239,
+    "total": 2635,
+    "errors": []
+  },
+  "confirmedMetrics": {
+    "baseline": {
+      "caseRuns": 44,
+      "totalAnswerCoordinates": 352,
+      "writableAnswerCoordinates": 320,
+      "usefulAnswers": {
+        "numerator": 233,
+        "denominator": 320
+      },
+      "completeRetention": {
+        "numerator": 27,
+        "denominator": 40
+      },
+      "usefulRetrieval": {
+        "numerator": 132,
+        "denominator": 160
+      },
+      "usefulContexts": {
+        "numerator": 130,
+        "denominator": 160
+      },
+      "unsupportedPublishedAnswers": 15,
+      "originalGatePassed": false
+    },
+    "intermediateV10": {
+      "answerCoordinates": 16,
+      "usefulAnswers": {
+        "numerator": 14,
+        "denominator": 16
+      },
+      "completeRetention": {
+        "numerator": 1,
+        "denominator": 2
+      },
+      "usefulContexts": {
+        "numerator": 8,
+        "denominator": 8
+      },
+      "unsupportedPublishedAnswers": 1,
+      "entailedComponentOmissions": 1
+    },
+    "finalV11": {
+      "caseRuns": 2,
+      "answerCoordinates": 16,
+      "completeRetention": {
+        "numerator": 0,
+        "denominator": 2,
+        "rate": 0
+      },
+      "usefulAnswers": {
+        "numerator": 14,
+        "denominator": 16,
+        "rate": 0.875
+      },
+      "usefulContexts": {
+        "numerator": 8,
+        "denominator": 8,
+        "rate": 1
+      },
+      "unsupportedAnswers": 2,
+      "answerQualificationErrors": 0,
+      "answerLanguageErrors": 0,
+      "russianInferredHistory": {
+        "numerator": 2,
+        "denominator": 2,
+        "rate": 1
+      },
+      "stableSourceBytes": 2,
+      "stableReplay": 2,
+      "stableSupportArchive": 2,
+      "publishedAnswers": 16,
+      "withheldAnswers": 0,
+      "usefulRetrieval": {
+        "numerator": 8,
+        "denominator": 8
+      },
+      "unsupportedCoordinates": [
+        {
+          "run": 1,
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "defect": "Unsupported coaxiality narrowing of alignment gauge."
+        },
+        {
+          "run": 2,
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "defect": "Unsupported sensor component type."
+        }
+      ],
+      "retentionDefect": "Both saved sets omit the independent no-plan assertion while preserving rejection, no appointment and no transport."
+    }
+  },
+  "findings": [
+    "The final README and summary accurately report 14/16 useful answers, 0/2 complete retained sets, 8/8 useful contexts, two source-unsupported published answers, no qualification/language errors and no null answers. Each repetition contributes 7/8 useful answers, one unsupported answer and one incomplete retained set.",
+    "The final before/after rows exactly match the original baseline grades and typed query outcomes for the same case: baseline runs have 3/8 and 5/8 useful answers, planning inferred for the Russian query, and incomplete/complete retained sets respectively. Both final runs infer history. These are exposed fresh executions, not a controlled isolation of retention randomness.",
+    "Baseline summaries, gate calculations, sources, reports, packet, batch provenance and all 36 original independent review pairs remain unchanged in meaning. The original 2,396-check audit still passes. V10 review copies also exactly match their frozen independent originals and remain a separate 16-coordinate supplement.",
+    "Every v11 case source, saved row, published answer, retrieval coordinate, support archive and actual context coordinate matches its raw report. Individual case files match the report; eight answer coordinates and four unique query/view contexts are present per repetition. Duplicate retrieval grades agree across requested answer languages. The frozen packet hash and both review bindings verify.",
+    "All six v11 support evidence hashes recompute, and all ten archived quote parts occur exactly in their named source.items. The selected source snapshot matches the original baseline corpus source. Source-byte, replay and archived-support stability are recorded for both repetitions.",
+    "The v11 manifest binds commit 12be9f2709cf298a68ef30a623dba13815855a40 with a clean source diff; the completion record reports 2/2 completed and unchanged runtime. Manifest model settings and all report profile/prompt/schema/threshold fields other than the declared memory-view version match the baseline. Provider receipts name only Luna and the declared embedding model; lower stage-specific token ceilings remain within the configured maxima.",
+    "The archived final code review exactly matches the independent final review. All three reviewed source/test/Changeset byte hashes match both the current files and the recorded v11 Git commit. The archived compiled v11 view matches the built module; archived and built answer/verifier module hashes match the unchanged values. The runner archive reproduces its manifest hash.",
+    "The final view matrix has 44 unique source/query rows, all bound to original source queries and expected views, with 43/44 before and 44/44 after. The legacy V22 result remains recorded as 44/44. The separate built socket report records two cycles, 35 assertions and zero model calls; its source fixture hash recomputes. This is deterministic/operational evidence, not another live quality result.",
+    "The final network summary recomputes from 160 receipts across both declared case-run coordinates: all 160 have HTTP success and usage, totaling 371214 supplied tokens. These receipts remain separate from baseline usage and are not converted into an invented monetary cost.",
+    "All prior scope-audit corrections are resolved: freeze timing separates inputs from generated outputs; missing accepted-proposal/late-correction/unresolved-reference live scenarios are explicit; ordinary null wording says a useful answer was withheld; the full README and final summary now exist. The only intentionally pending link is artifact-manifest.json.",
+    "The publication consistently states that the original quality gate fails, bounded closure is the owner-approved implementation scope decision, and the two repair subsets do not replace or join the baseline gate. Conservative negation/focus exclusions and limited Russian cue coverage are disclosed. No general model-capability ceiling or universal discourse guarantee is claimed.",
+    "Graph expansion, model index synthesis and longitudinal maintenance remain outside live coverage. Deterministic policy/eligibility evidence is not represented as live graph/maintenance success. Carrying failed source cases to issue 66 is kept separate from the multi-cycle propagation/correction/retraction work still required by that issue."
+  ],
+  "links": {
+    "checkedOccurrences": 37,
+    "resolvedOccurrences": 36,
+    "intentionallyPending": [
+      {
+        "file": "benchmarks/language/results/pr73-luna-final/README.md",
+        "target": "artifact-manifest.json"
+      }
+    ],
+    "unexpectedMissing": []
+  },
+  "bindings": {
+    "packetFingerprint": "e8dfcba1bd06f59becfe6a2460bc2bf9cf37bb858f331739f432b5474f979f73",
+    "outputReviewCompactHash": "c7ca1345d5debb062ac7e8c8f98676d85b25667b6cc9c9579fea6c4410e9d3bf",
+    "contextReviewCompactHash": "84bf2e1aedf59950e3d22d4784bb3db5d09d141aaad4c0bdc9b3d82265e22231",
+    "rawReportCompactHash": "83fdfff27d40a06e4aa28559403159b5dbed4658f88f028303da34e37843e9cd",
+    "manifestFileSha256": "50a64e1495d24616876df974051fd481cdf516f89c35e99d6c5d3348cf7417f1",
+    "summaryFileSha256": "fcd7698e2eb4d825d507f51e58f16ba26e98d88d0625e343a55c38875dc28d1d",
+    "codeReviewFileSha256": "5ca0ba942ab5f0fe28c2af3d7697921d53a5e689d15d59754807f08a6df432f3",
+    "codeReviewedSha256": {
+      "packages/core/src/memory/intent.ts": "fc1e28f296d4011e4e6f1afec1d02033995e51d0feff2be758fa2c54ee2d2f74",
+      "packages/core/src/memory/intent.test.ts": "f93cfa20f90842fa6d6a2730d807501047115584b5edb2b33beef576844b3d79",
+      ".changeset/russian-rejected-proposal-history.md": "b4f553fd85f36010808a7062b84f7923db7d0f7548aa080eec0cb8a525f8e984"
+    },
+    "commit": "12be9f2709cf298a68ef30a623dba13815855a40",
+    "runnerSha256": "9902a05c5137743c79f3e7c4b2c026d656fef83711227c5edfcb69a5a61f41e2",
+    "runtime": {
+      "core": "3dd18d1fbeb87085bfeccdaf2d285654cd72b28f53698c9baab60593dd392147",
+      "protocol": "0e3d190ecc3e069c1642c5e77208c4d3ad3743052ecc15678f2432eed5ec1b0a"
+    },
+    "documentFileSha256": {
+      "benchmarks/language/results/pr73-luna-final/README.md": "343ae75414125bf3666de6dd2f7d5c1da27f78cc9e7884da9e5f225460ca93a6",
+      "benchmarks/language/results/pr73-luna-final/closure-mapping.md": "dc8dde4fd653cac1de0396cfd36f32ec29d0023e773512b219fe59c4f85da201",
+      "docs/language-and-discourse.md": "8bfdfc4c6f3ae7007e89efa89cb143d33d6d7ae5b725a0ddc29b4c86ce998c10"
+    }
+  },
+  "sourceArchive": {
+    "records": 6,
+    "exactQuoteParts": 10
+  },
+  "network": {
+    "calls": 160,
+    "httpSuccess": 160,
+    "usagePresent": 160,
+    "knownTotalTokens": 371214
+  },
+  "limitations": [
+    "Final artifact-manifest.json is intentionally written after this audit and was not verified here. The packaging step must bind the final evidence and this audit before publication.",
+    "Exact support hashes, quote/source matches, file hashes and profile bindings were independently checked. Transient original knowledge bases were not reconstructed; before/after byte, replay and runtime-tree stability remain frozen runner observations. Aggregate built-tree hashes and opaque input hashes are recorded bindings, not results of a fresh baseline rebuild.",
+    "The validation report records 4068 tests across 154 files, 34 smoke checks and the other successful checks reflected in the README. This publication audit did not rerun that full suite or restart a user service.",
+    "Independent model adjudication remains fallible. The final source reviews followed the unchanged rubric and did not use runtime acceptance as ground truth; separate code-review work does not make these exposed repair cases fresh held-out generalization."
+  ],
+  "gradesChanged": false,
+  "thresholdsChanged": false
+}

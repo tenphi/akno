@@ -1,0 +1,467 @@
+{
+  "kind": "incremental-frozen-full-evaluation-review-batch",
+  "corpusFingerprint": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+  "rubric": "Unchanged V23 language-output-review-v2 rubric in the frozen benchmark reviewer; no changed thresholds or expected meanings.",
+  "cases": [
+    {
+      "id": "v23-held-assistant-reading",
+      "run": 2,
+      "source": {
+        "id": "v23-held-assistant-reading",
+        "split": "held-out",
+        "language": "mixed",
+        "scenario": "assistant-speculation",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "assistant",
+            "text": "My tentative reading is that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. Я не читал условия и не проверял это предположение. Наличие такой возможности не означает, что возврат уже оформлен или отправка назначена."
+          }
+        ],
+        "view": "reports",
+        "basis": "source_report",
+        "commitment": "tentative",
+        "admission": "writable",
+        "ordinary": "## Assistant report\nThe assistant tentatively thinks Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the conditions or verified this assumption. A possible return label does not establish an arranged return or scheduled shipment.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+          "ru": "Какое предположение о возвратной этикетке для обслуживания Zephyr QX-100 высказал ассистент?"
+        },
+        "reviewExpectation": "Preserve tentative assistant attribution, the possibility that Vulpine Mutual supplies a return label for servicing, and the assistant’s personal lack of reading and verification. A possible service provision is not an arranged return, scheduled shipment, completed dispatch, or established contractual duty."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_0a4c525f",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_e50cccbf16cd40c08082e1ca",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_0a4c525f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e50cccbf16cd40c08082e1ca",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_0a4c525f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e50cccbf16cd40c08082e1ca",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**По словам ассистента · Предварительный статус:** Ассистент предварительно предполагает, что Vulpine Mutual может предоставить этикетку для возврата при обслуживании Zephyr QX-100. Ассистент не читал условия и не проверял это предположение. Эта возможность не означает, что возврат уже оформлен или отправка запланирована. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_0a4c525f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e50cccbf16cd40c08082e1ca",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_0a4c525f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e50cccbf16cd40c08082e1ca",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "По словам ассистента · Предварительный статус: ассистент предварительно считает, что Vulpine Mutual может предоставить этикетку для возврата при обслуживании Zephyr QX-100. Ассистент не читал условия и не проверял это предположение. Наличие такой возможности не означает, что возврат уже оформлен или отправка уже запланирована. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_0a4c525f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e50cccbf16cd40c08082e1ca",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_0a4c525f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e50cccbf16cd40c08082e1ca",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**По словам ассистента · Предварительный статус:** ассистент предварительно предполагает, что Vulpine Mutual может предоставить возвратную этикетку для обслуживания Zephyr QX-100. Ассистент не читал условия и не проверял это предположение. Эта возможность не означает, что возврат уже оформлен или отправка назначена. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_0a4c525f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e50cccbf16cd40c08082e1ca",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_0a4c525f",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_e50cccbf16cd40c08082e1ca",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Сообщено ассистентом · Предварительный статус:** Ассистент предварительно считает, что Vulpine Mutual, возможно, предоставит возвратную этикетку для обслуживания Zephyr QX-100. Ассистент не читал условия и не проверял это предположение. Эта возможность не означает, что возврат уже оформлен или отправка назначена. [memory/equipment:7]"
+        }
+      ]
+    }
+  ],
+  "extra": [
+    {
+      "id": "v23-held-assistant-reading",
+      "run": 2,
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_0a4c525f",
+            "source_ref": "invented:v23-held-assistant-reading",
+            "input_hash": "81d27dcc283daffb694bf02e84e112ca8e611b0dc772ba0277e8f1236f561e13",
+            "evidence": "My tentative reading is that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. Я не читал условия и не проверял это предположение. Наличие такой возможности не означает, что возврат уже оформлен или отправка назначена.",
+            "evidence_hash": "cec556e86ae01c5f80defe9890b48de7bbb1eeb4f06d3c7d7fcb2d5a0782f23c",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "My tentative reading is that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. Я не читал условия и не проверял это предположение. Наличие такой возможности не означает, что возврат уже оформлен или отправка назначена.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_0a4c525f",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_e50cccbf16cd40c08082e1ca",
+                    "source_role": "assistant",
+                    "source_speaker": "assistant",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Return Label and Servicing",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_0a4c525f",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_e50cccbf16cd40c08082e1ca",
+                    "source_role": "assistant",
+                    "source_speaker": "assistant",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Return Label and Servicing",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_0a4c525f",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_e50cccbf16cd40c08082e1ca",
+                    "source_role": "assistant",
+                    "source_speaker": "assistant",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Return Label and Servicing",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that a return has already been arranged or a shipment scheduled.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_0a4c525f",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_e50cccbf16cd40c08082e1ca",
+                    "source_role": "assistant",
+                    "source_speaker": "assistant",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Return Label and Servicing",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ]
+    }
+  ],
+  "packetFingerprint": "cc51fa60b1729ecaf1a0b60f22b63f93aff0a0bde1321f94898d1d9916addcbe"
+}

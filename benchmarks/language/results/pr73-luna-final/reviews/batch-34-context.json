@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "a87f71f664ee376a56a7dca5434b714a94a5d83ae3185ba766a47b14a40f95a6",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-competing-clicks",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the exact rail and pin mechanisms, tentative scope, Ada’s personal nonselection, no supporting observations, and nonconfirmation of clicking by this record. It supplies complete useful discussion evidence for either query language and preserves the stronger evidence qualifier absent from two Russian answers."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the exact rail and pin mechanisms, tentative scope, Ada’s personal nonselection, no supporting observations, and nonconfirmation of clicking by this record. It supplies complete useful discussion evidence for either query language and preserves the stronger evidence qualifier absent from two Russian answers."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the exact rail and pin mechanisms, tentative scope, Ada’s personal nonselection, no supporting observations, and nonconfirmation of clicking by this record. It supplies complete useful discussion evidence for either query language and preserves the stronger evidence qualifier absent from two Russian answers."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the exact rail and pin mechanisms, tentative scope, Ada’s personal nonselection, no supporting observations, and nonconfirmation of clicking by this record. It supplies complete useful discussion evidence for either query language and preserves the stronger evidence qualifier absent from two Russian answers."
+        }
+      ]
+    }
+  ]
+}

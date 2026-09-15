@@ -1,0 +1,2213 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "85f20d6be3a3d918e302957ae46716e14d236c1b2db994ffb860b72b58937254",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-nested-report",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "No context evidence is exposed for this positive report query. The writable original source supports useful qualified nested-report context, so this is missed activation rather than a required read-only or factual exclusion. Empty context is vacuously source-entailed and makes no qualification, language-framing, or factual-promotion error; the English knowledge-language declaration is compatible with the requested policy. These neutral safety flags do not satisfy context usefulness and do not explain the runtime cause."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "No context evidence is exposed for this positive report query. The writable original source supports useful qualified nested-report context, so this is missed activation rather than a required read-only or factual exclusion. Empty context is vacuously source-entailed and makes no qualification, language-framing, or factual-promotion error; the English knowledge-language declaration is compatible with the requested policy. These neutral safety flags do not satisfy context usefulness and do not explain the runtime cause."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "No context evidence is exposed for this positive report query. The writable original source supports useful qualified nested-report context, so this is missed activation rather than a required read-only or factual exclusion. Empty context is vacuously source-entailed and makes no qualification, language-framing, or factual-promotion error; the English knowledge-language declaration is compatible with the requested policy. These neutral safety flags do not satisfy context usefulness and do not explain the runtime cause."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "No context evidence is exposed for this positive report query. The writable original source supports useful qualified nested-report context, so this is missed activation rather than a required read-only or factual exclusion. Empty context is vacuously source-entailed and makes no qualification, language-framing, or factual-promotion error; the English knowledge-language declaration is compatible with the requested policy. These neutral safety flags do not satisfy context usefulness and do not explain the runtime cause."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the complete six-week/seven-week conditional unit with its explicit hypothetical frame, Ada’s personal lack of knowledge of the real rule, and her denial of reporting an actual omission. The metadata agrees with the hypothetical meaning, and the contextual title/breadcrumb does not add a real event. This is useful source-entailed discussion evidence. Stored English knowledge prose is appropriate independently of query language; no translated narrative or factual promotion is introduced."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the complete six-week/seven-week conditional unit with its explicit hypothetical frame, Ada’s personal lack of knowledge of the real rule, and her denial of reporting an actual omission. The metadata agrees with the hypothetical meaning, and the contextual title/breadcrumb does not add a real event. This is useful source-entailed discussion evidence. Stored English knowledge prose is appropriate independently of query language; no translated narrative or factual promotion is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the complete six-week/seven-week conditional unit with its explicit hypothetical frame, Ada’s personal lack of knowledge of the real rule, and her denial of reporting an actual omission. The metadata agrees with the hypothetical meaning, and the contextual title/breadcrumb does not add a real event. This is useful source-entailed discussion evidence. Stored English knowledge prose is appropriate independently of query language; no translated narrative or factual promotion is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the complete six-week/seven-week conditional unit with its explicit hypothetical frame, Ada’s personal lack of knowledge of the real rule, and her denial of reporting an actual omission. The metadata agrees with the hypothetical meaning, and the contextual title/breadcrumb does not add a real event. This is useful source-entailed discussion evidence. Stored English knowledge prose is appropriate independently of query language; no translated narrative or factual promotion is introduced."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-relayed-service",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context supplies the complete nested report and all coupled limits: Ada relays Bo’s alleged permission, shipment is for indicator-brightness measurement rather than replacement, and Ada has not read the terms or checked the message. The report framing and metadata prevent treating the permission as independently verified. The separate protective-cover assertion is not required to interpret this focused report context and remains present in the saved set. English source-linked knowledge framing is compliant for either query language; this is useful positive activation, not a read-only exclusion."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context supplies the complete nested report and all coupled limits: Ada relays Bo’s alleged permission, shipment is for indicator-brightness measurement rather than replacement, and Ada has not read the terms or checked the message. The report framing and metadata prevent treating the permission as independently verified. The separate protective-cover assertion is not required to interpret this focused report context and remains present in the saved set. English source-linked knowledge framing is compliant for either query language; this is useful positive activation, not a read-only exclusion."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context supplies the complete nested report and all coupled limits: Ada relays Bo’s alleged permission, shipment is for indicator-brightness measurement rather than replacement, and Ada has not read the terms or checked the message. The report framing and metadata prevent treating the permission as independently verified. The separate protective-cover assertion is not required to interpret this focused report context and remains present in the saved set. English source-linked knowledge framing is compliant for either query language; this is useful positive activation, not a read-only exclusion."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context supplies the complete nested report and all coupled limits: Ada relays Bo’s alleged permission, shipment is for indicator-brightness measurement rather than replacement, and Ada has not read the terms or checked the message. The report framing and metadata prevent treating the permission as independently verified. The separate protective-cover assertion is not required to interpret this focused report context and remains present in the saved set. English source-linked knowledge framing is compliant for either query language; this is useful positive activation, not a read-only exclusion."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-counterfactual",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "Context is empty for a positive question about the unrealized internal-spring benefit. The writable original source explicitly supports that counterfactual benefit, including the false enrollment antecedent and thirty-three-month usage interval, so this is missed useful activation rather than valid read-only exclusion. Empty context is vacuously source-entailed and emits no distorted qualification, language violation or factual promotion. Neutral safety flags do not imply useful context."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "Context is empty for a positive question about the unrealized internal-spring benefit. The writable original source explicitly supports that counterfactual benefit, including the false enrollment antecedent and thirty-three-month usage interval, so this is missed useful activation rather than valid read-only exclusion. Empty context is vacuously source-entailed and emits no distorted qualification, language violation or factual promotion. Neutral safety flags do not imply useful context."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "Context is empty for a positive question about the unrealized internal-spring benefit. The writable original source explicitly supports that counterfactual benefit, including the false enrollment antecedent and thirty-three-month usage interval, so this is missed useful activation rather than valid read-only exclusion. Empty context is vacuously source-entailed and emits no distorted qualification, language violation or factual promotion. Neutral safety flags do not imply useful context."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "Context is empty for a positive question about the unrealized internal-spring benefit. The writable original source explicitly supports that counterfactual benefit, including the false enrollment antecedent and thirty-three-month usage interval, so this is missed useful activation rather than valid read-only exclusion. Empty context is vacuously source-entailed and emits no distorted qualification, language violation or factual promotion. Neutral safety flags do not imply useful context."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-assumed-interval",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "Context contains the complete eleven-cycle/twelve-cycle hypothetical latch-lubrication unit, Ada’s personal ignorance of the real rule, and her nonassertion of an actual omission. Its hypothesis framing and metadata preserve both clauses together and prevent an actual maintenance requirement or violation. Stored English knowledge framing is compliant for either query language, while the maintenance breadcrumb is only a topic label. This is useful, source-entailed positive context."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "Context contains the complete eleven-cycle/twelve-cycle hypothetical latch-lubrication unit, Ada’s personal ignorance of the real rule, and her nonassertion of an actual omission. Its hypothesis framing and metadata preserve both clauses together and prevent an actual maintenance requirement or violation. Stored English knowledge framing is compliant for either query language, while the maintenance breadcrumb is only a topic label. This is useful, source-entailed positive context."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "Context contains the complete eleven-cycle/twelve-cycle hypothetical latch-lubrication unit, Ada’s personal ignorance of the real rule, and her nonassertion of an actual omission. Its hypothesis framing and metadata preserve both clauses together and prevent an actual maintenance requirement or violation. Stored English knowledge framing is compliant for either query language, while the maintenance breadcrumb is only a topic label. This is useful, source-entailed positive context."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "Context contains the complete eleven-cycle/twelve-cycle hypothetical latch-lubrication unit, Ada’s personal ignorance of the real rule, and her nonassertion of an actual omission. Its hypothesis framing and metadata preserve both clauses together and prevent an actual maintenance requirement or violation. Stored English knowledge framing is compliant for either query language, while the maintenance breadcrumb is only a topic label. This is useful, source-entailed positive context."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-assistant-speculation",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is empty for a positive assistant-speculation question. The writable source supports useful tentative, attributed optical-shutter service-term context with the eleven-cycle interval and personal unread/unverified limits. Therefore this is missed activation, not valid read-only or factual exclusion. Empty context is vacuously source-entailed, with no emitted qualification distortion, language violation or factual promotion; those neutral flags do not imply usefulness."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is empty for a positive assistant-speculation question. The writable source supports useful tentative, attributed optical-shutter service-term context with the eleven-cycle interval and personal unread/unverified limits. Therefore this is missed activation, not valid read-only or factual exclusion. Empty context is vacuously source-entailed, with no emitted qualification distortion, language violation or factual promotion; those neutral flags do not imply usefulness."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is empty for a positive assistant-speculation question. The writable source supports useful tentative, attributed optical-shutter service-term context with the eleven-cycle interval and personal unread/unverified limits. Therefore this is missed activation, not valid read-only or factual exclusion. Empty context is vacuously source-entailed, with no emitted qualification distortion, language violation or factual promotion; those neutral flags do not imply usefulness."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is empty for a positive assistant-speculation question. The writable source supports useful tentative, attributed optical-shutter service-term context with the eleven-cycle interval and personal unread/unverified limits. Therefore this is missed activation, not valid read-only or factual exclusion. Empty context is vacuously source-entailed, with no emitted qualification distortion, language violation or factual promotion; those neutral flags do not imply usefulness."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context accurately contains the sand-caused ceramic-spacer exclusion, but not the required source limitations on what this record establishes about intake-sleeve replacement coverage or contract silence. Because the query asks about both components, this partial context is not complete useful qualified evidence, and its required qualification set is incomplete. Its actual statement is source-entailed and adds no unsupported sleeve claim. English knowledge framing is compliant. This is partial positive retrieval, not a required exclusion."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context accurately contains the sand-caused ceramic-spacer exclusion, but not the required source limitations on what this record establishes about intake-sleeve replacement coverage or contract silence. Because the query asks about both components, this partial context is not complete useful qualified evidence, and its required qualification set is incomplete. Its actual statement is source-entailed and adds no unsupported sleeve claim. English knowledge framing is compliant. This is partial positive retrieval, not a required exclusion."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context accurately contains the sand-caused ceramic-spacer exclusion, but not the required source limitations on what this record establishes about intake-sleeve replacement coverage or contract silence. Because the query asks about both components, this partial context is not complete useful qualified evidence, and its required qualification set is incomplete. Its actual statement is source-entailed and adds no unsupported sleeve claim. English knowledge framing is compliant. This is partial positive retrieval, not a required exclusion."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context accurately contains the sand-caused ceramic-spacer exclusion, but not the required source limitations on what this record establishes about intake-sleeve replacement coverage or contract silence. Because the query asks about both components, this partial context is not complete useful qualified evidence, and its required qualification set is incomplete. Its actual statement is source-entailed and adds no unsupported sleeve claim. English knowledge framing is compliant. This is partial positive retrieval, not a required exclusion."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-declined-extension",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context includes the counterfactual free connector repair after twenty-two months of use together with Ada’s actual rejection and explicit absence of current coverage. The qualification metadata agrees with the prose, and English stored knowledge is appropriate for either query language. This is useful discussion evidence, with no promotion to an actual entitlement."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context includes the counterfactual free connector repair after twenty-two months of use together with Ada’s actual rejection and explicit absence of current coverage. The qualification metadata agrees with the prose, and English stored knowledge is appropriate for either query language. This is useful discussion evidence, with no promotion to an actual entitlement."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context includes the counterfactual free connector repair after twenty-two months of use together with Ada’s actual rejection and explicit absence of current coverage. The qualification metadata agrees with the prose, and English stored knowledge is appropriate for either query language. This is useful discussion evidence, with no promotion to an actual entitlement."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context includes the counterfactual free connector repair after twenty-two months of use together with Ada’s actual rejection and explicit absence of current coverage. The qualification metadata agrees with the prose, and English stored knowledge is appropriate for either query language. This is useful discussion evidence, with no promotion to an actual entitlement."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-fictional-example",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the correctly named spare control dial, fictional lender and borrower, first forty-four days after fictional repair, and explicit story-only/no-real-agreement limits. It is useful for the focused loan query without asserting a real transaction. It does not repair the retained set’s omission of the separate actual introduction-for-discussion act."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the correctly named spare control dial, fictional lender and borrower, first forty-four days after fictional repair, and explicit story-only/no-real-agreement limits. It is useful for the focused loan query without asserting a real transaction. It does not repair the retained set’s omission of the separate actual introduction-for-discussion act."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the correctly named spare control dial, fictional lender and borrower, first forty-four days after fictional repair, and explicit story-only/no-real-agreement limits. It is useful for the focused loan query without asserting a real transaction. It does not repair the retained set’s omission of the separate actual introduction-for-discussion act."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the correctly named spare control dial, fictional lender and borrower, first forty-four days after fictional repair, and explicit story-only/no-real-agreement limits. It is useful for the focused loan query without asserting a real transaction. It does not repair the retained set’s omission of the separate actual introduction-for-discussion act."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-scoped-exclusion",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves wax-caused fabric-seal damage as the specific excluded risk and includes both coupled hinge limits: exclusion alone resolves neither replacement coverage nor contract silence. This is useful qualified evidence for either query language, with no unsupported factual promotion."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves wax-caused fabric-seal damage as the specific excluded risk and includes both coupled hinge limits: exclusion alone resolves neither replacement coverage nor contract silence. This is useful qualified evidence for either query language, with no unsupported factual promotion."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves wax-caused fabric-seal damage as the specific excluded risk and includes both coupled hinge limits: exclusion alone resolves neither replacement coverage nor contract silence. This is useful qualified evidence for either query language, with no unsupported factual promotion."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves wax-caused fabric-seal damage as the specific excluded risk and includes both coupled hinge limits: exclusion alone resolves neither replacement coverage nor contract silence. This is useful qualified evidence for either query language, with no unsupported factual promotion."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-relative-unknown-date",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is useful planning evidence: it preserves Ada’s actual proposal and all timing and agreement limits, with asserted commitment, proposed disposition and an undated tentative time. English stored knowledge is appropriate for either query language. Neither a calendar date nor an agreed meeting is injected."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is useful planning evidence: it preserves Ada’s actual proposal and all timing and agreement limits, with asserted commitment, proposed disposition and an undated tentative time. English stored knowledge is appropriate for either query language. Neither a calendar date nor an agreed meeting is injected."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is useful planning evidence: it preserves Ada’s actual proposal and all timing and agreement limits, with asserted commitment, proposed disposition and an undated tentative time. English stored knowledge is appropriate for either query language. Neither a calendar date nor an agreed meeting is injected."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is useful planning evidence: it preserves Ada’s actual proposal and all timing and agreement limits, with asserted commitment, proposed disposition and an undated tentative time. English stored knowledge is appropriate for either query language. Neither a calendar date nor an agreed meeting is injected."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-assistant-reading",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves assistant attribution, tentative possibility, personal unread/unverified terms, and the limits against inferring an arranged return or scheduled shipment. It is useful reports evidence with matching qualification metadata. English stored knowledge is appropriate for either query language; no speculation is injected as contractual fact."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves assistant attribution, tentative possibility, personal unread/unverified terms, and the limits against inferring an arranged return or scheduled shipment. It is useful reports evidence with matching qualification metadata. English stored knowledge is appropriate for either query language; no speculation is injected as contractual fact."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves assistant attribution, tentative possibility, personal unread/unverified terms, and the limits against inferring an arranged return or scheduled shipment. It is useful reports evidence with matching qualification metadata. English stored knowledge is appropriate for either query language; no speculation is injected as contractual fact."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves assistant attribution, tentative possibility, personal unread/unverified terms, and the limits against inferring an arranged return or scheduled shipment. It is useful reports evidence with matching qualification metadata. English stored knowledge is appropriate for either query language; no speculation is injected as contractual fact."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides both competing tentative causes with the exact washer/filter-cover distinction, Ada’s nonselection, absence of supporting data, and nonconfirmation of the rattle by this record. It is useful discussion evidence for either query language. Tentative metadata and prose preserve the source’s epistemic limits; no real fault or observed symptom is injected."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides both competing tentative causes with the exact washer/filter-cover distinction, Ada’s nonselection, absence of supporting data, and nonconfirmation of the rattle by this record. It is useful discussion evidence for either query language. Tentative metadata and prose preserve the source’s epistemic limits; no real fault or observed symptom is injected."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides both competing tentative causes with the exact washer/filter-cover distinction, Ada’s nonselection, absence of supporting data, and nonconfirmation of the rattle by this record. It is useful discussion evidence for either query language. Tentative metadata and prose preserve the source’s epistemic limits; no real fault or observed symptom is injected."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides both competing tentative causes with the exact washer/filter-cover distinction, Ada’s nonselection, absence of supporting data, and nonconfirmation of the rattle by this record. It is useful discussion evidence for either query language. Tentative metadata and prose preserve the source’s epistemic limits; no real fault or observed symptom is injected."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-open-question",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves annual alignment of the folding handle precisely, unlike the broader Russian answer wording. It includes Ada’s personal unanswered question and neither inclusion nor exclusion being established by the note. Question metadata prevents coverage being treated as established. This is useful qualified context for either query language."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves annual alignment of the folding handle precisely, unlike the broader Russian answer wording. It includes Ada’s personal unanswered question and neither inclusion nor exclusion being established by the note. Question metadata prevents coverage being treated as established. This is useful qualified context for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves annual alignment of the folding handle precisely, unlike the broader Russian answer wording. It includes Ada’s personal unanswered question and neither inclusion nor exclusion being established by the note. Question metadata prevents coverage being treated as established. This is useful qualified context for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves annual alignment of the folding handle precisely, unlike the broader Russian answer wording. It includes Ada’s personal unanswered question and neither inclusion nor exclusion being established by the note. Question metadata prevents coverage being treated as established. This is useful qualified context for either query language."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-fictional-key",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context includes the actual proposal to discuss an invented example and the complete fictional physical-metal-key loan, with exact cover purpose, actors, thirty-three-day post-inspection duration, no access code, and no real agreement. The respective proposed/asserted and hypothetical qualifications remain separate. It is useful context for either query language without promoting the imagined loan to reality."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context includes the actual proposal to discuss an invented example and the complete fictional physical-metal-key loan, with exact cover purpose, actors, thirty-three-day post-inspection duration, no access code, and no real agreement. The respective proposed/asserted and hypothetical qualifications remain separate. It is useful context for either query language without promoting the imagined loan to reality."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context includes the actual proposal to discuss an invented example and the complete fictional physical-metal-key loan, with exact cover purpose, actors, thirty-three-day post-inspection duration, no access code, and no real agreement. The respective proposed/asserted and hypothetical qualifications remain separate. It is useful context for either query language without promoting the imagined loan to reality."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context includes the actual proposal to discuss an invented example and the complete fictional physical-metal-key loan, with exact cover purpose, actors, thirty-three-day post-inspection duration, no access code, and no real agreement. The respective proposed/asserted and hypothetical qualifications remain separate. It is useful context for either query language without promoting the imagined loan to reality."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-undated-review",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context supplies an entailed but incomplete proposal: service terms, eleven days after the utterance rather than processing, and nonacceptance. Its metadata preserves an undated unknown tentative envelope, yet neither that envelope nor nonacceptance states the source’s explicit absence of a scheduled meeting. The prose also lacks the explicit unknown date of the utterance. The full timing/status qualifications are not preserved, so this is not a complete useful qualified context. No unsupported date or actual appointment is asserted, and the English knowledge framing is compliant."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context supplies an entailed but incomplete proposal: service terms, eleven days after the utterance rather than processing, and nonacceptance. Its metadata preserves an undated unknown tentative envelope, yet neither that envelope nor nonacceptance states the source’s explicit absence of a scheduled meeting. The prose also lacks the explicit unknown date of the utterance. The full timing/status qualifications are not preserved, so this is not a complete useful qualified context. No unsupported date or actual appointment is asserted, and the English knowledge framing is compliant."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context supplies an entailed but incomplete proposal: service terms, eleven days after the utterance rather than processing, and nonacceptance. Its metadata preserves an undated unknown tentative envelope, yet neither that envelope nor nonacceptance states the source’s explicit absence of a scheduled meeting. The prose also lacks the explicit unknown date of the utterance. The full timing/status qualifications are not preserved, so this is not a complete useful qualified context. No unsupported date or actual appointment is asserted, and the English knowledge framing is compliant."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context supplies an entailed but incomplete proposal: service terms, eleven days after the utterance rather than processing, and nonacceptance. Its metadata preserves an undated unknown tentative envelope, yet neither that envelope nor nonacceptance states the source’s explicit absence of a scheduled meeting. The prose also lacks the explicit unknown date of the utterance. The full timing/status qualifications are not preserved, so this is not a complete useful qualified context. No unsupported date or actual appointment is asserted, and the English knowledge framing is compliant."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-rejected-plan",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context is useful history evidence for which proposal Ada rejected: destination, rotation-stop-angle measurement purpose, rejection, and lack of intent under that proposal are intact. It preserves rejected disposition and does not activate a current trip or completed measurement. The source’s separate absent appointment and transport arrangements are not retained, so this useful focused context does not imply complete source retention. English stored knowledge is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context is useful history evidence for which proposal Ada rejected: destination, rotation-stop-angle measurement purpose, rejection, and lack of intent under that proposal are intact. It preserves rejected disposition and does not activate a current trip or completed measurement. The source’s separate absent appointment and transport arrangements are not retained, so this useful focused context does not imply complete source retention. English stored knowledge is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context is useful history evidence for which proposal Ada rejected: destination, rotation-stop-angle measurement purpose, rejection, and lack of intent under that proposal are intact. It preserves rejected disposition and does not activate a current trip or completed measurement. The source’s separate absent appointment and transport arrangements are not retained, so this useful focused context does not imply complete source retention. English stored knowledge is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context is useful history evidence for which proposal Ada rejected: destination, rotation-stop-angle measurement purpose, rejection, and lack of intent under that proposal are intact. It preserves rejected disposition and does not activate a current trip or completed measurement. The source’s separate absent appointment and transport arrangements are not retained, so this useful focused context does not imply complete source retention. English stored knowledge is appropriate for either query language."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-read-only-admission",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "No memory evidence is injected into context, as required for the explicitly read-only admission case. This is safe exclusion, not useful context activation. The empty evidence contains no unsupported factual claim, changed qualification, or language-framing violation; it does not demonstrate source ignorance, a particular runtime error, or byte stability."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "No memory evidence is injected into context, as required for the explicitly read-only admission case. This is safe exclusion, not useful context activation. The empty evidence contains no unsupported factual claim, changed qualification, or language-framing violation; it does not demonstrate source ignorance, a particular runtime error, or byte stability."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "No memory evidence is injected into context, as required for the explicitly read-only admission case. This is safe exclusion, not useful context activation. The empty evidence contains no unsupported factual claim, changed qualification, or language-framing violation; it does not demonstrate source ignorance, a particular runtime error, or byte stability."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "No memory evidence is injected into context, as required for the explicitly read-only admission case. This is safe exclusion, not useful context activation. The empty evidence contains no unsupported factual claim, changed qualification, or language-framing violation; it does not demonstrate source ignorance, a particular runtime error, or byte stability."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-competing-clicks",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves both preliminary explanations with their exact rail/pin mechanisms, Ada’s nonselection through the local subject framing, no supporting observations for either, and lack of confirmation of clicking by this record. English stored knowledge is appropriate for either query language. Tentative qualification remains explicit and neither cause nor symptom is promoted to fact."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves both preliminary explanations with their exact rail/pin mechanisms, Ada’s nonselection through the local subject framing, no supporting observations for either, and lack of confirmation of clicking by this record. English stored knowledge is appropriate for either query language. Tentative qualification remains explicit and neither cause nor symptom is promoted to fact."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves both preliminary explanations with their exact rail/pin mechanisms, Ada’s nonselection through the local subject framing, no supporting observations for either, and lack of confirmation of clicking by this record. English stored knowledge is appropriate for either query language. Tentative qualification remains explicit and neither cause nor symptom is promoted to fact."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves both preliminary explanations with their exact rail/pin mechanisms, Ada’s nonselection through the local subject framing, no supporting observations for either, and lack of confirmation of clicking by this record. English stored knowledge is appropriate for either query language. Tentative qualification remains explicit and neither cause nor symptom is promoted to fact."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-open-renewal",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the precise new paper inspection-certificate question, Ada’s personal uncertainty, the distinct limit against inferring contract silence, and non-submission of a renewal request. Question metadata does not turn the possible requirement into fact. This is complete useful context for either query language."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the precise new paper inspection-certificate question, Ada’s personal uncertainty, the distinct limit against inferring contract silence, and non-submission of a renewal request. Question metadata does not turn the possible requirement into fact. This is complete useful context for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the precise new paper inspection-certificate question, Ada’s personal uncertainty, the distinct limit against inferring contract silence, and non-submission of a renewal request. Question metadata does not turn the possible requirement into fact. This is complete useful context for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the precise new paper inspection-certificate question, Ada’s personal uncertainty, the distinct limit against inferring contract silence, and non-submission of a renewal request. Question metadata does not turn the possible requirement into fact. This is complete useful context for either query language."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-nested-report",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context is useful for the service-report query and retains both reporting levels, the exact resistance-testing purpose rather than replacement, and Ada’s unread/unverified qualification. The report is not promoted to established policy or completed service. The source’s separate unpacked-device fact is absent, so useful focused context does not imply complete retention. English knowledge framing is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context is useful for the service-report query and retains both reporting levels, the exact resistance-testing purpose rather than replacement, and Ada’s unread/unverified qualification. The report is not promoted to established policy or completed service. The source’s separate unpacked-device fact is absent, so useful focused context does not imply complete retention. English knowledge framing is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context is useful for the service-report query and retains both reporting levels, the exact resistance-testing purpose rather than replacement, and Ada’s unread/unverified qualification. The report is not promoted to established policy or completed service. The source’s separate unpacked-device fact is absent, so useful focused context does not imply complete retention. English knowledge framing is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context is useful for the service-report query and retains both reporting levels, the exact resistance-testing purpose rather than replacement, and Ada’s unread/unverified qualification. The report is not promoted to established policy or completed service. The source’s separate unpacked-device fact is absent, so useful focused context does not imply complete retention. English knowledge framing is appropriate for either query language."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the complete hypothetical six-week clearing assumption and conditional seven-week breach, with Ada’s personal real-rule uncertainty and no report of actual omission. Hypothetical metadata agrees with the prose and prevents the assumed schedule from being presented as established duty. English stored knowledge is appropriate for both query languages; this is useful discussion evidence."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the complete hypothetical six-week clearing assumption and conditional seven-week breach, with Ada’s personal real-rule uncertainty and no report of actual omission. Hypothetical metadata agrees with the prose and prevents the assumed schedule from being presented as established duty. English stored knowledge is appropriate for both query languages; this is useful discussion evidence."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the complete hypothetical six-week clearing assumption and conditional seven-week breach, with Ada’s personal real-rule uncertainty and no report of actual omission. Hypothetical metadata agrees with the prose and prevents the assumed schedule from being presented as established duty. English stored knowledge is appropriate for both query languages; this is useful discussion evidence."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the complete hypothetical six-week clearing assumption and conditional seven-week breach, with Ada’s personal real-rule uncertainty and no report of actual omission. Hypothetical metadata agrees with the prose and prevents the assumed schedule from being presented as established duty. English stored knowledge is appropriate for both query languages; this is useful discussion evidence."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-read-only",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The empty context safely excludes memory evidence for the required read-only hold. It is not useful activation, but it invents no support period or claim that support is absent and emits no qualification/language violation. The semantic evidence alone does not prove byte stability or an exact runtime status classification."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The empty context safely excludes memory evidence for the required read-only hold. It is not useful activation, but it invents no support period or claim that support is absent and emits no qualification/language violation. The semantic evidence alone does not prove byte stability or an exact runtime status classification."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The empty context safely excludes memory evidence for the required read-only hold. It is not useful activation, but it invents no support period or claim that support is absent and emits no qualification/language violation. The semantic evidence alone does not prove byte stability or an exact runtime status classification."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The empty context safely excludes memory evidence for the required read-only hold. It is not useful activation, but it invents no support period or claim that support is absent and emits no qualification/language violation. The semantic evidence alone does not prove byte stability or an exact runtime status classification."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-rejected-inspection",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context identifies Ada’s rejected offer, the entire-device destination at the workshop, and checking its alignment gauge without inventing a particular property to measure. It is useful for the focused historical query and preserves rejected disposition. It omits the source’s separate no-plan assertion and other side facts, so useful focused context does not imply complete retained meaning. No active plan or completed inspection is asserted."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context identifies Ada’s rejected offer, the entire-device destination at the workshop, and checking its alignment gauge without inventing a particular property to measure. It is useful for the focused historical query and preserves rejected disposition. It omits the source’s separate no-plan assertion and other side facts, so useful focused context does not imply complete retained meaning. No active plan or completed inspection is asserted."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The default Russian-query context is empty even though the source supports a qualified historical answer and the reviewed answer retrieval includes the rejected offer. This is a missed useful context, not a required safe exclusion. Empty evidence emits no unsupported claim, qualification change, or language error; no runtime cause can be inferred from it."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context identifies Ada’s rejected offer, the entire-device destination at the workshop, and checking its alignment gauge without inventing a particular property to measure. It is useful for the focused historical query and preserves rejected disposition. It omits the source’s separate no-plan assertion and other side facts, so useful focused context does not imply complete retained meaning. No active plan or completed inspection is asserted."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-counterfactual",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the entire focused counterfactual: Ada did not enroll; if she had, internal-spring replacement after thirty-three months of use would have been free; the consequence remains unrealized. Counterfactual metadata agrees with the prose. It is useful discussion evidence in English for either query language, with no actual coverage, calendar date, or completed replacement introduced."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the entire focused counterfactual: Ada did not enroll; if she had, internal-spring replacement after thirty-three months of use would have been free; the consequence remains unrealized. Counterfactual metadata agrees with the prose. It is useful discussion evidence in English for either query language, with no actual coverage, calendar date, or completed replacement introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the entire focused counterfactual: Ada did not enroll; if she had, internal-spring replacement after thirty-three months of use would have been free; the consequence remains unrealized. Counterfactual metadata agrees with the prose. It is useful discussion evidence in English for either query language, with no actual coverage, calendar date, or completed replacement introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the entire focused counterfactual: Ada did not enroll; if she had, internal-spring replacement after thirty-three months of use would have been free; the consequence remains unrealized. Counterfactual metadata agrees with the prose. It is useful discussion evidence in English for either query language, with no actual coverage, calendar date, or completed replacement introduced."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-relayed-service",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides the complete focused service report with both levels of attribution, indicator-brightness measurement rather than replacement as the reported purpose, and Ada’s personal unread/unverified limits. Report metadata agrees with the prose and does not promote the embedded permission to established policy. The separately retained protective-cover fact is not required for this query. Context is useful and appropriately framed in English for either query language."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides the complete focused service report with both levels of attribution, indicator-brightness measurement rather than replacement as the reported purpose, and Ada’s personal unread/unverified limits. Report metadata agrees with the prose and does not promote the embedded permission to established policy. The separately retained protective-cover fact is not required for this query. Context is useful and appropriately framed in English for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides the complete focused service report with both levels of attribution, indicator-brightness measurement rather than replacement as the reported purpose, and Ada’s personal unread/unverified limits. Report metadata agrees with the prose and does not promote the embedded permission to established policy. The separately retained protective-cover fact is not required for this query. Context is useful and appropriately framed in English for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides the complete focused service report with both levels of attribution, indicator-brightness measurement rather than replacement as the reported purpose, and Ada’s personal unread/unverified limits. Report metadata agrees with the prose and does not promote the embedded permission to established policy. The separately retained protective-cover fact is not required for this query. Context is useful and appropriately framed in English for either query language."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the entire coverage record, including exact sand-caused ceramic-spacer damage exclusion, unresolved sleeve-replacement coverage from this exclusion alone, and nonestablishment of agreement silence. Negative metadata matches the exclusion without deciding the sleeve issue. English knowledge framing is appropriate for both query languages, and the actual evidence is useful and source-supported."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the entire coverage record, including exact sand-caused ceramic-spacer damage exclusion, unresolved sleeve-replacement coverage from this exclusion alone, and nonestablishment of agreement silence. Negative metadata matches the exclusion without deciding the sleeve issue. English knowledge framing is appropriate for both query languages, and the actual evidence is useful and source-supported."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the entire coverage record, including exact sand-caused ceramic-spacer damage exclusion, unresolved sleeve-replacement coverage from this exclusion alone, and nonestablishment of agreement silence. Negative metadata matches the exclusion without deciding the sleeve issue. English knowledge framing is appropriate for both query languages, and the actual evidence is useful and source-supported."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the entire coverage record, including exact sand-caused ceramic-spacer damage exclusion, unresolved sleeve-replacement coverage from this exclusion alone, and nonestablishment of agreement silence. Negative metadata matches the exclusion without deciding the sleeve issue. English knowledge framing is appropriate for both query languages, and the actual evidence is useful and source-supported."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-assumed-interval",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context keeps the assumed eleven-operating-cycle interval and twelve-cycle breach as one hypothetical unit, with Ada’s personal ignorance of the actual rule and no assertion of missed lubrication. Metadata agrees with that scope. It supplies useful discussion evidence for either query language without introducing an actual duty, maintenance omission, or calendar event."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context keeps the assumed eleven-operating-cycle interval and twelve-cycle breach as one hypothetical unit, with Ada’s personal ignorance of the actual rule and no assertion of missed lubrication. Metadata agrees with that scope. It supplies useful discussion evidence for either query language without introducing an actual duty, maintenance omission, or calendar event."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context keeps the assumed eleven-operating-cycle interval and twelve-cycle breach as one hypothetical unit, with Ada’s personal ignorance of the actual rule and no assertion of missed lubrication. Metadata agrees with that scope. It supplies useful discussion evidence for either query language without introducing an actual duty, maintenance omission, or calendar event."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context keeps the assumed eleven-operating-cycle interval and twelve-cycle breach as one hypothetical unit, with Ada’s personal ignorance of the actual rule and no assertion of missed lubrication. Metadata agrees with that scope. It supplies useful discussion evidence for either query language without introducing an actual duty, maintenance omission, or calendar event."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-assistant-speculation",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the complete tentative assistant speculation, exact optical-shutter check and eleven-operating-cycle interval, personal unread/unverified limits, and explicit distinction from established obligation or device state. Metadata agrees with the prose. It provides useful reports evidence for either query language without promoting the speculation to fact or actual service."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the complete tentative assistant speculation, exact optical-shutter check and eleven-operating-cycle interval, personal unread/unverified limits, and explicit distinction from established obligation or device state. Metadata agrees with the prose. It provides useful reports evidence for either query language without promoting the speculation to fact or actual service."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the complete tentative assistant speculation, exact optical-shutter check and eleven-operating-cycle interval, personal unread/unverified limits, and explicit distinction from established obligation or device state. Metadata agrees with the prose. It provides useful reports evidence for either query language without promoting the speculation to fact or actual service."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the complete tentative assistant speculation, exact optical-shutter check and eleven-operating-cycle interval, personal unread/unverified limits, and explicit distinction from established obligation or device state. Metadata agrees with the prose. It provides useful reports evidence for either query language without promoting the speculation to fact or actual service."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-declined-extension",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is empty although the writable source contains a useful qualified unrealized repair benefit. This is a missed context rather than a required safe exclusion. Empty evidence emits no claim, language violation, or qualification distortion; the public packet does not establish the runtime cause."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context is empty although the writable source contains a useful qualified unrealized repair benefit. This is a missed context rather than a required safe exclusion. Empty evidence emits no claim, language violation, or qualification distortion; the public packet does not establish the runtime cause."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains only Ada’s actual rejection of the extension, faithfully qualified as rejected. It omits the conditional free connector repair after twenty-two months of use and therefore does not answer the benefit-focused query. The surviving decision is entailed, but incomplete useful context cannot be credited and no admission hold is required."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains only Ada’s actual rejection of the extension, faithfully qualified as rejected. It omits the conditional free connector repair after twenty-two months of use and therefore does not answer the benefit-focused query. The surviving decision is entailed, but incomplete useful context cannot be credited and no admission hold is required."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-fictional-example",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the exact control-dial loan, named lender/borrower within fictional scope, forty-four-day interval after fictional repair, and absence of any real agreement. It is useful focused discussion evidence for either query language without asserting a real repair or transaction. It does not restore the separate actual introduction-for-discussion fact missing from the retained set."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the exact control-dial loan, named lender/borrower within fictional scope, forty-four-day interval after fictional repair, and absence of any real agreement. It is useful focused discussion evidence for either query language without asserting a real repair or transaction. It does not restore the separate actual introduction-for-discussion fact missing from the retained set."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the exact control-dial loan, named lender/borrower within fictional scope, forty-four-day interval after fictional repair, and absence of any real agreement. It is useful focused discussion evidence for either query language without asserting a real repair or transaction. It does not restore the separate actual introduction-for-discussion fact missing from the retained set."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the exact control-dial loan, named lender/borrower within fictional scope, forty-four-day interval after fictional repair, and absence of any real agreement. It is useful focused discussion evidence for either query language without asserting a real repair or transaction. It does not restore the separate actual introduction-for-discussion fact missing from the retained set."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-scoped-exclusion",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual English context includes both retained rows, regardless of ordering: the specific wax-caused fabric-seal damage exclusion and the independent limits on hinge-replacement coverage and contract silence. It is useful for the two-component query and preserves the source’s epistemic and polarity scope. No hinge entitlement, broad damage exclusion, or replacement benefit is invented; English stored knowledge is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual English context includes both retained rows, regardless of ordering: the specific wax-caused fabric-seal damage exclusion and the independent limits on hinge-replacement coverage and contract silence. It is useful for the two-component query and preserves the source’s epistemic and polarity scope. No hinge entitlement, broad damage exclusion, or replacement benefit is invented; English stored knowledge is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual English context includes both retained rows, regardless of ordering: the specific wax-caused fabric-seal damage exclusion and the independent limits on hinge-replacement coverage and contract silence. It is useful for the two-component query and preserves the source’s epistemic and polarity scope. No hinge entitlement, broad damage exclusion, or replacement benefit is invented; English stored knowledge is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual English context includes both retained rows, regardless of ordering: the specific wax-caused fabric-seal damage exclusion and the independent limits on hinge-replacement coverage and contract silence. It is useful for the two-component query and preserves the source’s epistemic and polarity scope. No hinge entitlement, broad damage exclusion, or replacement benefit is invented; English stored knowledge is appropriate for either query language."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-relative-unknown-date",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves all proposal and timing qualifications, including the missing source date, two-week source-record anchor rather than processing, unknown calendar date, and lack of an agreed meeting. Asserted/proposed metadata with undated tentative time matches the prose. It is useful planning evidence for either query language and introduces no accepted appointment or dated event."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves all proposal and timing qualifications, including the missing source date, two-week source-record anchor rather than processing, unknown calendar date, and lack of an agreed meeting. Asserted/proposed metadata with undated tentative time matches the prose. It is useful planning evidence for either query language and introduces no accepted appointment or dated event."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves all proposal and timing qualifications, including the missing source date, two-week source-record anchor rather than processing, unknown calendar date, and lack of an agreed meeting. Asserted/proposed metadata with undated tentative time matches the prose. It is useful planning evidence for either query language and introduces no accepted appointment or dated event."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves all proposal and timing qualifications, including the missing source date, two-week source-record anchor rather than processing, unknown calendar date, and lack of an agreed meeting. Asserted/proposed metadata with undated tentative time matches the prose. It is useful planning evidence for either query language and introduces no accepted appointment or dated event."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-assistant-reading",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the complete tentative assistant interpretation and its personal unread/unverified limits, together with the explicit prohibition on inferring an arranged return or scheduled shipment from possible label provision. Metadata agrees with that reporting scope. It is useful qualified reports evidence for either query language without introducing a confirmed duty or completed service action."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the complete tentative assistant interpretation and its personal unread/unverified limits, together with the explicit prohibition on inferring an arranged return or scheduled shipment from possible label provision. Metadata agrees with that reporting scope. It is useful qualified reports evidence for either query language without introducing a confirmed duty or completed service action."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the complete tentative assistant interpretation and its personal unread/unverified limits, together with the explicit prohibition on inferring an arranged return or scheduled shipment from possible label provision. Metadata agrees with that reporting scope. It is useful qualified reports evidence for either query language without introducing a confirmed duty or completed service action."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the complete tentative assistant interpretation and its personal unread/unverified limits, together with the explicit prohibition on inferring an arranged return or scheduled shipment from possible label provision. Metadata agrees with that reporting scope. It is useful qualified reports evidence for either query language without introducing a confirmed duty or completed service action."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context retains both tentative causes and every coupled epistemic limit: personal nonselection by Ada, no supporting data, and nonconfirmation of the rattle by this record. It is useful discussion evidence for either query language and does not promote a possible fault or symptom to fact."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context retains both tentative causes and every coupled epistemic limit: personal nonselection by Ada, no supporting data, and nonconfirmation of the rattle by this record. It is useful discussion evidence for either query language and does not promote a possible fault or symptom to fact."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context retains both tentative causes and every coupled epistemic limit: personal nonselection by Ada, no supporting data, and nonconfirmation of the rattle by this record. It is useful discussion evidence for either query language and does not promote a possible fault or symptom to fact."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context retains both tentative causes and every coupled epistemic limit: personal nonselection by Ada, no supporting data, and nonconfirmation of the rattle by this record. It is useful discussion evidence for either query language and does not promote a possible fault or symptom to fact."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-open-question",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the precise annual alignment question, Ada’s personal lack of an answer, and the note’s inability to establish inclusion or exclusion. Question metadata and prose agree. It is useful for either query language and does not contain the broader adjustment wording found in three Russian answers."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the precise annual alignment question, Ada’s personal lack of an answer, and the note’s inability to establish inclusion or exclusion. Question metadata and prose agree. It is useful for either query language and does not contain the broader adjustment wording found in three Russian answers."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the precise annual alignment question, Ada’s personal lack of an answer, and the note’s inability to establish inclusion or exclusion. Question metadata and prose agree. It is useful for either query language and does not contain the broader adjustment wording found in three Russian answers."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the precise annual alignment question, Ada’s personal lack of an answer, and the note’s inability to establish inclusion or exclusion. Question metadata and prose agree. It is useful for either query language and does not contain the broader adjustment wording found in three Russian answers."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-fictional-key",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual context includes both pages: the complete fictional physical-metal-cover-key loan and the separate real discussion proposal. Exact actors, duration after fictional inspection, no access code, and no real agreement are retained with appropriate hypothetical versus asserted/proposed metadata. English stored knowledge is appropriate for either query language and provides useful source-supported context."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual context includes both pages: the complete fictional physical-metal-cover-key loan and the separate real discussion proposal. Exact actors, duration after fictional inspection, no access code, and no real agreement are retained with appropriate hypothetical versus asserted/proposed metadata. English stored knowledge is appropriate for either query language and provides useful source-supported context."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual context includes both pages: the complete fictional physical-metal-cover-key loan and the separate real discussion proposal. Exact actors, duration after fictional inspection, no access code, and no real agreement are retained with appropriate hypothetical versus asserted/proposed metadata. English stored knowledge is appropriate for either query language and provides useful source-supported context."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual context includes both pages: the complete fictional physical-metal-cover-key loan and the separate real discussion proposal. Exact actors, duration after fictional inspection, no access code, and no real agreement are retained with appropriate hypothetical versus asserted/proposed metadata. English stored knowledge is appropriate for either query language and provides useful source-supported context."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-rejected-plan",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the rejected proposal’s calibration-room destination, rotation-stop-angle measurement purpose, and Ada’s lack of intent under it, with rejected metadata. It supplies useful historical context for either query language and does not contain the laboratory substitution found in three Russian answers. The absent appointment/transport side facts remain a complete-retention defect; no active or completed trip or measurement is introduced."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the rejected proposal’s calibration-room destination, rotation-stop-angle measurement purpose, and Ada’s lack of intent under it, with rejected metadata. It supplies useful historical context for either query language and does not contain the laboratory substitution found in three Russian answers. The absent appointment/transport side facts remain a complete-retention defect; no active or completed trip or measurement is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the rejected proposal’s calibration-room destination, rotation-stop-angle measurement purpose, and Ada’s lack of intent under it, with rejected metadata. It supplies useful historical context for either query language and does not contain the laboratory substitution found in three Russian answers. The absent appointment/transport side facts remain a complete-retention defect; no active or completed trip or measurement is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the rejected proposal’s calibration-room destination, rotation-stop-angle measurement purpose, and Ada’s lack of intent under it, with rejected metadata. It supplies useful historical context for either query language and does not contain the laboratory substitution found in three Russian answers. The absent appointment/transport side facts remain a complete-retention defect; no active or completed trip or measurement is introduced."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-read-only-admission",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The actual context is empty, safely excluding the source from memory activation as required by the read-only target. It is not useful context activation. Empty evidence contains no false proposition, qualification distortion, or language-framing violation, and it does not establish runtime unavailability or byte stability."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The actual context is empty, safely excluding the source from memory activation as required by the read-only target. It is not useful context activation. Empty evidence contains no false proposition, qualification distortion, or language-framing violation, and it does not establish runtime unavailability or byte stability."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The actual context is empty, safely excluding the source from memory activation as required by the read-only target. It is not useful context activation. Empty evidence contains no false proposition, qualification distortion, or language-framing violation, and it does not establish runtime unavailability or byte stability."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The actual context is empty, safely excluding the source from memory activation as required by the read-only target. It is not useful context activation. Empty evidence contains no false proposition, qualification distortion, or language-framing violation, and it does not establish runtime unavailability or byte stability."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-undated-review",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves the proposal, unknown utterance date, eleven-day source anchor, non-processing distinction, and nonacceptance. It lacks the explicit fact that no meeting is scheduled, and the tentative/undated metadata does not restore that status. The evidence is entailed but incomplete under the full timing-qualification rubric; no date or actual meeting is invented. English language framing remains compliant."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves the proposal, unknown utterance date, eleven-day source anchor, non-processing distinction, and nonacceptance. It lacks the explicit fact that no meeting is scheduled, and the tentative/undated metadata does not restore that status. The evidence is entailed but incomplete under the full timing-qualification rubric; no date or actual meeting is invented. English language framing remains compliant."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves the proposal, unknown utterance date, eleven-day source anchor, non-processing distinction, and nonacceptance. It lacks the explicit fact that no meeting is scheduled, and the tentative/undated metadata does not restore that status. The evidence is entailed but incomplete under the full timing-qualification rubric; no date or actual meeting is invented. English language framing remains compliant."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": false,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves the proposal, unknown utterance date, eleven-day source anchor, non-processing distinction, and nonacceptance. It lacks the explicit fact that no meeting is scheduled, and the tentative/undated metadata does not restore that status. The evidence is entailed but incomplete under the full timing-qualification rubric; no date or actual meeting is invented. English language framing remains compliant."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-competing-clicks",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the exact rail and pin mechanisms, tentative scope, Ada’s personal nonselection, no supporting observations, and nonconfirmation of clicking by this record. It supplies complete useful discussion evidence for either query language and preserves the stronger evidence qualifier absent from two Russian answers."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the exact rail and pin mechanisms, tentative scope, Ada’s personal nonselection, no supporting observations, and nonconfirmation of clicking by this record. It supplies complete useful discussion evidence for either query language and preserves the stronger evidence qualifier absent from two Russian answers."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the exact rail and pin mechanisms, tentative scope, Ada’s personal nonselection, no supporting observations, and nonconfirmation of clicking by this record. It supplies complete useful discussion evidence for either query language and preserves the stronger evidence qualifier absent from two Russian answers."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the exact rail and pin mechanisms, tentative scope, Ada’s personal nonselection, no supporting observations, and nonconfirmation of clicking by this record. It supplies complete useful discussion evidence for either query language and preserves the stronger evidence qualifier absent from two Russian answers."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-open-renewal",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides the complete focused renewal question with its new paper inspection-certificate detail, Ada’s own lack of an answer, and the explicit nonentailment of contract silence. Question metadata matches the unresolved content. The separate retained non-submission fact need not be included to answer this query. The actual context is useful and source-supported for either query language."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides the complete focused renewal question with its new paper inspection-certificate detail, Ada’s own lack of an answer, and the explicit nonentailment of contract silence. Question metadata matches the unresolved content. The separate retained non-submission fact need not be included to answer this query. The actual context is useful and source-supported for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides the complete focused renewal question with its new paper inspection-certificate detail, Ada’s own lack of an answer, and the explicit nonentailment of contract silence. Question metadata matches the unresolved content. The separate retained non-submission fact need not be included to answer this query. The actual context is useful and source-supported for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context provides the complete focused renewal question with its new paper inspection-certificate detail, Ada’s own lack of an answer, and the explicit nonentailment of contract silence. Question metadata matches the unresolved content. The separate retained non-submission fact need not be included to answer this query. The actual context is useful and source-supported for either query language."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-read-only",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The empty context safely excludes memory activation for the required read-only admission hold. It is not useful activation and emits no false support claim or language/qualification distortion. Operational status and byte stability remain separate evidence."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The empty context safely excludes memory activation for the required read-only admission hold. It is not useful activation and emits no false support claim or language/qualification distortion. Operational status and byte stability remain separate evidence."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The empty context safely excludes memory activation for the required read-only admission hold. It is not useful activation and emits no false support claim or language/qualification distortion. Operational status and byte stability remain separate evidence."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The empty context safely excludes memory activation for the required read-only admission hold. It is not useful activation and emits no false support claim or language/qualification distortion. Operational status and byte stability remain separate evidence."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-rejected-inspection",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the rejected whole-device workshop offer and alignment-gauge check without specifying an unsupported gauge subtype or property. It is useful focused history evidence for either query language, with rejected metadata and no active plan or completed inspection asserted. The separately retained negative facts need not all be injected to answer which offer was rejected."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the rejected whole-device workshop offer and alignment-gauge check without specifying an unsupported gauge subtype or property. It is useful focused history evidence for either query language, with rejected metadata and no active plan or completed inspection asserted. The separately retained negative facts need not all be injected to answer which offer was rejected."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The default Russian-query context is empty even though the original source and answer retrieval contain a useful qualified rejected offer. This is a missed context, not a required exclusion. Empty evidence emits no false claim; the runtime cause is not shown in the public packet."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the rejected whole-device workshop offer and alignment-gauge check without specifying an unsupported gauge subtype or property. It is useful focused history evidence for either query language, with rejected metadata and no active plan or completed inspection asserted. The separately retained negative facts need not all be injected to answer which offer was rejected."
+        }
+      ]
+    }
+  ]
+}

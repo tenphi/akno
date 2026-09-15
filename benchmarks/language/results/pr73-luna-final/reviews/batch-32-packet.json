@@ -1,0 +1,131 @@
+{
+  "kind": "incremental-frozen-full-evaluation-review-batch",
+  "corpusFingerprint": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+  "rubric": "Unchanged V23 language-output-review-v2 rubric in the frozen benchmark reviewer; no changed thresholds or expected meanings.",
+  "cases": [
+    {
+      "id": "v22-held-read-only-admission",
+      "run": 2,
+      "source": {
+        "id": "v22-held-read-only-admission",
+        "split": "development",
+        "language": "ru",
+        "scenario": "read-only-admission",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Запомни в папке с запретом на запись: Vulpine Mutual меняет защитное кольцо Zephyr QX-100 каждые пятьдесят пять месяцев."
+          }
+        ],
+        "view": "factual",
+        "admission": "read-only",
+        "hold": true,
+        "ordinary": "## Обслуживание\nVulpine Mutual меняет защитное кольцо Zephyr QX-100 каждые пятьдесят пять месяцев.",
+        "ordinaryFactual": true,
+        "queries": {
+          "en": "What maintenance interval did Ada Marlow ask to remember in the read-only folder?",
+          "ru": "Какой интервал обслуживания Ada Marlow попросила запомнить в папке с запретом на запись?"
+        },
+        "reviewExpectation": "The source is understandable, but the explicitly targeted folder denies writes. Preserve all source bytes and return the typed admission hold without a retained answer. Distinguish policy denial from missing source knowledge, an empty result, or service unavailability."
+      },
+      "reviewKnowledge": [],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [],
+          "answer": null
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [],
+          "answer": null
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [],
+          "answer": null
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [],
+          "answer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [],
+          "answer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [],
+          "answer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [],
+          "answer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [],
+          "answer": null
+        }
+      ]
+    }
+  ],
+  "extra": [
+    {
+      "id": "v22-held-read-only-admission",
+      "run": 2,
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": []
+      },
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "evidence": [],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "evidence": [],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "evidence": [],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "evidence": [],
+          "knowledgeLanguage": "en"
+        }
+      ]
+    }
+  ],
+  "packetFingerprint": "057b4925a69db67b7facdca3d1e8956216cf904a98a0fa943bd1af55cbaa18a9"
+}

@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "df582d2d4f992697ecda2de6be87c149a3d5b832e24fa49af6a3fe989214a5cf",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-open-renewal",
+      "run": 2,
+      "retentionUseful": true,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The complete retained set preserves the new paper inspection-certificate question for service-plan renewal, Ada’s personal lack of an answer, and the limit against inferring contract silence. A separate asserted, negative row preserves her non-submission of a renewal request. Within this reviewed set its renewal refers naturally to the sole renewal topic; it does not say she has never submitted any renewal request. That row’s subject metadata is unresolved and the sentence does not independently name Zephyr, so an isolated row would have weaker entity linkage, but the reviewed set retains the material source meaning. No requirement, exemption, actual renewal, or submission is established.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved question preserve the exact new paper inspection-certificate issue, Ada’s personal unanswered status, and the distinction between an unanswered question and absence of a relevant contractual provision. The requested language is used, without deciding the requirement or claiming a renewal. The separate non-submission fact is retained elsewhere in the set and is not necessary for this focused query asking which question remains open."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved question preserve the exact new paper inspection-certificate issue, Ada’s personal unanswered status, and the distinction between an unanswered question and absence of a relevant contractual provision. The requested language is used, without deciding the requirement or claiming a renewal. The separate non-submission fact is retained elsewhere in the set and is not necessary for this focused query asking which question remains open."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved question preserve the exact new paper inspection-certificate issue, Ada’s personal unanswered status, and the distinction between an unanswered question and absence of a relevant contractual provision. The requested language is used, without deciding the requirement or claiming a renewal. The separate non-submission fact is retained elsewhere in the set and is not necessary for this focused query asking which question remains open."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved question preserve the exact new paper inspection-certificate issue, Ada’s personal unanswered status, and the distinction between an unanswered question and absence of a relevant contractual provision. The requested language is used, without deciding the requirement or claiming a renewal. The separate non-submission fact is retained elsewhere in the set and is not necessary for this focused query asking which question remains open."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved question preserve the exact new paper inspection-certificate issue, Ada’s personal unanswered status, and the distinction between an unanswered question and absence of a relevant contractual provision. The requested language is used, without deciding the requirement or claiming a renewal. The separate non-submission fact is retained elsewhere in the set and is not necessary for this focused query asking which question remains open."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved question preserve the exact new paper inspection-certificate issue, Ada’s personal unanswered status, and the distinction between an unanswered question and absence of a relevant contractual provision. The requested language is used, without deciding the requirement or claiming a renewal. The separate non-submission fact is retained elsewhere in the set and is not necessary for this focused query asking which question remains open."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved question preserve the exact new paper inspection-certificate issue, Ada’s personal unanswered status, and the distinction between an unanswered question and absence of a relevant contractual provision. The requested language is used, without deciding the requirement or claiming a renewal. The separate non-submission fact is retained elsewhere in the set and is not necessary for this focused query asking which question remains open."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved question preserve the exact new paper inspection-certificate issue, Ada’s personal unanswered status, and the distinction between an unanswered question and absence of a relevant contractual provision. The requested language is used, without deciding the requirement or claiming a renewal. The separate non-submission fact is retained elsewhere in the set and is not necessary for this focused query asking which question remains open."
+        }
+      ]
+    }
+  ]
+}

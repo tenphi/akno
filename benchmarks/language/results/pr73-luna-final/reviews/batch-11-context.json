@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "52920623be323a2a3368dc01ffe062c0497cb6ff162d14a45f68d0e7f021fe7a",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-rejected-plan",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context is useful history evidence for which proposal Ada rejected: destination, rotation-stop-angle measurement purpose, rejection, and lack of intent under that proposal are intact. It preserves rejected disposition and does not activate a current trip or completed measurement. The source’s separate absent appointment and transport arrangements are not retained, so this useful focused context does not imply complete source retention. English stored knowledge is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context is useful history evidence for which proposal Ada rejected: destination, rotation-stop-angle measurement purpose, rejection, and lack of intent under that proposal are intact. It preserves rejected disposition and does not activate a current trip or completed measurement. The source’s separate absent appointment and transport arrangements are not retained, so this useful focused context does not imply complete source retention. English stored knowledge is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context is useful history evidence for which proposal Ada rejected: destination, rotation-stop-angle measurement purpose, rejection, and lack of intent under that proposal are intact. It preserves rejected disposition and does not activate a current trip or completed measurement. The source’s separate absent appointment and transport arrangements are not retained, so this useful focused context does not imply complete source retention. English stored knowledge is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context is useful history evidence for which proposal Ada rejected: destination, rotation-stop-angle measurement purpose, rejection, and lack of intent under that proposal are intact. It preserves rejected disposition and does not activate a current trip or completed measurement. The source’s separate absent appointment and transport arrangements are not retained, so this useful focused context does not imply complete source retention. English stored knowledge is appropriate for either query language."
+        }
+      ]
+    }
+  ]
+}

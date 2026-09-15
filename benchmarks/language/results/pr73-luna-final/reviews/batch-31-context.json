@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "c7940bdc3fd945e8b190e62b34caff0fb5a4663cb1ca085596acab1d85351f38",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-rejected-plan",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the rejected proposal’s calibration-room destination, rotation-stop-angle measurement purpose, and Ada’s lack of intent under it, with rejected metadata. It supplies useful historical context for either query language and does not contain the laboratory substitution found in three Russian answers. The absent appointment/transport side facts remain a complete-retention defect; no active or completed trip or measurement is introduced."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the rejected proposal’s calibration-room destination, rotation-stop-angle measurement purpose, and Ada’s lack of intent under it, with rejected metadata. It supplies useful historical context for either query language and does not contain the laboratory substitution found in three Russian answers. The absent appointment/transport side facts remain a complete-retention defect; no active or completed trip or measurement is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the rejected proposal’s calibration-room destination, rotation-stop-angle measurement purpose, and Ada’s lack of intent under it, with rejected metadata. It supplies useful historical context for either query language and does not contain the laboratory substitution found in three Russian answers. The absent appointment/transport side facts remain a complete-retention defect; no active or completed trip or measurement is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the rejected proposal’s calibration-room destination, rotation-stop-angle measurement purpose, and Ada’s lack of intent under it, with rejected metadata. It supplies useful historical context for either query language and does not contain the laboratory substitution found in three Russian answers. The absent appointment/transport side facts remain a complete-retention defect; no active or completed trip or measurement is introduced."
+        }
+      ]
+    }
+  ]
+}

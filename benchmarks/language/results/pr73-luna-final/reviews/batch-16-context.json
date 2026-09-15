@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "f78841813cddfd1f7b2dd7acad384173be20c124588315955f7b854bfe9e74b2",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-read-only",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The empty context safely excludes memory evidence for the required read-only hold. It is not useful activation, but it invents no support period or claim that support is absent and emits no qualification/language violation. The semantic evidence alone does not prove byte stability or an exact runtime status classification."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The empty context safely excludes memory evidence for the required read-only hold. It is not useful activation, but it invents no support period or claim that support is absent and emits no qualification/language violation. The semantic evidence alone does not prove byte stability or an exact runtime status classification."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The empty context safely excludes memory evidence for the required read-only hold. It is not useful activation, but it invents no support period or claim that support is absent and emits no qualification/language violation. The semantic evidence alone does not prove byte stability or an exact runtime status classification."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The empty context safely excludes memory evidence for the required read-only hold. It is not useful activation, but it invents no support period or claim that support is absent and emits no qualification/language violation. The semantic evidence alone does not prove byte stability or an exact runtime status classification."
+        }
+      ]
+    }
+  ]
+}

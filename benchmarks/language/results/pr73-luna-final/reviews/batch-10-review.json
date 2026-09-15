@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "ce14c94c16087c7023f94c86c33228e1f60561cfd76c0f58828ccce895403e34",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-undated-review",
+      "run": 1,
+      "retentionUseful": false,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": false,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The retained proposition is entailed: Ada proposed discussing service terms eleven days after the utterance rather than processing, and the proposal remains unaccepted. The temporal metadata does carry an undated, unknown, tentative, nonactionable envelope, but the retained set omits the explicit source fact that no meeting has been scheduled. Unaccepted proposal does not entail unscheduled meeting; a proposed meeting could already have a tentative booking. The prose also omits the source’s explicit unknown utterance date. The complete set therefore fails the full governing timing/status qualification, while asserting no invented date, accepted proposal, or scheduled event.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The published answer correctly gives the eleven-day offset from the utterance, excludes processing as the anchor, and preserves nonacceptance, in the requested language. However, it omits both that the utterance date is unknown and that no meeting is scheduled. Those are material qualifications to the query asking when the proposal applies; a tentative label does not supply them. Retrieval has unknown/undated temporal metadata but still omits the explicit absence of a scheduled meeting, so it is also incomplete under the full qualification rubric. The surviving statements are source-entailed and no calendar date or actual meeting is invented."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The published answer correctly gives the eleven-day offset from the utterance, excludes processing as the anchor, and preserves nonacceptance, in the requested language. However, it omits both that the utterance date is unknown and that no meeting is scheduled. Those are material qualifications to the query asking when the proposal applies; a tentative label does not supply them. Retrieval has unknown/undated temporal metadata but still omits the explicit absence of a scheduled meeting, so it is also incomplete under the full qualification rubric. The surviving statements are source-entailed and no calendar date or actual meeting is invented."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The published answer correctly gives the eleven-day offset from the utterance, excludes processing as the anchor, and preserves nonacceptance, in the requested language. However, it omits both that the utterance date is unknown and that no meeting is scheduled. Those are material qualifications to the query asking when the proposal applies; a tentative label does not supply them. Retrieval has unknown/undated temporal metadata but still omits the explicit absence of a scheduled meeting, so it is also incomplete under the full qualification rubric. The surviving statements are source-entailed and no calendar date or actual meeting is invented."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The published answer correctly gives the eleven-day offset from the utterance, excludes processing as the anchor, and preserves nonacceptance, in the requested language. However, it omits both that the utterance date is unknown and that no meeting is scheduled. Those are material qualifications to the query asking when the proposal applies; a tentative label does not supply them. Retrieval has unknown/undated temporal metadata but still omits the explicit absence of a scheduled meeting, so it is also incomplete under the full qualification rubric. The surviving statements are source-entailed and no calendar date or actual meeting is invented."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The published answer correctly gives the eleven-day offset from the utterance, excludes processing as the anchor, and preserves nonacceptance, in the requested language. However, it omits both that the utterance date is unknown and that no meeting is scheduled. Those are material qualifications to the query asking when the proposal applies; a tentative label does not supply them. Retrieval has unknown/undated temporal metadata but still omits the explicit absence of a scheduled meeting, so it is also incomplete under the full qualification rubric. The surviving statements are source-entailed and no calendar date or actual meeting is invented."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The published answer correctly gives the eleven-day offset from the utterance, excludes processing as the anchor, and preserves nonacceptance, in the requested language. However, it omits both that the utterance date is unknown and that no meeting is scheduled. Those are material qualifications to the query asking when the proposal applies; a tentative label does not supply them. Retrieval has unknown/undated temporal metadata but still omits the explicit absence of a scheduled meeting, so it is also incomplete under the full qualification rubric. The surviving statements are source-entailed and no calendar date or actual meeting is invented."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The published answer correctly gives the eleven-day offset from the utterance, excludes processing as the anchor, and preserves nonacceptance, in the requested language. However, it omits both that the utterance date is unknown and that no meeting is scheduled. Those are material qualifications to the query asking when the proposal applies; a tentative label does not supply them. Retrieval has unknown/undated temporal metadata but still omits the explicit absence of a scheduled meeting, so it is also incomplete under the full qualification rubric. The surviving statements are source-entailed and no calendar date or actual meeting is invented."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The published answer correctly gives the eleven-day offset from the utterance, excludes processing as the anchor, and preserves nonacceptance, in the requested language. However, it omits both that the utterance date is unknown and that no meeting is scheduled. Those are material qualifications to the query asking when the proposal applies; a tentative label does not supply them. Retrieval has unknown/undated temporal metadata but still omits the explicit absence of a scheduled meeting, so it is also incomplete under the full qualification rubric. The surviving statements are source-entailed and no calendar date or actual meeting is invented."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "bf22d4bbb922f74026790c9771080c9433266fd4c2c66b993fd7ba3b7dc5b200",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-open-question",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves annual alignment of the folding handle precisely, unlike the broader Russian answer wording. It includes Ada’s personal unanswered question and neither inclusion nor exclusion being established by the note. Question metadata prevents coverage being treated as established. This is useful qualified context for either query language."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves annual alignment of the folding handle precisely, unlike the broader Russian answer wording. It includes Ada’s personal unanswered question and neither inclusion nor exclusion being established by the note. Question metadata prevents coverage being treated as established. This is useful qualified context for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves annual alignment of the folding handle precisely, unlike the broader Russian answer wording. It includes Ada’s personal unanswered question and neither inclusion nor exclusion being established by the note. Question metadata prevents coverage being treated as established. This is useful qualified context for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves annual alignment of the folding handle precisely, unlike the broader Russian answer wording. It includes Ada’s personal unanswered question and neither inclusion nor exclusion being established by the note. Question metadata prevents coverage being treated as established. This is useful qualified context for either query language."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-fictional-key",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context includes the actual proposal to discuss an invented example and the complete fictional physical-metal-key loan, with exact cover purpose, actors, thirty-three-day post-inspection duration, no access code, and no real agreement. The respective proposed/asserted and hypothetical qualifications remain separate. It is useful context for either query language without promoting the imagined loan to reality."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context includes the actual proposal to discuss an invented example and the complete fictional physical-metal-key loan, with exact cover purpose, actors, thirty-three-day post-inspection duration, no access code, and no real agreement. The respective proposed/asserted and hypothetical qualifications remain separate. It is useful context for either query language without promoting the imagined loan to reality."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context includes the actual proposal to discuss an invented example and the complete fictional physical-metal-key loan, with exact cover purpose, actors, thirty-three-day post-inspection duration, no access code, and no real agreement. The respective proposed/asserted and hypothetical qualifications remain separate. It is useful context for either query language without promoting the imagined loan to reality."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context includes the actual proposal to discuss an invented example and the complete fictional physical-metal-key loan, with exact cover purpose, actors, thirty-three-day post-inspection duration, no access code, and no real agreement. The respective proposed/asserted and hypothetical qualifications remain separate. It is useful context for either query language without promoting the imagined loan to reality."
+        }
+      ]
+    }
+  ]
+}

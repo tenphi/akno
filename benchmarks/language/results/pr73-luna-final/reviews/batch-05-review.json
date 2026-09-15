@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "fc6ad3dcf01f031e12a36bb16c32f4598a7dee6712a919b893d0c30cdafb6188",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-declined-extension",
+      "run": 1,
+      "retentionUseful": true,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The retained set preserves both Ada’s actual rejection of the optional cable-protection extension and the separate unrealized consequence of acceptance: free connector repair after twenty-two months of use. English prose and counterfactual metadata retain the false antecedent and explicit absence of current coverage. The rejected decision does not erase the discussion-eligible counterfactual, and neither row asserts a performed repair, replacement, or current entitlement.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer faithfully states the conditional free connector repair after twenty-two months of use, Ada’s nonacceptance, and the lack of current coverage in the requested answer language. Both retrieved rows preserve the actual rejection and complete counterfactual; no performed repair, replacement, or factual entitlement is introduced."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer faithfully states the conditional free connector repair after twenty-two months of use, Ada’s nonacceptance, and the lack of current coverage in the requested answer language. Both retrieved rows preserve the actual rejection and complete counterfactual; no performed repair, replacement, or factual entitlement is introduced."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer faithfully states the conditional free connector repair after twenty-two months of use, Ada’s nonacceptance, and the lack of current coverage in the requested answer language. Both retrieved rows preserve the actual rejection and complete counterfactual; no performed repair, replacement, or factual entitlement is introduced."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer faithfully states the conditional free connector repair after twenty-two months of use, Ada’s nonacceptance, and the lack of current coverage in the requested answer language. Both retrieved rows preserve the actual rejection and complete counterfactual; no performed repair, replacement, or factual entitlement is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer faithfully states the conditional free connector repair after twenty-two months of use, Ada’s nonacceptance, and the lack of current coverage in the requested answer language. Both retrieved rows preserve the actual rejection and complete counterfactual; no performed repair, replacement, or factual entitlement is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The Russian answer gives free connector repair after twenty-two months of use only if Ada had accepted the extension, then explicitly states she did not accept it. In this local context «этой гарантии у неё нет» refers to the described unrealized repair coverage; it does not assert loss of all warranties or turn the benefit into a current entitlement. Both retrieved rows preserve the complete condition and rejection."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer faithfully states the conditional free connector repair after twenty-two months of use, Ada’s nonacceptance, and the lack of current coverage in the requested answer language. Both retrieved rows preserve the actual rejection and complete counterfactual; no performed repair, replacement, or factual entitlement is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer faithfully states the conditional free connector repair after twenty-two months of use, Ada’s nonacceptance, and the lack of current coverage in the requested answer language. Both retrieved rows preserve the actual rejection and complete counterfactual; no performed repair, replacement, or factual entitlement is introduced."
+        }
+      ]
+    }
+  ]
+}

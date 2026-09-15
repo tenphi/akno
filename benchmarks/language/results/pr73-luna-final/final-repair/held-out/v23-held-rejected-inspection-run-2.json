@@ -1,0 +1,1118 @@
+{
+  "id": "v23-held-rejected-inspection",
+  "run": 2,
+  "admission": "writable",
+  "reviewExpectation": "Preserve Ada as rejecting agent, the rejected offer to take the entire device to the workshop for a check of its alignment gauge, and the separate no-plan, no-appointment and no-transport assertions. Do not turn taking the device into transporting just the gauge, checking the gauge into measuring a specific unmentioned property, or a rejected offer into an active plan or completed inspection.",
+  "language": "en",
+  "scenario": "rejected-plan",
+  "expectedHold": false,
+  "nonfactualExpected": true,
+  "retentionAvailabilityFailure": false,
+  "availabilityFailure": false,
+  "languageRejected": false,
+  "retention": {
+    "status": "ok",
+    "outcome": "ok",
+    "reason": null,
+    "candidates": [
+      {
+        "outcome": "held",
+        "reason": "discourse_uncertain",
+        "holdStage": "verification",
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      },
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "usage": {
+      "extraction": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 12855,
+        "input_tokens": 7474,
+        "output_tokens": 1337,
+        "total_tokens": 8811
+      },
+      "repair": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 7250,
+        "input_tokens": 8481,
+        "output_tokens": 538,
+        "total_tokens": 9019
+      },
+      "verification": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 17980,
+        "input_tokens": 19228,
+        "output_tokens": 1961,
+        "total_tokens": 21189
+      },
+      "placement": [
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1125,
+          "input_tokens": 564,
+          "output_tokens": 16,
+          "total_tokens": 580
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1142,
+          "input_tokens": 555,
+          "output_tokens": 16,
+          "total_tokens": 571
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 965,
+          "input_tokens": 554,
+          "output_tokens": 16,
+          "total_tokens": 570
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1147,
+          "input_tokens": 397,
+          "output_tokens": 31,
+          "total_tokens": 428
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1055,
+          "input_tokens": 538,
+          "output_tokens": 28,
+          "total_tokens": 566
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1624,
+          "input_tokens": 672,
+          "output_tokens": 30,
+          "total_tokens": 702
+        }
+      ]
+    },
+    "degraded": []
+  },
+  "retainedItems": 3,
+  "noncanonicalEligibilityFlag": true,
+  "semanticsMatch": true,
+  "ordinaryCorrect": true,
+  "ordinaryInspection": {
+    "status": "ok",
+    "results": 1
+  },
+  "bytesStable": true,
+  "replayOutcome": "replayed",
+  "sourceArchive": {
+    "stableAcrossRebuildReplay": true,
+    "supports": [
+      {
+        "memory_id": "mem_1983c089",
+        "source_ref": "invented:v23-held-rejected-inspection",
+        "input_hash": "b56888aac97dab5feafe9eaf7e618b9ac9cc038772e999fefb0bb907640e17db",
+        "evidence": "I, Ada Marlow, rejected the offer to take my Zephyr QX-100 to the workshop so that its alignment gauge could be checked.\n…\nNo inspection appointment has been made, and I have not transported the device.",
+        "evidence_hash": "65b75831275c66ef9661621e5ea4cc0afae7451fb36960c42081793f60cac03c",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "I, Ada Marlow, rejected the offer to take my Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          },
+          {
+            "quote": "No inspection appointment has been made, and I have not transported the device.",
+            "matchingSourceItems": [
+              "turn-2222"
+            ]
+          }
+        ]
+      },
+      {
+        "memory_id": "mem_00c7a8f5",
+        "source_ref": "invented:v23-held-rejected-inspection",
+        "input_hash": "b56888aac97dab5feafe9eaf7e618b9ac9cc038772e999fefb0bb907640e17db",
+        "evidence": "I, Ada Marlow, rejected the offer to take my Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+        "evidence_hash": "a012e23942d599d81002da164af32e52b234b938c805368d0e92768fa887be9e",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "I, Ada Marlow, rejected the offer to take my Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          }
+        ]
+      },
+      {
+        "memory_id": "mem_3c639d3f",
+        "source_ref": "invented:v23-held-rejected-inspection",
+        "input_hash": "b56888aac97dab5feafe9eaf7e618b9ac9cc038772e999fefb0bb907640e17db",
+        "evidence": "No inspection appointment has been made, and I have not transported the device.\n…\nI, Ada Marlow, rejected the offer to take my Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+        "evidence_hash": "81538f6df99c450c2a24eb20b917f5bf036c9f64c344c6b098a1538fceeadccc",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "No inspection appointment has been made, and I have not transported the device.",
+            "matchingSourceItems": [
+              "turn-2222"
+            ]
+          },
+          {
+            "quote": "I, Ada Marlow, rejected the offer to take my Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "queries": [
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "history",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_00c7a8f5",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_e742fe71f18de88a701084f6",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 6,
+              "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_00c7a8f5",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_e742fe71f18de88a701084f6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Workshop Offer",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 4460,
+          "input_tokens": 6249,
+          "output_tokens": 224,
+          "total_tokens": 6473
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6005,
+          "input_tokens": 9151,
+          "output_tokens": 596,
+          "total_tokens": 9747
+        }
+      },
+      "reviewAnswer": "**Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked. [memory/equipment:6]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "history",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_00c7a8f5",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_e742fe71f18de88a701084f6",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 6,
+              "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_00c7a8f5",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_e742fe71f18de88a701084f6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Workshop Offer",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5550,
+          "input_tokens": 6218,
+          "output_tokens": 344,
+          "total_tokens": 6562
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6920,
+          "input_tokens": 9170,
+          "output_tokens": 591,
+          "total_tokens": 9761
+        }
+      },
+      "reviewAnswer": "**Отклонено:** Ada Marlow отклонила предложение отвезти свой Zephyr QX-100 в мастерскую, чтобы проверить его измеритель выравнивания. [memory/equipment:6]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "history",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_00c7a8f5",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_e742fe71f18de88a701084f6",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 6,
+              "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_00c7a8f5",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_e742fe71f18de88a701084f6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Workshop Offer",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 3655,
+          "input_tokens": 6249,
+          "output_tokens": 236,
+          "total_tokens": 6485
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5955,
+          "input_tokens": 9151,
+          "output_tokens": 555,
+          "total_tokens": 9706
+        }
+      },
+      "reviewAnswer": "**Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked. [memory/equipment:6]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "history",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_00c7a8f5",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_e742fe71f18de88a701084f6",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 6,
+              "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_00c7a8f5",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_e742fe71f18de88a701084f6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Workshop Offer",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5727,
+          "input_tokens": 6218,
+          "output_tokens": 346,
+          "total_tokens": 6564
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8957,
+          "input_tokens": 9170,
+          "output_tokens": 864,
+          "total_tokens": 10034
+        }
+      },
+      "reviewAnswer": "**Отклонено:** Ada Marlow отклонила предложение отвезти её Zephyr QX-100 в мастерскую, чтобы проверить его измеритель выравнивания. [memory/equipment:6]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "history",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_00c7a8f5",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_e742fe71f18de88a701084f6",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 6,
+              "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_00c7a8f5",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_e742fe71f18de88a701084f6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Workshop Offer",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 4321,
+          "input_tokens": 6253,
+          "output_tokens": 263,
+          "total_tokens": 6516
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5856,
+          "input_tokens": 9151,
+          "output_tokens": 528,
+          "total_tokens": 9679
+        }
+      },
+      "reviewAnswer": "**Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked. [memory/equipment:6]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "history",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_00c7a8f5",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_e742fe71f18de88a701084f6",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 6,
+              "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_00c7a8f5",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_e742fe71f18de88a701084f6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Workshop Offer",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5145,
+          "input_tokens": 6221,
+          "output_tokens": 280,
+          "total_tokens": 6501
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7156,
+          "input_tokens": 9158,
+          "output_tokens": 580,
+          "total_tokens": 9738
+        }
+      },
+      "reviewAnswer": "**Отклонено:** Ada Marlow отвергла предложение отвезти её Zephyr QX-100 в мастерскую, чтобы проверить его юстировочный датчик. [memory/equipment:6]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "history",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_00c7a8f5",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_e742fe71f18de88a701084f6",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 6,
+              "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_00c7a8f5",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_e742fe71f18de88a701084f6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Workshop Offer",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 3721,
+          "input_tokens": 6253,
+          "output_tokens": 235,
+          "total_tokens": 6488
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5463,
+          "input_tokens": 9151,
+          "output_tokens": 517,
+          "total_tokens": 9668
+        }
+      },
+      "reviewAnswer": "**Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked. [memory/equipment:6]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "history",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_00c7a8f5",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_e742fe71f18de88a701084f6",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 6,
+              "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_00c7a8f5",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_e742fe71f18de88a701084f6",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Workshop Offer",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 4503,
+          "input_tokens": 6220,
+          "output_tokens": 323,
+          "total_tokens": 6543
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6773,
+          "input_tokens": 9157,
+          "output_tokens": 566,
+          "total_tokens": 9723
+        }
+      },
+      "reviewAnswer": "**Отклонено:** Ada Marlow отвергла предложение отвезти её Zephyr QX-100 в мастерскую, чтобы проверить его измеритель юстировки. [memory/equipment:6]"
+    }
+  ],
+  "reviewKnowledge": [
+    {
+      "text": "- **Rejected:** Ada Marlow rejected the offer to take her Zephyr QX-100 to the workshop so that its alignment gauge could be checked.",
+      "qualification": {
+        "status": "qualified",
+        "id": "mem_00c7a8f5",
+        "level": 1,
+        "kind": "plan",
+        "subject": "ent_e742fe71f18de88a701084f6",
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "commitment": "asserted",
+        "disposition": "rejected",
+        "polarity": "affirmed",
+        "basis": "self_attested",
+        "answer_eligible": false,
+        "current_eligible": false
+      }
+    },
+    {
+      "text": "- No inspection appointment has been made for Ada Marlow's Zephyr QX-100.",
+      "qualification": {
+        "status": "qualified",
+        "id": "mem_1983c089",
+        "level": 1,
+        "kind": "event",
+        "subject": "ent_e742fe71f18de88a701084f6",
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "commitment": "asserted",
+        "disposition": "active",
+        "polarity": "negated",
+        "basis": "self_attested",
+        "answer_eligible": true,
+        "current_eligible": true
+      }
+    },
+    {
+      "text": "- Ada Marlow has not transported her Zephyr QX-100 to the workshop.",
+      "qualification": {
+        "status": "qualified",
+        "id": "mem_3c639d3f",
+        "level": 1,
+        "kind": "event",
+        "subject": "ent_e742fe71f18de88a701084f6",
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "commitment": "asserted",
+        "disposition": "active",
+        "polarity": "negated",
+        "basis": "self_attested",
+        "answer_eligible": true,
+        "current_eligible": true
+      }
+    }
+  ],
+  "error": null
+}

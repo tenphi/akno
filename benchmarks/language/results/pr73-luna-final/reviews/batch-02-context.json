@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "50e972e047d33d9f17f51120cae33166fc7a704b0789739b088a3457798c164c",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the complete six-week/seven-week conditional unit with its explicit hypothetical frame, Ada’s personal lack of knowledge of the real rule, and her denial of reporting an actual omission. The metadata agrees with the hypothetical meaning, and the contextual title/breadcrumb does not add a real event. This is useful source-entailed discussion evidence. Stored English knowledge prose is appropriate independently of query language; no translated narrative or factual promotion is introduced."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the complete six-week/seven-week conditional unit with its explicit hypothetical frame, Ada’s personal lack of knowledge of the real rule, and her denial of reporting an actual omission. The metadata agrees with the hypothetical meaning, and the contextual title/breadcrumb does not add a real event. This is useful source-entailed discussion evidence. Stored English knowledge prose is appropriate independently of query language; no translated narrative or factual promotion is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the complete six-week/seven-week conditional unit with its explicit hypothetical frame, Ada’s personal lack of knowledge of the real rule, and her denial of reporting an actual omission. The metadata agrees with the hypothetical meaning, and the contextual title/breadcrumb does not add a real event. This is useful source-entailed discussion evidence. Stored English knowledge prose is appropriate independently of query language; no translated narrative or factual promotion is introduced."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context contains the complete six-week/seven-week conditional unit with its explicit hypothetical frame, Ada’s personal lack of knowledge of the real rule, and her denial of reporting an actual omission. The metadata agrees with the hypothetical meaning, and the contextual title/breadcrumb does not add a real event. This is useful source-entailed discussion evidence. Stored English knowledge prose is appropriate independently of query language; no translated narrative or factual promotion is introduced."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-relayed-service",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context supplies the complete nested report and all coupled limits: Ada relays Bo’s alleged permission, shipment is for indicator-brightness measurement rather than replacement, and Ada has not read the terms or checked the message. The report framing and metadata prevent treating the permission as independently verified. The separate protective-cover assertion is not required to interpret this focused report context and remains present in the saved set. English source-linked knowledge framing is compliant for either query language; this is useful positive activation, not a read-only exclusion."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context supplies the complete nested report and all coupled limits: Ada relays Bo’s alleged permission, shipment is for indicator-brightness measurement rather than replacement, and Ada has not read the terms or checked the message. The report framing and metadata prevent treating the permission as independently verified. The separate protective-cover assertion is not required to interpret this focused report context and remains present in the saved set. English source-linked knowledge framing is compliant for either query language; this is useful positive activation, not a read-only exclusion."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context supplies the complete nested report and all coupled limits: Ada relays Bo’s alleged permission, shipment is for indicator-brightness measurement rather than replacement, and Ada has not read the terms or checked the message. The report framing and metadata prevent treating the permission as independently verified. The separate protective-cover assertion is not required to interpret this focused report context and remains present in the saved set. English source-linked knowledge framing is compliant for either query language; this is useful positive activation, not a read-only exclusion."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context supplies the complete nested report and all coupled limits: Ada relays Bo’s alleged permission, shipment is for indicator-brightness measurement rather than replacement, and Ada has not read the terms or checked the message. The report framing and metadata prevent treating the permission as independently verified. The separate protective-cover assertion is not required to interpret this focused report context and remains present in the saved set. English source-linked knowledge framing is compliant for either query language; this is useful positive activation, not a read-only exclusion."
+        }
+      ]
+    }
+  ]
+}

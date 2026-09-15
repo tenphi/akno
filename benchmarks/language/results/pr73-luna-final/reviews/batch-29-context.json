@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "c03c5f28d5c166a83e0fde3582ada497ebddba715ad26a83aa07a6eb9400813e",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-open-question",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the precise annual alignment question, Ada’s personal lack of an answer, and the note’s inability to establish inclusion or exclusion. Question metadata and prose agree. It is useful for either query language and does not contain the broader adjustment wording found in three Russian answers."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the precise annual alignment question, Ada’s personal lack of an answer, and the note’s inability to establish inclusion or exclusion. Question metadata and prose agree. It is useful for either query language and does not contain the broader adjustment wording found in three Russian answers."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the precise annual alignment question, Ada’s personal lack of an answer, and the note’s inability to establish inclusion or exclusion. Question metadata and prose agree. It is useful for either query language and does not contain the broader adjustment wording found in three Russian answers."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the precise annual alignment question, Ada’s personal lack of an answer, and the note’s inability to establish inclusion or exclusion. Question metadata and prose agree. It is useful for either query language and does not contain the broader adjustment wording found in three Russian answers."
+        }
+      ]
+    }
+  ]
+}

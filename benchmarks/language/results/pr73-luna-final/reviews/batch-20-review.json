@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "f302d74c6cf20714c74a5da02ccc8a59e90de2f5c3a344e4e6e1da2e4529d264",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-coverage-exclusion",
+      "run": 2,
+      "retentionUseful": true,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The complete retained English record preserves the specific exclusion of sand-caused ceramic-spacer damage and both coupled limits: this exclusion alone does not settle intake-sleeve replacement coverage or establish agreement silence about that sleeve. Negative polarity and Ada’s self-attested source attribution agree with the prose. It does not expand the exclusion to all spacer damage, decide sleeve coverage, or substitute a replacement benefit for damage coverage.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the sand-causation limit on ceramic-spacer damage, the separate intake-sleeve replacement question, and the prohibition on inferring contract silence from this exclusion. Russian «распорка» and «проставка» are contextually valid spacer renderings; neither answer asserts a new geometry, material, or component. The answer uses the requested language and leaves sleeve inclusion/exclusion unresolved as the source requires."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the sand-causation limit on ceramic-spacer damage, the separate intake-sleeve replacement question, and the prohibition on inferring contract silence from this exclusion. Russian «распорка» and «проставка» are contextually valid spacer renderings; neither answer asserts a new geometry, material, or component. The answer uses the requested language and leaves sleeve inclusion/exclusion unresolved as the source requires."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the sand-causation limit on ceramic-spacer damage, the separate intake-sleeve replacement question, and the prohibition on inferring contract silence from this exclusion. Russian «распорка» and «проставка» are contextually valid spacer renderings; neither answer asserts a new geometry, material, or component. The answer uses the requested language and leaves sleeve inclusion/exclusion unresolved as the source requires."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the sand-causation limit on ceramic-spacer damage, the separate intake-sleeve replacement question, and the prohibition on inferring contract silence from this exclusion. Russian «распорка» and «проставка» are contextually valid spacer renderings; neither answer asserts a new geometry, material, or component. The answer uses the requested language and leaves sleeve inclusion/exclusion unresolved as the source requires."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the sand-causation limit on ceramic-spacer damage, the separate intake-sleeve replacement question, and the prohibition on inferring contract silence from this exclusion. Russian «распорка» and «проставка» are contextually valid spacer renderings; neither answer asserts a new geometry, material, or component. The answer uses the requested language and leaves sleeve inclusion/exclusion unresolved as the source requires."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the sand-causation limit on ceramic-spacer damage, the separate intake-sleeve replacement question, and the prohibition on inferring contract silence from this exclusion. Russian «распорка» and «проставка» are contextually valid spacer renderings; neither answer asserts a new geometry, material, or component. The answer uses the requested language and leaves sleeve inclusion/exclusion unresolved as the source requires."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the sand-causation limit on ceramic-spacer damage, the separate intake-sleeve replacement question, and the prohibition on inferring contract silence from this exclusion. Russian «распорка» and «проставка» are contextually valid spacer renderings; neither answer asserts a new geometry, material, or component. The answer uses the requested language and leaves sleeve inclusion/exclusion unresolved as the source requires."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the sand-causation limit on ceramic-spacer damage, the separate intake-sleeve replacement question, and the prohibition on inferring contract silence from this exclusion. Russian «распорка» and «проставка» are contextually valid spacer renderings; neither answer asserts a new geometry, material, or component. The answer uses the requested language and leaves sleeve inclusion/exclusion unresolved as the source requires."
+        }
+      ]
+    }
+  ]
+}

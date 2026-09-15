@@ -1,0 +1,143 @@
+{
+  "kind": "incremental-frozen-full-evaluation-review-batch",
+  "corpusFingerprint": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+  "rubric": "Unchanged V23 language-output-review-v2 rubric in the frozen benchmark reviewer; no changed thresholds or expected meanings.",
+  "cases": [
+    {
+      "id": "v22-held-nested-report",
+      "run": 1,
+      "source": {
+        "id": "v22-held-nested-report",
+        "split": "development",
+        "language": "ru",
+        "scenario": "nested-report",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Я, Ada Marlow, пересказываю слова Bo Winters о правилах Vulpine Mutual для Zephyr QX-100. Я не видела эти правила и не проверяла его сообщение."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "По словам Bo Winters, Vulpine Mutual разрешает принести устройство в мастерскую для проверки сопротивления заземляющего контакта."
+          },
+          {
+            "item_id": "turn-3333",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Он говорил именно о проверке сопротивления контакта, а не о замене контакта. Отдельно: я ещё не упаковала своё устройство для такой проверки."
+          }
+        ],
+        "view": "reports",
+        "basis": "source_report",
+        "admission": "writable",
+        "ordinary": "## Пересказ\nAda Marlow передаёт непроверенное сообщение Bo Winters: правила Vulpine Mutual разрешают принести Zephyr QX-100 в мастерскую для проверки сопротивления заземляющего контакта, но не для его замены. Ada не видела правила, не проверяла сообщение и ещё не упаковала своё устройство.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "What grounding-contact service report did Ada Marlow relay from Bo Winters about Zephyr QX-100?",
+          "ru": "Какое сообщение Bo Winters о заземляющем контакте Zephyr QX-100 пересказала Ada Marlow?"
+        },
+        "reviewExpectation": "Retain Ada as the outer relayer and Bo as the inner source; Vulpine Mutual allegedly permits workshop delivery to check grounding-contact resistance, specifically not replacement. Ada did not see the rules, did not verify Bo’s report, and separately has not packed her device. No confirmed permission or completed service is established."
+      },
+      "reviewKnowledge": [],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [],
+          "answer": null
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [],
+          "answer": null
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [],
+          "answer": null
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [],
+          "answer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [],
+          "answer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [],
+          "answer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [],
+          "answer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [],
+          "answer": null
+        }
+      ]
+    }
+  ],
+  "extra": [
+    {
+      "id": "v22-held-nested-report",
+      "run": 1,
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": []
+      },
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "evidence": [],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "evidence": [],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "evidence": [],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "evidence": [],
+          "knowledgeLanguage": "en"
+        }
+      ]
+    }
+  ],
+  "packetFingerprint": "5b3e367e0a2a48e8602cebc53bf2e0f0979837a1a262abea35c0d21ef85e16ff"
+}

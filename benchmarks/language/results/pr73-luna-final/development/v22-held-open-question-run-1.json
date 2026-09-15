@@ -1,0 +1,991 @@
+{
+  "id": "v22-held-open-question",
+  "run": 1,
+  "admission": "writable",
+  "reviewExpectation": "Retain the unresolved question about annual folding-handle alignment, Ada’s personal lack of an answer, and unestablished inclusion and exclusion. Do not infer contract silence, a performed alignment, or universal ignorance.",
+  "language": "mixed",
+  "scenario": "open-question",
+  "expectedHold": false,
+  "nonfactualExpected": true,
+  "retentionAvailabilityFailure": false,
+  "availabilityFailure": false,
+  "languageRejected": false,
+  "retention": {
+    "status": "ok",
+    "outcome": "ok",
+    "reason": null,
+    "candidates": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "usage": {
+      "extraction": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 6295,
+        "input_tokens": 7394,
+        "output_tokens": 438,
+        "total_tokens": 7832
+      },
+      "verification": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 4779,
+        "input_tokens": 7960,
+        "output_tokens": 362,
+        "total_tokens": 8322
+      },
+      "placement": [
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 975,
+          "input_tokens": 584,
+          "output_tokens": 16,
+          "total_tokens": 600
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1044,
+          "input_tokens": 416,
+          "output_tokens": 29,
+          "total_tokens": 445
+        }
+      ]
+    },
+    "degraded": []
+  },
+  "retainedItems": 1,
+  "noncanonicalEligibilityFlag": false,
+  "semanticsMatch": true,
+  "ordinaryCorrect": true,
+  "ordinaryInspection": {
+    "status": "ok",
+    "results": 1
+  },
+  "bytesStable": true,
+  "replayOutcome": "replayed",
+  "sourceArchive": {
+    "stableAcrossRebuildReplay": true,
+    "supports": [
+      {
+        "memory_id": "mem_f9d857c6",
+        "source_ref": "invented:v22-held-open-question",
+        "input_hash": "1ec2db34b9e802476d7270db9570071ae1e590486bbf5a0e1d712fe5faf52ec1",
+        "evidence": "У меня, Ada Marlow, остаётся открытый вопрос о Zephyr QX-100: does the service plan include annual alignment of the folding handle?\n…\nI do not have the answer. Neither inclusion nor exclusion of that alignment is established by this note.",
+        "evidence_hash": "8e4c95f4b051df64331763e365bb075fd8f3dac4e3523b704fc386351e2f5293",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "У меня, Ada Marlow, остаётся открытый вопрос о Zephyr QX-100: does the service plan include annual alignment of the folding handle?",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          },
+          {
+            "quote": "I do not have the answer. Neither inclusion nor exclusion of that alignment is established by this note.",
+            "matchingSourceItems": [
+              "turn-2222"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "queries": [
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "questions",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_f9d857c6",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_29f360c5afa1f10a77e0e998",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "exact",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": false,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_f9d857c6",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_29f360c5afa1f10a77e0e998",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Open Questions",
+          "updated": "2026-09-15",
+          "relevance": 0.8127,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5206,
+          "input_tokens": 6342,
+          "output_tokens": 319,
+          "total_tokens": 6661
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7093,
+          "input_tokens": 10581,
+          "output_tokens": 613,
+          "total_tokens": 11194
+        }
+      },
+      "reviewAnswer": "**Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "questions",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_f9d857c6",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_29f360c5afa1f10a77e0e998",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "exact",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": false,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_f9d857c6",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_29f360c5afa1f10a77e0e998",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Open Questions",
+          "updated": "2026-09-15",
+          "relevance": 0.8127,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5775,
+          "input_tokens": 6316,
+          "output_tokens": 491,
+          "total_tokens": 6807
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 10768,
+          "input_tokens": 10638,
+          "output_tokens": 827,
+          "total_tokens": 11465
+        }
+      },
+      "reviewAnswer": "**Открытый вопрос:** У Ada Marlow остаётся открытый вопрос о том, включает ли план обслуживания Zephyr QX-100 ежегодную регулировку складной ручки. Ada Marlow не знает ответа, и эта заметка не устанавливает ни включение, ни исключение такой регулировки. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "questions",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_f9d857c6",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_29f360c5afa1f10a77e0e998",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "exact",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": false,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_f9d857c6",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_29f360c5afa1f10a77e0e998",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Open Questions",
+          "updated": "2026-09-15",
+          "relevance": 0.8127,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5278,
+          "input_tokens": 6342,
+          "output_tokens": 337,
+          "total_tokens": 6679
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8854,
+          "input_tokens": 10581,
+          "output_tokens": 722,
+          "total_tokens": 11303
+        }
+      },
+      "reviewAnswer": "**Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "questions",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_f9d857c6",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_29f360c5afa1f10a77e0e998",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "exact",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": false,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_f9d857c6",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_29f360c5afa1f10a77e0e998",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Open Questions",
+          "updated": "2026-09-15",
+          "relevance": 0.8127,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5731,
+          "input_tokens": 6317,
+          "output_tokens": 403,
+          "total_tokens": 6720
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8574,
+          "input_tokens": 10617,
+          "output_tokens": 807,
+          "total_tokens": 11424
+        }
+      },
+      "reviewAnswer": "**Открытый вопрос:** у Ada Marlow остаётся открытый вопрос о том, включает ли сервисный план Zephyr QX-100 ежегодную регулировку складной ручки. Ada Marlow не знает ответа, и эта заметка не устанавливает ни включение, ни исключение такой регулировки. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "questions",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_f9d857c6",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_29f360c5afa1f10a77e0e998",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_f9d857c6",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_29f360c5afa1f10a77e0e998",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Open Questions",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5764,
+          "input_tokens": 6343,
+          "output_tokens": 313,
+          "total_tokens": 6656
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 13063,
+          "input_tokens": 10581,
+          "output_tokens": 856,
+          "total_tokens": 11437
+        }
+      },
+      "reviewAnswer": "**Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "questions",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_f9d857c6",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_29f360c5afa1f10a77e0e998",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_f9d857c6",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_29f360c5afa1f10a77e0e998",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Open Questions",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5486,
+          "input_tokens": 6317,
+          "output_tokens": 342,
+          "total_tokens": 6659
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7946,
+          "input_tokens": 10616,
+          "output_tokens": 759,
+          "total_tokens": 11375
+        }
+      },
+      "reviewAnswer": "**Открытый вопрос:** у Ada Marlow остаётся открытым вопрос о том, включает ли план обслуживания Zephyr QX-100 ежегодную регулировку складной ручки. Ada Marlow не знает ответа, и эта заметка не устанавливает ни включение, ни исключение такой регулировки. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "questions",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_f9d857c6",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_29f360c5afa1f10a77e0e998",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_f9d857c6",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_29f360c5afa1f10a77e0e998",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Open Questions",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5421,
+          "input_tokens": 6343,
+          "output_tokens": 296,
+          "total_tokens": 6639
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 9003,
+          "input_tokens": 10581,
+          "output_tokens": 725,
+          "total_tokens": 11306
+        }
+      },
+      "reviewAnswer": "**Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "questions",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_f9d857c6",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_29f360c5afa1f10a77e0e998",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_f9d857c6",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_29f360c5afa1f10a77e0e998",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Open Questions",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7210,
+          "input_tokens": 6320,
+          "output_tokens": 550,
+          "total_tokens": 6870
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 10325,
+          "input_tokens": 10597,
+          "output_tokens": 860,
+          "total_tokens": 11457
+        }
+      },
+      "reviewAnswer": "**Открытый вопрос:** У Ada Marlow остаётся открытый вопрос о том, включает ли сервисный план Zephyr QX-100 ежегодную регулировку складной ручки. Ada Marlow не располагает ответом, и эта заметка не устанавливает ни включение, ни исключение такой регулировки. [memory/equipment:7]"
+    }
+  ],
+  "reviewKnowledge": [
+    {
+      "text": "- **Open question:** Ada Marlow has an open question about whether the Zephyr QX-100 service plan includes annual alignment of the folding handle. Ada Marlow does not have the answer, and this note establishes neither inclusion nor exclusion of that alignment.",
+      "qualification": {
+        "status": "qualified",
+        "id": "mem_f9d857c6",
+        "level": 1,
+        "kind": "question",
+        "subject": "ent_29f360c5afa1f10a77e0e998",
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "commitment": "none",
+        "disposition": "active",
+        "polarity": "affirmed",
+        "basis": "self_attested",
+        "answer_eligible": false,
+        "current_eligible": false
+      }
+    }
+  ],
+  "error": null
+}

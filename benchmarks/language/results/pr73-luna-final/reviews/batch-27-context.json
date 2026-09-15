@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "cc51fa60b1729ecaf1a0b60f22b63f93aff0a0bde1321f94898d1d9916addcbe",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-assistant-reading",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the complete tentative assistant interpretation and its personal unread/unverified limits, together with the explicit prohibition on inferring an arranged return or scheduled shipment from possible label provision. Metadata agrees with that reporting scope. It is useful qualified reports evidence for either query language without introducing a confirmed duty or completed service action."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the complete tentative assistant interpretation and its personal unread/unverified limits, together with the explicit prohibition on inferring an arranged return or scheduled shipment from possible label provision. Metadata agrees with that reporting scope. It is useful qualified reports evidence for either query language without introducing a confirmed duty or completed service action."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the complete tentative assistant interpretation and its personal unread/unverified limits, together with the explicit prohibition on inferring an arranged return or scheduled shipment from possible label provision. Metadata agrees with that reporting scope. It is useful qualified reports evidence for either query language without introducing a confirmed duty or completed service action."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the complete tentative assistant interpretation and its personal unread/unverified limits, together with the explicit prohibition on inferring an arranged return or scheduled shipment from possible label provision. Metadata agrees with that reporting scope. It is useful qualified reports evidence for either query language without introducing a confirmed duty or completed service action."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "5b3e367e0a2a48e8602cebc53bf2e0f0979837a1a262abea35c0d21ef85e16ff",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-nested-report",
+      "run": 1,
+      "retentionUseful": false,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "No knowledge is retained from this writable, understandable development source. A complete retained set would preserve Ada relaying Bo’s alleged Vulpine permission to bring the device to a workshop for a grounding-contact resistance check rather than replacement, Ada’s personal lack of seeing the rules and verifying Bo’s report, and her separate not-yet-packed-device assertion. An unverified attributed report remains legitimate qualified knowledge; the source does not require a read-only or interpretive hold. Complete retention therefore fails. Empty saved knowledge is vacuously source-entailed and contains no generated-language violation, stripped qualification on an emitted claim, or factual promotion; those neutral flags do not turn absence into useful retention. The packet gives no source-based basis for attributing the miss to a particular runtime cause.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The en report query with a requested en answer and inferred view has empty retrieval and no published answer. The original source supports a useful focused answer preserving Ada → Bo attribution, alleged workshop permission for grounding-contact resistance checking, the checking/replacement contrast, and Ada’s personal unread/unverified limits. It does not require repeating the independent packing fact in that focused answer, but it does require the coupled report qualifications. With no read-only constraint or source-level inability to answer, this is a missed useful answer and retrieval, not a justified source-based abstention. Language and source entailment are null because no answer exists; no unqualified or unsafe claim was emitted."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The en report query with a requested ru answer and inferred view has empty retrieval and no published answer. The original source supports a useful focused answer preserving Ada → Bo attribution, alleged workshop permission for grounding-contact resistance checking, the checking/replacement contrast, and Ada’s personal unread/unverified limits. It does not require repeating the independent packing fact in that focused answer, but it does require the coupled report qualifications. With no read-only constraint or source-level inability to answer, this is a missed useful answer and retrieval, not a justified source-based abstention. Language and source entailment are null because no answer exists; no unqualified or unsafe claim was emitted."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The en report query with a requested en answer and explicit view has empty retrieval and no published answer. The original source supports a useful focused answer preserving Ada → Bo attribution, alleged workshop permission for grounding-contact resistance checking, the checking/replacement contrast, and Ada’s personal unread/unverified limits. It does not require repeating the independent packing fact in that focused answer, but it does require the coupled report qualifications. With no read-only constraint or source-level inability to answer, this is a missed useful answer and retrieval, not a justified source-based abstention. Language and source entailment are null because no answer exists; no unqualified or unsafe claim was emitted."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The en report query with a requested ru answer and explicit view has empty retrieval and no published answer. The original source supports a useful focused answer preserving Ada → Bo attribution, alleged workshop permission for grounding-contact resistance checking, the checking/replacement contrast, and Ada’s personal unread/unverified limits. It does not require repeating the independent packing fact in that focused answer, but it does require the coupled report qualifications. With no read-only constraint or source-level inability to answer, this is a missed useful answer and retrieval, not a justified source-based abstention. Language and source entailment are null because no answer exists; no unqualified or unsafe claim was emitted."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The ru report query with a requested en answer and inferred view has empty retrieval and no published answer. The original source supports a useful focused answer preserving Ada → Bo attribution, alleged workshop permission for grounding-contact resistance checking, the checking/replacement contrast, and Ada’s personal unread/unverified limits. It does not require repeating the independent packing fact in that focused answer, but it does require the coupled report qualifications. With no read-only constraint or source-level inability to answer, this is a missed useful answer and retrieval, not a justified source-based abstention. Language and source entailment are null because no answer exists; no unqualified or unsafe claim was emitted."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The ru report query with a requested ru answer and inferred view has empty retrieval and no published answer. The original source supports a useful focused answer preserving Ada → Bo attribution, alleged workshop permission for grounding-contact resistance checking, the checking/replacement contrast, and Ada’s personal unread/unverified limits. It does not require repeating the independent packing fact in that focused answer, but it does require the coupled report qualifications. With no read-only constraint or source-level inability to answer, this is a missed useful answer and retrieval, not a justified source-based abstention. Language and source entailment are null because no answer exists; no unqualified or unsafe claim was emitted."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The ru report query with a requested en answer and explicit view has empty retrieval and no published answer. The original source supports a useful focused answer preserving Ada → Bo attribution, alleged workshop permission for grounding-contact resistance checking, the checking/replacement contrast, and Ada’s personal unread/unverified limits. It does not require repeating the independent packing fact in that focused answer, but it does require the coupled report qualifications. With no read-only constraint or source-level inability to answer, this is a missed useful answer and retrieval, not a justified source-based abstention. Language and source entailment are null because no answer exists; no unqualified or unsafe claim was emitted."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The ru report query with a requested ru answer and explicit view has empty retrieval and no published answer. The original source supports a useful focused answer preserving Ada → Bo attribution, alleged workshop permission for grounding-contact resistance checking, the checking/replacement contrast, and Ada’s personal unread/unverified limits. It does not require repeating the independent packing fact in that focused answer, but it does require the coupled report qualifications. With no read-only constraint or source-level inability to answer, this is a missed useful answer and retrieval, not a justified source-based abstention. Language and source entailment are null because no answer exists; no unqualified or unsafe claim was emitted."
+        }
+      ]
+    }
+  ]
+}

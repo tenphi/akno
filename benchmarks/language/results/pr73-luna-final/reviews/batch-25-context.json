@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "7965d2c4d2fa9a03efa0f78da0f1e0b33c1dcefd1b15c8fdb4fad0b32f2d9ade",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-scoped-exclusion",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual English context includes both retained rows, regardless of ordering: the specific wax-caused fabric-seal damage exclusion and the independent limits on hinge-replacement coverage and contract silence. It is useful for the two-component query and preserves the source’s epistemic and polarity scope. No hinge entitlement, broad damage exclusion, or replacement benefit is invented; English stored knowledge is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual English context includes both retained rows, regardless of ordering: the specific wax-caused fabric-seal damage exclusion and the independent limits on hinge-replacement coverage and contract silence. It is useful for the two-component query and preserves the source’s epistemic and polarity scope. No hinge entitlement, broad damage exclusion, or replacement benefit is invented; English stored knowledge is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual English context includes both retained rows, regardless of ordering: the specific wax-caused fabric-seal damage exclusion and the independent limits on hinge-replacement coverage and contract silence. It is useful for the two-component query and preserves the source’s epistemic and polarity scope. No hinge entitlement, broad damage exclusion, or replacement benefit is invented; English stored knowledge is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The actual English context includes both retained rows, regardless of ordering: the specific wax-caused fabric-seal damage exclusion and the independent limits on hinge-replacement coverage and contract silence. It is useful for the two-component query and preserves the source’s epistemic and polarity scope. No hinge entitlement, broad damage exclusion, or replacement benefit is invented; English stored knowledge is appropriate for either query language."
+        }
+      ]
+    }
+  ]
+}

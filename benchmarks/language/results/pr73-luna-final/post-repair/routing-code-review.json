@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "bounded-routing-code-review-v1",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "commit": "60db7e3a962d4e4d6a42f559f223ab0e9392807d",
+  "scope": [
+    "packages/core/src/memory/intent.ts",
+    "packages/core/src/memory/intent.test.ts",
+    ".changeset/russian-rejected-proposal-history.md"
+  ],
+  "status": "changes_requested",
+  "findings": [
+    {
+      "priority": 2,
+      "title": "Keep negated and conditional rejection out of history",
+      "file": "packages/core/src/memory/intent.ts",
+      "startLine": 189,
+      "endLine": 192,
+      "reason": "The new pattern accepts the finite past verb without checking its governing negation or subjunctive particle. Its bounded word gap permits не, and the terminal boundary accepts a following бы. Thus both Какой план Ada Marlow не отвергла? and Какой план отвергла бы Ada Marlow? change from planning to history. The first asks for a plan that was not rejected; the second asks about hypothetical rejection. A proposed plan is eligible in the previous planning view but is excluded by history. This is a concrete coverage regression caused by treating a verb form as affirmative actual rejection. Preserve polarity and modality before routing the construction to history, and cover these forms in the regression tests.",
+      "reproductions": [
+        {
+          "query": "Какой план Ada Marlow не отвергла?",
+          "previousView": "planning",
+          "newView": "history",
+          "representativeMemory": {
+            "kind": "plan",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "basis": "self_attested",
+            "answerEligible": false
+          },
+          "eligibleBefore": true,
+          "eligibleAfter": false
+        },
+        {
+          "query": "Какой план отвергла бы Ada Marlow?",
+          "previousView": "planning",
+          "newView": "history",
+          "representativeMemory": {
+            "kind": "plan",
+            "commitment": "counterfactual",
+            "disposition": "proposed",
+            "basis": "self_attested",
+            "answerEligible": false
+          },
+          "eligibleBefore": true,
+          "eligibleAfter": false,
+          "discussionEligible": true
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "method": "Imported the current exported pure inferMemoryView/memoryEligibleForView functions. Compared the same probes against the parent-commit module obtained through git show and Node TypeScript stripping. No runtime implementation or corpus was edited.",
+    "existingTests": "The eleven added test rows cover affirmative rejection, infinitive/future rejection, unrelated clauses and higher-priority discourse cues. They do not cover negated or subjunctive past forms.",
+    "positiveTarget": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow? returns history as intended.",
+    "higherPriorityChecks": "The tested reported negation remains reports, and the explicitly hypothetical query remains discussion.",
+    "fullSuite": "Parent reports 4,050 tests passing across 154 files and other checks green; this code reviewer did not independently rerun that suite."
+  },
+  "baselineImpact": "None. The completed baseline audit and all original semantic grades remain unchanged. These probes are read-only code-review reproductions, not additions to the benchmark corpus or live repair grading."
+}

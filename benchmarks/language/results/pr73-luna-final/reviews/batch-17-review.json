@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "acc32b640d31a78641247e99a7be46b5018d499ebc615d2d653bde8d6eabc2b6",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-rejected-inspection",
+      "run": 1,
+      "retentionUseful": false,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The retained set preserves the rejected offer to take Ada’s entire device to the workshop for checking its alignment gauge, plus the separate absence of an inspection appointment and of transported-device action. It omits Ada’s explicit statement that she has no plan to take the device there. Rejection of one offer, no appointment, and no past transport do not entail absence of all current plans to go there. This is incomplete retention, while both surviving rows preserve their own source meaning, rejection and negative-event polarity without an invented measurement property or completed inspection.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The English answer faithfully identifies Ada’s rejected offer to take the entire device to the workshop so its alignment gauge could be checked. It does not substitute gauge-only transport, invent a measured property, or report a completed inspection. This focused question is answered usefully and its retrieved evidence supports it, although the complete retained set omits the separate no-plan assertion."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The published answer is null despite retrieved evidence that directly identifies the rejected workshop offer and the exact alignment-gauge check. This writable source supports a useful qualified answer, so the omission is not justified by the source or admission policy. The public evidence does not reveal its runtime cause. All query/view variants retrieve the focused rejected offer, including the default Russian variant that also retrieves the negative appointment/transport row."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The English answer faithfully identifies Ada’s rejected offer to take the entire device to the workshop so its alignment gauge could be checked. It does not substitute gauge-only transport, invent a measured property, or report a completed inspection. This focused question is answered usefully and its retrieved evidence supports it, although the complete retained set omits the separate no-plan assertion."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The published answer is null despite retrieved evidence that directly identifies the rejected workshop offer and the exact alignment-gauge check. This writable source supports a useful qualified answer, so the omission is not justified by the source or admission policy. The public evidence does not reveal its runtime cause. All query/view variants retrieve the focused rejected offer, including the default Russian variant that also retrieves the negative appointment/transport row."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The published answer is null despite retrieved evidence that directly identifies the rejected workshop offer and the exact alignment-gauge check. This writable source supports a useful qualified answer, so the omission is not justified by the source or admission policy. The public evidence does not reveal its runtime cause. All query/view variants retrieve the focused rejected offer, including the default Russian variant that also retrieves the negative appointment/transport row."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The published answer is null despite retrieved evidence that directly identifies the rejected workshop offer and the exact alignment-gauge check. This writable source supports a useful qualified answer, so the omission is not justified by the source or admission policy. The public evidence does not reveal its runtime cause. All query/view variants retrieve the focused rejected offer, including the default Russian variant that also retrieves the negative appointment/transport row."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The English answer faithfully identifies Ada’s rejected offer to take the entire device to the workshop so its alignment gauge could be checked. It does not substitute gauge-only transport, invent a measured property, or report a completed inspection. This focused question is answered usefully and its retrieved evidence supports it, although the complete retained set omits the separate no-plan assertion."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The published answer is null despite retrieved evidence that directly identifies the rejected workshop offer and the exact alignment-gauge check. This writable source supports a useful qualified answer, so the omission is not justified by the source or admission policy. The public evidence does not reveal its runtime cause. All query/view variants retrieve the focused rejected offer, including the default Russian variant that also retrieves the negative appointment/transport row."
+        }
+      ]
+    }
+  ]
+}

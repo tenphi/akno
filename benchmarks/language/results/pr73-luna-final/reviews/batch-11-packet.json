@@ -1,0 +1,479 @@
+{
+  "kind": "incremental-frozen-full-evaluation-review-batch",
+  "corpusFingerprint": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+  "rubric": "Unchanged V23 language-output-review-v2 rubric in the frozen benchmark reviewer; no changed thresholds or expected meanings.",
+  "cases": [
+    {
+      "id": "v22-held-rejected-plan",
+      "run": 1,
+      "source": {
+        "id": "v22-held-rejected-plan",
+        "split": "development",
+        "language": "en",
+        "scenario": "rejected-plan",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "The proposal was to take Zephyr QX-100 to a calibration room so its rotation-stop angle could be measured. I, Ada Marlow, rejected that proposal and do not intend to take the device there under it."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "No appointment has been reserved and no transport has been arranged. The proposed measurement remains rejected."
+          }
+        ],
+        "view": "history",
+        "disposition": "rejected",
+        "admission": "writable",
+        "ordinary": "## Rejected proposal\nAda Marlow rejected taking Zephyr QX-100 to a calibration room to measure its rotation-stop angle and does not intend to act under the proposal. No appointment or transport is arranged.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "Which rotation-stop measurement proposal did Ada Marlow reject for Zephyr QX-100?",
+          "ru": "Какое предложение об измерении ограничителя вращения Zephyr QX-100 отклонила Ada Marlow?"
+        },
+        "reviewExpectation": "Preserve the rejected proposal’s destination and exact rotation-stop-angle measurement purpose, Ada’s lack of intent under it, and the independent absence of appointment and transport arrangements. No acceptance, trip, measurement, or causal relation is established."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_db881f99",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_080e13799a53ccfaef76dc3c",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_db881f99",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_080e13799a53ccfaef76dc3c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_db881f99",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_080e13799a53ccfaef76dc3c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Отклонено:** предложение отвезти Zephyr QX-100 в калибровочную комнату, чтобы измерить его угол остановки вращения, было отклонено Ada Marlow. Она не намерена отвозить устройство туда в рамках этого предложения, и предложенное измерение остаётся отклонённым. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_db881f99",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_080e13799a53ccfaef76dc3c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_db881f99",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_080e13799a53ccfaef76dc3c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Отклонено:** Предложение доставить Zephyr QX-100 в калибровочную комнату, чтобы измерить его угол остановки вращения, было отклонено Ada Marlow. Она не намерена доставлять устройство туда в рамках этого предложения, и предложенное измерение остаётся отклонённым. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_db881f99",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_080e13799a53ccfaef76dc3c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_db881f99",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_080e13799a53ccfaef76dc3c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Отклонено:** предложение отнести Zephyr QX-100 в помещение для калибровки, чтобы измерить его угол ограничителя вращения, было отклонено Ada Marlow. Она не намерена относить устройство туда в рамках этого предложения, и предложенное измерение остаётся отклонённым. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_db881f99",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_080e13799a53ccfaef76dc3c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_db881f99",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_080e13799a53ccfaef76dc3c",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Отклонено:** Предложение отвезти Zephyr QX-100 в калибровочную комнату, чтобы измерить угол ограничения вращения устройства, было отклонено Ada Marlow. Она не намерена отвозить устройство туда в рамках этого предложения, и предложенное измерение остаётся отклонённым. [memory/equipment:7]"
+        }
+      ]
+    }
+  ],
+  "extra": [
+    {
+      "id": "v22-held-rejected-plan",
+      "run": 1,
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_db881f99",
+            "source_ref": "invented:v22-held-rejected-plan",
+            "input_hash": "fc0ef073651414e2b4685a7682e314693f337e400ceeeabebcb2d17bff0222f6",
+            "evidence": "The proposal was to take Zephyr QX-100 to a calibration room so its rotation-stop angle could be measured. I, Ada Marlow, rejected that proposal and do not intend to take the device there under it.\n…\nThe proposed measurement remains rejected.",
+            "evidence_hash": "374c87049327ab75e9c1407363c98c1a6029a86a01043d5719f05217c60858a4",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "The proposal was to take Zephyr QX-100 to a calibration room so its rotation-stop angle could be measured. I, Ada Marlow, rejected that proposal and do not intend to take the device there under it.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "The proposed measurement remains rejected.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_db881f99",
+                    "level": 1,
+                    "kind": "plan",
+                    "subject": "ent_080e13799a53ccfaef76dc3c",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "rejected",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Calibration Room Measurement Proposal",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_db881f99",
+                    "level": 1,
+                    "kind": "plan",
+                    "subject": "ent_080e13799a53ccfaef76dc3c",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "rejected",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Calibration Room Measurement Proposal",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_db881f99",
+                    "level": 1,
+                    "kind": "plan",
+                    "subject": "ent_080e13799a53ccfaef76dc3c",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "rejected",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Calibration Room Measurement Proposal",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Rejected:** The proposal to take Zephyr QX-100 to a calibration room to measure its rotation-stop angle was rejected by Ada Marlow. She does not intend to take the device there under that proposal, and the proposed measurement remains rejected.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_db881f99",
+                    "level": 1,
+                    "kind": "plan",
+                    "subject": "ent_080e13799a53ccfaef76dc3c",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "rejected",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Calibration Room Measurement Proposal",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ]
+    }
+  ],
+  "packetFingerprint": "52920623be323a2a3368dc01ffe062c0497cb6ff162d14a45f68d0e7f021fe7a"
+}

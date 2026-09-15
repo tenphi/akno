@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "7b7e978c8cde4e32401b0bc4e7a65d117ec8c213570298689f8bf3984438d111",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-fictional-example",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the exact control-dial loan, named lender/borrower within fictional scope, forty-four-day interval after fictional repair, and absence of any real agreement. It is useful focused discussion evidence for either query language without asserting a real repair or transaction. It does not restore the separate actual introduction-for-discussion fact missing from the retained set."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the exact control-dial loan, named lender/borrower within fictional scope, forty-four-day interval after fictional repair, and absence of any real agreement. It is useful focused discussion evidence for either query language without asserting a real repair or transaction. It does not restore the separate actual introduction-for-discussion fact missing from the retained set."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the exact control-dial loan, named lender/borrower within fictional scope, forty-four-day interval after fictional repair, and absence of any real agreement. It is useful focused discussion evidence for either query language without asserting a real repair or transaction. It does not restore the separate actual introduction-for-discussion fact missing from the retained set."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the exact control-dial loan, named lender/borrower within fictional scope, forty-four-day interval after fictional repair, and absence of any real agreement. It is useful focused discussion evidence for either query language without asserting a real repair or transaction. It does not restore the separate actual introduction-for-discussion fact missing from the retained set."
+        }
+      ]
+    }
+  ]
+}

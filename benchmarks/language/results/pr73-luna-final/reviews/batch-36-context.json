@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "af359f0d117df8d5865bf5079f84b53a22bda4f8d8ade3a23de90a030d768727",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-read-only",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The empty context safely excludes memory activation for the required read-only admission hold. It is not useful activation and emits no false support claim or language/qualification distortion. Operational status and byte stability remain separate evidence."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The empty context safely excludes memory activation for the required read-only admission hold. It is not useful activation and emits no false support claim or language/qualification distortion. Operational status and byte stability remain separate evidence."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The empty context safely excludes memory activation for the required read-only admission hold. It is not useful activation and emits no false support claim or language/qualification distortion. Operational status and byte stability remain separate evidence."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": true,
+          "reason": "The empty context safely excludes memory activation for the required read-only admission hold. It is not useful activation and emits no false support claim or language/qualification distortion. Operational status and byte stability remain separate evidence."
+        }
+      ]
+    },
+    {
+      "id": "v23-held-rejected-inspection",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the rejected whole-device workshop offer and alignment-gauge check without specifying an unsupported gauge subtype or property. It is useful focused history evidence for either query language, with rejected metadata and no active plan or completed inspection asserted. The separately retained negative facts need not all be injected to answer which offer was rejected."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the rejected whole-device workshop offer and alignment-gauge check without specifying an unsupported gauge subtype or property. It is useful focused history evidence for either query language, with rejected metadata and no active plan or completed inspection asserted. The separately retained negative facts need not all be injected to answer which offer was rejected."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": false,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The default Russian-query context is empty even though the original source and answer retrieval contain a useful qualified rejected offer. This is a missed context, not a required exclusion. Empty evidence emits no false claim; the runtime cause is not shown in the public packet."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the rejected whole-device workshop offer and alignment-gauge check without specifying an unsupported gauge subtype or property. It is useful focused history evidence for either query language, with rejected metadata and no active plan or completed inspection asserted. The separately retained negative facts need not all be injected to answer which offer was rejected."
+        }
+      ]
+    }
+  ]
+}

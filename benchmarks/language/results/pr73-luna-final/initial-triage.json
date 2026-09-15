@@ -1,0 +1,22 @@
+{
+  "kind": "implementation-triage-of-frozen-failures",
+  "notes": [
+    {
+      "coordinate": "v22-held-nested-report/run-1",
+      "receiptSequence": 6,
+      "category": "verification_contract_failure",
+      "finding": "The second verdict sets proposition_supported to false without a corresponding proposition_supported mismatch. Atomic verifier validation rejects the batch, so both candidates are held. This is the documented fail-closed contract, not proof that the source is unretainable."
+    },
+    {
+      "coordinate": "v22-held-assistant-speculation/run-1",
+      "receiptSequence": 217,
+      "category": "verification_exact_witness_failure",
+      "finding": "The positive report-limit verdict quotes a candidate excerpt ending in a period; the immutable candidate has a semicolon there. Exact-witness validation correctly refuses the mismatched quote. This identifies a model/pipeline interaction that may cause false holds without a semantic error in the draft."
+    },
+    {
+      "coordinate": "v23-held-rejected-inspection/ru",
+      "category": "deterministic_view_inference_defect",
+      "finding": "The past-tense rejected-proposal construction selects planning instead of history. A bounded recognition repair is prepared outside the frozen runtime and will be evaluated separately."
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "f09234312bdf4b91fc7b9d7e4cd6570445306efcab9891dc956347d7053528ba",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-read-only-admission",
+      "run": 1,
+      "retentionUseful": false,
+      "retentionJustifiedHold": true,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The source clearly asks to remember a maintenance interval in a folder that denies writes, and this case is explicitly a read-only admission hold. No knowledge was retained, which is the justified policy outcome rather than a successful useful retention or a failure to understand the source. The empty set emits no unsupported claim or language/qualification violation. These public semantic materials establish safe nonpublication, not the exact typed admission status, availability classification, or byte stability; those require the separate operational evidence.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and memory retrieval is empty because this source is required to be held from retention in the read-only target. That is a justified exclusion for the memory-filtered query, not a useful answer or useful retrieval activation. The source itself contains an understandable interval; this judgment does not recast the policy denial as missing source knowledge or infer a runtime availability result."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and memory retrieval is empty because this source is required to be held from retention in the read-only target. That is a justified exclusion for the memory-filtered query, not a useful answer or useful retrieval activation. The source itself contains an understandable interval; this judgment does not recast the policy denial as missing source knowledge or infer a runtime availability result."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and memory retrieval is empty because this source is required to be held from retention in the read-only target. That is a justified exclusion for the memory-filtered query, not a useful answer or useful retrieval activation. The source itself contains an understandable interval; this judgment does not recast the policy denial as missing source knowledge or infer a runtime availability result."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and memory retrieval is empty because this source is required to be held from retention in the read-only target. That is a justified exclusion for the memory-filtered query, not a useful answer or useful retrieval activation. The source itself contains an understandable interval; this judgment does not recast the policy denial as missing source knowledge or infer a runtime availability result."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and memory retrieval is empty because this source is required to be held from retention in the read-only target. That is a justified exclusion for the memory-filtered query, not a useful answer or useful retrieval activation. The source itself contains an understandable interval; this judgment does not recast the policy denial as missing source knowledge or infer a runtime availability result."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and memory retrieval is empty because this source is required to be held from retention in the read-only target. That is a justified exclusion for the memory-filtered query, not a useful answer or useful retrieval activation. The source itself contains an understandable interval; this judgment does not recast the policy denial as missing source knowledge or infer a runtime availability result."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and memory retrieval is empty because this source is required to be held from retention in the read-only target. That is a justified exclusion for the memory-filtered query, not a useful answer or useful retrieval activation. The source itself contains an understandable interval; this judgment does not recast the policy denial as missing source knowledge or infer a runtime availability result."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and memory retrieval is empty because this source is required to be held from retention in the read-only target. That is a justified exclusion for the memory-filtered query, not a useful answer or useful retrieval activation. The source itself contains an understandable interval; this judgment does not recast the policy denial as missing source knowledge or infer a runtime availability result."
+        }
+      ]
+    }
+  ]
+}

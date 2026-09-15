@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "cc51fa60b1729ecaf1a0b60f22b63f93aff0a0bde1321f94898d1d9916addcbe",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-assistant-reading",
+      "run": 2,
+      "retentionUseful": true,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The complete English record preserves tentative assistant attribution, the possibility of Vulpine Mutual supplying a return label for Zephyr QX-100 servicing, the assistant’s own unread/unverified status, and the explicit lack of entailment of an arranged return or scheduled shipment. Source-report and tentative metadata match the prose. No established contractual duty, arranged transaction, or completed dispatch is introduced.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved report preserve tentative assistant attribution, possible return-label provision for servicing, the assistant’s personal lack of reading and verification, and the limit against inferring an arranged return or scheduled shipment. The requested language is used. No current service entitlement, completed dispatch, or confirmed contractual obligation is asserted."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved report preserve tentative assistant attribution, possible return-label provision for servicing, the assistant’s personal lack of reading and verification, and the limit against inferring an arranged return or scheduled shipment. The requested language is used. No current service entitlement, completed dispatch, or confirmed contractual obligation is asserted."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved report preserve tentative assistant attribution, possible return-label provision for servicing, the assistant’s personal lack of reading and verification, and the limit against inferring an arranged return or scheduled shipment. The requested language is used. No current service entitlement, completed dispatch, or confirmed contractual obligation is asserted."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved report preserve tentative assistant attribution, possible return-label provision for servicing, the assistant’s personal lack of reading and verification, and the limit against inferring an arranged return or scheduled shipment. The requested language is used. No current service entitlement, completed dispatch, or confirmed contractual obligation is asserted."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved report preserve tentative assistant attribution, possible return-label provision for servicing, the assistant’s personal lack of reading and verification, and the limit against inferring an arranged return or scheduled shipment. The requested language is used. No current service entitlement, completed dispatch, or confirmed contractual obligation is asserted."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved report preserve tentative assistant attribution, possible return-label provision for servicing, the assistant’s personal lack of reading and verification, and the limit against inferring an arranged return or scheduled shipment. The requested language is used. No current service entitlement, completed dispatch, or confirmed contractual obligation is asserted."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved report preserve tentative assistant attribution, possible return-label provision for servicing, the assistant’s personal lack of reading and verification, and the limit against inferring an arranged return or scheduled shipment. The requested language is used. No current service entitlement, completed dispatch, or confirmed contractual obligation is asserted."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The Russian answer retains tentative assistant attribution and possible provision of a return label. «Возможно, предоставит» remains an uncertain possibility in the service context, not a promise or an actual scheduled event; the answer explicitly preserves unread/unverified terms and the nonestablishment of an arranged return or scheduled shipment. The complete retrieved report supports a useful qualified answer in the requested language."
+        }
+      ]
+    }
+  ]
+}

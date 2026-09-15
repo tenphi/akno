@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "057b4925a69db67b7facdca3d1e8956216cf904a98a0fa943bd1af55cbaa18a9",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-read-only-admission",
+      "run": 2,
+      "retentionUseful": false,
+      "retentionJustifiedHold": true,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The source gives an understandable fifty-five-month maintenance interval but explicitly targets a folder that denies writes. Empty retention is the required admission exclusion, not useful retention or a failure to understand the source. It emits no unsupported claim or language/qualification violation. The exact typed hold, availability classification and byte stability require operational evidence beyond this semantic packet.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and memory retrieval empty, matching the required read-only admission hold. This is a justified memory-query abstention and safe nonpublication, not useful retrieval or answering. The source interval is understandable; no claim of absent knowledge or unavailable interpretation is warranted by the empty result."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and memory retrieval empty, matching the required read-only admission hold. This is a justified memory-query abstention and safe nonpublication, not useful retrieval or answering. The source interval is understandable; no claim of absent knowledge or unavailable interpretation is warranted by the empty result."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and memory retrieval empty, matching the required read-only admission hold. This is a justified memory-query abstention and safe nonpublication, not useful retrieval or answering. The source interval is understandable; no claim of absent knowledge or unavailable interpretation is warranted by the empty result."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and memory retrieval empty, matching the required read-only admission hold. This is a justified memory-query abstention and safe nonpublication, not useful retrieval or answering. The source interval is understandable; no claim of absent knowledge or unavailable interpretation is warranted by the empty result."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and memory retrieval empty, matching the required read-only admission hold. This is a justified memory-query abstention and safe nonpublication, not useful retrieval or answering. The source interval is understandable; no claim of absent knowledge or unavailable interpretation is warranted by the empty result."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and memory retrieval empty, matching the required read-only admission hold. This is a justified memory-query abstention and safe nonpublication, not useful retrieval or answering. The source interval is understandable; no claim of absent knowledge or unavailable interpretation is warranted by the empty result."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and memory retrieval empty, matching the required read-only admission hold. This is a justified memory-query abstention and safe nonpublication, not useful retrieval or answering. The source interval is understandable; no claim of absent knowledge or unavailable interpretation is warranted by the empty result."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": true,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The answer is null and memory retrieval empty, matching the required read-only admission hold. This is a justified memory-query abstention and safe nonpublication, not useful retrieval or answering. The source interval is understandable; no claim of absent knowledge or unavailable interpretation is warranted by the empty result."
+        }
+      ]
+    }
+  ]
+}

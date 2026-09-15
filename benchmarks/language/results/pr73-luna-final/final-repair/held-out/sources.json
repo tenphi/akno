@@ -1,0 +1,31 @@
+[
+  {
+    "id": "v23-held-rejected-inspection",
+    "split": "held-out",
+    "language": "en",
+    "scenario": "rejected-plan",
+    "items": [
+      {
+        "item_id": "turn-1111",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "I, Ada Marlow, rejected the offer to take my Zephyr QX-100 to the workshop so that its alignment gauge could be checked."
+      },
+      {
+        "item_id": "turn-2222",
+        "role": "user",
+        "speaker": "Ada Marlow",
+        "text": "I have no plan to take it there. No inspection appointment has been made, and I have not transported the device."
+      }
+    ],
+    "view": "history",
+    "admission": "writable",
+    "ordinary": "## Rejected offer\nAda Marlow rejected taking her Zephyr QX-100 to the workshop to check its alignment gauge. She has no plan to take it there, no inspection appointment has been made, and she has not transported the device.",
+    "ordinaryFactual": false,
+    "queries": {
+      "en": "Which inspection offer did Ada Marlow reject for Zephyr QX-100?",
+      "ru": "Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?"
+    },
+    "reviewExpectation": "Preserve Ada as rejecting agent, the rejected offer to take the entire device to the workshop for a check of its alignment gauge, and the separate no-plan, no-appointment and no-transport assertions. Do not turn taking the device into transporting just the gauge, checking the gauge into measuring a specific unmentioned property, or a rejected offer into an active plan or completed inspection."
+  }
+]

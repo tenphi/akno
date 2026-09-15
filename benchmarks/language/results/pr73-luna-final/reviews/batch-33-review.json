@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "fba041513add3d70de82b1ce6eea39d0725cd46d705ab572abc1ad4d545c4a3b",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-undated-review",
+      "run": 2,
+      "retentionUseful": false,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": false,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The retained row correctly preserves Ada’s actual unaccepted service-terms proposal, eleven-day utterance anchor rather than processing, and unknown utterance date. It omits the explicit source fact that no meeting is scheduled. An unaccepted proposal and tentative unknown time do not entail absence of a scheduled meeting; a proposed invitation can already have a tentative booking. That material timing/status qualification is therefore missing from the complete retained set, although no published statement invents a date or scheduled event.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer correctly gives the eleven-day offset, utterance rather than processing anchor, unknown source date, and unaccepted proposal, in the requested language. It omits the source’s explicit absence of a scheduled meeting, which is a governing qualification for the question about the proposal and when it applies. The tentative label and nonacceptance do not supply that fact. Published statements remain entailed, but complete qualified usefulness fails for both answer and retrieval."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer correctly gives the eleven-day offset, utterance rather than processing anchor, unknown source date, and unaccepted proposal, in the requested language. It omits the source’s explicit absence of a scheduled meeting, which is a governing qualification for the question about the proposal and when it applies. The tentative label and nonacceptance do not supply that fact. Published statements remain entailed, but complete qualified usefulness fails for both answer and retrieval."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer correctly gives the eleven-day offset, utterance rather than processing anchor, unknown source date, and unaccepted proposal, in the requested language. It omits the source’s explicit absence of a scheduled meeting, which is a governing qualification for the question about the proposal and when it applies. The tentative label and nonacceptance do not supply that fact. Published statements remain entailed, but complete qualified usefulness fails for both answer and retrieval."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer correctly gives the eleven-day offset, utterance rather than processing anchor, unknown source date, and unaccepted proposal, in the requested language. It omits the source’s explicit absence of a scheduled meeting, which is a governing qualification for the question about the proposal and when it applies. The tentative label and nonacceptance do not supply that fact. Published statements remain entailed, but complete qualified usefulness fails for both answer and retrieval."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer correctly gives the eleven-day offset, utterance rather than processing anchor, unknown source date, and unaccepted proposal, in the requested language. It omits the source’s explicit absence of a scheduled meeting, which is a governing qualification for the question about the proposal and when it applies. The tentative label and nonacceptance do not supply that fact. Published statements remain entailed, but complete qualified usefulness fails for both answer and retrieval."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": null,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": null,
+          "reason": "The default Russian-query Russian answer is null. The original writable source supports a useful answer with all timing/status qualifications, so this is not a source-required abstention. The retrieved row is itself incomplete because it omits the absence of a scheduled meeting; no runtime cause for the missing publication can be inferred. The null answer emits no semantic or language claim."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer correctly gives the eleven-day offset, utterance rather than processing anchor, unknown source date, and unaccepted proposal, in the requested language. It omits the source’s explicit absence of a scheduled meeting, which is a governing qualification for the question about the proposal and when it applies. The tentative label and nonacceptance do not supply that fact. Published statements remain entailed, but complete qualified usefulness fails for both answer and retrieval."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": false,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer correctly gives the eleven-day offset, utterance rather than processing anchor, unknown source date, and unaccepted proposal, in the requested language. It omits the source’s explicit absence of a scheduled meeting, which is a governing qualification for the question about the proposal and when it applies. The tentative label and nonacceptance do not supply that fact. Published statements remain entailed, but complete qualified usefulness fails for both answer and retrieval."
+        }
+      ]
+    }
+  ]
+}

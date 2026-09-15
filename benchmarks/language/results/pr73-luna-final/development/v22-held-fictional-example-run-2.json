@@ -1,0 +1,993 @@
+{
+  "id": "v22-held-fictional-example",
+  "run": 2,
+  "admission": "writable",
+  "reviewExpectation": "Preserve Ada’s actual introduction of an invented example and the story-scoped loan: fictional Vulpine Mutual lends fictional Bo a spare control dial for forty-four days after a fictional repair. No real agreement, repair, loan, or elapsed calendar period is established.",
+  "language": "en",
+  "scenario": "fictional-example",
+  "expectedHold": false,
+  "nonfactualExpected": true,
+  "retentionAvailabilityFailure": false,
+  "availabilityFailure": false,
+  "languageRejected": false,
+  "retention": {
+    "status": "ok",
+    "outcome": "ok",
+    "reason": null,
+    "candidates": [
+      {
+        "outcome": "written",
+        "reason": null,
+        "holdStage": null,
+        "routingReason": null
+      }
+    ],
+    "usage": {
+      "extraction": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 7954,
+        "input_tokens": 7408,
+        "output_tokens": 602,
+        "total_tokens": 8010
+      },
+      "verification": {
+        "model": "gpt-5.6-luna",
+        "latency_ms": 4085,
+        "input_tokens": 8050,
+        "output_tokens": 411,
+        "total_tokens": 8461
+      },
+      "placement": [
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1381,
+          "input_tokens": 587,
+          "output_tokens": 52,
+          "total_tokens": 639
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 1324,
+          "input_tokens": 419,
+          "output_tokens": 30,
+          "total_tokens": 449
+        }
+      ]
+    },
+    "degraded": []
+  },
+  "retainedItems": 1,
+  "noncanonicalEligibilityFlag": false,
+  "semanticsMatch": true,
+  "ordinaryCorrect": true,
+  "ordinaryInspection": {
+    "status": "ok",
+    "results": 1
+  },
+  "bytesStable": true,
+  "replayOutcome": "replayed",
+  "sourceArchive": {
+    "stableAcrossRebuildReplay": true,
+    "supports": [
+      {
+        "memory_id": "mem_ff9d0278",
+        "source_ref": "invented:v22-held-fictional-example",
+        "input_hash": "24d64bc9c3f446a67de8247ef24c56294d5fa34d2840e614707fe02c7a8c28e5",
+        "evidence": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement.\n…\nIn the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story.",
+        "evidence_hash": "1bd106b6e23ce545837e998265619d2c400f381606b1b915e6757e50493a1218",
+        "hashValid": true,
+        "spans": [
+          {
+            "quote": "I, Ada Marlow, am introducing an invented example for discussion; it describes no real agreement.",
+            "matchingSourceItems": [
+              "turn-1111"
+            ]
+          },
+          {
+            "quote": "In the story, the fictional Vulpine Mutual lends the fictional Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. The loan exists only in the story.",
+            "matchingSourceItems": [
+              "turn-2222"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "queries": [
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ff9d0278",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_34bcfc41b7b7d163f5329055",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ff9d0278",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_34bcfc41b7b7d163f5329055",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Fictional Scenario",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5317,
+          "input_tokens": 6361,
+          "output_tokens": 280,
+          "total_tokens": 6641
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7957,
+          "input_tokens": 10963,
+          "output_tokens": 628,
+          "total_tokens": 11591
+        }
+      },
+      "reviewAnswer": "**Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ff9d0278",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_34bcfc41b7b7d163f5329055",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ff9d0278",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_34bcfc41b7b7d163f5329055",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Fictional Scenario",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "not_answered",
+      "answerReason": "verification_rejected",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6786,
+          "input_tokens": 6344,
+          "output_tokens": 491,
+          "total_tokens": 6835
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8555,
+          "input_tokens": 10981,
+          "output_tokens": 973,
+          "total_tokens": 11954
+        }
+      },
+      "reviewAnswer": null
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ff9d0278",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_34bcfc41b7b7d163f5329055",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ff9d0278",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_34bcfc41b7b7d163f5329055",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Fictional Scenario",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 5639,
+          "input_tokens": 6361,
+          "output_tokens": 352,
+          "total_tokens": 6713
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7846,
+          "input_tokens": 10963,
+          "output_tokens": 693,
+          "total_tokens": 11656
+        }
+      },
+      "reviewAnswer": "**Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "en",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ff9d0278",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_34bcfc41b7b7d163f5329055",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ff9d0278",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_34bcfc41b7b7d163f5329055",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Fictional Scenario",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6854,
+          "input_tokens": 6345,
+          "output_tokens": 469,
+          "total_tokens": 6814
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6636,
+          "input_tokens": 10916,
+          "output_tokens": 607,
+          "total_tokens": 11523
+        }
+      },
+      "reviewAnswer": "**Гипотетическое:** В вымышленной истории Ada Marlow Vulpine Mutual одалживает Bo Winters запасной регуляторный диск Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта. Этот вымышленный заём существует только в истории и не описывает никакого реального соглашения. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ff9d0278",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_34bcfc41b7b7d163f5329055",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ff9d0278",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_34bcfc41b7b7d163f5329055",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Fictional Scenario",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 4422,
+          "input_tokens": 6367,
+          "output_tokens": 256,
+          "total_tokens": 6623
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7736,
+          "input_tokens": 10963,
+          "output_tokens": 610,
+          "total_tokens": 11573
+        }
+      },
+      "reviewAnswer": "**Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": false,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ff9d0278",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_34bcfc41b7b7d163f5329055",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ff9d0278",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_34bcfc41b7b7d163f5329055",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Fictional Scenario",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6163,
+          "input_tokens": 6343,
+          "output_tokens": 465,
+          "total_tokens": 6808
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8423,
+          "input_tokens": 10930,
+          "output_tokens": 693,
+          "total_tokens": 11623
+        }
+      },
+      "reviewAnswer": "По словам Ada Marlow, в её вымышленной истории Vulpine Mutual предоставляет Bo Winters запасной регулятор управления Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта. Этот вымышленный заём существует только в этой истории и не описывает реального соглашения. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "en",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ff9d0278",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_34bcfc41b7b7d163f5329055",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ff9d0278",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_34bcfc41b7b7d163f5329055",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Fictional Scenario",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6581,
+          "input_tokens": 6367,
+          "output_tokens": 436,
+          "total_tokens": 6803
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 7061,
+          "input_tokens": 10963,
+          "output_tokens": 583,
+          "total_tokens": 11546
+        }
+      },
+      "reviewAnswer": "**Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement. [memory/equipment:7]"
+    },
+    {
+      "queryLanguage": "ru",
+      "explicitView": true,
+      "requestedAnswerLanguage": "ru",
+      "inferredView": "discussion",
+      "recallStatus": "degraded",
+      "recallDegraded": [
+        "no_expansion_model"
+      ],
+      "retainedEvidence": 1,
+      "reviewRetrieval": [
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ff9d0278",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_34bcfc41b7b7d163f5329055",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "contextStatus": "ok",
+      "contextDegraded": [],
+      "contextActivated": true,
+      "contextActivation": {
+        "activated": true,
+        "basis": "qualified",
+        "candidates": 1,
+        "selected": 1,
+        "qualification_run": true,
+        "reference_resolution": "not_needed"
+      },
+      "reviewContext": [
+        {
+          "type": "page",
+          "slug": "memory/equipment",
+          "title": "Zephyr QX-100",
+          "role": "knowledge",
+          "score": 1,
+          "lines": [
+            {
+              "n": 7,
+              "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_ff9d0278",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_34bcfc41b7b7d163f5329055",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "matched_by": [
+            "lexical",
+            "vector"
+          ],
+          "breadcrumb": "Zephyr QX-100 › Fictional Scenario",
+          "updated": "2026-09-15",
+          "relevance": 1,
+          "summary": null
+        }
+      ],
+      "contextKnowledgeLanguage": "en",
+      "answerOutcome": "partial",
+      "answerReason": "answered",
+      "answerValidation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "answerDegraded": [
+        "no_expansion_model"
+      ],
+      "answerModelUsage": {
+        "generation": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 8128,
+          "input_tokens": 6345,
+          "output_tokens": 671,
+          "total_tokens": 7016
+        },
+        "verification": {
+          "model": "gpt-5.6-luna",
+          "latency_ms": 6680,
+          "input_tokens": 10932,
+          "output_tokens": 647,
+          "total_tokens": 11579
+        }
+      },
+      "reviewAnswer": "**Гипотетическое:** В вымышленной истории Ada Marlow Vulpine Mutual предоставляет Bo Winters запасную ручку управления Zephyr QX-100 на первые сорок четыре дня после вымышленного ремонта. Этот вымышленный заём существует только в этой истории и не описывает реального соглашения. [memory/equipment:7]"
+    }
+  ],
+  "reviewKnowledge": [
+    {
+      "text": "- **Hypothetical:** In Ada Marlow's fictional story, Vulpine Mutual lends Bo Winters a spare Zephyr QX-100 control dial for the first forty-four days after a fictional repair. This invented loan exists only in the story and describes no real agreement.",
+      "qualification": {
+        "status": "qualified",
+        "id": "mem_ff9d0278",
+        "level": 1,
+        "kind": "claim",
+        "subject": "ent_34bcfc41b7b7d163f5329055",
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "commitment": "hypothetical",
+        "disposition": "active",
+        "polarity": "affirmed",
+        "basis": "self_attested",
+        "answer_eligible": false,
+        "current_eligible": false
+      }
+    }
+  ],
+  "error": null
+}

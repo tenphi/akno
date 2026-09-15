@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "721abaefe5f24428bf674909ed126d9184c7e1dfebfb06e60a6e327a3ca38147",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-open-renewal",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the precise new paper inspection-certificate question, Ada’s personal uncertainty, the distinct limit against inferring contract silence, and non-submission of a renewal request. Question metadata does not turn the possible requirement into fact. This is complete useful context for either query language."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the precise new paper inspection-certificate question, Ada’s personal uncertainty, the distinct limit against inferring contract silence, and non-submission of a renewal request. Question metadata does not turn the possible requirement into fact. This is complete useful context for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the precise new paper inspection-certificate question, Ada’s personal uncertainty, the distinct limit against inferring contract silence, and non-submission of a renewal request. Question metadata does not turn the possible requirement into fact. This is complete useful context for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context preserves the precise new paper inspection-certificate question, Ada’s personal uncertainty, the distinct limit against inferring contract silence, and non-submission of a renewal request. Question metadata does not turn the possible requirement into fact. This is complete useful context for either query language."
+        }
+      ]
+    },
+    {
+      "id": "v22-held-nested-report",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context is useful for the service-report query and retains both reporting levels, the exact resistance-testing purpose rather than replacement, and Ada’s unread/unverified qualification. The report is not promoted to established policy or completed service. The source’s separate unpacked-device fact is absent, so useful focused context does not imply complete retention. English knowledge framing is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context is useful for the service-report query and retains both reporting levels, the exact resistance-testing purpose rather than replacement, and Ada’s unread/unverified qualification. The report is not promoted to established policy or completed service. The source’s separate unpacked-device fact is absent, so useful focused context does not imply complete retention. English knowledge framing is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context is useful for the service-report query and retains both reporting levels, the exact resistance-testing purpose rather than replacement, and Ada’s unread/unverified qualification. The report is not promoted to established policy or completed service. The source’s separate unpacked-device fact is absent, so useful focused context does not imply complete retention. English knowledge framing is appropriate for either query language."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context is useful for the service-report query and retains both reporting levels, the exact resistance-testing purpose rather than replacement, and Ada’s unread/unverified qualification. The report is not promoted to established policy or completed service. The source’s separate unpacked-device fact is absent, so useful focused context does not imply complete retention. English knowledge framing is appropriate for either query language."
+        }
+      ]
+    }
+  ]
+}

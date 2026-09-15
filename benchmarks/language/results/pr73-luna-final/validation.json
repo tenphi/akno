@@ -1,0 +1,69 @@
+{
+  "kind": "final-v11-routing-validation",
+  "revision": "12be9f2709cf298a68ef30a623dba13815855a40",
+  "checks": [
+    {
+      "command": "pnpm build",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm lint",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm knip",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm test",
+      "exitCode": 0,
+      "tests": 4068,
+      "files": 154
+    },
+    {
+      "command": "pnpm smoke",
+      "exitCode": 0,
+      "checks": 34
+    },
+    {
+      "command": "pnpm format:check",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm check:repository",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm exec vitest run packages/core/src/memory/intent.test.ts",
+      "exitCode": 0,
+      "tests": 145
+    }
+  ],
+  "builtSocketCheck": "final-repair/built-check.json",
+  "historicalArchivesUnchanged": [
+    "pr73-live",
+    "pr73-acceptance",
+    "fixed-comparison"
+  ],
+  "oldAcceptanceArtifactHashesMatched": 145,
+  "unchangedRuntimeModules": [
+    {
+      "module": "ops/answer.js",
+      "unchanged": true,
+      "sha256": "446f605895c13287bbb5c83176cab070327e99881c76ccf8c35378f9e7790080"
+    },
+    {
+      "module": "ops/answer-source-audit.js",
+      "unchanged": true,
+      "sha256": "121df59c5807151c91d512291369368d9a2f3abb93aadb544febcfadb7b2387c"
+    }
+  ],
+  "existingServiceRestarted": false,
+  "changeset": ".changeset/russian-rejected-proposal-history.md",
+  "independentCodeReview": "final-repair/code-review.json",
+  "memoryViewVersion": "memory-view-v11"
+}

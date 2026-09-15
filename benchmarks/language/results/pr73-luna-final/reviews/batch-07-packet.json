@@ -1,0 +1,1040 @@
+{
+  "kind": "incremental-frozen-full-evaluation-review-batch",
+  "corpusFingerprint": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+  "rubric": "Unchanged V23 language-output-review-v2 rubric in the frozen benchmark reviewer; no changed thresholds or expected meanings.",
+  "cases": [
+    {
+      "id": "v22-held-relative-unknown-date",
+      "run": 1,
+      "source": {
+        "id": "v22-held-relative-unknown-date",
+        "split": "development",
+        "language": "ru",
+        "scenario": "relative-unknown-date",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "Я, Ada Marlow, предлагаю сравнить инструкции по очистке Zephyr QX-100 через две недели после этой записи. Это лишь моё предложение; встреча не согласована."
+          },
+          {
+            "item_id": "turn-2222",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "У исходной записи нет даты. Поэтому календарную дату сравнения определить нельзя; две недели отсчитываются от записи, а не от дня обработки."
+          }
+        ],
+        "view": "planning",
+        "disposition": "proposed",
+        "admission": "writable",
+        "ordinary": "## Предложение\nAda Marlow предлагает сравнить инструкции по очистке Zephyr QX-100 через две недели после недатированной исходной записи. Календарная дата неизвестна, отсчёт не ведётся от обработки, встреча не согласована.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "What relative-time cleaning-instructions proposal did Ada Marlow make for Zephyr QX-100?",
+          "ru": "Какое предложение со временем относительно записи сделала Ada Marlow об инструкциях Zephyr QX-100?"
+        },
+        "reviewExpectation": "Keep Ada’s actual proposal, comparison of cleaning instructions two weeks after the undated source record, unknown calendar date, explicit non-processing anchor, and no agreed meeting. Uncertain date does not make the proposal uncertain."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_2e13b912",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_d7dbbce812b86c816bc9cf19",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false,
+            "temporal": {
+              "time": {
+                "relation": "scheduled",
+                "status": "tentative",
+                "precision": "unknown"
+              },
+              "clock_relation": "undated",
+              "actionable": false
+            }
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_2e13b912",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d7dbbce812b86c816bc9cf19",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "answer": "**Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_2e13b912",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d7dbbce812b86c816bc9cf19",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "answer": "**Предложение · Предварительный срок:** Ada Marlow предлагает сравнить инструкции по очистке Zephyr QX-100 через две недели после исходной записи, но у записи нет даты, поэтому календарную дату определить нельзя. Это лишь её предложение; встреча не согласована. Две недели отсчитываются от записи, а не от дня обработки. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_2e13b912",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d7dbbce812b86c816bc9cf19",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "answer": "**Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_2e13b912",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d7dbbce812b86c816bc9cf19",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "answer": "**Предложение · Предварительный срок:** Ada Marlow предлагает сравнить инструкции по очистке Zephyr QX-100 через две недели после исходной записи, но у записи нет даты, поэтому календарную дату определить нельзя. Это лишь её предложение; встреча не согласована. Две недели отсчитываются от записи, а не от дня обработки. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_2e13b912",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d7dbbce812b86c816bc9cf19",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "answer": "**Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_2e13b912",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d7dbbce812b86c816bc9cf19",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "answer": "**Предложение · Предварительный срок:** Ada Marlow предлагает сравнить инструкции по очистке Zephyr QX-100 через две недели после исходной записи, но у записи нет даты, поэтому календарную дату определить нельзя. Это лишь её предложение; встреча не согласована. Две недели отсчитываются от записи, а не от дня обработки. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_2e13b912",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d7dbbce812b86c816bc9cf19",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "answer": "**Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_2e13b912",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d7dbbce812b86c816bc9cf19",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "answer": "**Предложение · Предварительный срок:** Ada Marlow предлагает сравнить инструкции по очистке Zephyr QX-100 через две недели после исходной записи, но запись не датирована, поэтому календарную дату определить нельзя. Это лишь её предложение; встреча не согласована. Две недели отсчитываются от записи, а не от дня обработки. [memory/equipment:7]"
+        }
+      ]
+    },
+    {
+      "id": "v23-held-assistant-reading",
+      "run": 1,
+      "source": {
+        "id": "v23-held-assistant-reading",
+        "split": "held-out",
+        "language": "mixed",
+        "scenario": "assistant-speculation",
+        "items": [
+          {
+            "item_id": "turn-1111",
+            "role": "assistant",
+            "text": "My tentative reading is that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. Я не читал условия и не проверял это предположение. Наличие такой возможности не означает, что возврат уже оформлен или отправка назначена."
+          }
+        ],
+        "view": "reports",
+        "basis": "source_report",
+        "commitment": "tentative",
+        "admission": "writable",
+        "ordinary": "## Assistant report\nThe assistant tentatively thinks Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the conditions or verified this assumption. A possible return label does not establish an arranged return or scheduled shipment.",
+        "ordinaryFactual": false,
+        "queries": {
+          "en": "What did the assistant speculate about a return label for Zephyr QX-100 servicing?",
+          "ru": "Какое предположение о возвратной этикетке для обслуживания Zephyr QX-100 высказал ассистент?"
+        },
+        "reviewExpectation": "Preserve tentative assistant attribution, the possibility that Vulpine Mutual supplies a return label for servicing, and the assistant’s personal lack of reading and verification. A possible service provision is not an arranged return, scheduled shipment, completed dispatch, or established contractual duty."
+      },
+      "reviewKnowledge": [
+        {
+          "text": "- **Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_f43fbb19",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_1f863300088680a9be301b5a",
+            "source_role": "assistant",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_f43fbb19",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_1f863300088680a9be301b5a",
+                "source_role": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_f43fbb19",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_1f863300088680a9be301b5a",
+                "source_role": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**По словам ассистента · Предварительный статус:** Ассистент предварительно предполагает, что Vulpine Mutual может предоставить обратную этикетку для обслуживания Zephyr QX-100. Ассистент не читал условия и не проверял это предположение. Такая возможность не означает, что возврат уже оформлен или отправка назначена. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_f43fbb19",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_1f863300088680a9be301b5a",
+                "source_role": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_f43fbb19",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_1f863300088680a9be301b5a",
+                "source_role": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**По словам ассистента · Предварительный статус:** ассистент предварительно считает, что Vulpine Mutual может предоставить этикетку для возврата при обслуживании Zephyr QX-100. Ассистент не читал условия и не проверял это предположение. Такая возможность не означает, что возврат уже оформлен или отправка назначена. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_f43fbb19",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_1f863300088680a9be301b5a",
+                "source_role": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_f43fbb19",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_1f863300088680a9be301b5a",
+                "source_role": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**По словам ассистента · Предварительный статус:** Ассистент предварительно считает, что Vulpine Mutual может предоставить возвратную этикетку для обслуживания Zephyr QX-100. Ассистент не читал условия и не проверял это предположение. Эта возможность не означает, что возврат уже оформлен или отправка назначена. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_f43fbb19",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_1f863300088680a9be301b5a",
+                "source_role": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "retrievedEvidence": [
+            {
+              "text": "- **Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_f43fbb19",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_1f863300088680a9be301b5a",
+                "source_role": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "answer": "**По словам ассистента · Предварительный статус:** Ассистент предварительно предполагает, что Vulpine Mutual может предоставить возвратную этикетку для обслуживания Zephyr QX-100. Ассистент не читал условия и не проверял это предположение. Такая возможность не означает, что возврат уже оформлен или отправка назначена. [memory/equipment:7]"
+        }
+      ]
+    }
+  ],
+  "extra": [
+    {
+      "id": "v22-held-relative-unknown-date",
+      "run": 1,
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_2e13b912",
+            "source_ref": "invented:v22-held-relative-unknown-date",
+            "input_hash": "a72348f8f3764a15c907cf5f4b21cdaa0c3275a7ca461842a065545718f02871",
+            "evidence": "Я, Ada Marlow, предлагаю сравнить инструкции по очистке Zephyr QX-100 через две недели после этой записи. Это лишь моё предложение; встреча не согласована.\n…\nУ исходной записи нет даты. Поэтому календарную дату сравнения определить нельзя; две недели отсчитываются от записи, а не от дня обработки.",
+            "evidence_hash": "297e234bd08dd1dcfca21f8bf8bc6784ec6b81cc2e37982b2ff56c6b976123fd",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "Я, Ada Marlow, предлагаю сравнить инструкции по очистке Zephyr QX-100 через две недели после этой записи. Это лишь моё предложение; встреча не согласована.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              },
+              {
+                "quote": "У исходной записи нет даты. Поэтому календарную дату сравнения определить нельзя; две недели отсчитываются от записи, а не от дня обработки.",
+                "matchingSourceItems": [
+                  "turn-2222"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_2e13b912",
+                    "level": 1,
+                    "kind": "plan",
+                    "subject": "ent_d7dbbce812b86c816bc9cf19",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "proposed",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false,
+                    "temporal": {
+                      "time": {
+                        "relation": "scheduled",
+                        "status": "tentative",
+                        "precision": "unknown"
+                      },
+                      "clock_relation": "undated",
+                      "actionable": false
+                    }
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Proposed Follow-up",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_2e13b912",
+                    "level": 1,
+                    "kind": "plan",
+                    "subject": "ent_d7dbbce812b86c816bc9cf19",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "proposed",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false,
+                    "temporal": {
+                      "time": {
+                        "relation": "scheduled",
+                        "status": "tentative",
+                        "precision": "unknown"
+                      },
+                      "clock_relation": "undated",
+                      "actionable": false
+                    }
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Proposed Follow-up",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_2e13b912",
+                    "level": 1,
+                    "kind": "plan",
+                    "subject": "ent_d7dbbce812b86c816bc9cf19",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "proposed",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false,
+                    "temporal": {
+                      "time": {
+                        "relation": "scheduled",
+                        "status": "tentative",
+                        "precision": "unknown"
+                      },
+                      "clock_relation": "undated",
+                      "actionable": false
+                    }
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Proposed Follow-up",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_2e13b912",
+                    "level": 1,
+                    "kind": "plan",
+                    "subject": "ent_d7dbbce812b86c816bc9cf19",
+                    "source_role": "user",
+                    "source_speaker": "Ada Marlow",
+                    "commitment": "asserted",
+                    "disposition": "proposed",
+                    "polarity": "affirmed",
+                    "basis": "self_attested",
+                    "answer_eligible": false,
+                    "current_eligible": false,
+                    "temporal": {
+                      "time": {
+                        "relation": "scheduled",
+                        "status": "tentative",
+                        "precision": "unknown"
+                      },
+                      "clock_relation": "undated",
+                      "actionable": false
+                    }
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Proposed Follow-up",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ]
+    },
+    {
+      "id": "v23-held-assistant-reading",
+      "run": 1,
+      "sourceArchive": {
+        "stableAcrossRebuildReplay": true,
+        "supports": [
+          {
+            "memory_id": "mem_f43fbb19",
+            "source_ref": "invented:v23-held-assistant-reading",
+            "input_hash": "81d27dcc283daffb694bf02e84e112ca8e611b0dc772ba0277e8f1236f561e13",
+            "evidence": "My tentative reading is that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. Я не читал условия и не проверял это предположение. Наличие такой возможности не означает, что возврат уже оформлен или отправка назначена.",
+            "evidence_hash": "cec556e86ae01c5f80defe9890b48de7bbb1eeb4f06d3c7d7fcb2d5a0782f23c",
+            "hashValid": true,
+            "spans": [
+              {
+                "quote": "My tentative reading is that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. Я не читал условия и не проверял это предположение. Наличие такой возможности не означает, что возврат уже оформлен или отправка назначена.",
+                "matchingSourceItems": [
+                  "turn-1111"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_f43fbb19",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_1f863300088680a9be301b5a",
+                    "source_role": "assistant",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Service Returns",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_f43fbb19",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_1f863300088680a9be301b5a",
+                    "source_role": "assistant",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Service Returns",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_f43fbb19",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_1f863300088680a9be301b5a",
+                    "source_role": "assistant",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Service Returns",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "evidence": [
+            {
+              "type": "page",
+              "slug": "memory/equipment",
+              "title": "Zephyr QX-100",
+              "role": "knowledge",
+              "score": 1,
+              "lines": [
+                {
+                  "n": 7,
+                  "text": "- **Reported by the assistant · Tentative:** The assistant tentatively reads that Vulpine Mutual may supply a return label for Zephyr QX-100 servicing. The assistant has not read the terms or checked this assumption. This possibility does not mean that the return has been processed or shipment scheduled.",
+                  "memory": {
+                    "status": "qualified",
+                    "id": "mem_f43fbb19",
+                    "level": 1,
+                    "kind": "claim",
+                    "subject": "ent_1f863300088680a9be301b5a",
+                    "source_role": "assistant",
+                    "commitment": "tentative",
+                    "disposition": "active",
+                    "polarity": "affirmed",
+                    "basis": "source_report",
+                    "answer_eligible": false,
+                    "current_eligible": false
+                  }
+                }
+              ],
+              "matched_by": [
+                "lexical",
+                "vector"
+              ],
+              "breadcrumb": "Zephyr QX-100 › Service Returns",
+              "updated": "2026-09-15",
+              "relevance": 1,
+              "summary": null
+            }
+          ],
+          "knowledgeLanguage": "en"
+        }
+      ]
+    }
+  ],
+  "packetFingerprint": "43bdc74c8ade0b7c6cdbb35a064b147d717c7fb674d0a1e75c00fa0c983a166a"
+}

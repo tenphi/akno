@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "da564fb93f1869c1711444951bcd1142546d91859a8fe53e2a7238ea2406dbc7",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-competing-clicks",
+      "run": 1,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves both preliminary explanations with their exact rail/pin mechanisms, Ada’s nonselection through the local subject framing, no supporting observations for either, and lack of confirmation of clicking by this record. English stored knowledge is appropriate for either query language. Tentative qualification remains explicit and neither cause nor symptom is promoted to fact."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves both preliminary explanations with their exact rail/pin mechanisms, Ada’s nonselection through the local subject framing, no supporting observations for either, and lack of confirmation of clicking by this record. English stored knowledge is appropriate for either query language. Tentative qualification remains explicit and neither cause nor symptom is promoted to fact."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves both preliminary explanations with their exact rail/pin mechanisms, Ada’s nonselection through the local subject framing, no supporting observations for either, and lack of confirmation of clicking by this record. English stored knowledge is appropriate for either query language. Tentative qualification remains explicit and neither cause nor symptom is promoted to fact."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The context preserves both preliminary explanations with their exact rail/pin mechanisms, Ada’s nonselection through the local subject framing, no supporting observations for either, and lack of confirmation of clicking by this record. English stored knowledge is appropriate for either query language. Tentative qualification remains explicit and neither cause nor symptom is promoted to fact."
+        }
+      ]
+    }
+  ]
+}

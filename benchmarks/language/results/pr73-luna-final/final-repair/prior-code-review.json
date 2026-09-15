@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "bounded-routing-code-review-v1",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "baseCommit": "60db7e3a962d4e4d6a42f559f223ab0e9392807d",
+  "reviewedVersion": "memory-view-v11",
+  "scope": [
+    "packages/core/src/memory/intent.ts",
+    "packages/core/src/memory/intent.test.ts",
+    ".changeset/russian-rejected-proposal-history.md",
+    "/tmp/akno-rejection-guards-prototype.ts",
+    "/tmp/akno-rejection-guards-prototype.mjs"
+  ],
+  "reviewedFileSha256": {
+    "productionIntent": "93973d9446316cbdcf6d1a72c94065a7a46f9435070285b7c4762eae0ae89e2f",
+    "prototypeIntent": "93973d9446316cbdcf6d1a72c94065a7a46f9435070285b7c4762eae0ae89e2f",
+    "productionTests": "a5fe21f7d545b148fc4de515d1209b1dbc418f5a02cee4e2bc7e478717afe84f",
+    "prototypeProbes": "5c259d7f420f937d6cad99e3d72361c2f22d98ad750f11558afa0b752dfdd833"
+  },
+  "status": "changes_requested",
+  "priorFinding": "The original examples using не and full-form бы are resolved, but the same conditional-as-actual defect remains for short-form б.",
+  "findings": [
+    {
+      "priority": 2,
+      "title": "Guard the short Russian conditional particle too",
+      "file": "packages/core/src/memory/intent.ts",
+      "startLine": 189,
+      "endLine": 194,
+      "reason": "The connecting-span and surrounding-predicate guards recognize only бы. Its standard shortened conditional form б still passes the new rejection cue, so the query is routed to history even though it describes conditional rather than actual rejection. As in the original finding, history excludes eligible proposed or hypothetical plans. This is an unhandled form of the same regression introduced by the v10 cue, rather than evidence that the original corpus source is defective.",
+      "reproductions": [
+        {
+          "query": "Какой план отвергла б Ada Marlow?",
+          "actualView": "history",
+          "requiredProperty": "Do not infer actual-rejection history from the conditional phrase."
+        },
+        {
+          "query": "Ada Marlow отвергла б предложение об осмотре.",
+          "actualView": "history",
+          "requiredProperty": "Do not infer actual-rejection history from the conditional phrase."
+        },
+        {
+          "query": "Какой план Ada Marlow б отвергла?",
+          "actualView": "history",
+          "requiredProperty": "Do not infer actual-rejection history from the conditional phrase."
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    {
+      "type": "conservative_coverage",
+      "reason": "The broad particle guard treats nearby не as governing rejection even when it instead governs timing or another constituent. Какой план Ada Marlow не сразу отвергла? ordinarily asks about delayed actual rejection, but returns planning; Не Bo Winters отверг план об осмотре. negates the subject rather than the rejection, and also returns planning. The new не сразу test labels therefore document conservative exclusions, not semantically negated rejection examples. Do not claim the guard preserves every actual rejected-proposal query."
+    },
+    {
+      "type": "bounded_language_rule",
+      "reason": "The word-distance and clause-boundary approach remains a precision-oriented cue rather than a discourse parser. Passing a finite probe list does not establish general Russian negation, subject-focus or modality coverage."
+    }
+  ],
+  "verification": {
+    "prototypeMatchesProduction": true,
+    "declaredProbes": 26,
+    "declaredProbesPassed": 26,
+    "originalNegationProbe": {
+      "query": "Какой план Ada Marlow не отвергла?",
+      "view": "planning"
+    },
+    "originalConditionalProbe": {
+      "query": "Какой план отвергла бы Ada Marlow?",
+      "view": "planning"
+    },
+    "method": "Read the finalized diff and both prototype files; imported the production pure inferMemoryView function; evaluated the declared probe array without running the prototype writer; executed the additional read-only conditional and negation-scope probes. No source, test, corpus or runtime was edited.",
+    "helperScope": "The third boundedDiscoursePhrase parameter defaults to the original DISCOURSE_WORD. Only the new rejected-proposal cue supplies the stricter word pattern; other existing cue calls retain their previous matcher.",
+    "reportedSuite": "Parent reports all 142 intent tests passing. This review independently replayed the 26 declared prototype probes but did not rerun the whole suite."
+  },
+  "evidenceSeparation": "The frozen v10 output review was completed and saved before this code inspection. Neither the original 352-coordinate baseline nor the 16-coordinate v10 output grades were changed."
+}

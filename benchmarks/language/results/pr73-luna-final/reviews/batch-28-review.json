@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "c19c338a8e9eb590b096e3636548721f380eb3ba51f488cd6e687f03f1433329",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-competing-hypotheses",
+      "run": 2,
+      "retentionUseful": true,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The complete retained English record preserves both tentative competing causes, a deformed washer and a poorly secured filter cover, together with Ada’s personal nonselection, no supporting data for either, and the limit that this record does not confirm the rattle itself. Tentative metadata matches the prose, and neither actual fault nor actual symptom is established.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the two distinct component-specific hypotheses, Ada as the person selecting neither, absence of supporting data, and record-scoped nonconfirmation of rattling. The answer uses the requested language. No cause is merged, selected, or asserted as an actual fault, and the symptom remains unconfirmed by this record."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the two distinct component-specific hypotheses, Ada as the person selecting neither, absence of supporting data, and record-scoped nonconfirmation of rattling. The answer uses the requested language. No cause is merged, selected, or asserted as an actual fault, and the symptom remains unconfirmed by this record."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the two distinct component-specific hypotheses, Ada as the person selecting neither, absence of supporting data, and record-scoped nonconfirmation of rattling. The answer uses the requested language. No cause is merged, selected, or asserted as an actual fault, and the symptom remains unconfirmed by this record."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the two distinct component-specific hypotheses, Ada as the person selecting neither, absence of supporting data, and record-scoped nonconfirmation of rattling. The answer uses the requested language. No cause is merged, selected, or asserted as an actual fault, and the symptom remains unconfirmed by this record."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the two distinct component-specific hypotheses, Ada as the person selecting neither, absence of supporting data, and record-scoped nonconfirmation of rattling. The answer uses the requested language. No cause is merged, selected, or asserted as an actual fault, and the symptom remains unconfirmed by this record."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the two distinct component-specific hypotheses, Ada as the person selecting neither, absence of supporting data, and record-scoped nonconfirmation of rattling. The answer uses the requested language. No cause is merged, selected, or asserted as an actual fault, and the symptom remains unconfirmed by this record."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the two distinct component-specific hypotheses, Ada as the person selecting neither, absence of supporting data, and record-scoped nonconfirmation of rattling. The answer uses the requested language. No cause is merged, selected, or asserted as an actual fault, and the symptom remains unconfirmed by this record."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve the two distinct component-specific hypotheses, Ada as the person selecting neither, absence of supporting data, and record-scoped nonconfirmation of rattling. The answer uses the requested language. No cause is merged, selected, or asserted as an actual fault, and the symptom remains unconfirmed by this record."
+        }
+      ]
+    }
+  ]
+}

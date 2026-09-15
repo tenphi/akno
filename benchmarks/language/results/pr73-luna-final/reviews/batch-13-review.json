@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "da564fb93f1869c1711444951bcd1142546d91859a8fe53e2a7238ea2406dbc7",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-competing-clicks",
+      "run": 1,
+      "retentionUseful": true,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The retained English prose preserves the cracked guide rail and angled seating of the locking pin as distinct preliminary explanations, the absence of supporting observations, and the record-scoped lack of confirmation that clicking occurs. In the sentence with Ada as the person considering the alternatives, unselected naturally refers to her nonselection; it does not assert that nobody else has selected a cause. Possible clicking and tentative metadata do not establish a real symptom or fault. The complete source meaning is retained.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves both exact mechanisms—cracked guide rail and locking pin seated at an angle—together with preliminary status, Ada’s locally scoped nonselection, absence of supporting observations, and nonconfirmation of clicking by this record. Russian «направляющая» is conventional shorthand for the guide rail in this mechanism, and the pin translations preserve its locking function and angled seating. The requested language is used. The answer and complete retrieved English evidence remain useful without establishing an actual symptom or fault."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves both exact mechanisms—cracked guide rail and locking pin seated at an angle—together with preliminary status, Ada’s locally scoped nonselection, absence of supporting observations, and nonconfirmation of clicking by this record. Russian «направляющая» is conventional shorthand for the guide rail in this mechanism, and the pin translations preserve its locking function and angled seating. The requested language is used. The answer and complete retrieved English evidence remain useful without establishing an actual symptom or fault."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves both exact mechanisms—cracked guide rail and locking pin seated at an angle—together with preliminary status, Ada’s locally scoped nonselection, absence of supporting observations, and nonconfirmation of clicking by this record. Russian «направляющая» is conventional shorthand for the guide rail in this mechanism, and the pin translations preserve its locking function and angled seating. The requested language is used. The answer and complete retrieved English evidence remain useful without establishing an actual symptom or fault."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves both exact mechanisms—cracked guide rail and locking pin seated at an angle—together with preliminary status, Ada’s locally scoped nonselection, absence of supporting observations, and nonconfirmation of clicking by this record. Russian «направляющая» is conventional shorthand for the guide rail in this mechanism, and the pin translations preserve its locking function and angled seating. The requested language is used. The answer and complete retrieved English evidence remain useful without establishing an actual symptom or fault."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves both exact mechanisms—cracked guide rail and locking pin seated at an angle—together with preliminary status, Ada’s locally scoped nonselection, absence of supporting observations, and nonconfirmation of clicking by this record. Russian «направляющая» is conventional shorthand for the guide rail in this mechanism, and the pin translations preserve its locking function and angled seating. The requested language is used. The answer and complete retrieved English evidence remain useful without establishing an actual symptom or fault."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The Russian answer preserves both mechanisms, Ada’s unselected alternatives, and the record-scoped unconfirmed clicking. However, «ни одно из них не подтверждено наблюдениями» says neither is confirmed by observations, which is weaker than the source’s absence of any supporting observations for either. A hypothesis may have supporting observations without being confirmed. That material evidence qualification is incomplete, so qualified usefulness fails even though the weaker statement is entailed and no fault is promoted to fact. The retrieved English evidence retains the stronger absence-of-support qualifier and is useful."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves both exact mechanisms—cracked guide rail and locking pin seated at an angle—together with preliminary status, Ada’s locally scoped nonselection, absence of supporting observations, and nonconfirmation of clicking by this record. Russian «направляющая» is conventional shorthand for the guide rail in this mechanism, and the pin translations preserve its locking function and angled seating. The requested language is used. The answer and complete retrieved English evidence remain useful without establishing an actual symptom or fault."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer preserves both exact mechanisms—cracked guide rail and locking pin seated at an angle—together with preliminary status, Ada’s locally scoped nonselection, absence of supporting observations, and nonconfirmation of clicking by this record. Russian «направляющая» is conventional shorthand for the guide rail in this mechanism, and the pin translations preserve its locking function and angled seating. The requested language is used. The answer and complete retrieved English evidence remain useful without establishing an actual symptom or fault."
+        }
+      ]
+    }
+  ]
+}

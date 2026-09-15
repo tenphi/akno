@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "language-output-review-v2",
+  "packetFingerprint": "a87f71f664ee376a56a7dca5434b714a94a5d83ae3185ba766a47b14a40f95a6",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v23-held-competing-clicks",
+      "run": 2,
+      "retentionUseful": true,
+      "retentionJustifiedHold": false,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "retainedSourceEntailed": true,
+      "reason": "The complete retained English record preserves both preliminary explanations with exact mechanisms, a cracked guide rail or locking pin seated at an angle, Ada’s explicit personal nonselection, absence of supporting observations for either, and record-scoped nonconfirmation of the clicking itself. Tentative metadata agrees with the prose and no fault or observed symptom is established.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve both precise preliminary mechanisms, Ada’s personal nonselection, no supporting observations for either, and this record not confirming clicking. Russian guide/pin terminology preserves the guide rail and angled locking-pin seating where applicable. The requested language is used, and no hypothesis, symptom, or general ignorance is promoted to fact."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The Russian answer keeps the two mechanisms, Ada’s nonselection, and record-scoped nonconfirmation of clicking, but replaces no supporting observations with «ни одно не подтверждено наблюдениями». Lack of confirmation allows some supporting observations that are insufficient for confirmation; the source expressly says neither hypothesis has supporting observations. This weakens a material evidence qualifier and fails complete qualified usefulness. The weaker statement remains entailed and the answer is Russian; the complete English retrieval remains useful."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve both precise preliminary mechanisms, Ada’s personal nonselection, no supporting observations for either, and this record not confirming clicking. Russian guide/pin terminology preserves the guide rail and angled locking-pin seating where applicable. The requested language is used, and no hypothesis, symptom, or general ignorance is promoted to fact."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": false,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The Russian answer keeps the two mechanisms, Ada’s nonselection, and record-scoped nonconfirmation of clicking, but replaces no supporting observations with «ни одно не подтверждено наблюдениями». Lack of confirmation allows some supporting observations that are insufficient for confirmation; the source expressly says neither hypothesis has supporting observations. This weakens a material evidence qualifier and fails complete qualified usefulness. The weaker statement remains entailed and the answer is Russian; the complete English retrieval remains useful."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve both precise preliminary mechanisms, Ada’s personal nonselection, no supporting observations for either, and this record not confirming clicking. Russian guide/pin terminology preserves the guide rail and angled locking-pin seating where applicable. The requested language is used, and no hypothesis, symptom, or general ignorance is promoted to fact."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve both precise preliminary mechanisms, Ada’s personal nonselection, no supporting observations for either, and this record not confirming clicking. Russian guide/pin terminology preserves the guide rail and angled locking-pin seating where applicable. The requested language is used, and no hypothesis, symptom, or general ignorance is promoted to fact."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve both precise preliminary mechanisms, Ada’s personal nonselection, no supporting observations for either, and this record not confirming clicking. Russian guide/pin terminology preserves the guide rail and angled locking-pin seating where applicable. The requested language is used, and no hypothesis, symptom, or general ignorance is promoted to fact."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "sourceEntailed": true,
+          "reason": "The answer and retrieved evidence preserve both precise preliminary mechanisms, Ada’s personal nonselection, no supporting observations for either, and this record not confirming clicking. Russian guide/pin terminology preserves the guide rail and angled locking-pin seating where applicable. The requested language is used, and no hypothesis, symptom, or general ignorance is promoted to fact."
+        }
+      ]
+    }
+  ]
+}

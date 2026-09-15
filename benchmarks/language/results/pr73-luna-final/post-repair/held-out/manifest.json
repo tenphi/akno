@@ -1,0 +1,72 @@
+{
+  "kind": "selected-case-diagnostic",
+  "corpusVersion": "v23",
+  "createdAt": "2026-09-15T12:03:10.978Z",
+  "head": "60db7e3a962d4e4d6a42f559f223ab0e9392807d",
+  "sourceDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "runnerSha256": "9902a05c5137743c79f3e7c4b2c026d656fef83711227c5edfcb69a5a61f41e2",
+  "runtime": {
+    "core": "9c472258bd052e97253ec46ea90b8c253409c2008e6ea625a744d00b37ab9b45",
+    "protocol": "0e3d190ecc3e069c1642c5e77208c4d3ad3743052ecc15678f2432eed5ec1b0a"
+  },
+  "corpusFingerprint": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+  "split": "held-out",
+  "runs": 2,
+  "selectedCaseIds": [
+    "v23-held-rejected-inspection"
+  ],
+  "models": {
+    "derive": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "timeoutMs": 120000,
+      "maxOutputTokens": 2400,
+      "reasoningEffort": "low",
+      "api": "responses",
+      "providerRetries": 0
+    },
+    "answer": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "timeoutMs": 60000,
+      "maxOutputTokens": 2400,
+      "reasoningEffort": "low",
+      "api": "responses",
+      "providerRetries": 0
+    },
+    "embedding": {
+      "id": "text-embedding-3-small",
+      "enabled": true,
+      "timeoutMs": 60000,
+      "dimensions": 1536,
+      "api": "responses",
+      "providerRetries": 0
+    },
+    "expansion": {
+      "id": null,
+      "enabled": false,
+      "timeoutMs": 30000,
+      "maxOutputTokens": 1024
+    },
+    "reranker": {
+      "id": "gpt-5.6-luna",
+      "enabled": true,
+      "timeoutMs": 30000,
+      "maxOutputTokens": 1600,
+      "reasoningEffort": "low",
+      "rerankerMode": "llm",
+      "topK": 8,
+      "maxChars": 2400,
+      "excludeIrrelevant": true,
+      "scoreOffset": "auto",
+      "api": "responses",
+      "providerRetries": 0
+    }
+  },
+  "fullRetrieval": true,
+  "limitations": [
+    "Held-out sources frozen before execution; any subsequent tuning makes these exposed diagnostics.",
+    "Published text requires independent source-based review.",
+    "Summaries/facts and expansion disabled; graph expansion disabled."
+  ]
+}

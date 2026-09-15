@@ -1,0 +1,315 @@
+{
+  "kind": "model-free-frozen-corpus-view-check",
+  "correct": 43,
+  "total": 44,
+  "cases": [
+    {
+      "id": "v22-held-nested-report",
+      "split": "development",
+      "language": "en",
+      "expected": "reports",
+      "actual": "reports"
+    },
+    {
+      "id": "v22-held-nested-report",
+      "split": "development",
+      "language": "ru",
+      "expected": "reports",
+      "actual": "reports"
+    },
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "split": "development",
+      "language": "en",
+      "expected": "discussion",
+      "actual": "discussion"
+    },
+    {
+      "id": "v22-held-conditional-hypothesis",
+      "split": "development",
+      "language": "ru",
+      "expected": "discussion",
+      "actual": "discussion"
+    },
+    {
+      "id": "v22-held-counterfactual",
+      "split": "development",
+      "language": "en",
+      "expected": "discussion",
+      "actual": "discussion"
+    },
+    {
+      "id": "v22-held-counterfactual",
+      "split": "development",
+      "language": "ru",
+      "expected": "discussion",
+      "actual": "discussion"
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "split": "development",
+      "language": "en",
+      "expected": "factual",
+      "actual": "factual"
+    },
+    {
+      "id": "v22-held-coverage-exclusion",
+      "split": "development",
+      "language": "ru",
+      "expected": "factual",
+      "actual": "factual"
+    },
+    {
+      "id": "v22-held-assistant-speculation",
+      "split": "development",
+      "language": "en",
+      "expected": "reports",
+      "actual": "reports"
+    },
+    {
+      "id": "v22-held-assistant-speculation",
+      "split": "development",
+      "language": "ru",
+      "expected": "reports",
+      "actual": "reports"
+    },
+    {
+      "id": "v22-held-fictional-example",
+      "split": "development",
+      "language": "en",
+      "expected": "discussion",
+      "actual": "discussion"
+    },
+    {
+      "id": "v22-held-fictional-example",
+      "split": "development",
+      "language": "ru",
+      "expected": "discussion",
+      "actual": "discussion"
+    },
+    {
+      "id": "v22-held-relative-unknown-date",
+      "split": "development",
+      "language": "en",
+      "expected": "planning",
+      "actual": "planning"
+    },
+    {
+      "id": "v22-held-relative-unknown-date",
+      "split": "development",
+      "language": "ru",
+      "expected": "planning",
+      "actual": "planning"
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "split": "development",
+      "language": "en",
+      "expected": "discussion",
+      "actual": "discussion"
+    },
+    {
+      "id": "v22-held-competing-hypotheses",
+      "split": "development",
+      "language": "ru",
+      "expected": "discussion",
+      "actual": "discussion"
+    },
+    {
+      "id": "v22-held-open-question",
+      "split": "development",
+      "language": "en",
+      "expected": "questions",
+      "actual": "questions"
+    },
+    {
+      "id": "v22-held-open-question",
+      "split": "development",
+      "language": "ru",
+      "expected": "questions",
+      "actual": "questions"
+    },
+    {
+      "id": "v22-held-rejected-plan",
+      "split": "development",
+      "language": "en",
+      "expected": "history",
+      "actual": "history"
+    },
+    {
+      "id": "v22-held-rejected-plan",
+      "split": "development",
+      "language": "ru",
+      "expected": "history",
+      "actual": "history"
+    },
+    {
+      "id": "v22-held-read-only-admission",
+      "split": "development",
+      "language": "en",
+      "expected": "factual",
+      "actual": "factual"
+    },
+    {
+      "id": "v22-held-read-only-admission",
+      "split": "development",
+      "language": "ru",
+      "expected": "factual",
+      "actual": "factual"
+    },
+    {
+      "id": "v23-held-relayed-service",
+      "split": "held-out",
+      "language": "en",
+      "expected": "reports",
+      "actual": "reports"
+    },
+    {
+      "id": "v23-held-relayed-service",
+      "split": "held-out",
+      "language": "ru",
+      "expected": "reports",
+      "actual": "reports"
+    },
+    {
+      "id": "v23-held-assumed-interval",
+      "split": "held-out",
+      "language": "en",
+      "expected": "discussion",
+      "actual": "discussion"
+    },
+    {
+      "id": "v23-held-assumed-interval",
+      "split": "held-out",
+      "language": "ru",
+      "expected": "discussion",
+      "actual": "discussion"
+    },
+    {
+      "id": "v23-held-declined-extension",
+      "split": "held-out",
+      "language": "en",
+      "expected": "discussion",
+      "actual": "discussion"
+    },
+    {
+      "id": "v23-held-declined-extension",
+      "split": "held-out",
+      "language": "ru",
+      "expected": "discussion",
+      "actual": "discussion"
+    },
+    {
+      "id": "v23-held-scoped-exclusion",
+      "split": "held-out",
+      "language": "en",
+      "expected": "factual",
+      "actual": "factual"
+    },
+    {
+      "id": "v23-held-scoped-exclusion",
+      "split": "held-out",
+      "language": "ru",
+      "expected": "factual",
+      "actual": "factual"
+    },
+    {
+      "id": "v23-held-assistant-reading",
+      "split": "held-out",
+      "language": "en",
+      "expected": "reports",
+      "actual": "reports"
+    },
+    {
+      "id": "v23-held-assistant-reading",
+      "split": "held-out",
+      "language": "ru",
+      "expected": "reports",
+      "actual": "reports"
+    },
+    {
+      "id": "v23-held-fictional-key",
+      "split": "held-out",
+      "language": "en",
+      "expected": "discussion",
+      "actual": "discussion"
+    },
+    {
+      "id": "v23-held-fictional-key",
+      "split": "held-out",
+      "language": "ru",
+      "expected": "discussion",
+      "actual": "discussion"
+    },
+    {
+      "id": "v23-held-undated-review",
+      "split": "held-out",
+      "language": "en",
+      "expected": "planning",
+      "actual": "planning"
+    },
+    {
+      "id": "v23-held-undated-review",
+      "split": "held-out",
+      "language": "ru",
+      "expected": "planning",
+      "actual": "planning"
+    },
+    {
+      "id": "v23-held-competing-clicks",
+      "split": "held-out",
+      "language": "en",
+      "expected": "discussion",
+      "actual": "discussion"
+    },
+    {
+      "id": "v23-held-competing-clicks",
+      "split": "held-out",
+      "language": "ru",
+      "expected": "discussion",
+      "actual": "discussion"
+    },
+    {
+      "id": "v23-held-open-renewal",
+      "split": "held-out",
+      "language": "en",
+      "expected": "questions",
+      "actual": "questions"
+    },
+    {
+      "id": "v23-held-open-renewal",
+      "split": "held-out",
+      "language": "ru",
+      "expected": "questions",
+      "actual": "questions"
+    },
+    {
+      "id": "v23-held-rejected-inspection",
+      "split": "held-out",
+      "language": "en",
+      "expected": "history",
+      "actual": "history"
+    },
+    {
+      "id": "v23-held-rejected-inspection",
+      "split": "held-out",
+      "language": "ru",
+      "expected": "history",
+      "actual": "planning"
+    },
+    {
+      "id": "v23-held-read-only",
+      "split": "held-out",
+      "language": "en",
+      "expected": "factual",
+      "actual": "factual"
+    },
+    {
+      "id": "v23-held-read-only",
+      "split": "held-out",
+      "language": "ru",
+      "expected": "factual",
+      "actual": "factual"
+    }
+  ]
+}

@@ -1,0 +1,306 @@
+{
+  "schemaVersion": "language-baseline-evidence-audit-v1",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "scope": "Audit of the complete frozen memory-view-v9 Luna baseline against both reports, the frozen corpus and pre-output input review, all 36 independent batch review pairs, canonical packet, merged judgments, gate, provenance, summary and failure ledger. Semantic grades unchanged. This audit does not adjudicate the later routing repair.",
+  "status": "consistent",
+  "corrections": [],
+  "checksPerformed": 2396,
+  "findings": [
+    "All 44 case-runs, 352 answer coordinates and 176 distinct context coordinates are present once. Positive coverage denominators exclude four read-only runs: 40 retained sets, 320 answers and 160 query/view contexts. Read-only exclusion has 32 justified null answers and 16 safe empty contexts; it is not counted as useful activation.",
+    "All 36 original batch packet hashes and review bindings verify. Archived batch reviews exactly match the independent /tmp originals, including reasons. Every merged case judgment is unchanged, and every batch source, saved knowledge, published answer, retrieval coordinate, support archive and context coordinate matches the canonical packet or corresponding frozen report.",
+    "The corpus hash matches the original final V23 input file. The input review exactly matches the original pre-output review. Both report hashes bind to the canonical packet; the canonical hash, merged review packet bindings and provenance compact-JSON hashes verify. The gate output-review hash uses reviewer-schema field order; its difference from the raw compact-JSON hash is explained by normalization and is not evidence drift.",
+    "All summary headline metrics, source/query/answer-language and scenario breakdowns, per-split/run gate metrics and failure names reconcile with frozen judgments and typed report observations. Thresholds match both baseline reports unchanged. Every split/run fails; pooling does not rescue the gate.",
+    "All 87 positive answer failures appear exactly once in the ledger: 44 withheld answers, 15 published source-unsupported answers, 26 published qualification-incomplete answers, and 2 entailed but incomplete focused answers. No source-justified positive abstention exists. Null is a usefulness miss, not itself an accepted semantic error or proof of a false verifier rejection.",
+    "The 44 nulls subdivide into 39 ordinary missed-answer entries, four wrong-inferred-view entries and one verifier-operation failure. Typed reasons are 28 no_eligible_evidence, eight empty_draft, six verification_rejected, one draft_rejected and one verification_unavailable. The operation failure is typed verification_unavailable with answer_verification_failed despite an HTTP-success receipt; it must not be inferred solely from HTTP status.",
+    "Retrieval is deduplicated across answer languages: 132 of 160 positive query/view rows are useful. Actual context is graded separately at 130 of 160. All duplicate retrieval grades agree. The 30 context misses comprise 18 missed activations and 12 qualification-incomplete contexts. All appear in the ledger.",
+    "Complete retention is 27 of 40. The other 13 sets comprise two unavailable retentions and 11 incomplete retained sets; the three retained qualification errors overlap these misses rather than adding three extra failed sets. No retained set is graded source-unsupported. A useful focused answer does not establish complete retention.",
+    "Both source snapshots exactly match their original frozen corpus cases. All 50 evidence hashes recompute, all 86 quote parts exactly occur in the named source.items, and support source references match their invented cases. The reports record stable source bytes, replay and support archives for all 44 runs, with 38 nonempty archives.",
+    "Both split manifests declare the same baseline head, clean source-diff hash, runner hash, runtime hashes and model profile; both completion records report 22/22 and unchanged built runtime. The archived runner bytes reproduce the declared runner hash. Baseline packets explicitly bind memory-view-v9. A later current runtime or v10 archive does not change this baseline audit.",
+    "Network receipt summaries recompute exactly for 2,695 calls: 1,144 embedding and 1,551 Luna calls, with the reported usage and latency aggregates. Summary limitations correctly avoid monetary-cost inference, a capability ceiling, and live claims for index model summaries/facts, graph expansion or longitudinal maintenance."
+  ],
+  "metrics": {
+    "caseRuns": 44,
+    "writableCaseRuns": 40,
+    "answerCoordinates": 352,
+    "completeRetention": {
+      "numerator": 27,
+      "denominator": 40,
+      "rate": 0.675
+    },
+    "usefulAnswers": {
+      "numerator": 233,
+      "denominator": 320,
+      "rate": 0.728125
+    },
+    "publishedWritableAnswers": 276,
+    "withheldWritableAnswers": 44,
+    "sourceJustifiedWritableAbstentions": 0,
+    "writableNullsByRuntimeReason": {
+      "no_eligible_evidence": 28,
+      "empty_draft": 8,
+      "verification_rejected": 6,
+      "draft_rejected": 1,
+      "verification_unavailable": 1
+    },
+    "acceptedUnsupportedAnswers": 15,
+    "unsupportedRetainedSets": 0,
+    "answerLanguageErrors": 0,
+    "answerQualificationErrors": 26,
+    "unsafeAnswerPromotions": 0,
+    "retainedQualificationErrors": 3,
+    "retainedLanguageErrors": 0,
+    "unsafeRetainedPromotions": 0,
+    "acceptedUnsupportedContexts": 0,
+    "contextQualificationErrors": 12,
+    "contextLanguageErrors": 0,
+    "unsafeContextPromotions": 0,
+    "usefulContexts": {
+      "numerator": 130,
+      "denominator": 160,
+      "rate": 0.8125
+    },
+    "readOnlyJustifiedAbstentions": {
+      "numerator": 32,
+      "denominator": 32,
+      "rate": 1
+    },
+    "sourceBytesStable": {
+      "numerator": 44,
+      "denominator": 44,
+      "rate": 1
+    },
+    "replayStable": {
+      "numerator": 44,
+      "denominator": 44,
+      "rate": 1
+    },
+    "supportArchiveStable": {
+      "numerator": 44,
+      "denominator": 44,
+      "rate": 1
+    },
+    "nonemptyArchives": 38,
+    "supportRecordsWithVerifiedHashes": 50,
+    "exactMatchedQuoteParts": 86,
+    "caseAvailabilityFailures": 3,
+    "answerOperationFailures": 1,
+    "usefulQualifiedRetrieval": {
+      "numerator": 132,
+      "denominator": 160,
+      "rate": 0.825
+    },
+    "allUniqueContextCoordinates": 176,
+    "publishedAnswerFailurePartition": {
+      "sourceUnsupported": 15,
+      "qualificationIncomplete": 26,
+      "focusedAnswerIncomplete": 2
+    },
+    "withheldAnswerFailurePartition": {
+      "missedUsefulAnswer": 39,
+      "wrongInferredView": 4,
+      "answerOperationFailure": 1
+    },
+    "readOnlySafeContexts": {
+      "numerator": 16,
+      "denominator": 16
+    }
+  },
+  "groups": [
+    {
+      "split": "development",
+      "run": 1,
+      "passed": false,
+      "completeRetention": {
+        "numerator": 4,
+        "denominator": 10,
+        "rate": 0.4
+      },
+      "usefulRetrieval": {
+        "numerator": 24,
+        "denominator": 40,
+        "rate": 0.6
+      },
+      "usefulAnswers": {
+        "numerator": 42,
+        "denominator": 80,
+        "rate": 0.525
+      },
+      "unsupportedPublishedAnswers": 6,
+      "qualificationErrorsIncludingRetention": 9,
+      "availability": {
+        "numerator": 2,
+        "denominator": 11,
+        "rate": 0.18181818181818182
+      }
+    },
+    {
+      "split": "development",
+      "run": 2,
+      "passed": false,
+      "completeRetention": {
+        "numerator": 7,
+        "denominator": 10,
+        "rate": 0.7
+      },
+      "usefulRetrieval": {
+        "numerator": 40,
+        "denominator": 40,
+        "rate": 1
+      },
+      "usefulAnswers": {
+        "numerator": 69,
+        "denominator": 80,
+        "rate": 0.8625
+      },
+      "unsupportedPublishedAnswers": 8,
+      "qualificationErrorsIncludingRetention": 0,
+      "availability": {
+        "numerator": 0,
+        "denominator": 11,
+        "rate": 0
+      }
+    },
+    {
+      "split": "held-out",
+      "run": 1,
+      "passed": false,
+      "completeRetention": {
+        "numerator": 8,
+        "denominator": 10,
+        "rate": 0.8
+      },
+      "usefulRetrieval": {
+        "numerator": 36,
+        "denominator": 40,
+        "rate": 0.9
+      },
+      "usefulAnswers": {
+        "numerator": 65,
+        "denominator": 80,
+        "rate": 0.8125
+      },
+      "unsupportedPublishedAnswers": 0,
+      "qualificationErrorsIncludingRetention": 10,
+      "availability": {
+        "numerator": 0,
+        "denominator": 11,
+        "rate": 0
+      }
+    },
+    {
+      "split": "held-out",
+      "run": 2,
+      "passed": false,
+      "completeRetention": {
+        "numerator": 8,
+        "denominator": 10,
+        "rate": 0.8
+      },
+      "usefulRetrieval": {
+        "numerator": 32,
+        "denominator": 40,
+        "rate": 0.8
+      },
+      "usefulAnswers": {
+        "numerator": 57,
+        "denominator": 80,
+        "rate": 0.7125
+      },
+      "unsupportedPublishedAnswers": 1,
+      "qualificationErrorsIncludingRetention": 10,
+      "availability": {
+        "numerator": 1,
+        "denominator": 11,
+        "rate": 0.09090909090909091
+      }
+    }
+  ],
+  "gate": {
+    "releaseEligible": false,
+    "thresholds": {
+      "unsafeFactualPromotion": 0,
+      "acceptedLanguageViolations": 0,
+      "translationQualificationErrors": 0,
+      "sourceByteChanges": 0,
+      "usefulRetentionCoverage": 0.8,
+      "qualifiedRetrievalCoverage": 0.8,
+      "usefulQualifiedAnswerCoverage": 0.9,
+      "availabilityFailureRate": 0.05,
+      "unsupportedRetainedOutputs": 0,
+      "unsupportedNonnullAnswers": 0
+    },
+    "failures": [
+      "development/run-1:unsupportedNonnullAnswers",
+      "development/run-1:usefulRetentionCoverage",
+      "development/run-1:qualifiedRetrievalCoverage",
+      "development/run-1:usefulQualifiedAnswerCoverage",
+      "development/run-1:translationQualificationErrors",
+      "development/run-1:availability",
+      "development/run-2:unsupportedNonnullAnswers",
+      "development/run-2:usefulRetentionCoverage",
+      "development/run-2:usefulQualifiedAnswerCoverage",
+      "held-out/run-1:usefulQualifiedAnswerCoverage",
+      "held-out/run-1:translationQualificationErrors",
+      "held-out/run-2:unsupportedNonnullAnswers",
+      "held-out/run-2:usefulQualifiedAnswerCoverage",
+      "held-out/run-2:translationQualificationErrors",
+      "held-out/run-2:availability"
+    ]
+  },
+  "failureLedger": {
+    "caseRuns": 22,
+    "types": {
+      "retention:retention_unavailable": 2,
+      "context:missed_useful_context": 18,
+      "answer:missed_useful_answer": 39,
+      "retention:incomplete_retained_set": 11,
+      "retention:qualification_incomplete": 3,
+      "context:qualification_incomplete": 12,
+      "answer:qualification_incomplete": 26,
+      "answer:accepted_semantic_error": 15,
+      "answer:wrong_inferred_view": 4,
+      "answer:incomplete_answer": 2,
+      "answer:answer_operation_failure": 1
+    }
+  },
+  "bindings": {
+    "packet": "85f20d6be3a3d918e302957ae46716e14d236c1b2db994ffb860b72b58937254",
+    "corpus": "fa6e306b8c2c0d4b001c19af8c00011710964d429e09938f5f367b06105be663",
+    "inputReview": "6b3b33a81545db2a76720c9cf3f824f31a23ce22a284e32946151bcdaadbba4a",
+    "outputReviewSchemaNormalized": "e8d94e16ab743823d91e49eda2d39d7c11c4dc57a9390951c2a5e0f88a40d4f3",
+    "outputReviewCompact": "92010d846dc24f5162090ee276d263c72b0e0a34e8b8fba1addffdd5505ccde6",
+    "contextReviewCompact": "16f4ec09e5a1a4e534574f2ef75c4f87452cb5d03ee09a074a960c8d2485fe7a",
+    "reports": [
+      "a11d6ce9a4c255b404edb2c3d626a19090e46839fad8dd5035b29bbd8104bff8",
+      "b0d6291a5bf6f0b81e81ee1f453b9e04a0d9d7b9e611d82228d6e0c7aa1d3ffb"
+    ],
+    "archivedManifest": {
+      "head": "05bf09fdd23a1f30af2f8096a78ecd193ffa9b4b",
+      "sourceDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runnerSha256": "9902a05c5137743c79f3e7c4b2c026d656fef83711227c5edfcb69a5a61f41e2",
+      "runtime": {
+        "core": "a88a34fb1957308dbedc2cddfd75bb48e73f6b65de08cb39ec622da01b9d55ff",
+        "protocol": "0e3d190ecc3e069c1642c5e77208c4d3ad3743052ecc15678f2432eed5ec1b0a"
+      }
+    },
+    "files": {
+      "summary.json": "7dfd5f637d90d6ed52026deafa2337825137fdd39974c1ef748a47210115900d",
+      "gate.json": "21fb65f8617a17a32d427e64822ca35ccb065f92f4a9236b34665369853f2afe",
+      "output-review.json": "2c26c2ef1c503b69d30c3db202141081cac12a1f044ed51dba33f2d0fb83addd",
+      "context-review.json": "3ba96f55c040a25880ef0ebe502a305972387af265e6ee94b5ea46d6a350074c",
+      "review-provenance.json": "e2d39566ff34810bd055c0eac743795183c2f62423a9d8e267455828e551c41d",
+      "failure-ledger.json": "53e2bc5ea40495491dbca2c7608c65a8673361e8349fb4f4cfb8e5c67cfebd52"
+    }
+  },
+  "limitations": [
+    "Independent model judgments remain fallible and are not human validation or a general reliability guarantee. The baseline combines exposed development structures with new held-out wording/content variants; repeated query coordinates are correlated.",
+    "Archive evidence hashes and exact source quotes were independently recomputed. Before/after filesystem-byte stability and rebuild/replay stability are audited as frozen report observations; the original transient directories were not recreated. Opaque input_hash values and aggregate built-runtime hashes were checked for binding/consistency, not independently regenerated from a fresh baseline build.",
+    "No runtime implementation or provider message traces were inspected for this aggregate audit. The requested subsequent bounded routing code review and targeted live repair evidence are separate from this baseline."
+  ]
+}

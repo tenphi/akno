@@ -1,0 +1,10 @@
+import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
+const root='benchmarks/language/results/pr73-luna-final';const read=f=>JSON.parse(fs.readFileSync(path.join(root,f),'utf8'));
+for(const split of ['development','held-out']){const c=read(split+'/completion.json');assert.equal(c.completed,22);assert.equal(c.expected,22);assert(c.builtRuntimeUnchanged);}
+for(const folder of ['post-repair','final-repair']){const repair=read(folder+'/held-out/completion.json');assert.equal(repair.completed,2);assert.equal(repair.expected,2);assert(repair.builtRuntimeUnchanged);}
+assert(fs.existsSync(path.join(root,'README.md')));assert(fs.existsSync(path.join(root,'gate.json')));assert(fs.existsSync(path.join(root,'summary.json')));
+const secretPath='/tmp/akno-acceptance-provider-key';const secret=fs.existsSync(secretPath)?fs.readFileSync(secretPath,'utf8').trim():null;
+function files(dir=''){return fs.readdirSync(path.join(root,dir),{withFileTypes:true}).flatMap(e=>e.isDirectory()?files(path.join(dir,e.name)):[path.join(dir,e.name)]).sort();}
+const rows=[];const findings=[];for(const file of files()){if(file==='artifact-manifest.json')continue;const b=fs.readFileSync(path.join(root,file));const s=b.toString('utf8');for(const [category,bad]of [['temporary credential',secret&&s.includes(secret)],['API-key shape',/sk-[A-Za-z0-9_-]{20,}/.test(s)],['private home path',/\/(?:Users|home)\/[^\s/]+\//.test(s)]])if(bad)findings.push({file,category});rows.push({file,bytes:b.length,sha256:createHash('sha256').update(b).digest('hex')});}
+if(findings.length){console.log(JSON.stringify({findings},null,2));process.exit(1);}
+fs.writeFileSync(path.join(root,'artifact-manifest.json'),JSON.stringify({kind:'frozen-luna-baseline-and-separate-repair-evidence',files:rows,privacyScan:{temporaryCredentialFound:false,apiKeyShapeFound:false,privateHomePathFound:false}},null,2)+'\n',{flag:'wx'});console.log(JSON.stringify({frozenFiles:rows.length,bytes:rows.reduce((n,r)=>n+r.bytes,0),privacyScanPassed:true}));

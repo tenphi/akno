@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "language-context-review-v1",
+  "packetFingerprint": "0ee1195321c2d3850e8f5f31bfe2b2ea1616d3108e6864204bbe38ac8e5edec1",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v22-held-assistant-speculation",
+      "run": 2,
+      "contexts": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the complete tentative assistant speculation, exact optical-shutter check and eleven-operating-cycle interval, personal unread/unverified limits, and explicit distinction from established obligation or device state. Metadata agrees with the prose. It provides useful reports evidence for either query language without promoting the speculation to fact or actual service."
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the complete tentative assistant speculation, exact optical-shutter check and eleven-operating-cycle interval, personal unread/unverified limits, and explicit distinction from established obligation or device state. Metadata agrees with the prose. It provides useful reports evidence for either query language without promoting the speculation to fact or actual service."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the complete tentative assistant speculation, exact optical-shutter check and eleven-operating-cycle interval, personal unread/unverified limits, and explicit distinction from established obligation or device state. Metadata agrees with the prose. It provides useful reports evidence for either query language without promoting the speculation to fact or actual service."
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "usefulContext": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "languageFramingCompliant": true,
+          "unsafeFactualPromotion": false,
+          "safeExclusion": false,
+          "reason": "The English context contains the complete tentative assistant speculation, exact optical-shutter check and eleven-operating-cycle interval, personal unread/unverified limits, and explicit distinction from established obligation or device state. Metadata agrees with the prose. It provides useful reports evidence for either query language without promoting the speculation to fact or actual service."
+        }
+      ]
+    }
+  ]
+}
