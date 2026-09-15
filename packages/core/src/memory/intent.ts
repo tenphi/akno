@@ -1,7 +1,7 @@
 import type { MemoryQualification, MemoryView, RecallMode } from '@tenphi/akno-protocol';
 
 export type QualifiedMemory = Extract<MemoryQualification, { status: 'qualified' }>;
-export const MEMORY_VIEW_VERSION = 'memory-view-v10';
+export const MEMORY_VIEW_VERSION = 'memory-view-v11';
 
 /** The subset shared by protocol qualifications and the rebuildable SQL projection. */
 export interface MemorySemantics {
@@ -129,8 +129,8 @@ const ENGLISH_FICTION_CONTENT = new RegExp(
   'iu',
 );
 
-function boundedDiscoursePhrase(noun: string, predicate: string): RegExp {
-  const gap = String.raw`(?:[ \t]+${DISCOURSE_WORD}){0,8}[ \t]+`;
+function boundedDiscoursePhrase(noun: string, predicate: string, word = DISCOURSE_WORD): RegExp {
+  const gap = String.raw`(?:[ \t]+${word}){0,8}[ \t]+`;
   return new RegExp(
     String.raw`(?:^|[^\p{L}\p{N}])(?:${noun}${gap}${predicate}|${predicate}${gap}${noun})(?=$|[^\p{L}\p{N}])`,
     'iu',
@@ -188,7 +188,8 @@ const RUSSIAN_FICTIONAL_PROMISE = boundedDiscoursePhrase(
 
 const RUSSIAN_REJECTED_PROPOSAL = boundedDiscoursePhrase(
   String.raw`(?:предложени(?:е|я|ю|ем|и|й|ям|ями|ях)|(?:план|вариант)(?:а|у|ом|е|ы|ов|ам|ами|ах)?)`,
-  String.raw`отверг(?:ла|ло|ли)?`,
+  String.raw`(?<!(?:^|[^\p{L}\p{N}-])(?:не|бы?)(?:[ \t]+${DISCOURSE_WORD}){0,8}[ \t]+)отверг(?:ла|ло|ли)?(?!(?:[ \t]+${DISCOURSE_WORD}){0,8}[ \t]+бы?(?![\p{L}\p{N}-]))`,
+  String.raw`(?!(?:не|бы?)(?![\p{L}\p{N}-]))${DISCOURSE_WORD}`,
 );
 
 function russianMemoryView(query: string): MemoryView | null {
@@ -216,8 +217,9 @@ function russianMemoryView(query: string): MemoryView | null {
     return 'discussion';
   if (/гипотез|гипотетическ|контрфактическ|что если|предположим|сценари|альтернатив|обсуждал/iu.test(query))
     return 'discussion';
-  // Bind finite past rejection to a proposal in the same clause so future or unrelated
-  // rejection cannot hide a planning request behind the history view.
+  // Negation and conditional particles can hide eligible proposals behind history.
+  // Conservatively skip these cues even when negation modifies an adverb or subject instead.
+  // Keep the proposal and rejection within the same bounded clause.
   if (RUSSIAN_REJECTED_PROPOSAL.test(query)) return 'history';
   // The noun "replacement" asks about coverage too; only an explicit completed replacement
   // denotes history. A stem match used to hide factual coverage from Russian questions.

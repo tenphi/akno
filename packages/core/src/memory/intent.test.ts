@@ -11,6 +11,25 @@ const factual: MemorySemantics = {
 
 describe('memory-view inference', () => {
   it.each([
+    ['Какой план Ada Marlow не отвергла?', 'planning'],
+    ['Какое предложение Ada Marlow не отвергла?', 'planning'],
+    ['Какой план отвергла бы Ada Marlow?', 'planning'],
+    ['Какой план отвергла б Ada Marlow?', 'planning'],
+    ['Ada Marlow отвергла б предложение об осмотре.', 'planning'],
+    ['Какой план Ada Marlow б отвергла?', 'planning'],
+    ['Какое предложение Ada Marlow бы отвергла?', 'planning'],
+    ['Ada Marlow не отвергла предложение об осмотре.', 'planning'],
+    ['Ada Marlow бы отвергла предложение об осмотре.', 'planning'],
+    ['Ada Marlow отвергла бы предложение об осмотре.', 'planning'],
+    ['Ada Marlow отвергла не предложение об осмотре.', 'planning'],
+    // Negation may qualify an adverb instead of rejection; leave these ambiguous cues unchanged.
+    ['Какое предложение Ada Marlow не сразу отвергла?', 'planning'],
+    ['Какой план Ada Marlow не\t отвергла?', 'planning'],
+    ['Ada Marlow не сразу отвергла предложение об осмотре.', 'planning'],
+    ['Ada Marlow бы сразу отвергла предложение об осмотре.', 'planning'],
+    ['Какой план отвергла Ada Marlow бы?', 'planning'],
+    ['Bo Winters не вернулся. Какой план отвергла Ada Marlow?', 'history'],
+    ['Какой план отвергла Ada Marlow? Bo Winters бы вернулся.', 'history'],
     ['Какое предложение об осмотре Zephyr QX-100 отвергла Ada Marlow?', 'history'],
     ['Ada Marlow отвергла предложение об осмотре.', 'history'],
     ['Какой план отверг Bo Winters?', 'history'],
