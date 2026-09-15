@@ -1,0 +1,1372 @@
+{
+  "id": "v22-held-relative-unknown-date/run-1",
+  "run": 1,
+  "order": [
+    "baseline",
+    "candidate"
+  ],
+  "arms": {
+    "baseline": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What relative-time cleaning-instructions proposal did Ada Marlow make for Zephyr QX-100?",
+          "explicit": false,
+          "expectedView": "planning",
+          "view": "planning",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_2e13b912",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d7dbbce812b86c816bc9cf19",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "planning",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "relative-time cleaning-instructions": false,
+                "proposal ada": true,
+                "marlow make": false,
+                "zephyr qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_2e13b912",
+                        "level": 1,
+                        "kind": "plan",
+                        "subject": "ent_d7dbbce812b86c816bc9cf19",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "proposed",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false,
+                        "temporal": {
+                          "time": {
+                            "relation": "scheduled",
+                            "status": "tentative",
+                            "precision": "unknown"
+                          },
+                          "clock_relation": "undated",
+                          "actionable": false
+                        }
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What relative-time cleaning-instructions proposal did Ada Marlow make for Zephyr QX-100?"
+              ],
+              "memory_view": "planning",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What relative-time cleaning-instructions proposal did Ada Marlow make for Zephyr QX-100?",
+          "explicit": true,
+          "expectedView": "planning",
+          "view": "planning",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_2e13b912",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d7dbbce812b86c816bc9cf19",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "planning",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "relative-time cleaning-instructions": false,
+                "proposal ada": true,
+                "marlow make": false,
+                "zephyr qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_2e13b912",
+                        "level": 1,
+                        "kind": "plan",
+                        "subject": "ent_d7dbbce812b86c816bc9cf19",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "proposed",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false,
+                        "temporal": {
+                          "time": {
+                            "relation": "scheduled",
+                            "status": "tentative",
+                            "precision": "unknown"
+                          },
+                          "clock_relation": "undated",
+                          "actionable": false
+                        }
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What relative-time cleaning-instructions proposal did Ada Marlow make for Zephyr QX-100?"
+              ],
+              "memory_view": "planning",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какое предложение со временем относительно записи сделала Ada Marlow об инструкциях Zephyr QX-100?",
+          "explicit": false,
+          "expectedView": "planning",
+          "view": "planning",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_2e13b912",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d7dbbce812b86c816bc9cf19",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "planning",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какое предложение": false,
+                "временем относительно": false,
+                "записи сделала": false,
+                "ada marlow": true,
+                "инструкциях zephyr": false
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_2e13b912",
+                        "level": 1,
+                        "kind": "plan",
+                        "subject": "ent_d7dbbce812b86c816bc9cf19",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "proposed",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false,
+                        "temporal": {
+                          "time": {
+                            "relation": "scheduled",
+                            "status": "tentative",
+                            "precision": "unknown"
+                          },
+                          "clock_relation": "undated",
+                          "actionable": false
+                        }
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое предложение со временем относительно записи сделала Ada Marlow об инструкциях Zephyr QX-100?"
+              ],
+              "memory_view": "planning",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какое предложение со временем относительно записи сделала Ada Marlow об инструкциях Zephyr QX-100?",
+          "explicit": true,
+          "expectedView": "planning",
+          "view": "planning",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_2e13b912",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d7dbbce812b86c816bc9cf19",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "planning",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какое предложение": false,
+                "временем относительно": false,
+                "записи сделала": false,
+                "ada marlow": true,
+                "инструкциях zephyr": false
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_2e13b912",
+                        "level": 1,
+                        "kind": "plan",
+                        "subject": "ent_d7dbbce812b86c816bc9cf19",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "proposed",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false,
+                        "temporal": {
+                          "time": {
+                            "relation": "scheduled",
+                            "status": "tentative",
+                            "precision": "unknown"
+                          },
+                          "clock_relation": "undated",
+                          "actionable": false
+                        }
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое предложение со временем относительно записи сделала Ada Marlow об инструкциях Zephyr QX-100?"
+              ],
+              "memory_view": "planning",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "f0411f1f5e639d0fbe0f582a5fa9bcce596e495b91978aac29a147566dd7e327",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_2e13b912 v=2 supports=c9a5d95f4b28b0787e67cd5d@5feceb66ffc86f38d952786c@2a8fabe0571c00042138eddc@provided level=1 kind=plan subject=ent_d7dbbce812b86c816bc9cf19 source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=proposed polarity=affirmed basis=self_attested relation=scheduled temporal=tentative precision=unknown -->"
+        },
+        {
+          "n": 4,
+          "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_2e13b912",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_d7dbbce812b86c816bc9cf19",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false,
+            "temporal": {
+              "time": {
+                "relation": "scheduled",
+                "status": "tentative",
+                "precision": "unknown"
+              },
+              "clock_relation": "undated",
+              "actionable": false
+            }
+          }
+        }
+      ],
+      "projections": [],
+      "factualEvidence": [
+        {
+          "n": 4,
+          "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_2e13b912",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_d7dbbce812b86c816bc9cf19",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false,
+            "temporal": {
+              "time": {
+                "relation": "scheduled",
+                "status": "tentative",
+                "precision": "unknown"
+              },
+              "clock_relation": "undated",
+              "actionable": false
+            }
+          },
+          "prose": null
+        }
+      ],
+      "factualControl": {
+        "query": "What relative-time cleaning-instructions proposal did Ada Marlow make for Zephyr QX-100?",
+        "context": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "note": "no memory evidence was strong enough for automatic injection",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "What relative-time cleaning-instructions proposal did Ada Marlow make for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "degraded",
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "relative-time cleaning-instructions": false,
+            "proposal ada": true,
+            "marlow make": false,
+            "zephyr qx-100": true
+          },
+          "citations": [],
+          "context": [],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "What relative-time cleaning-instructions proposal did Ada Marlow make for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 120,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "reason_code": "no_eligible_evidence",
+          "note": "related memory was found, but it was explicitly noncanonical and cannot ground a factual answer"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    },
+    "candidate": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What relative-time cleaning-instructions proposal did Ada Marlow make for Zephyr QX-100?",
+          "explicit": false,
+          "expectedView": "planning",
+          "view": "planning",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_2e13b912",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d7dbbce812b86c816bc9cf19",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "planning",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "relative-time cleaning-instructions": false,
+                "proposal ada": true,
+                "marlow make": false,
+                "zephyr qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_2e13b912",
+                        "level": 1,
+                        "kind": "plan",
+                        "subject": "ent_d7dbbce812b86c816bc9cf19",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "proposed",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false,
+                        "temporal": {
+                          "time": {
+                            "relation": "scheduled",
+                            "status": "tentative",
+                            "precision": "unknown"
+                          },
+                          "clock_relation": "undated",
+                          "actionable": false
+                        }
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What relative-time cleaning-instructions proposal did Ada Marlow make for Zephyr QX-100?"
+              ],
+              "memory_view": "planning",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What relative-time cleaning-instructions proposal did Ada Marlow make for Zephyr QX-100?",
+          "explicit": true,
+          "expectedView": "planning",
+          "view": "planning",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_2e13b912",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d7dbbce812b86c816bc9cf19",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "planning",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "relative-time cleaning-instructions": false,
+                "proposal ada": true,
+                "marlow make": false,
+                "zephyr qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_2e13b912",
+                        "level": 1,
+                        "kind": "plan",
+                        "subject": "ent_d7dbbce812b86c816bc9cf19",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "proposed",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false,
+                        "temporal": {
+                          "time": {
+                            "relation": "scheduled",
+                            "status": "tentative",
+                            "precision": "unknown"
+                          },
+                          "clock_relation": "undated",
+                          "actionable": false
+                        }
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What relative-time cleaning-instructions proposal did Ada Marlow make for Zephyr QX-100?"
+              ],
+              "memory_view": "planning",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какое предложение со временем относительно записи сделала Ada Marlow об инструкциях Zephyr QX-100?",
+          "explicit": false,
+          "expectedView": "planning",
+          "view": "planning",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_2e13b912",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d7dbbce812b86c816bc9cf19",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "planning",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какое предложение": false,
+                "временем относительно": false,
+                "записи сделала": false,
+                "ada marlow": true,
+                "инструкциях zephyr": false
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_2e13b912",
+                        "level": 1,
+                        "kind": "plan",
+                        "subject": "ent_d7dbbce812b86c816bc9cf19",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "proposed",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false,
+                        "temporal": {
+                          "time": {
+                            "relation": "scheduled",
+                            "status": "tentative",
+                            "precision": "unknown"
+                          },
+                          "clock_relation": "undated",
+                          "actionable": false
+                        }
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое предложение со временем относительно записи сделала Ada Marlow об инструкциях Zephyr QX-100?"
+              ],
+              "memory_view": "planning",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какое предложение со временем относительно записи сделала Ada Marlow об инструкциях Zephyr QX-100?",
+          "explicit": true,
+          "expectedView": "planning",
+          "view": "planning",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_2e13b912",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d7dbbce812b86c816bc9cf19",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "planning",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какое предложение": false,
+                "временем относительно": false,
+                "записи сделала": false,
+                "ada marlow": true,
+                "инструкциях zephyr": false
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_2e13b912",
+                        "level": 1,
+                        "kind": "plan",
+                        "subject": "ent_d7dbbce812b86c816bc9cf19",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "proposed",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false,
+                        "temporal": {
+                          "time": {
+                            "relation": "scheduled",
+                            "status": "tentative",
+                            "precision": "unknown"
+                          },
+                          "clock_relation": "undated",
+                          "actionable": false
+                        }
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какое предложение со временем относительно записи сделала Ada Marlow об инструкциях Zephyr QX-100?"
+              ],
+              "memory_view": "planning",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "f0411f1f5e639d0fbe0f582a5fa9bcce596e495b91978aac29a147566dd7e327",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_2e13b912 v=2 supports=c9a5d95f4b28b0787e67cd5d@5feceb66ffc86f38d952786c@2a8fabe0571c00042138eddc@provided level=1 kind=plan subject=ent_d7dbbce812b86c816bc9cf19 source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=proposed polarity=affirmed basis=self_attested relation=scheduled temporal=tentative precision=unknown -->"
+        },
+        {
+          "n": 4,
+          "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_2e13b912",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_d7dbbce812b86c816bc9cf19",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false,
+            "temporal": {
+              "time": {
+                "relation": "scheduled",
+                "status": "tentative",
+                "precision": "unknown"
+              },
+              "clock_relation": "undated",
+              "actionable": false
+            }
+          }
+        }
+      ],
+      "projections": [],
+      "factualEvidence": [
+        {
+          "n": 4,
+          "text": "- **Proposal · Tentative:** Ada Marlow proposes comparing the cleaning instructions for Zephyr QX-100 two weeks after the source recording, but the recording has no date, so the calendar date cannot be determined. This is only her proposal; no meeting has been agreed. The two weeks are measured from the recording, not from the processing day.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_2e13b912",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_d7dbbce812b86c816bc9cf19",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false,
+            "temporal": {
+              "time": {
+                "relation": "scheduled",
+                "status": "tentative",
+                "precision": "unknown"
+              },
+              "clock_relation": "undated",
+              "actionable": false
+            }
+          },
+          "prose": null
+        }
+      ],
+      "factualControl": {
+        "query": "What relative-time cleaning-instructions proposal did Ada Marlow make for Zephyr QX-100?",
+        "context": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "note": "no memory evidence was strong enough for automatic injection",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "What relative-time cleaning-instructions proposal did Ada Marlow make for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "degraded",
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "relative-time cleaning-instructions": false,
+            "proposal ada": true,
+            "marlow make": false,
+            "zephyr qx-100": true
+          },
+          "citations": [],
+          "context": [],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "What relative-time cleaning-instructions proposal did Ada Marlow make for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 120,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "reason_code": "no_eligible_evidence",
+          "note": "related memory was found, but it was explicitly noncanonical and cannot ground a factual answer"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    }
+  }
+}

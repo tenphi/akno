@@ -1,0 +1,73 @@
+{
+  "kind": "parent-executed-validation-receipt",
+  "productionCommit": "558954da1198b309e4c1cbfa0800636a43c6e649",
+  "checks": [
+    {
+      "command": "pnpm typecheck",
+      "result": "pass"
+    },
+    {
+      "command": "pnpm lint",
+      "result": "pass"
+    },
+    {
+      "command": "pnpm knip",
+      "result": "pass"
+    },
+    {
+      "command": "pnpm format:check",
+      "result": "pass"
+    },
+    {
+      "command": "pnpm check:repository",
+      "result": "pass"
+    },
+    {
+      "command": "pnpm test",
+      "result": "pass",
+      "files": 156,
+      "tests": 4121
+    },
+    {
+      "command": "pnpm smoke",
+      "result": "pass",
+      "assertions": 34
+    },
+    {
+      "command": "pnpm smoke:packages",
+      "result": "pass",
+      "scope": "Build and install all four release tarballs outside the checkout; exercise installed CLI/core/client."
+    },
+    {
+      "command": "Built-check reproduction helper",
+      "result": "pass",
+      "assertions": 61,
+      "cycles": 2,
+      "buildOnlyRedeploy": true,
+      "existingServiceRestarted": false
+    },
+    {
+      "command": "Paired offline runner and summarizer",
+      "result": "pass",
+      "pairs": 48,
+      "physicalModelCalls": 0
+    },
+    {
+      "command": "Old offline/live summaries via current summarizer in temporary directories",
+      "result": "pass",
+      "summariesByteIdentical": 2
+    },
+    {
+      "command": "Deep strict equality of complete old/new offline arms",
+      "result": "pass",
+      "pairs": 48,
+      "arms": 96,
+      "excludedArmFields": []
+    }
+  ],
+  "limitations": [
+    "No model provider calls were made in these review rounds.",
+    "No pre-existing live service was configured or restarted; redeploy was build-only, followed by isolated built-service socket checks.",
+    "The paired inputs are exposed regressions, not a held-out full language trial."
+  ]
+}

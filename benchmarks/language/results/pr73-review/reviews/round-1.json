@@ -1,0 +1,148 @@
+{
+  "schemaVersion": "independent-production-review-v1",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotModifyRuntime": true,
+    "didNotModifyRepository": true
+  },
+  "base": "ce8fbe4ed0d529bec35dd154e8bbfec79eefb0eb",
+  "head": "7911f7acb6c4ba2b63387226fa63f2c3f95a96af",
+  "verification": "Executed original base functions extracted with git show and current source functions through Node. For routing findings, also checked the actual memoryEligibleForView eligibility predicate. No provider calls or repository changes.",
+  "findings": [
+    {
+      "id": "P73-PROD-01",
+      "priority": 1,
+      "title": "Keep list-contained headings from closing document scope",
+      "path": "packages/core/src/kb/prose.ts",
+      "line": 178,
+      "changedTriggerLine": 22,
+      "inputLines": [
+        "## Hypothesis",
+        "",
+        "- Notes",
+        "",
+        "  ## Details",
+        "",
+        "  The case is silver.",
+        "",
+        "The case is blue."
+      ],
+      "baseline": {
+        "line7": {
+          "view": "discussion",
+          "answer_eligible": false
+        },
+        "line9": {
+          "view": "discussion",
+          "answer_eligible": false
+        }
+      },
+      "candidate": {
+        "line7": {
+          "view": "factual",
+          "answer_eligible": true,
+          "frame": []
+        },
+        "line9": {
+          "view": "factual",
+          "answer_eligible": true,
+          "frame": []
+        }
+      },
+      "reason": "The newly accepted indented heading is inside the list item, but the global stack pops the outer same-depth hypothesis. This silently removes the governing qualification and admits the content as factual. The reverse shape also leaks a list-local hypothesis into a later top-level factual paragraph.",
+      "suggestedBoundary": "Track Markdown container ownership when opening/closing headings, or conservatively preserve enclosing scope for headings inside lists. Add both qualifier-removal and outward-leak cases."
+    },
+    {
+      "id": "P73-PROD-02",
+      "priority": 2,
+      "title": "Do not treat emitted device errors as attributed reports",
+      "path": "packages/core/src/memory/intent.ts",
+      "line": 160,
+      "endLine": 163,
+      "query": "Какое сообщение об ошибке передаёт дисплей Zephyr QX-100?",
+      "baselineView": "factual",
+      "candidateView": "reports",
+      "requestedEvidence": {
+        "kind": "claim",
+        "commitment": "asserted",
+        "disposition": "active",
+        "basis": "self_attested",
+        "answerEligible": true
+      },
+      "baselineEligible": true,
+      "candidateEligible": false,
+      "reason": "A display transmitting its error message is observable device data. The new generic сообщение + передаёт matcher treats it as a relayed attributed claim, so ordinary factual memory recording the displayed error is excluded. Existing negative tests cover показал but not the newly matched передаёт.",
+      "suggestedBoundary": "Distinguish mechanical message output from an explicit attributed/relayed content request; retain the factual route for this shape."
+    },
+    {
+      "id": "P73-PROD-03",
+      "priority": 2,
+      "title": "Bind assistant speculation to the requested clause",
+      "path": "packages/core/src/memory/intent.ts",
+      "line": 174,
+      "endLine": 175,
+      "query": "What color is Zephyr QX-100? The assistant speculated about its warranty.",
+      "baselineView": "factual",
+      "candidateView": "reports",
+      "requestedEvidence": {
+        "kind": "claim",
+        "commitment": "asserted",
+        "disposition": "active",
+        "basis": "self_attested",
+        "answerEligible": true
+      },
+      "baselineEligible": true,
+      "candidateEligible": false,
+      "reason": "The new unanchored assistant-speculation cue has unconditional top precedence even in a separate sentence about a different attribute. The requested color fact becomes ineligible solely because unrelated context mentions speculation.",
+      "suggestedBoundary": "Require the speculation cue to express the requested material, respecting independent question/clause boundaries."
+    },
+    {
+      "id": "P73-PROD-04",
+      "priority": 2,
+      "title": "Do not route a requested plan by rejection inside an if-clause",
+      "path": "packages/core/src/memory/intent.ts",
+      "line": 189,
+      "endLine": 192,
+      "query": "Какой план Ada Marlow выберет, если Bo Winters отверг предложение об осмотре?",
+      "baselineView": "planning",
+      "candidateView": "history",
+      "requestedEvidence": {
+        "kind": "plan",
+        "commitment": "asserted",
+        "disposition": "accepted",
+        "basis": "self_attested",
+        "answerEligible": false
+      },
+      "baselineEligible": true,
+      "candidateEligible": false,
+      "reason": "The new rejection pattern matches отверг предложение entirely inside the conditional clause. Excluding если from the connecting gap does not guard a conditional introducer before the matched pair. The question requests a plan contingent on rejection, not an actual rejected historical item.",
+      "suggestedBoundary": "Account for the clause governing the matched rejection, including preceding если without бы, and avoid letting subordinate conditions override the requested plan."
+    },
+    {
+      "id": "P73-PROD-05",
+      "priority": 2,
+      "title": "Do not let an English title token override an explicit Russian question request",
+      "path": "packages/core/src/memory/intent.ts",
+      "line": 31,
+      "endLine": 40,
+      "query": "Какой открытый вопрос остаётся по документу Report 1111?",
+      "baselineView": "questions",
+      "candidateView": "reports",
+      "requestedEvidence": {
+        "kind": "question",
+        "commitment": "none",
+        "disposition": "active",
+        "basis": "self_attested",
+        "answerEligible": false
+      },
+      "baselineEligible": true,
+      "candidateEligible": false,
+      "reason": "Global cross-language precedence now tests the bare English report token before the already recognized Russian open-question request. Here Report 1111 is the document title, so report is the topic rather than the requested view. Existing question memory is hidden by the new precedence.",
+      "suggestedBoundary": "Prioritize explicit requested discourse over incidental topic/title vocabulary while retaining mixed-language report-about-plan behavior."
+    }
+  ],
+  "otherObservations": "Additional broad fictional-object and competing-software-version examples show heuristic ambiguity, but are not included as separate required findings. The five listed cases have direct base/head behavior and evidence-eligibility reproductions.",
+  "archivesChanged": false
+}

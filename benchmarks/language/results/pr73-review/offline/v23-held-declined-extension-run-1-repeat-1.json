@@ -1,0 +1,1542 @@
+{
+  "id": "v23-held-declined-extension/run-1",
+  "run": 1,
+  "order": [
+    "baseline",
+    "candidate"
+  ],
+  "arms": {
+    "baseline": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+          "explicit": false,
+          "expectedView": "discussion",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 7,
+              "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_fe6bd624",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_25ea2398b5ff33247882221d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            },
+            {
+              "n": 4,
+              "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_1683ffb1",
+                "level": 1,
+                "kind": "decision",
+                "subject": "ent_25ea2398b5ff33247882221d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "unrealized connector-repair": false,
+                "benefit ada": true,
+                "marlow describe": false,
+                "zephyr qx-100": true
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index"
+              ],
+              "reason_code": "no_eligible_evidence",
+              "note": "related memory was found, but it was explicitly noncanonical and cannot ground a factual answer"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+          "explicit": true,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 7,
+              "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_fe6bd624",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_25ea2398b5ff33247882221d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            },
+            {
+              "n": 4,
+              "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_1683ffb1",
+                "level": 1,
+                "kind": "decision",
+                "subject": "ent_25ea2398b5ff33247882221d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "unrealized connector-repair": false,
+                "benefit ada": true,
+                "marlow describe": false,
+                "zephyr qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 7,
+                      "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_fe6bd624",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_25ea2398b5ff33247882221d",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "counterfactual",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                },
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_1683ffb1",
+                        "level": 1,
+                        "kind": "decision",
+                        "subject": "ent_25ea2398b5ff33247882221d",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "rejected",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E2"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какую нереализованную льготу по ремонту разъёма Zephyr QX-100 описала Ada Marlow?",
+          "explicit": false,
+          "expectedView": "discussion",
+          "view": "factual",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_1683ffb1",
+                "level": 1,
+                "kind": "decision",
+                "subject": "ent_25ea2398b5ff33247882221d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            },
+            {
+              "n": 7,
+              "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_fe6bd624",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_25ea2398b5ff33247882221d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "factual",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какую нереализованную": false,
+                "льготу ремонту": false,
+                "разъёма zephyr": false,
+                "qx-100 описала": false,
+                "ada marlow": true
+              },
+              "citations": [],
+              "context": [],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какую нереализованную льготу по ремонту разъёма Zephyr QX-100 описала Ada Marlow?"
+              ],
+              "memory_view": "factual",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index"
+              ],
+              "reason_code": "no_eligible_evidence",
+              "note": "related memory was found, but it was explicitly noncanonical and cannot ground a factual answer"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какую нереализованную льготу по ремонту разъёма Zephyr QX-100 описала Ada Marlow?",
+          "explicit": true,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_1683ffb1",
+                "level": 1,
+                "kind": "decision",
+                "subject": "ent_25ea2398b5ff33247882221d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            },
+            {
+              "n": 7,
+              "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_fe6bd624",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_25ea2398b5ff33247882221d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какую нереализованную": false,
+                "льготу ремонту": false,
+                "разъёма zephyr": false,
+                "qx-100 описала": false,
+                "ada marlow": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_1683ffb1",
+                        "level": 1,
+                        "kind": "decision",
+                        "subject": "ent_25ea2398b5ff33247882221d",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "rejected",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                },
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 7,
+                      "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_fe6bd624",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_25ea2398b5ff33247882221d",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "counterfactual",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E2"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какую нереализованную льготу по ремонту разъёма Zephyr QX-100 описала Ada Marlow?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "6dbdf181e6be55a1b365dbd3d964ac471733a9d2f12b9a4a4e6a14dfb8dad69c",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_1683ffb1 v=2 supports=6f69821c19187f694f7d3cce@5feceb66ffc86f38d952786c@cb7d6da52cf3b3b2c4e488e9@provided level=1 kind=decision subject=ent_25ea2398b5ff33247882221d source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=rejected polarity=affirmed basis=self_attested -->"
+        },
+        {
+          "n": 4,
+          "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_1683ffb1",
+            "level": 1,
+            "kind": "decision",
+            "subject": "ent_25ea2398b5ff33247882221d",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "n": 6,
+          "text": "<!-- akno:item mem_fe6bd624 v=2 supports=6f69821c19187f694f7d3cce@6b86b273ff34fce19d6b804e@6396bada146403267a4045b6@provided level=1 kind=claim subject=ent_25ea2398b5ff33247882221d source-role=user speaker=Ada%20Marlow reports=0 commitment=counterfactual disposition=active polarity=affirmed basis=self_attested -->"
+        },
+        {
+          "n": 7,
+          "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_fe6bd624",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_25ea2398b5ff33247882221d",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "counterfactual",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "projections": [],
+      "factualEvidence": [
+        {
+          "n": 4,
+          "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_1683ffb1",
+            "level": 1,
+            "kind": "decision",
+            "subject": "ent_25ea2398b5ff33247882221d",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          },
+          "prose": null
+        },
+        {
+          "n": 7,
+          "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_fe6bd624",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_25ea2398b5ff33247882221d",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "counterfactual",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          },
+          "prose": null
+        }
+      ],
+      "factualControl": {
+        "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+        "context": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "note": "no memory evidence was strong enough for automatic injection",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "degraded",
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "unrealized connector-repair": false,
+            "benefit ada": true,
+            "marlow describe": false,
+            "zephyr qx-100": true
+          },
+          "citations": [],
+          "context": [],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 120,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "reason_code": "no_eligible_evidence",
+          "note": "related memory was found, but it was explicitly noncanonical and cannot ground a factual answer"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    },
+    "candidate": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+          "explicit": false,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 7,
+              "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_fe6bd624",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_25ea2398b5ff33247882221d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            },
+            {
+              "n": 4,
+              "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_1683ffb1",
+                "level": 1,
+                "kind": "decision",
+                "subject": "ent_25ea2398b5ff33247882221d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "unrealized connector-repair": false,
+                "benefit ada": true,
+                "marlow describe": false,
+                "zephyr qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 7,
+                      "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_fe6bd624",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_25ea2398b5ff33247882221d",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "counterfactual",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                },
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_1683ffb1",
+                        "level": 1,
+                        "kind": "decision",
+                        "subject": "ent_25ea2398b5ff33247882221d",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "rejected",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E2"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+          "explicit": true,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 7,
+              "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_fe6bd624",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_25ea2398b5ff33247882221d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            },
+            {
+              "n": 4,
+              "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_1683ffb1",
+                "level": 1,
+                "kind": "decision",
+                "subject": "ent_25ea2398b5ff33247882221d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "unrealized connector-repair": false,
+                "benefit ada": true,
+                "marlow describe": false,
+                "zephyr qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 7,
+                      "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_fe6bd624",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_25ea2398b5ff33247882221d",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "counterfactual",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                },
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_1683ffb1",
+                        "level": 1,
+                        "kind": "decision",
+                        "subject": "ent_25ea2398b5ff33247882221d",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "rejected",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E2"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какую нереализованную льготу по ремонту разъёма Zephyr QX-100 описала Ada Marlow?",
+          "explicit": false,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_1683ffb1",
+                "level": 1,
+                "kind": "decision",
+                "subject": "ent_25ea2398b5ff33247882221d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            },
+            {
+              "n": 7,
+              "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_fe6bd624",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_25ea2398b5ff33247882221d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какую нереализованную": false,
+                "льготу ремонту": false,
+                "разъёма zephyr": false,
+                "qx-100 описала": false,
+                "ada marlow": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_1683ffb1",
+                        "level": 1,
+                        "kind": "decision",
+                        "subject": "ent_25ea2398b5ff33247882221d",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "rejected",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                },
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 7,
+                      "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_fe6bd624",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_25ea2398b5ff33247882221d",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "counterfactual",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E2"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какую нереализованную льготу по ремонту разъёма Zephyr QX-100 описала Ada Marlow?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какую нереализованную льготу по ремонту разъёма Zephyr QX-100 описала Ada Marlow?",
+          "explicit": true,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_1683ffb1",
+                "level": 1,
+                "kind": "decision",
+                "subject": "ent_25ea2398b5ff33247882221d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            },
+            {
+              "n": 7,
+              "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_fe6bd624",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_25ea2398b5ff33247882221d",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "counterfactual",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какую нереализованную": false,
+                "льготу ремонту": false,
+                "разъёма zephyr": false,
+                "qx-100 описала": false,
+                "ada marlow": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_1683ffb1",
+                        "level": 1,
+                        "kind": "decision",
+                        "subject": "ent_25ea2398b5ff33247882221d",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "asserted",
+                        "disposition": "rejected",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                },
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 7,
+                      "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_fe6bd624",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_25ea2398b5ff33247882221d",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "counterfactual",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E2"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какую нереализованную льготу по ремонту разъёма Zephyr QX-100 описала Ada Marlow?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "6dbdf181e6be55a1b365dbd3d964ac471733a9d2f12b9a4a4e6a14dfb8dad69c",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_1683ffb1 v=2 supports=6f69821c19187f694f7d3cce@5feceb66ffc86f38d952786c@cb7d6da52cf3b3b2c4e488e9@provided level=1 kind=decision subject=ent_25ea2398b5ff33247882221d source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=rejected polarity=affirmed basis=self_attested -->"
+        },
+        {
+          "n": 4,
+          "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_1683ffb1",
+            "level": 1,
+            "kind": "decision",
+            "subject": "ent_25ea2398b5ff33247882221d",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "n": 6,
+          "text": "<!-- akno:item mem_fe6bd624 v=2 supports=6f69821c19187f694f7d3cce@6b86b273ff34fce19d6b804e@6396bada146403267a4045b6@provided level=1 kind=claim subject=ent_25ea2398b5ff33247882221d source-role=user speaker=Ada%20Marlow reports=0 commitment=counterfactual disposition=active polarity=affirmed basis=self_attested -->"
+        },
+        {
+          "n": 7,
+          "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_fe6bd624",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_25ea2398b5ff33247882221d",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "counterfactual",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "projections": [],
+      "factualEvidence": [
+        {
+          "n": 4,
+          "text": "- **Rejected:** Ada Marlow declined the optional Zephyr QX-100 cable-protection extension.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_1683ffb1",
+            "level": 1,
+            "kind": "decision",
+            "subject": "ent_25ea2398b5ff33247882221d",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          },
+          "prose": null
+        },
+        {
+          "n": 7,
+          "text": "- **Counterfactual:** If Ada Marlow had accepted the Zephyr QX-100 cable-protection extension, connector repair after twenty-two months of use would have been free. She did not accept it; this was an unrealized benefit, not coverage she currently has.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_fe6bd624",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_25ea2398b5ff33247882221d",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "counterfactual",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          },
+          "prose": null
+        }
+      ],
+      "factualControl": {
+        "query": "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?",
+        "context": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "note": "no memory evidence was strong enough for automatic injection",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "degraded",
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "unrealized connector-repair": false,
+            "benefit ada": true,
+            "marlow describe": false,
+            "zephyr qx-100": true
+          },
+          "citations": [],
+          "context": [],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "What unrealized connector-repair benefit did Ada Marlow describe for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 120,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "reason_code": "no_eligible_evidence",
+          "note": "related memory was found, but it was explicitly noncanonical and cannot ground a factual answer"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    }
+  }
+}

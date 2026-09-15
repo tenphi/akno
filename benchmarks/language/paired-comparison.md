@@ -4,6 +4,11 @@ PR 73 changes two production modules: `kb/prose.ts` and `memory/intent.ts`. Rete
 and answer verification are unchanged from its base. Comparing independent end-to-end percentages cannot
 isolate these changes when extraction itself varies between runs.
 
+The [reviewed revision](results/pr73-review/README.md) additionally uses a declared CommonMark parser
+dependency for list boundaries. It repeats the complete offline experiment; the earlier live Luna scores
+remain bound to their original runtime. Completion validation checks the expected observation grid as
+well as the execution receipt, and projection-upgrade versions are bound to each runtime manifest.
+
 The [frozen comparison plan](pr73-paired-plan.json) therefore uses identical downstream inputs in both
 revisions. This is a regression experiment on exposed cases, not a new general language acceptance gate.
 

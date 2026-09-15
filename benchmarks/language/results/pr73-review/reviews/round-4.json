@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "independent-production-review-v1",
+  "round": 4,
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotModifyRepository": true
+  },
+  "priorBlockers": "All three round-three reproductions now preserve the expected qualification and ownership. Prior routing/list/validation cases remain corrected in inspected probes.",
+  "findings": [
+    {
+      "id": "P73-R4-01",
+      "priority": 1,
+      "path": "packages/core/src/kb/prose.ts",
+      "line": 204,
+      "endLine": 205,
+      "title": "Do not let child qualification overwrite recomputed frame-limit status",
+      "inputExpression": "['## Hypothesis ' + 'x'.repeat(2380), '', '- Notes', '', '  ## Details', '', '  The case is silver.']",
+      "actualLine7": {
+        "status": "qualified",
+        "view": "discussion",
+        "reason": "context_limit",
+        "answer_eligible": false,
+        "frame": [],
+        "proseEligibleForDiscussion": true
+      },
+      "expectedLine7": {
+        "status": "unresolved",
+        "answer_eligible": false,
+        "proseEligibleForDiscussion": false
+      },
+      "reason": "qualify computes unresolved when the added outer frame exceeds its cap, then spreads selected, which is a complete child qualification carrying status qualified. That overwrites the new status and exposes nonfactual content without the governing frame. Copy only meaning fields, or set computed status after the spread."
+    }
+  ],
+  "otherChecks": [
+    "Original and nested literal managed comments do not manufacture marker identity.",
+    "An actual invalid managed marker still produces an unavailable memory qualification rather than plain eligible prose.",
+    "Source-like list comments remain ordinary literal comments rather than creating server source scope.",
+    "Frontmatter line offsets, tab indentation, lazy continuation, hypothetical tasks and nearest local report headings preserve expected behavior.",
+    "All examined source frame line numbers and text match exact original bytes."
+  ],
+  "packageReview": {
+    "runtimeDependencyDeclared": true,
+    "pinnedVersion": "mdast-util-from-markdown@2.0.3",
+    "lockImporterMatches": true,
+    "esmExportAvailable": true,
+    "prepackDoesNotRewriteDependencies": true,
+    "blockers": [],
+    "limitation": "Reviewed source imports, dependency metadata, lockfile and package/prepack configuration. Did not run prepack or installed-tarball smoke because the review prohibits shared-file staging changes; parent should run existing smoke:packages after final build."
+  },
+  "reviewedSha256": {
+    "packages/core/src/kb/prose.ts": "e5095791dcc4d0c3262fe463fd8e2a4a4aa019ae6bc8225cce42677e93448616",
+    "packages/core/package.json": "c138a53abae89c43832c64b2e40847c91fd157d3006e44e9dfe4e68c91a474f6",
+    "pnpm-lock.yaml": "90114fea16ff1805aa674eec63abbbb54240004c03a8e53f9969bc1bec52b0c7"
+  },
+  "archivesChanged": false
+}

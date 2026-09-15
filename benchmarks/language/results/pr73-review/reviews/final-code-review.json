@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "independent-production-final-review-v1",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotModifyRepository": true,
+    "didNotModifyCorpusOrGrades": true
+  },
+  "decision": "No remaining findings in this bounded production and completeness-validation review; ready for full validation and fresh deterministic comparison.",
+  "findings": [],
+  "reviewedHead": "7911f7acb6c4ba2b63387226fa63f2c3f95a96af",
+  "reviewedWorkingTreeSha256": {
+    "packages/core/src/kb/prose.ts": "a156b6fb87e6754321836906ead17233e64b6f58d89ec13399eb0b066f45446d",
+    "packages/core/src/kb/prose.test.ts": "bb32b64ef44df381a85bb5a137f208c8eb226bb7ccf0b94a677fee3fc37c0dc8",
+    "packages/core/src/memory/intent.ts": "b1c3a2f1826769eb752952886c07203f6f33fdbb9af37d9177648a4f8acb8dee",
+    "packages/core/src/memory/intent.test.ts": "ca18ebdc8437122f6af350ffe2872a74929a0adfa4d737a998469e22ce624a3f",
+    "packages/core/test/prose-language.test.ts": "eb9154994b9b4a4c24a9d798afad052a8b4925e85c137be1ab059fd5862a7d62",
+    "packages/core/test/language-comparison-validation.test.ts": "97c1490c02b6603539913f4b5868b7b69860d009a50327ecb75b97411ca18239",
+    "packages/core/package.json": "c138a53abae89c43832c64b2e40847c91fd157d3006e44e9dfe4e68c91a474f6",
+    "pnpm-lock.yaml": "90114fea16ff1805aa674eec63abbbb54240004c03a8e53f9969bc1bec52b0c7",
+    "scripts/compare-language-reliability.mjs": "b9949172f650d5284a850ff916b76a3c728e480453f8c23ad822a67b7f11663e",
+    "scripts/language-comparison-validation.mjs": "d2fb8b9cacf42ea82a35be95dd2b0eebd72e73eeb6f49f0864dd896a03d109e0",
+    "scripts/summarize-language-comparison.mjs": "1548b1090a256459552b66484ebd3eb1b932c7e7454b7e67b1c90505d1e5ca4b"
+  },
+  "independentVerification": {
+    "assertionsPassed": 463,
+    "proseCases": 21,
+    "routingCases": 19,
+    "malformedGridsRejected": 7,
+    "existingCompleteArchivedGridAccepted": true,
+    "reportedFrameOverflowNowUnresolved": true,
+    "unresolvedDiscussionExclusion": true,
+    "allViewInspectionPreserved": true,
+    "sourceHashesAndFrameBytesChecked": true,
+    "checks": [
+      "Rechecked all original scope/routing findings and each regression discovered during later rounds.",
+      "Verified list-local code/comments, nested headings, empty-item boundaries, lazy continuation, frontmatter offsets, tabs, unchecked tasks and backward qualifications.",
+      "Verified literal normalized marker text cannot create original managed ownership, and actual invalid markers remain unavailable memory.",
+      "Verified outer frame overflow remains unresolved after child qualification remapping and cannot enter any factual or nonfactual answer view.",
+      "Verified the archived complete 48-pair grid passes, while missing/duplicate pairs, missing answer coordinates, missing factual outcomes/read snapshots and failed pair/arm records reject."
+    ],
+    "probeScriptSha256": "f3889f75cc9cc63f6d6a42b09466acbfe8d47f2ec9575a753da9049a9f344036",
+    "probeResultSha256": "3156e17f4f9134a19c07c66c763d0f77c0b42c79d251bed1e2628f2ed4093979"
+  },
+  "packageReview": {
+    "runtimeDependency": "mdast-util-from-markdown@2.0.3",
+    "declaredInCoreDependencies": true,
+    "lockImporterMatches": true,
+    "esmEntryImportWorked": true,
+    "prepackDoesNotOverwriteDependencyMetadata": true,
+    "findings": []
+  },
+  "priorReviewArtifacts": [
+    "/tmp/akno-pr73-production-review-round1.json",
+    "/tmp/akno-pr73-production-review-round2.json",
+    "/tmp/akno-pr73-production-review-round3.json",
+    "/tmp/akno-pr73-production-review-round4.json"
+  ],
+  "frozenTrackedArchivesUnchanged": true,
+  "limitations": [
+    "This is a bounded regression/code review, not proof of general Markdown or multilingual semantic accuracy.",
+    "Full test/build/package-smoke results and the fresh current-versus-frozen deterministic comparison are being produced separately by the primary agent and are not certified by this receipt.",
+    "No live model calls were made, and historical benchmark grades/gates were not changed."
+  ]
+}

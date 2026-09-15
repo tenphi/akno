@@ -226,6 +226,11 @@ losses. Eight component/word-sense errors and one qualification omission remain.
 measurement does not replace the full retention-and-answer evaluation below.
 Neither experiment replaces the full language/discourse quality gate below.
 
+The [subsequent review and fix rounds](../benchmarks/language/results/pr73-review/README.md) correct
+additional list-container and query-boundary regressions. Current code at `558954d` repeats all 48 offline
+pairs with complete arm observations identical to the earlier run. The generated-answer scores above
+remain measurements of frozen runtime `f23c0da`; no live generation was rerun after the review fixes.
+
 ## Full Luna baseline and remaining limits
 
 The earlier [full Luna evaluation for PR 73](../benchmarks/language/results/pr73-luna-final/README.md) runs

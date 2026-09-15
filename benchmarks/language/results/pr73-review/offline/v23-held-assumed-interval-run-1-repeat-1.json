@@ -1,0 +1,1192 @@
+{
+  "id": "v23-held-assumed-interval/run-1",
+  "run": 1,
+  "order": [
+    "candidate",
+    "baseline"
+  ],
+  "arms": {
+    "candidate": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What hypothetical latch-lubrication scenario did Ada Marlow describe for Zephyr QX-100?",
+          "explicit": false,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_4c7f1e1b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_f2f7c4c485659b902163034b",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "hypothetical latch-lubrication": false,
+                "scenario ada": false,
+                "marlow describe": false,
+                "zephyr qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_4c7f1e1b",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_f2f7c4c485659b902163034b",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "hypothetical",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What hypothetical latch-lubrication scenario did Ada Marlow describe for Zephyr QX-100?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What hypothetical latch-lubrication scenario did Ada Marlow describe for Zephyr QX-100?",
+          "explicit": true,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_4c7f1e1b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_f2f7c4c485659b902163034b",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "hypothetical latch-lubrication": false,
+                "scenario ada": false,
+                "marlow describe": false,
+                "zephyr qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_4c7f1e1b",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_f2f7c4c485659b902163034b",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "hypothetical",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What hypothetical latch-lubrication scenario did Ada Marlow describe for Zephyr QX-100?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какой гипотетический сценарий смазки защёлки Zephyr QX-100 описала Ada Marlow?",
+          "explicit": false,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_4c7f1e1b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_f2f7c4c485659b902163034b",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какой гипотетический": false,
+                "сценарий смазки": false,
+                "защёлки zephyr": false,
+                "qx-100 описала": false,
+                "ada marlow": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_4c7f1e1b",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_f2f7c4c485659b902163034b",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "hypothetical",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какой гипотетический сценарий смазки защёлки Zephyr QX-100 описала Ada Marlow?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какой гипотетический сценарий смазки защёлки Zephyr QX-100 описала Ada Marlow?",
+          "explicit": true,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_4c7f1e1b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_f2f7c4c485659b902163034b",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какой гипотетический": false,
+                "сценарий смазки": false,
+                "защёлки zephyr": false,
+                "qx-100 описала": false,
+                "ada marlow": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_4c7f1e1b",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_f2f7c4c485659b902163034b",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "hypothetical",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какой гипотетический сценарий смазки защёлки Zephyr QX-100 описала Ada Marlow?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "89bf245255fcc37870d6d6bf201241b04b97085f8c5fe14a341071d246963c34",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_4c7f1e1b v=2 supports=ce955e9b79bedc584cf4a393@5feceb66ffc86f38d952786c@8e7484ced519ed2da04ffdeb@provided level=1 kind=claim subject=ent_f2f7c4c485659b902163034b source-role=user speaker=Ada%20Marlow reports=0 commitment=hypothetical disposition=active polarity=affirmed basis=self_attested -->"
+        },
+        {
+          "n": 4,
+          "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_4c7f1e1b",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_f2f7c4c485659b902163034b",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "projections": [],
+      "factualEvidence": [
+        {
+          "n": 4,
+          "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_4c7f1e1b",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_f2f7c4c485659b902163034b",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          },
+          "prose": null
+        }
+      ],
+      "factualControl": {
+        "query": "What hypothetical latch-lubrication scenario did Ada Marlow describe for Zephyr QX-100?",
+        "context": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "note": "no memory evidence was strong enough for automatic injection",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "What hypothetical latch-lubrication scenario did Ada Marlow describe for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "degraded",
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "hypothetical latch-lubrication": false,
+            "scenario ada": false,
+            "marlow describe": false,
+            "zephyr qx-100": true
+          },
+          "citations": [],
+          "context": [],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "What hypothetical latch-lubrication scenario did Ada Marlow describe for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 120,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "reason_code": "no_eligible_evidence",
+          "note": "related memory was found, but it was explicitly noncanonical and cannot ground a factual answer"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    },
+    "baseline": {
+      "queries": [
+        {
+          "language": "en",
+          "query": "What hypothetical latch-lubrication scenario did Ada Marlow describe for Zephyr QX-100?",
+          "explicit": false,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_4c7f1e1b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_f2f7c4c485659b902163034b",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "hypothetical latch-lubrication": false,
+                "scenario ada": false,
+                "marlow describe": false,
+                "zephyr qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_4c7f1e1b",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_f2f7c4c485659b902163034b",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "hypothetical",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What hypothetical latch-lubrication scenario did Ada Marlow describe for Zephyr QX-100?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "en",
+          "query": "What hypothetical latch-lubrication scenario did Ada Marlow describe for Zephyr QX-100?",
+          "explicit": true,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_4c7f1e1b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_f2f7c4c485659b902163034b",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "hypothetical latch-lubrication": false,
+                "scenario ada": false,
+                "marlow describe": false,
+                "zephyr qx-100": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_4c7f1e1b",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_f2f7c4c485659b902163034b",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "hypothetical",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "What hypothetical latch-lubrication scenario did Ada Marlow describe for Zephyr QX-100?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какой гипотетический сценарий смазки защёлки Zephyr QX-100 описала Ada Marlow?",
+          "explicit": false,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_4c7f1e1b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_f2f7c4c485659b902163034b",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какой гипотетический": false,
+                "сценарий смазки": false,
+                "защёлки zephyr": false,
+                "qx-100 описала": false,
+                "ada marlow": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_4c7f1e1b",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_f2f7c4c485659b902163034b",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "hypothetical",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какой гипотетический сценарий смазки защёлки Zephyr QX-100 описала Ada Marlow?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        },
+        {
+          "language": "ru",
+          "query": "Какой гипотетический сценарий смазки защёлки Zephyr QX-100 описала Ada Marlow?",
+          "explicit": true,
+          "expectedView": "discussion",
+          "view": "discussion",
+          "recallStatus": "degraded",
+          "recallDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "evidence": [
+            {
+              "n": 4,
+              "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+              "memory": {
+                "status": "qualified",
+                "id": "mem_4c7f1e1b",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_f2f7c4c485659b902163034b",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              },
+              "prose": null
+            }
+          ],
+          "contextView": "discussion",
+          "contextStatus": "degraded",
+          "context": [],
+          "contextDegraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "answers": [
+            {
+              "status": "degraded",
+              "degraded": [
+                "no_embedding_model",
+                "partial_index",
+                "no_vector_index",
+                "no_answer_model"
+              ],
+              "outcome": "not_answered",
+              "answer": null,
+              "answer_language": "en",
+              "coverage": {
+                "какой гипотетический": false,
+                "сценарий смазки": false,
+                "защёлки zephyr": false,
+                "qx-100 описала": false,
+                "ada marlow": true
+              },
+              "citations": [],
+              "context": [
+                {
+                  "type": "page",
+                  "slug": "equipment",
+                  "title": "Zephyr QX-100",
+                  "lines": [
+                    {
+                      "n": 4,
+                      "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+                      "memory": {
+                        "status": "qualified",
+                        "id": "mem_4c7f1e1b",
+                        "level": 1,
+                        "kind": "claim",
+                        "subject": "ent_f2f7c4c485659b902163034b",
+                        "source_role": "user",
+                        "source_speaker": "Ada Marlow",
+                        "commitment": "hypothetical",
+                        "disposition": "active",
+                        "polarity": "affirmed",
+                        "basis": "self_attested",
+                        "answer_eligible": false,
+                        "current_eligible": false
+                      }
+                    }
+                  ],
+                  "evidence_id": "E1"
+                }
+              ],
+              "related_page_slugs": [
+                "equipment"
+              ],
+              "related_documents": [],
+              "searched": [
+                "Какой гипотетический сценарий смазки защёлки Zephyr QX-100 описала Ada Marlow?"
+              ],
+              "memory_view": "discussion",
+              "budget_used": {
+                "retrieval_tokens": 120,
+                "evidence_tokens": 0,
+                "answer_tokens": 0
+              },
+              "model_usage": {
+                "generation": null,
+                "verification": null
+              },
+              "reason_code": "generation_unavailable",
+              "note": "related memory was found, but no answer model is configured; use recall to inspect the evidence"
+            }
+          ]
+        }
+      ],
+      "read": [
+        {
+          "n": 1,
+          "text": "# Zephyr QX-100",
+          "prose": {
+            "status": "qualified",
+            "view": "discussion",
+            "reason": "heading",
+            "answer_eligible": false,
+            "source_hash": "89bf245255fcc37870d6d6bf201241b04b97085f8c5fe14a341071d246963c34",
+            "frame": [
+              {
+                "n": 1,
+                "text": "# Zephyr QX-100"
+              }
+            ]
+          }
+        },
+        {
+          "n": 3,
+          "text": "<!-- akno:item mem_4c7f1e1b v=2 supports=ce955e9b79bedc584cf4a393@5feceb66ffc86f38d952786c@8e7484ced519ed2da04ffdeb@provided level=1 kind=claim subject=ent_f2f7c4c485659b902163034b source-role=user speaker=Ada%20Marlow reports=0 commitment=hypothetical disposition=active polarity=affirmed basis=self_attested -->"
+        },
+        {
+          "n": 4,
+          "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_4c7f1e1b",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_f2f7c4c485659b902163034b",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "projections": [],
+      "factualEvidence": [
+        {
+          "n": 4,
+          "text": "- **Hypothetical:** In a hypothetical Zephyr QX-100 maintenance example, the latch is assumed to be lubricated after every eleven operating cycles; only under that assumption would twelve cycles without lubrication violate the conditional interval. Ada Marlow does not know the real rule and does not assert that lubrication was actually missed.",
+          "memory": {
+            "status": "qualified",
+            "id": "mem_4c7f1e1b",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_f2f7c4c485659b902163034b",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          },
+          "prose": null
+        }
+      ],
+      "factualControl": {
+        "query": "What hypothetical latch-lubrication scenario did Ada Marlow describe for Zephyr QX-100?",
+        "context": {
+          "status": "degraded",
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "note": "no memory evidence was strong enough for automatic injection",
+          "profile": "auto_recall",
+          "activation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": false,
+            "reference_resolution": "not_needed"
+          },
+          "pinned": [],
+          "results": [],
+          "timeline": [],
+          "searched": [
+            "What hypothetical latch-lubrication scenario did Ada Marlow describe for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": 0,
+          "knowledge_language": "en"
+        },
+        "answer": {
+          "status": "degraded",
+          "outcome": "not_answered",
+          "answer": null,
+          "answer_language": "en",
+          "coverage": {
+            "hypothetical latch-lubrication": false,
+            "scenario ada": false,
+            "marlow describe": false,
+            "zephyr qx-100": true
+          },
+          "citations": [],
+          "context": [],
+          "related_page_slugs": [
+            "equipment"
+          ],
+          "related_documents": [],
+          "searched": [
+            "What hypothetical latch-lubrication scenario did Ada Marlow describe for Zephyr QX-100?"
+          ],
+          "memory_view": "factual",
+          "budget_used": {
+            "retrieval_tokens": 120,
+            "evidence_tokens": 0,
+            "answer_tokens": 0
+          },
+          "model_usage": {
+            "generation": null,
+            "verification": null
+          },
+          "degraded": [
+            "no_embedding_model",
+            "partial_index",
+            "no_vector_index"
+          ],
+          "reason_code": "no_eligible_evidence",
+          "note": "related memory was found, but it was explicitly noncanonical and cannot ground a factual answer"
+        }
+      },
+      "unsafeFactualProjections": [],
+      "unsafeFactualAnswerLines": [],
+      "unsafeFactualContextLines": [],
+      "bytesStable": true
+    }
+  }
+}

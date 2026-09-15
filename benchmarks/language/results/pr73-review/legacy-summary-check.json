@@ -1,0 +1,15 @@
+{
+  "description": "Current validator accepts both frozen earlier runs and reproduces their summaries byte-for-byte without modifying either archive.",
+  "results": [
+    {
+      "mode": "offline",
+      "validation": "pass",
+      "summaryByteIdentical": true
+    },
+    {
+      "mode": "live",
+      "validation": "pass",
+      "summaryByteIdentical": true
+    }
+  ]
+}

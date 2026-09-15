@@ -1,0 +1,279 @@
+{
+  "schemaVersion": "independent-review-artifact-audit-v1",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-6-astra",
+    "independent": true,
+    "didNotModifyRepository": true,
+    "didNotModifyCorpusOrGrades": true
+  },
+  "decision": "No artifact, arithmetic, source-binding or report-scope findings. The evidence supports the bounded reviewed production fixes and unchanged behavior on the frozen offline matrix.",
+  "findings": [],
+  "productionCommit": "558954da1198b309e4c1cbfa0800636a43c6e649",
+  "historicalLiveCommit": "f23c0dae204bef561a5e1eb3c3a64767f8bd0452",
+  "verification": {
+    "independentArtifactAssertions": 2857,
+    "independentPortableProbeAssertions": 463,
+    "reviewedSourceHashesStillMatch": true,
+    "currentCompiledTreesMatchManifest": true,
+    "canonicalPairHashesVerified": 48,
+    "completion": {
+      "pairs": 48,
+      "expected": 48,
+      "failed": 0,
+      "unstarted": 0,
+      "providerRequests": 0,
+      "runtimeUnchanged": true
+    },
+    "completeArmEquality": {
+      "pairs": 48,
+      "arms": 96,
+      "allFieldsCompared": true
+    },
+    "fixturesIdenticalToEarlierOfflineRun": true,
+    "baseCreatedIndexUpgrades": {
+      "count": 4,
+      "from": "prose-v2",
+      "to": "prose-v4",
+      "matchesFreshCandidate": true,
+      "sourceBytesStable": true,
+      "versionsBoundToManifest": true
+    },
+    "independentSummaryReruns": [
+      {
+        "source": "pr73-review/offline",
+        "byteIdentical": true,
+        "sha256": "dc5926e27cee5a5d79b99d15a47e4bb4c32f4645d0b7ef3f7671eeb01d9b4058"
+      },
+      {
+        "source": "pr73-paired/offline",
+        "byteIdentical": true,
+        "sha256": "64cbed77f1caf589debfa881092eeaaf6137c8597222571df796ab1aadf9f5c8"
+      },
+      {
+        "source": "pr73-paired/live",
+        "byteIdentical": true,
+        "sha256": "bfc6ae97656f57d7d75c78e6063fed92af844269b3734f54a8115eb862d596de"
+      }
+    ],
+    "portableProbe": {
+      "onlyDeclaredPortabilityChanges": true,
+      "independentlyRerunResultByteIdentical": true,
+      "originalReceiptUnchanged": true,
+      "binding": {
+        "originalScriptSha256": "f3889f75cc9cc63f6d6a42b09466acbfe8d47f2ec9575a753da9049a9f344036",
+        "portableScriptSha256": "5dd1044b0b79368e64e6cbad12e428843e5ecbfd1db31f0b3b79c355d4b1ae45",
+        "resultSha256": "3156e17f4f9134a19c07c66c763d0f77c0b42c79d251bed1e2628f2ed4093979",
+        "resultByteIdentical": true,
+        "changes": [
+          "Resolve repository from process.cwd instead of a machine-specific path.",
+          "Print full result JSON to stdout instead of writing a fixed temporary output path."
+        ],
+        "command": "Copy reproduce-code-review.mjs.txt to a temporary .mjs file and run node from the repository root."
+      }
+    },
+    "originalRoundReviewsCopiedByteIdentically": true,
+    "builtHelperCopiedByteIdentically": true,
+    "builtCheck": {
+      "assertions": 61,
+      "isolatedSocketCycles": 2,
+      "sourceFixtureHashesVerified": true,
+      "modelCallsReported": 0,
+      "existingLiveServiceRestarted": false,
+      "independentBuiltViewRecalculation": {
+        "legacyV22": {
+          "correct": 44,
+          "total": 44
+        },
+        "v23Base": {
+          "correct": 28,
+          "total": 44
+        },
+        "v23Current": {
+          "correct": 44,
+          "total": 44
+        }
+      }
+    },
+    "originalArchivesUnchanged": true,
+    "readmeLocalLinksResolve": true
+  },
+  "verifiedOfflineCounts": {
+    "baseline": {
+      "correctInferredViews": 66,
+      "inferredViews": 100,
+      "correctExplicitViews": 100,
+      "explicitViews": 100,
+      "correctProjections": 1,
+      "projections": 6,
+      "answersWithEligibleEvidence": 153,
+      "answerOperations": 200,
+      "publishedAnswers": 0,
+      "automaticContexts": 10,
+      "unsafeFactualProjections": 5,
+      "unsafeFactualAnswerLines": 0,
+      "unsafeFactualContextLines": 0,
+      "factualAnswerControls": 48,
+      "bytesStable": 48,
+      "reasons": {
+        "generation_unavailable": 153,
+        "no_eligible_evidence": 39,
+        "retrieval_incomplete": 8
+      }
+    },
+    "candidate": {
+      "correctInferredViews": 100,
+      "inferredViews": 100,
+      "correctExplicitViews": 100,
+      "explicitViews": 100,
+      "correctProjections": 6,
+      "projections": 6,
+      "answersWithEligibleEvidence": 172,
+      "answerOperations": 200,
+      "publishedAnswers": 0,
+      "automaticContexts": 10,
+      "unsafeFactualProjections": 0,
+      "unsafeFactualAnswerLines": 0,
+      "unsafeFactualContextLines": 0,
+      "factualAnswerControls": 48,
+      "bytesStable": 48,
+      "reasons": {
+        "generation_unavailable": 172,
+        "no_eligible_evidence": 20,
+        "retrieval_incomplete": 8
+      }
+    }
+  },
+  "validationLogsReviewed": {
+    "typecheck": "pass",
+    "lint": "pass",
+    "knip": "pass with one pre-existing configuration hint",
+    "format": "pass",
+    "repository": "pass",
+    "tests": {
+      "passed": 4121,
+      "files": 156
+    },
+    "smoke": {
+      "passed": 34,
+      "components": [
+        26,
+        8
+      ]
+    },
+    "installedPackageSmoke": "pass",
+    "builtCheck": "pass"
+  },
+  "reportScope": {
+    "historicalLiveVersusCurrentOfflineDistinguished": true,
+    "currentGeneratedAnswersMeasured": false,
+    "currentProviderRequests": 0,
+    "historicalSourceUseful": {
+      "baseline": 43,
+      "candidate": 68,
+      "denominatorPerArm": 88
+    },
+    "historicalGroundedUseful": {
+      "baseline": 38,
+      "candidate": 68,
+      "denominatorPerArm": 88
+    },
+    "historicalFullGate": {
+      "useful": 233,
+      "denominator": 320,
+      "passed": false
+    },
+    "newReviewCasesKeptOutsideFrozen48FixtureDenominator": true
+  },
+  "limitations": [
+    "Current results are model-free. No live answer generation was rerun on 558954d, and historical f23c0da answer grades cannot be reassigned to this commit.",
+    "Strict full-arm equality covers the 48 exposed fixed inputs; new review edge cases are covered by the independent probes and dedicated tests/built checks, not by adding them to that frozen matrix.",
+    "The full suite, installed-package smoke and isolated socket cycles were executed by the primary agent. This audit inspected their logs, helper, receipts and bindings; it independently reran summaries, source/frame probes and built view calculations rather than repeating those full operations.",
+    "Reconstructed retained artifacts do not reproduce original retention, provenance-backed verification, source archive or longitudinal behavior. The prior failed overall quality gate remains unchanged."
+  ],
+  "sourceReviewReceiptSha256": "cc931448b59224e8ff9a30b076c6dac9765e0d205cb93183b5ff5260e301eb2a",
+  "artifactAuditScriptSha256": "d9224c7a36357d0fa14cc874f21e506e5058608d1bfa9cb5e945f45d1a50a934",
+  "builtHelperSha256": "e1ef9a9c6d22186e660d041a81f4bcf93b8fd666d9ed0beac3e3398a32acdf36",
+  "validationLogSha256": {
+    "types": "c9d873edb8345be3f7a6bb5265d223b7e0388aaf67d0415884baaa5c8186606c",
+    "lint": "185e37eabf28db655935cd7a0fc3da8d9be5ff96c3d82af4a848e378f20ebf29",
+    "knip": "7e928e3180db07dff49a519572cb94253f8f2c4bbc8d36b641cfb5e8b226078b",
+    "format": "a0bfb1d6336683c3c980c6ec27baeb2fbaf6f79d712ebfdc0a83bdd8254d895c",
+    "repository": "af708928543f106033ccfdaff8ef45b7671461bfea3f28666e4c441247525ff5",
+    "tests": "4c9ad738a37a7098d3661f895ab89b2db765eca7b387c8318f59e0fcf184bf5d",
+    "smoke": "267da87cdfc0a07f215b33f35a35aa57a6c5b8fd76a64547a05df639655098d3",
+    "packages": "1e36ef572e3aa66c0e3c62effac88c7ae71cce42224dbc5d054fbbe0d4ce58b6",
+    "built": "6a17d27fdb1874a98d6183107fe82bf12fb5e07a450f34a892c0251694dc0068"
+  },
+  "artifactSha256": {
+    "README.md": "42d15e86addb37b1dd6299c4dcfceebf57fb81ce80b8e96e2ee7efd29b848ecc",
+    "validation.json": "c5e7cf0825ddd12a2efd9a7b984ad514938209c7c086a874336660f20ee35c12",
+    "legacy-summary-check.json": "c8bb8207c4ee83fb24131a0a681039629714fdc58795bf0e05a181aa8668b14b",
+    "previous-offline-equality.json": "c0b6c9a6c12fe7902f101d9f05749494e3c0ce86f7a5ebd5a251532c8f8459f8",
+    "built-check/view-matrix.json": "a9369ac16c30022531431aee7960c3da3f8140711f8c381636989b0fe740a241",
+    "built-check/built-check.json": "84ed56989454c4d2a620c93b9fca9d075085628f432148393b83ac959359d297",
+    "built-check/reproduce.mjs.txt": "e1ef9a9c6d22186e660d041a81f4bcf93b8fd666d9ed0beac3e3398a32acdf36",
+    "offline/v22-held-relative-unknown-date-run-2-repeat-1.json": "dcabdbc98d85f9373326670cf66865d97950caabf2e3c5ababcda20726880952",
+    "offline/v22-held-competing-hypotheses-run-2-repeat-1.json": "3129e811c637f97f0b92751aad1d5a588e368b27663cad8fc3bd6a708afacb5f",
+    "offline/v23-held-assumed-interval-run-2-repeat-1.json": "6742644e436aa0dbc15cd82bb3b8b881020f0335247de08def58f7c0f4ae5f9c",
+    "offline/summary.json": "dc5926e27cee5a5d79b99d15a47e4bb4c32f4645d0b7ef3f7671eeb01d9b4058",
+    "offline/v23-held-declined-extension-run-2-repeat-1.json": "d90256e7009e573ef97d12c9502a5b34672262b44bdde79f8262765aabc09ac2",
+    "offline/v22-held-rejected-plan-run-1-repeat-1.json": "c722111629783967f03cc75eff114bba59efb6d2d780d0b25f041a0dd2cce4cb",
+    "offline/v23-held-declined-extension-run-1-repeat-1.json": "0ea04a239c49e973b869f23d341d1b36dba2aeffdc98abc84077bb5b76f7bc5e",
+    "offline/v22-held-rejected-plan-run-2-repeat-1.json": "534efc7e762ee6719eced6b9179b5453fe6e57343eb08f82b227f0fb9c40d9c4",
+    "offline/plan.json": "fb9fe3ec075e5db126bb9cbd870e0ec88ce2a4f81e404adee730c33835887e5a",
+    "offline/v22-held-relative-unknown-date-run-1-repeat-1.json": "300f0f96e47ed2027f52868ff0d9ddde4b3f5c14eea5b42c56a3cc9264fdb150",
+    "offline/v22-held-competing-hypotheses-run-1-repeat-1.json": "c6fbac3ab04b90b079a49faeff52945ebc92fd81d50c2fb2a5d7b22d373a43ee",
+    "offline/v23-held-assumed-interval-run-1-repeat-1.json": "97de2add2c2c2c5f5fded9f44b1c52ccfbfcee7e403383a10254a3a0486866e7",
+    "offline/ordinary-russian-report-repeat-1.json": "c07987b30eacf1cf6263f8a519b72b380549bcbb114f9727261a955b51569ea6",
+    "offline/v22-held-read-only-admission-run-2-repeat-1.json": "1a89c3953fde287770aa08ef107c06113baa1144b6cd9dd29c1f11a9d9632190",
+    "offline/v22-held-counterfactual-run-2-repeat-1.json": "84f92ccc63e084b858efcfdc4023f7f202767571a2d18cb3c5d41d16cb1433ef",
+    "offline/v23-held-rejected-inspection-run-2-repeat-1.json": "f20a88382b090e48a4748006e61dce6537a90040f60a83f80af819ddcbfde110",
+    "offline/v23-held-competing-clicks-run-2-repeat-1.json": "a178cb1ccd6a05fb979fd908384b6231b14a1cee4e6bee9725927765a60d0a16",
+    "offline/v22-held-conditional-hypothesis-run-1-repeat-1.json": "0451d1bb15202ed5d3039cea10f813c43a5775529cb29c159d6505663b458e2d",
+    "offline/v23-held-fictional-key-run-2-repeat-1.json": "39a0837a862246e0c5a5fb9e4b5d4ba279f13ff51c481dc39109f573e217e15d",
+    "offline/v23-held-scoped-exclusion-run-2-repeat-1.json": "d17ee5455e14a51e88737b6deed907b49b67a521b81dbfb3d82535fbfb13dad0",
+    "offline/results.json": "788304e93abb79b52267e628004b425412bc18da5f462de160f0ebe5969bb7c3",
+    "offline/v23-held-undated-review-run-1-repeat-1.json": "9b78c701723a6b13766298aa9863baa14f4c63392312d315d952fafdee82f8f1",
+    "offline/v23-held-scoped-exclusion-run-1-repeat-1.json": "59cd26f32e3fce79c83ad526383ce9bc5eefcf2acba40639ea3ef6a450a71b94",
+    "offline/v23-held-undated-review-run-2-repeat-1.json": "569e227b07856c5a56b8f0b00988a616371a727b7bb4f69690de0535c20abe55",
+    "offline/v22-held-counterfactual-run-1-repeat-1.json": "c1604f910ad51901582d2799151442a211649be5ad7a65c41901364671c9da8c",
+    "offline/v22-held-read-only-admission-run-1-repeat-1.json": "e15e8d27e2b65021f08148870558fc0482bb6353c2d88469da9725f41da195a3",
+    "offline/v23-held-rejected-inspection-run-1-repeat-1.json": "3b6214670687a3ebe70b5bfaa12e60fe807c5afce18e0af50107c7e154eb7a8c",
+    "offline/v23-held-fictional-key-run-1-repeat-1.json": "df068efb42f24913a011affc680bf1f0494694b464ad86f8aa4246b5391fa371",
+    "offline/v22-held-conditional-hypothesis-run-2-repeat-1.json": "ef5d7d352329ec07c3ca2b7e5c8d8012f6a31a66180cf55bc0cc3d756771d470",
+    "offline/v23-held-competing-clicks-run-1-repeat-1.json": "18509b81cebdd1881d285eaeac7bf53663fb9ddbdcb2cf32f9613dbb5025ceb3",
+    "offline/v23-held-assistant-reading-run-1-repeat-1.json": "5b9b7c63d2b2355f08b5def6a5a1a9d1791b15cef348ebb697e3fbf1e31d768b",
+    "offline/v23-held-read-only-run-2-repeat-1.json": "9673fd91ea865b2d001cd6b4d05428b48bb6effb09fca4e8fe77d894b30b7cec",
+    "offline/v22-held-assistant-speculation-run-1-repeat-1.json": "755cc9b297669376e5d7e1282b3da904ae480a63fc8c4acd9d1a454553e7d3bb",
+    "offline/ordinary-mixed-hypothesis-repeat-1.json": "13be8bd23bab62662fcdaa5431bcb13c297eb03c758261ad5ede2e63392418bb",
+    "offline/ordinary-empty-heading-fact-repeat-1.json": "f95548e3e5e6f989ab143546acb12fbdb722645b7323c3359b7da63050e0fc02",
+    "offline/v22-held-fictional-example-run-2-repeat-1.json": "2be529ecb97457b9f1be4ca4d85eb30fecf288fcca20743358c175b8062830ed",
+    "offline/v22-held-assistant-speculation-run-2-repeat-1.json": "a10be12efb116c8690fe7f6a4da549da323e511e4ee2ab7cf6e475cce1e3f9ef",
+    "offline/v23-held-read-only-run-1-repeat-1.json": "10711d3ddbaaac9e06406935475e19ad3bc3ed66eb20f3f7665690cc963a73c9",
+    "offline/v22-held-fictional-example-run-1-repeat-1.json": "cec8a7250f61a0b8e79be478695cf38918a7bf9d335fd51240be2908fe781b29",
+    "offline/manifest.json": "3cb4789a640832cedd1d721c63b7aaebd3a052ce0a581097ad41a864e86e6fc2",
+    "offline/v23-held-assistant-reading-run-2-repeat-1.json": "00abce5f41cd82c90fd015e6dbcf668ffdd9f02c56cbe6b254c7e92c0bacb835",
+    "offline/fixtures.json": "a43af8b807cc070f9ce296a4d4e86c0096c70c7efedbffb553684afa346ae590",
+    "offline/v22-held-coverage-exclusion-run-2-repeat-1.json": "feeb91574e3d71e9330a612e95d6b9cc5f55c9a938f3fedd089426f44dedc21e",
+    "offline/v23-held-relayed-service-run-2-repeat-1.json": "7a7d9f7484467bca265591954ac9d7976923ce1846503d778c49c479a1cbfd56",
+    "offline/v22-held-nested-report-run-1-repeat-1.json": "14f810b0d093365252860f7839d269b21fa5fbcebe031d10f918f37f9cbb5d36",
+    "offline/v22-held-open-question-run-1-repeat-1.json": "d5f74f9bcae7b0714ac271fc1f42e17c4abfbc8c10656eec00c7d3e0abea1bdb",
+    "offline/v23-held-open-renewal-run-2-repeat-1.json": "4c2a9804cb748ee6ad3bed759e30dcbaf6bbbfc0068c110e1920a14827d3294e",
+    "offline/v22-held-open-question-run-2-repeat-1.json": "3ae37df03e8d5381c6cf5933603fc9922f32e6e535f590217450d4e6147fda74",
+    "offline/v22-held-nested-report-run-2-repeat-1.json": "61657f77d97d3e2f0c3617a18b204e0a441e3a7622a9c6ac141b8668c9730fb6",
+    "offline/v23-held-open-renewal-run-1-repeat-1.json": "fd01e0ac97faa25901dd0f8a9d339a5f68674a1488161f2ff273934fa5b91d67",
+    "offline/completion.json": "162ecd023efb03782f5a09c05b57632f4140501d25039dc2360ace8c19b2f24f",
+    "offline/ordinary-english-report-repeat-1.json": "df50a15d34ef0a183e44678f0384131724d8e31150a49ed394223f7011f24ebb",
+    "offline/v22-held-coverage-exclusion-run-1-repeat-1.json": "cfe3f467712d7141601e3d47fd678db968082ffa5fc2303508edad08334b5ff1",
+    "offline/v23-held-relayed-service-run-1-repeat-1.json": "77a45e35cc2e672e2350a3d025b4cd68cc8a98c3d2859364795cb43645ed1dce",
+    "reviews/final-code-review.json": "cc931448b59224e8ff9a30b076c6dac9765e0d205cb93183b5ff5260e301eb2a",
+    "reviews/round-4.json": "5ea0d861b4d90c34bff3e031ce4a8f7d3fc168f19af0d863c77019e242082bf7",
+    "reviews/round-3.json": "90a896dee1cddee20de9515bb85a22a2efb207d1310b4c2ddf1e848ad31e0bac",
+    "reviews/portable-probe-receipt.json": "2b6c144327ac104f8bd7f80d2851e915df3eac10fff357925c8eb032e3372376",
+    "reviews/round-2.json": "a3fbeb5b034f8ecc44442e08d711b0581dcbf50e07c0470564d3161f6bdd8f26",
+    "reviews/reproduce-code-review.mjs.txt": "5dd1044b0b79368e64e6cbad12e428843e5ecbfd1db31f0b3b79c355d4b1ae45",
+    "reviews/round-1.json": "cba86d0eed72f3c51dd367252245bd12fa85fe9316108c2ef7d41467b67a39ca",
+    "reviews/code-review-probes.json": "3156e17f4f9134a19c07c66c763d0f77c0b42c79d251bed1e2628f2ed4093979"
+  }
+}

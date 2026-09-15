@@ -12,6 +12,11 @@ The [completed paired result](results/pr73-paired/README.md) improves inferred v
 With Luna, independently source-useful answers rise from 43/88 to 68/88; the stricter fully grounded count
 rises from 38/88 to 68/88. Eight component/word-sense errors and one qualification omission remain.
 
+The [subsequent review and fix rounds](results/pr73-review/README.md) preserve all 48 complete offline
+observations and fix additional list-scope and routing regressions. Their current runtime is `558954d`;
+the live Luna scores above remain measurements of the earlier frozen runtime `f23c0da`. No new live
+generation was run during review.
+
 ## Historical V77 result
 
 The [terminal V77/V22 evaluation](results/v77/README.md) fails both its then-current 90% useful-answer gate and the separately predeclared 80% completion target. The final independent grade is **220/320 useful writable answers** and **30/40 complete retained sets**. All 44 source-byte/replay checks pass, but coverage, availability and ordinary-prose requirements remain unmet. PR #70 finishes this bounded evaluation with explicit reliability limits and no further tuning against its held-out outputs. Both verdicts, initial/corrected reviews, diagnostic failures and execution receipts are preserved.

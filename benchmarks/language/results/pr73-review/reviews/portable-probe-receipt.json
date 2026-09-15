@@ -1,0 +1,11 @@
+{
+  "originalScriptSha256": "f3889f75cc9cc63f6d6a42b09466acbfe8d47f2ec9575a753da9049a9f344036",
+  "portableScriptSha256": "5dd1044b0b79368e64e6cbad12e428843e5ecbfd1db31f0b3b79c355d4b1ae45",
+  "resultSha256": "3156e17f4f9134a19c07c66c763d0f77c0b42c79d251bed1e2628f2ed4093979",
+  "resultByteIdentical": true,
+  "changes": [
+    "Resolve repository from process.cwd instead of a machine-specific path.",
+    "Print full result JSON to stdout instead of writing a fixed temporary output path."
+  ],
+  "command": "Copy reproduce-code-review.mjs.txt to a temporary .mjs file and run node from the repository root."
+}
