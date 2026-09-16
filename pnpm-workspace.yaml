@@ -9,6 +9,8 @@ minimumReleaseAge: 4320
 # the yank window that motivates minimumReleaseAge does not apply to them.
 minimumReleaseAgeExclude:
   - '@tenphi/*'
+  # Cookbook 0.15 requires this renderer baseline.
+  - '@astrojs/starlight@0.42.1'
 
 # One declared version per shared dependency. Three packages depend on zod, and a
 # monorepo where two of them resolve different majors produces schemas that look
