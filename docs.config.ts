@@ -1,4 +1,4 @@
-import { defineDocsConfig } from '@tenphi/cookbook';
+import { defineDocsConfig } from '@tenphi/cookbook/config';
 
 import aknoPackage from './packages/cli/package.json' with { type: 'json' };
 
@@ -40,19 +40,34 @@ export default defineDocsConfig({
       '/',
       {
         label: 'Start here',
-        items: ['/overview', '/getting-started', '/memory-lifecycle', '/concepts'],
+        items: [
+          '/overview',
+          { label: 'Getting started', link: '/getting-started' },
+          { label: 'The memory lifecycle', link: '/memory-lifecycle' },
+          { label: 'Core concepts', link: '/concepts' },
+        ],
       },
       {
         label: 'Workflows',
-        items: ['/reading', '/writing', '/dream-cycle'],
+        items: [
+          { label: 'Reading memory', link: '/reading' },
+          { label: 'Writing and ingestion', link: '/writing' },
+          { label: 'The dream cycle', link: '/dream-cycle' },
+        ],
       },
       {
         label: 'Reference',
-        items: ['/configuration', '/commands', '/operations', '/benchmarks', '/limitations'],
+        items: [
+          { label: 'Configuration', link: '/configuration' },
+          { label: 'Command reference', link: '/commands' },
+          { label: 'Operations', link: '/operations' },
+          { label: 'Benchmarks and model qualification', link: '/benchmarks' },
+          { label: 'Limitations', link: '/limitations' },
+        ],
       },
       {
         label: 'Internals',
-        items: ['/how-it-works', '/documentation'],
+        items: [{ label: 'How Akno works', link: '/how-it-works' }, '/documentation'],
       },
     ],
   },
@@ -66,11 +81,6 @@ export default defineDocsConfig({
       Hero: {
         Visual: {
           inlineSize: { '': 'min(100%, 11rem)', '@mobile': '8rem' },
-        },
-        LogoImage: {
-          $: '> .hero-html > img',
-          display: 'block',
-          inlineSize: '100%',
           blockSize: 'auto',
         },
       },
@@ -84,6 +94,5 @@ export default defineDocsConfig({
   build: {
     strict: true,
     ci: process.env.CI === 'true',
-    base: '/',
   },
 });
