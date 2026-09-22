@@ -71,4 +71,33 @@ describe('automatic recovery policy', () => {
     expect(mem.maintenanceStatus().recovery.automaticApply).toBe('paused');
     expect(mem.resumeMaintenance({ profile: true }).automaticApply).toBe('available');
   });
+
+  it('resumes only the explicitly selected transformation pause', () => {
+    const now = '2031-04-05T12:00:00.000Z';
+    const database = new Database(mem.config.dbPath);
+    const insert = database.prepare(
+      `INSERT INTO maintenance_recovery_state
+        (scope_key, scope, transform, reason_code, consecutive_failures, paused_at,
+         last_failure_at, last_run_id, updated_at)
+       VALUES (?, 'transform', ?, 'rollback_threshold', 3, ?, ?, ?, ?)`,
+    );
+    insert.run('transform:observe', 'observe', now, now, 'run_observe_rollback', now);
+    insert.run('transform:reflect', 'reflect', now, now, 'run_reflect_rollback', now);
+    database.close();
+
+    const resumed = mem.resumeMaintenance({ transform: 'observe' });
+
+    expect(resumed).toMatchObject({
+      automaticApply: 'partially_paused',
+      profile: null,
+      transforms: [
+        expect.objectContaining({
+          transform: 'reflect',
+          pausedAt: now,
+          recoveryCommand: 'akno dream resume --transform reflect',
+        }),
+      ],
+    });
+    expect(resumed.transforms.some((entry) => entry.transform === 'observe')).toBe(false);
+  });
 });

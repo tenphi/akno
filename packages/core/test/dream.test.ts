@@ -1559,6 +1559,116 @@ describe('observe', () => {
     ).toBe(false);
   });
 
+  it('verifies a co-located observation when the destination supplies sealed evidence', async () => {
+    const target = path.join(root, OBSERVE_TARGET);
+    fs.writeFileSync(
+      target,
+      fs
+        .readFileSync(target, 'utf8')
+        .replace('Authored overview.', 'The refrigerator was serviced in December 2026.'),
+      'utf8',
+    );
+    server.facts({
+      ...SERVICING,
+      'topics/appliance-servicing': [
+        {
+          claim: 'The refrigerator was serviced in December 2026.',
+          subject: 'appliance servicing',
+          attribute: 'serviced',
+          value: 'December 2026',
+        },
+      ],
+    });
+    await mem.index({ rederive: true });
+    const before = fs.readFileSync(target, 'utf8');
+    server.reply({
+      observations: [
+        {
+          pattern: PATTERN,
+          evidence: ['topics/appliance-servicing', 'home/laundry', 'home/kitchen'],
+          confidence: 0.9,
+        },
+      ],
+    });
+
+    const report = await mem.dream({ phase: 'observe' });
+    const after = fs.readFileSync(target, 'utf8');
+
+    expect(report.maintenancePlan?.items[0]).toMatchObject({
+      status: 'applied',
+      verification: { status: 'passed' },
+    });
+    expect(after.startsWith(before)).toBe(true);
+    expect(after).toContain(PATTERN);
+
+    await mem.close();
+    mem = await openMem();
+    const reopened = await mem.read({ slug: 'topics/appliance-servicing' });
+    expect(reopened.page?.lines.find((line) => line.text.includes(PATTERN))?.observation).toMatchObject({
+      status: 'eligible',
+      proof_count: 3,
+    });
+  });
+
+  it('recovers a co-located observation interrupted after its exact write', async () => {
+    const target = path.join(root, OBSERVE_TARGET);
+    fs.writeFileSync(
+      target,
+      fs
+        .readFileSync(target, 'utf8')
+        .replace('Authored overview.', 'The refrigerator was serviced in December 2026.'),
+      'utf8',
+    );
+    server.facts({
+      ...SERVICING,
+      'topics/appliance-servicing': [
+        {
+          claim: 'The refrigerator was serviced in December 2026.',
+          subject: 'appliance servicing',
+          attribute: 'serviced',
+          value: 'December 2026',
+        },
+      ],
+    });
+    await mem.index({ rederive: true });
+    server.reply({
+      observations: [
+        {
+          pattern: PATTERN,
+          evidence: ['topics/appliance-servicing', 'home/laundry', 'home/kitchen'],
+          confidence: 0.9,
+        },
+      ],
+    });
+    const planned = (await mem.dream({ phase: 'observe', mode: 'review' })).maintenancePlan!;
+    const item = mem.plan(planned.id).items[0]!;
+    mem.decidePlan(planned.id, item.id, 'approve', 'The invented pattern has exact support.');
+    const database = new Database(mem.config.dbPath);
+    database.prepare("UPDATE maintenance_items SET status = 'applying', policy = 'auto' WHERE id = ?").run(
+      item.id,
+    );
+    database.prepare("UPDATE maintenance_plans SET mode = 'auto' WHERE id = ?").run(planned.id);
+    database.close();
+    const operation = item.operations[0]!;
+    if (operation.type !== 'replace') throw new Error('co-located observation must replace its page');
+    fs.writeFileSync(target, operation.after, 'utf8');
+    const callsBeforeRecovery = server.requestKinds().length;
+    await mem.close();
+    mem = await openMem();
+
+    const recovered = await mem.dream({ phase: 'observe' });
+
+    expect(recovered.maintenancePlan?.id).toBe(planned.id);
+    expect(recovered.maintenancePlan?.items[0]).toMatchObject({
+      status: 'applied',
+      verification: { status: 'passed' },
+      changeId: expect.any(String),
+    });
+    expect(server.requestKinds()).toHaveLength(callsBeforeRecovery);
+    expect(mem.changes().filter((change) => change.op === 'maintenance')).toHaveLength(1);
+    expect(fs.readFileSync(target, 'utf8')).toContain(PATTERN);
+  });
+
   it('answers from an observation as one item while citing every current leaf fact', async () => {
     server.reply(OBSERVED);
     await mem.dream({ phase: 'observe' });

@@ -3749,10 +3749,33 @@ async function indexMaintenanceItem(
   await Promise.all(paths.map((relPath) => safeOperationPath(ctx, relPath)));
   alignRelocatedPageRow(ctx, item, documentState);
   alignMovedDocumentRows(ctx, item.operations, documentState);
+  const preserveDerivedViews =
+    item.kind === 'observe' &&
+    item.evidence.some((entry) => entry.source === item.subject) &&
+    observationOperationIssue(ctx, item, item.operations) === null
+      ? item.operations.flatMap((operation) =>
+          operation.type === 'replace'
+            ? [
+                {
+                  relPath: operation.relPath,
+                  fromBodyHash: parsePage(
+                    operation.relPath,
+                    documentState === 'after' ? operation.before : operation.after,
+                  ).bodyHash,
+                  toBodyHash: parsePage(
+                    operation.relPath,
+                    documentState === 'after' ? operation.after : operation.before,
+                  ).bodyHash,
+                },
+              ]
+            : [],
+        )
+      : [];
   await ctx.indexer.run({
     only: paths,
     modelPaths: [],
     ...(item.kind === 'adopt' ? { reindexUnchanged: true } : {}),
+    ...(preserveDerivedViews.length > 0 ? { preserveDerivedViews } : {}),
   });
 }
 
@@ -4623,7 +4646,21 @@ async function observationEvidenceIssue(
       const bytes = await fsp
         .readFile(path.join(ctx.config.aknoPath, fact.rel_path), 'utf8')
         .catch(() => null);
-      if (bytes === null || sha256(bytes) !== entry.fingerprint) {
+      const coLocatedOperation =
+        phase === 'after' && entry.source === item.subject
+          ? item.operations.find(
+              (operation): operation is ReplaceOperation =>
+                operation.type === 'replace' &&
+                operation.relPath === fact.rel_path &&
+                sha256(operation.before) === entry.fingerprint,
+            )
+          : undefined;
+      if (
+        bytes === null ||
+        (coLocatedOperation
+          ? sha256(bytes) !== coLocatedOperation.afterHash
+          : sha256(bytes) !== entry.fingerprint)
+      ) {
         return `${entry.source} no longer matches its sealed observation evidence.`;
       }
     }
