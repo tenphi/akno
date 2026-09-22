@@ -43,6 +43,11 @@ interface StubServer {
   forget: () => void;
   respondWith: (candidates: StubCandidate[]) => void;
   decideOwnershipWith: (decider: (input: StubOwnershipInput) => unknown) => void;
+  setRetention: (decision: {
+    durability: 'durable' | 'task_only' | 'transient' | 'uncertain';
+    source_scope: 'global' | 'entity' | 'document' | 'event' | 'task' | 'unknown';
+    candidate_scope: 'global' | 'entity' | 'document' | 'event' | 'task' | 'unknown';
+  }) => void;
 }
 
 interface StubOwnershipInput {
@@ -106,6 +111,11 @@ async function startStubChat(): Promise<typeof server> {
         ? { selection: 'proposed' }
         : { selection: 'uncertain' };
   };
+  let retention: Parameters<StubServer['setRetention']>[0] = {
+    durability: 'durable',
+    source_scope: 'entity',
+    candidate_scope: 'entity',
+  };
   const instance = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
     request.on('data', (chunk: Buffer) => chunks.push(chunk));
@@ -142,6 +152,7 @@ async function startStubChat(): Promise<typeof server> {
                       candidate_id: candidate.candidate_id,
                       source_selected_polarity: candidate.polarity,
                       ...retentionAudit(candidate, true, true, true),
+                      retention,
                       proposition_supported: true,
                       action_arguments_preserved: true,
                       qualification_scope_preserved: true,
@@ -233,6 +244,9 @@ async function startStubChat(): Promise<typeof server> {
     },
     decideOwnershipWith: (decider) => {
       ownershipDecider = decider;
+    },
+    setRetention: (decision) => {
+      retention = decision;
     },
   };
 }
@@ -838,6 +852,41 @@ describe('routing when the best-ranked page is not the best-judged one', () => {
 });
 
 describe('canonical destination qualification', () => {
+  it('uses a document-scoped preference to choose its document over the speaker page', async () => {
+    fs.mkdirSync(path.join(root, 'people'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'documents'), { recursive: true });
+    const personPath = path.join(root, 'people/ada-marlow.md');
+    const documentPath = path.join(root, 'documents/zephyr-qx-100.md');
+    fs.writeFileSync(personPath, '# Ada Marlow\n\nGeneral profile notes.\n');
+    fs.writeFileSync(documentPath, '# Zephyr QX-100 document\n\nDocument revision preferences.\n');
+    const personBefore = fs.readFileSync(personPath, 'utf8');
+    const text = 'Ada Marlow prefers keeping the Zephyr QX-100 document on one page for future revisions.';
+    server.respondWith([{ text, subject: 'Ada Marlow', page: 'people/ada-marlow', kind: 'preference' }]);
+    server.setRetention({ durability: 'durable', source_scope: 'document', candidate_scope: 'document' });
+    server.decideOwnershipWith((input) => {
+      expect(input.memory.retention_scope).toBe('document');
+      const document = input.existing_pages.find((page) => page.title === 'Zephyr QX-100 document');
+      return { selection: document?.id ?? 'uncertain' };
+    });
+    const mem = await openMem({
+      models: {
+        embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
+        reranker: { id: null, enabled: false },
+        derive: { provider: 'stub', id: 'stub-derive' },
+        expansion: { provider: 'stub', id: 'stub-derive' },
+      },
+    });
+    try {
+      await mem.index({});
+      const result = await mem.remember({ text });
+      expect(result.wrote?.[0]?.slug).toBe('documents/zephyr-qx-100');
+      expect(fs.readFileSync(personPath, 'utf8')).toBe(personBefore);
+      expect(fs.readFileSync(documentPath, 'utf8')).toContain(text);
+    } finally {
+      await mem.close();
+    }
+  });
+
   it('routes flight details to the named trip instead of an existing year index', async () => {
     fs.mkdirSync(path.join(root, 'trips'), { recursive: true });
     const yearPath = path.join(root, 'trips/2031.md');

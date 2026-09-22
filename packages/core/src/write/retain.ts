@@ -56,7 +56,7 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v58';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v59';
 export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v42';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
@@ -191,6 +191,9 @@ own sentence with an explicit subject, keeping exactly whether the person lacks 
 or personally performed a check. Choose subject and page after that qualified record. They describe its source-supported canonical identity,
 not an action phrase constructed from its words. A proposed page is only a taxonomy suggestion, never proof
 of ownership; use only the supplied admitted pages or creatable folders, and keep an unresolved home null.
+For a durable document-scoped preference, choose the named document as subject, not merely the person
+who expressed the preference. Never propose that person's general page, a bare year, or a domain index
+as the document's home. If the document identity or home is unresolved, leave the page null.
 When the outer narrator supplies a later corrective clarification of an inner report, close the inner
 speaker's reported clause before the clarification and explicitly name the narrator as its source.
 Keep both clauses in the same readable candidate with their shared verification limits. Do not move the
