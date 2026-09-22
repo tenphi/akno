@@ -269,7 +269,7 @@ export function isCompatibleAknoHello(line: string): boolean {
   return hello !== null && hello.protocol === PROTOCOL_VERSION;
 }
 
-export function parseAknoHello(line: string): Hello | null {
+function parseAknoHello(line: string): Hello | null {
   try {
     const hello = Hello.safeParse(JSON.parse(line.trim()));
     return hello.success ? hello.data : null;
