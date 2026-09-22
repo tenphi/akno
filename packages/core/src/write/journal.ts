@@ -5,6 +5,7 @@ import { AknoError } from '@tenphi/akno-protocol';
 import type { Store } from '../store/db.ts';
 import { newPrefixedId, sha256 } from '../store/ids.ts';
 import { restoreFile, type WriteResult } from './atomic.ts';
+import type { ActiveMutationReceipt } from './mutation-receipts.ts';
 
 /**
  * The journal is durable state: it holds previous bytes, and there is nowhere else
@@ -97,7 +98,13 @@ export class Journal {
    * crash between write and journal leaves an un-undoable change) is both rarer
    * and far less confusing than the reverse.
    */
-  record(input: { actor: string; op: string; summary: string; files: ChangeFile[] }): string {
+  record(input: {
+    actor: string;
+    op: string;
+    summary: string;
+    files: ChangeFile[];
+    receipt?: ActiveMutationReceipt;
+  }): string {
     const changeId = newPrefixedId('chg');
     const now = new Date().toISOString();
 
@@ -140,6 +147,20 @@ export class Journal {
           afterHash,
         );
       });
+
+      if (input.receipt) {
+        const receipt = input.receipt;
+        const updated = this.#store.db
+          .prepare(
+            `UPDATE mutation_receipts SET state = 'committed', change_id = ?
+              WHERE actor = ? AND operation = ? AND idempotency_key = ? AND request_hash = ?
+                AND state = 'running'`,
+          )
+          .run(changeId, receipt.actor, receipt.operation, receipt.idempotencyKey, receipt.requestHash);
+        if (updated.changes !== 1) {
+          throw new AknoError('internal', `could not commit the ${receipt.operation} mutation receipt`);
+        }
+      }
     });
 
     return changeId;

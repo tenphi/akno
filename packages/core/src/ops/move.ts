@@ -7,6 +7,7 @@ import { recordOwnWrite, writeFileAtomic } from '../write/atomic.ts';
 import type { ChangeFile } from '../write/journal.ts';
 import { matchesConflictPath, quarantineReasonsForPath } from '../index/page-quarantine.ts';
 import { normalizeSlug } from './write.ts';
+import { beginMutation } from '../write/mutation-receipts.ts';
 
 /**
  * Relocate a page with its documents, rewriting embeds and **reporting**
@@ -93,13 +94,6 @@ export async function move(ctx: AknoContext, rawInput: unknown): Promise<MoveOut
   for (const document of documents) {
     const next = destinations.get(document.rel_path)!;
     if (next === document.rel_path) continue;
-    await fsp.mkdir(path.dirname(path.join(ctx.config.aknoPath, next)), { recursive: true });
-    await fsp.rename(path.join(ctx.config.aknoPath, document.rel_path), path.join(ctx.config.aknoPath, next));
-    // One entry naming the destination, not a `moved`/`created` pair. Reversing that pair
-    // deleted the new file and then tried to restore a path holding nothing — an attachment
-    // has no text in `before` to put back — so undoing a move used to eat the binary.
-    files.push({ relPath: document.rel_path, action: 'moved', before: null, after: null, movedTo: next });
-    moved.push(next);
     rewrites.push([path.basename(document.rel_path), path.basename(next)]);
   }
 
@@ -108,6 +102,19 @@ export async function move(ctx: AknoContext, rawInput: unknown): Promise<MoveOut
   let content = original;
   for (const [oldName, newName] of rewrites) {
     content = content.split(oldName).join(newName);
+  }
+
+  beginMutation(ctx);
+  for (const document of documents) {
+    const next = destinations.get(document.rel_path)!;
+    if (next === document.rel_path) continue;
+    await fsp.mkdir(path.dirname(path.join(ctx.config.aknoPath, next)), { recursive: true });
+    await fsp.rename(path.join(ctx.config.aknoPath, document.rel_path), path.join(ctx.config.aknoPath, next));
+    // One entry naming the destination, not a `moved`/`created` pair. Reversing that pair
+    // deleted the new file and then tried to restore a path holding nothing — an attachment
+    // has no text in `before` to put back — so undoing a move used to eat the binary.
+    files.push({ relPath: document.rel_path, action: 'moved', before: null, after: null, movedTo: next });
+    moved.push(next);
   }
 
   await fsp.mkdir(path.dirname(path.join(ctx.config.aknoPath, toRelPath)), { recursive: true });
@@ -131,6 +138,7 @@ export async function move(ctx: AknoContext, rawInput: unknown): Promise<MoveOut
     op: 'move',
     summary: `${from} -> ${to}${documents.length > 0 ? ` with ${documents.length} attachment(s)` : ''}`,
     files,
+    receipt: ctx.mutationReceipt,
   });
 
   ctx.store.transaction(() => {

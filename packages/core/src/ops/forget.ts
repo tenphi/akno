@@ -8,6 +8,7 @@ import { newPrefixedId, sha256 } from '../store/ids.ts';
 import { deleteManagedSourceArchives, managedSourceItemIds } from '../maintenance/managed-item-sources.ts';
 import { forgetRetainSupports } from '../write/retain-supports.ts';
 import { quarantineReasonsForPath } from '../index/page-quarantine.ts';
+import { beginMutation } from '../write/mutation-receipts.ts';
 
 /**
  * **This is the honest version of forgetting.**
@@ -72,6 +73,7 @@ async function forgetFact(ctx: AknoContext, factId: string): Promise<ForgetOutpu
   }
 
   lines.splice(fact.line_start - 1, 1);
+  beginMutation(ctx);
   const result = await writeFileAtomic(ctx.config.aknoPath, fact.rel_path, lines.join('\n'));
 
   const changeId = ctx.journal.record({
@@ -79,6 +81,7 @@ async function forgetFact(ctx: AknoContext, factId: string): Promise<ForgetOutpu
     op: 'forget',
     summary: `removed ${fact.slug}:${fact.line_start}`,
     files: [fileEntry(result)],
+    receipt: ctx.mutationReceipt,
   });
   forgetRetainSupports(ctx, fact.item_id ? [fact.item_id] : [], changeId);
   deleteManagedSourceArchives(ctx, fact.item_id ? [fact.item_id] : []);
@@ -154,12 +157,14 @@ async function forgetMemory(ctx: AknoContext, memoryId: string): Promise<ForgetO
   }
 
   lines.splice(memory.marker_line - 1, 2);
+  beginMutation(ctx);
   const result = await writeFileAtomic(ctx.config.aknoPath, memory.rel_path, lines.join('\n'));
   const changeId = ctx.journal.record({
     actor: ctx.actor,
     op: 'forget',
     summary: `removed managed memory ${memoryId} from ${memory.slug}:${memory.marker_line}`,
     files: [fileEntry(result)],
+    receipt: ctx.mutationReceipt,
   });
   forgetRetainSupports(ctx, [memoryId], changeId);
   deleteManagedSourceArchives(ctx, [memoryId]);
@@ -211,6 +216,7 @@ async function forgetPage(ctx: AknoContext, rawSlug: string): Promise<ForgetOutp
       `${slug} is in the index but its file is gone — the index has now been reconciled`,
     );
   }
+  beginMutation(ctx);
   await ctx.journal.trash(page.rel_path, token);
   files.push({ relPath: page.rel_path, action: 'deleted', before: content, after: null });
 
@@ -234,6 +240,7 @@ async function forgetPage(ctx: AknoContext, rawSlug: string): Promise<ForgetOutp
     op: 'forget',
     summary: `trashed ${slug}${documents.length > 0 ? ` and ${documents.length} attachment(s)` : ''}`,
     files,
+    receipt: ctx.mutationReceipt,
   });
 
   forgetRetainSupports(ctx, managedSourceItemIds(content), changeId);
@@ -300,6 +307,7 @@ async function forgetDocument(ctx: AknoContext, documentId: string): Promise<For
   const token = newPrefixedId('trash');
   const files: ChangeFile[] = [];
   let primarySnapshot: string | null = null;
+  beginMutation(ctx);
   for (const document of documents) {
     if (document.availability === 'missing') continue;
     const snapshot = await ctx.journal.trash(document.rel_path, token);
@@ -312,6 +320,7 @@ async function forgetDocument(ctx: AknoContext, documentId: string): Promise<For
     op: 'forget',
     summary: `trashed document ${primary.rel_path}`,
     files,
+    receipt: ctx.mutationReceipt,
   });
 
   purgeDocuments(ctx, documents);

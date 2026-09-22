@@ -156,7 +156,7 @@ export const OPS = {
       '`outcome`: "conflict" means an existing line claims something different — ask the user rather than ' +
       'overwriting; "requires_folder" means the folder has not been declared yet — call `folder` to say what ' +
       'belongs in it, then repeat this write, without asking anyone. The event ledger takes events only: pass ' +
-      '`event` and let it be filed, never `append`.',
+      '`event` and let it be filed, never `append`. Set `idempotency_key` when retrying after a possibly lost reply.',
   }),
   folder: op({
     name: 'folder',
@@ -168,7 +168,8 @@ export const OPS = {
       'Declare a folder and what belongs in it, before writing the first page there. Never gated — nothing ' +
       'here waits on the user. Say what the folder is for in `description`, and set `role` to "source" ' +
       'when it holds evidence rather than claims (transcripts, articles, research, legal texts), because only ' +
-      'claims become facts. Returns "noop" when the folder is already declared.',
+      'claims become facts. Returns "noop" when the folder is already declared. Set `idempotency_key` when ' +
+      'retrying after a possibly lost reply.',
   }),
   remember: op({
     name: 'remember',
@@ -207,7 +208,8 @@ export const OPS = {
     implemented: true,
     description:
       'Retract a fact, remove one exact managed-memory block, delete a page to trash, or drop a document. ' +
-      'Always journalled and always reversible with undo for the retention window.',
+      'Always journalled and always reversible with undo for the retention window. Set `idempotency_key` ' +
+      'when retrying after a possibly lost reply.',
   }),
   undo: op({
     name: 'undo',
@@ -225,7 +227,7 @@ export const OPS = {
     implemented: true,
     description:
       'Relocate a page with its documents, rewriting embeds. Inbound links that now point nowhere are ' +
-      'reported, never silently rewritten.',
+      'reported, never silently rewritten. Set `idempotency_key` when retrying after a possibly lost reply.',
   }),
   ingest: op({
     name: 'ingest',

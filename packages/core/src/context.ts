@@ -6,6 +6,7 @@ import type { Assembler } from './recall/assemble.ts';
 import type { Indexer } from './index/indexer.ts';
 import type { Journal } from './write/journal.ts';
 import type { Gate } from './write/gate.ts';
+import type { ActiveMutationReceipt } from './write/mutation-receipts.ts';
 import { quarantineSummary } from './index/page-quarantine.ts';
 
 /** The write path can queue model-backed indexing without depending on its concrete worker. */
@@ -48,6 +49,8 @@ export interface AknoContext {
    * write's input, where a caller could simply claim to be the user.
    */
   actor: 'user' | 'agent' | 'akno';
+  /** Present only inside one replay-safe mutation call; never shared across concurrent calls. */
+  mutationReceipt?: ActiveMutationReceipt;
   /** False when another process holds the write handle. */
   writable: boolean;
   lockHeldBy: number | null;

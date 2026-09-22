@@ -63,6 +63,15 @@ export type Depth = z.infer<typeof Depth>;
 export const ResultStatus = z.enum(['ok', 'empty', 'degraded', 'unavailable']);
 export type ResultStatus = z.infer<typeof ResultStatus>;
 
+/** Opaque caller-owned retry identity. Its meaning is always scoped by actor and operation. */
+export const IdempotencyKey = z
+  .string()
+  .regex(
+    /^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/,
+    'expected 1-200 ASCII letters, digits, dots, underscores, colons, or hyphens',
+  );
+export type IdempotencyKey = z.infer<typeof IdempotencyKey>;
+
 export const TemporalPrecision = z.enum(['instant', 'day', 'month', 'year', 'unknown']);
 export type TemporalPrecision = z.infer<typeof TemporalPrecision>;
 
@@ -651,6 +660,8 @@ export type DegradedReason = z.infer<typeof DegradedReason>;
 export const ResultEnvelope = z.object({
   status: ResultStatus,
   degraded: z.array(DegradedReason).optional(),
+  /** True when a durable mutation receipt supplied this result without applying the request again. */
+  replayed: z.boolean().optional(),
   /** Human-readable note attached to a non-`ok` status. */
   note: z.string().optional(),
 });

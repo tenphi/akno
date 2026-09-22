@@ -537,11 +537,13 @@ describe('provided exact retain', () => {
       const memoryId = retained.sources[0]?.candidates[0]?.memory_id;
       expect(memoryId).toBeDefined();
 
-      const forgotten = await mem.forget({ memory: memoryId! });
+      const forgetRequest = { memory: memoryId!, idempotency_key: 'forget-managed-memory-1111' };
+      const forgotten = await mem.forget(forgetRequest);
       expect(forgotten).toMatchObject({
         status: 'ok',
         removed_from: expect.stringContaining('memory/equipment:'),
       });
+      expect(await mem.forget(forgetRequest)).toEqual({ ...forgotten, replayed: true });
       expect(fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8')).not.toContain(memoryId!);
 
       const db = new Database(path.join(stateDir, 'akno.db'), { readonly: true });

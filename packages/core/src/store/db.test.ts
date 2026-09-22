@@ -49,6 +49,33 @@ describe('waiting for the write handle', () => {
 });
 
 describe('schema migration', () => {
+  it('adds replay-safe mutation receipts to an older durable database', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-mutation-receipt-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, -1)) legacy.exec(migration);
+    legacy.pragma('user_version = 41');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const columns = store.db.pragma('table_info(mutation_receipts)') as { name: string }[];
+    expect(columns.map((row) => row.name)).toEqual([
+      'actor',
+      'operation',
+      'idempotency_key',
+      'request_hash',
+      'state',
+      'change_id',
+      'result',
+      'started_at',
+      'completed_at',
+    ]);
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
   it('adds durable maintenance capabilities to a historical version-eight database', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-migration-'));
     const dbPath = path.join(dir, 'akno.db');

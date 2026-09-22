@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PageRole, RememberManagement, ResultEnvelope } from '../common.ts';
+import { IdempotencyKey, PageRole, RememberManagement, ResultEnvelope } from '../common.ts';
 
 /**
  * **Declare a folder before writing into it.**
@@ -41,6 +41,8 @@ export const FolderInput = z.object({
   /** Makes this an inbox: arrivals are extracted, named and moved out of it. */
   route: z.boolean().optional(),
   dry_run: z.boolean().optional(),
+  /** Retry identity scoped by actor and operation. Identical retries return the first result. */
+  idempotency_key: IdempotencyKey.optional(),
 });
 export type FolderInput = z.infer<typeof FolderInput>;
 
