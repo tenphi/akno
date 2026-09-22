@@ -23,14 +23,14 @@ export type Launchctl = (args: string[]) => SpawnSyncReturns<string>;
 export function parseLaunchdPlist(plist: string): LaunchdDefinition | null {
   const argumentsBody = plist.match(/<key>ProgramArguments<\/key>\s*<array>([\s\S]*?)<\/array>/)?.[1];
   if (!argumentsBody) return null;
-  const arguments_ = [...argumentsBody.matchAll(/<string>([\s\S]*?)<\/string>/g)].map((match) =>
+  const commandArguments = [...argumentsBody.matchAll(/<string>([\s\S]*?)<\/string>/g)].map((match) =>
     unescapeXml(match[1] ?? ''),
   );
-  if (arguments_.length === 0) return null;
+  if (commandArguments.length === 0) return null;
   const calendarBody = plist.match(/<key>StartCalendarInterval<\/key>\s*<dict>([\s\S]*?)<\/dict>/)?.[1];
   const calendar = calendarBody === undefined ? null : parsePlistCalendar(calendarBody);
   if (calendarBody !== undefined && calendar === null) return null;
-  return { arguments: arguments_, calendar };
+  return { arguments: commandArguments, calendar };
 }
 
 /** Parse the content-safe subset of `launchctl print gui/<uid>/<label>`. */
@@ -39,17 +39,17 @@ export function parseLoadedLaunchdDefinition(
 ): (LaunchdDefinition & { pid: number | null }) | null {
   const argumentsBody = output.match(/^\s*arguments = \{\s*$([\s\S]*?)^\s*\}\s*$/m)?.[1];
   if (!argumentsBody) return null;
-  const arguments_ = argumentsBody
+  const commandArguments = argumentsBody
     .split(/\r?\n/)
     .map((entry) => entry.trim())
     .filter(Boolean);
-  if (arguments_.length === 0) return null;
+  if (commandArguments.length === 0) return null;
   const descriptor = output.match(/^\s*descriptor = \{\s*$([\s\S]*?)^\s*\}\s*$/m)?.[1];
   const calendar = descriptor === undefined ? null : parseLaunchdDescriptor(descriptor);
   if (descriptor !== undefined && calendar === null) return null;
   const pidText = output.match(/^\s*pid = (\d+)\s*$/m)?.[1];
   return {
-    arguments: arguments_,
+    arguments: commandArguments,
     calendar,
     pid: pidText === undefined ? null : Number(pidText),
   };
