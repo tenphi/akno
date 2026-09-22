@@ -55,6 +55,12 @@ import {
 import type { AdoptionDraft, AdoptionSnapshot } from './adopt.ts';
 import { declaringRule, effectiveRule } from '../rules/compile.ts';
 import { configuredMaintenanceAuthority, type MaintenanceAuthority } from './profile.ts';
+import {
+  OBSERVATION_SCOPE_PROMPT_VERSION,
+  observationScopeCandidateHash,
+  observationScopeContextHash,
+  type ObservationScopeEvidence,
+} from './observation-scope.ts';
 import type {
   MaintenanceNotificationMode,
   MaintenancePolicy,
@@ -172,6 +178,13 @@ export interface MaintenanceEvidence {
   observationTargetId?: string;
   observationPayloadHash?: string;
   observationQualificationIssue?: string;
+  /** Exact evidence-scope assessment bound to this proposal; absent on legacy lifecycle closures. */
+  observationScopeAssessment?: string;
+  observationScopeCandidateHash?: string;
+  observationScopeContextHash?: string;
+  observationScopePromptVersion?: string;
+  observationScopeModel?: string;
+  observationScopeNarrowed?: boolean;
   reflectionObservationId?: string;
   reflectionPayloadHash?: string;
   /** Structured link identity is required for deterministic broken-link preflight and verification. */
@@ -550,6 +563,12 @@ export interface ObservationPlanDraft {
   observationTargetId?: string;
   observationPayloadHash?: string;
   observationQualificationIssue?: string;
+  observationScopeAssessment?: string;
+  observationScopeCandidateHash?: string;
+  observationScopeContextHash?: string;
+  observationScopePromptVersion?: string;
+  observationScopeModel?: string;
+  observationScopeNarrowed?: boolean;
 }
 
 export function createObservationPlan(
@@ -630,6 +649,22 @@ function createInferencePlan(
       ...(draft.observationQualificationIssue
         ? { observationQualificationIssue: draft.observationQualificationIssue }
         : {}),
+      ...(draft.observationScopeAssessment
+        ? { observationScopeAssessment: draft.observationScopeAssessment }
+        : {}),
+      ...(draft.observationScopeCandidateHash
+        ? { observationScopeCandidateHash: draft.observationScopeCandidateHash }
+        : {}),
+      ...(draft.observationScopeContextHash
+        ? { observationScopeContextHash: draft.observationScopeContextHash }
+        : {}),
+      ...(draft.observationScopePromptVersion
+        ? { observationScopePromptVersion: draft.observationScopePromptVersion }
+        : {}),
+      ...(draft.observationScopeModel ? { observationScopeModel: draft.observationScopeModel } : {}),
+      ...(draft.observationScopeNarrowed !== undefined
+        ? { observationScopeNarrowed: draft.observationScopeNarrowed }
+        : {}),
       ...(entry.reflectionObservationId ? { reflectionObservationId: entry.reflectionObservationId } : {}),
       ...(entry.reflectionPayloadHash ? { reflectionPayloadHash: entry.reflectionPayloadHash } : {}),
     })),
@@ -642,6 +677,9 @@ function createInferencePlan(
             : 'at least three distinct live observation sources',
         status: 'passed',
       },
+      ...(draft.observationScopeAssessment
+        ? [{ name: 'exact candidate passed separate evidence-scope assessment', status: 'passed' as const }]
+        : []),
       {
         name:
           kind === 'observe' ? 'marker-owned observation block shape' : 'append-only derived principle shape',
@@ -4219,6 +4257,29 @@ function observationOperationIssue(
     return 'a reflection item must write only the configured observations/principles page';
   }
   const sources = item.evidence.filter((entry) => entry.type === 'page');
+  const firstScope = sources[0];
+  if (
+    item.kind === 'reflect' &&
+    (!firstScope?.observationScopeAssessment ||
+      !/^[a-f0-9]{64}$/.test(firstScope.observationScopeAssessment) ||
+      !firstScope.observationScopeCandidateHash ||
+      !/^[a-f0-9]{64}$/.test(firstScope.observationScopeCandidateHash) ||
+      !firstScope.observationScopeContextHash ||
+      !/^[a-f0-9]{64}$/.test(firstScope.observationScopeContextHash) ||
+      firstScope.observationScopePromptVersion !== OBSERVATION_SCOPE_PROMPT_VERSION ||
+      !firstScope.observationScopeModel ||
+      sources.some(
+        (entry) =>
+          entry.observationScopeAssessment !== firstScope.observationScopeAssessment ||
+          entry.observationScopeCandidateHash !== firstScope.observationScopeCandidateHash ||
+          entry.observationScopeContextHash !== firstScope.observationScopeContextHash ||
+          entry.observationScopePromptVersion !== firstScope.observationScopePromptVersion ||
+          entry.observationScopeModel !== firstScope.observationScopeModel ||
+          entry.observationScopeNarrowed !== firstScope.observationScopeNarrowed,
+      ))
+  ) {
+    return 'a reflection requires one exact current evidence-scope assessment';
+  }
   const minEvidence =
     item.kind === 'reflect'
       ? Math.max(3, ctx.config.maintenance.observe.minEvidence)
@@ -4259,6 +4320,12 @@ function observationOperationIssue(
   const match = /^- (\d{4}-\d{2}-\d{2}) — (.+?)(\s+(?:\[\[[^\]]+\]\]\s*)+)$/.exec(lastLine);
   if (!match || match[2]!.trim().length === 0) {
     return 'the inference item must append one dated, cited conclusion line';
+  }
+  if (
+    item.kind === 'reflect' &&
+    observationScopeCandidateHash({ pattern: match[2]!.trim() }) !== firstScope?.observationScopeCandidateHash
+  ) {
+    return 'the reflected principle changed after its evidence-scope assessment';
   }
   const citations = [...match[3]!.matchAll(/\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]/g)].map((entry) => entry[1]!);
   if (!sameStringSet(citations, sourceSlugs)) {
@@ -4367,6 +4434,28 @@ function coLocatedObservationOperationIssue(
   ) {
     return 'observation evidence disagrees about marker identity';
   }
+  if (
+    !closesInvalidLineage &&
+    (!first.observationScopeAssessment ||
+      !/^[a-f0-9]{64}$/.test(first.observationScopeAssessment) ||
+      !first.observationScopeCandidateHash ||
+      !/^[a-f0-9]{64}$/.test(first.observationScopeCandidateHash) ||
+      !first.observationScopeContextHash ||
+      !/^[a-f0-9]{64}$/.test(first.observationScopeContextHash) ||
+      first.observationScopePromptVersion !== OBSERVATION_SCOPE_PROMPT_VERSION ||
+      !first.observationScopeModel ||
+      sources.some(
+        (entry) =>
+          entry.observationScopeAssessment !== first.observationScopeAssessment ||
+          entry.observationScopeCandidateHash !== first.observationScopeCandidateHash ||
+          entry.observationScopeContextHash !== first.observationScopeContextHash ||
+          entry.observationScopePromptVersion !== first.observationScopePromptVersion ||
+          entry.observationScopeModel !== first.observationScopeModel ||
+          entry.observationScopeNarrowed !== first.observationScopeNarrowed,
+      ))
+  ) {
+    return 'an observation requires one exact current evidence-scope assessment';
+  }
   const factIds = sources.map((entry) => entry.observationFactId!);
   if (new Set(factIds).size !== factIds.length) return 'observation evidence contains a duplicate fact';
   const proofGroups = new Set(sources.flatMap((entry) => entry.observationProofGroups!));
@@ -4381,7 +4470,13 @@ function coLocatedObservationOperationIssue(
   if (markerIndex < 0) return 'the observation marker is missing from the proposed page';
   const marker = parseObservationMarker(afterPage.lines[markerIndex]!);
   const payload = afterPage.lines[markerIndex + 1]?.trim() ?? '';
-  if (!marker || marker.subject !== first.observationSubject) {
+  if (
+    !marker ||
+    marker.subject !== first.observationSubject ||
+    (!closesInvalidLineage &&
+      outcome !== 'split' &&
+      marker.scopeAssessment !== first.observationScopeAssessment)
+  ) {
     return 'the proposed observation marker does not match its sealed lineage';
   }
   if (closesInvalidLineage) {
@@ -4449,6 +4544,8 @@ function coLocatedObservationOperationIssue(
     const activeIds = activeMarkers.map((entry) => entry.id);
     if (
       patterns.some((entry) => !entry) ||
+      observationScopeCandidateHash({ pattern: patterns[0]!, splitPattern: patterns[1]! }) !==
+        first.observationScopeCandidateHash ||
       activePayloads.some((entry) => observationPayloadIssue(entry, evidenceSlugs) !== null) ||
       activeMarkers.some(
         (entry) =>
@@ -4459,6 +4556,7 @@ function coLocatedObservationOperationIssue(
             disposition: 'active',
             evidence: expectedEvidence,
             proofCount: first.observationProofCount!,
+            scopeAssessment: first.observationScopeAssessment,
           }),
       ) ||
       new Set(activeIds).size !== 2 ||
@@ -4483,6 +4581,9 @@ function coLocatedObservationOperationIssue(
   }
   const pattern = /^- \*\*Observation:\*\* (.+?) Evidence: /.exec(payload)?.[1]?.trim();
   if (!pattern) return 'the proposed observation lacks visible derived wording';
+  if (observationScopeCandidateHash({ pattern }) !== first.observationScopeCandidateHash) {
+    return 'the observation wording changed after its evidence-scope assessment';
+  }
   const expectedMarker = {
     ...marker,
     evidence: sources.map((entry) => ({
@@ -4664,6 +4765,10 @@ async function observationEvidenceIssue(
         return `${entry.source} no longer matches its sealed observation evidence.`;
       }
     }
+    if (item.policy === 'review') {
+      const scopeIssue = currentObservationScopeIssue(ctx, item);
+      if (scopeIssue) return scopeIssue;
+    }
     if (phase === 'after') {
       const operation = item.operations[0];
       if (!operation || operation.type !== 'replace') return 'the applied observation operation is missing.';
@@ -4738,6 +4843,10 @@ async function observationEvidenceIssue(
         return `${entry.source} no longer matches its sealed reflection evidence.`;
       }
     }
+    if (item.policy === 'review') {
+      const scopeIssue = currentObservationScopeIssue(ctx, item);
+      if (scopeIssue) return scopeIssue;
+    }
     return null;
   }
   const expectedRole = item.kind === 'reflect' ? 'inference' : 'knowledge';
@@ -4767,6 +4876,132 @@ async function observationEvidenceIssue(
     }
   }
   return null;
+}
+
+/** Rebuild the complete bounded assessment input so delayed review plans cannot outlive context changes. */
+function currentObservationScopeIssue(ctx: AknoContext, item: MaintenanceItem): string | null {
+  const expected = item.evidence[0]?.observationScopeContextHash;
+  if (!expected) return 'the inference plan is missing its sealed complete evidence scope.';
+  const evidence =
+    item.kind === 'observe'
+      ? currentLevelTwoScope(ctx, item)
+      : item.kind === 'reflect'
+        ? currentLevelThreeScope(ctx, item)
+        : null;
+  if (!evidence || observationScopeContextHash(evidence) !== expected) {
+    return 'the complete current evidence scope changed after its assessment was sealed.';
+  }
+  return null;
+}
+
+function currentLevelTwoScope(ctx: AknoContext, item: MaintenanceItem): ObservationScopeEvidence[] | null {
+  const subject = item.evidence[0]?.observationSubject;
+  if (!subject) return null;
+  const selected = new Set(item.evidence.map((entry) => entry.observationFactId).filter(Boolean));
+  const rows = ctx.store.db
+    .prepare(
+      `SELECT f.id, f.claim, f.item_id, p.id AS page_id, p.slug,
+              g.eligibility, g.traversable
+         FROM facts f JOIN pages p ON p.id = f.page_id
+         JOIN graph_fact_status g ON g.fact_id = f.id
+        WHERE f.valid_to IS NULL
+          AND f.confidence >= 0.5
+          AND p.role = 'knowledge'
+          AND p.derived_hash = p.body_hash
+          AND g.subject_entity = ?
+        ORDER BY p.slug, f.id`,
+    )
+    .all(subject) as {
+    id: string;
+    claim: string;
+    item_id: string | null;
+    page_id: string;
+    slug: string;
+    eligibility: string;
+    traversable: number;
+  }[];
+  const evidence: ObservationScopeEvidence[] = [];
+  let characters = 0;
+  for (const row of rows) {
+    const nextCharacters = row.id.length + row.claim.length + row.slug.length;
+    if (evidence.length >= 80 || characters + nextCharacters > 80_000) return null;
+    const proofs = proofGroupsForFact(ctx.store, row.id, row.page_id, row.item_id);
+    const conflictReason = row.eligibility.startsWith('conflict_') ? row.eligibility : null;
+    const canSupport =
+      !conflictReason && row.eligibility === 'eligible' && row.traversable === 1 && proofs.size > 0;
+    const isSelected = selected.has(row.id);
+    evidence.push({
+      id: row.id,
+      claim: row.claim,
+      slug: row.slug,
+      status: isSelected
+        ? 'selected_support'
+        : conflictReason
+          ? 'counterevidence'
+          : canSupport
+            ? 'eligible_context'
+            : 'ineligible_context',
+      ...(!isSelected && !canSupport
+        ? {
+            statusReason: conflictReason ?? `graph_${row.eligibility}_${row.traversable ? 'linked' : 'held'}`,
+          }
+        : {}),
+    });
+    characters += nextCharacters;
+  }
+  return evidence.sort((a, b) => `${a.slug}\0${a.id}`.localeCompare(`${b.slug}\0${b.id}`));
+}
+
+function currentLevelThreeScope(ctx: AknoContext, item: MaintenanceItem): ObservationScopeEvidence[] | null {
+  const rows = ctx.store.db
+    .prepare(
+      `SELECT oe.id, oe.source_slug AS slug, oe.payload
+         FROM observation_entries oe JOIN pages p ON p.id = oe.source_page
+        WHERE oe.eligible = 1 AND oe.disposition = 'active'
+        ORDER BY p.updated_at DESC, oe.source_slug, oe.marker_line DESC, oe.id LIMIT 41`,
+    )
+    .all() as { id: string; slug: string; payload: string }[];
+  if (rows.length > 40) return null;
+  const selected = new Set(item.evidence.map((entry) => entry.reflectionObservationId).filter(Boolean));
+  const evidence: ObservationScopeEvidence[] = [];
+  let leafCount = 0;
+  let characters = 0;
+  for (const row of rows) {
+    const leaves = ctx.store.db
+      .prepare(
+        `SELECT f.id, f.claim, p.slug
+           FROM observation_evidence oe JOIN facts f ON f.id = oe.fact_id
+           JOIN pages p ON p.id = f.page_id
+          WHERE oe.observation_id = ? AND f.valid_to IS NULL
+          ORDER BY oe.ordinal`,
+      )
+      .all(row.id) as { id: string; claim: string; slug: string }[];
+    const expected = ctx.store.db
+      .prepare('SELECT count(*) AS count FROM observation_evidence WHERE observation_id = ?')
+      .get(row.id) as { count: number };
+    const nextCharacters =
+      row.id.length +
+      row.slug.length +
+      row.payload.length +
+      leaves.reduce((sum, leaf) => sum + leaf.id.length + leaf.slug.length + leaf.claim.length, 0);
+    if (
+      leaves.length !== expected.count ||
+      leafCount + leaves.length > 120 ||
+      characters + nextCharacters > 80_000
+    ) {
+      return null;
+    }
+    evidence.push({
+      id: row.id,
+      claim: row.payload,
+      slug: row.slug,
+      status: selected.has(row.id) ? 'selected_support' : 'eligible_context',
+      leaves,
+    });
+    leafCount += leaves.length;
+    characters += nextCharacters;
+  }
+  return evidence.sort((a, b) => `${a.slug}\0${a.id}`.localeCompare(`${b.slug}\0${b.id}`));
 }
 
 async function curationPageEvidenceIssue(

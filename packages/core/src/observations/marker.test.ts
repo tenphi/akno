@@ -27,6 +27,15 @@ describe('level-two observation markers', () => {
     expect(parseObservationMarker(rendered)).toEqual(marker);
   });
 
+  it('round-trips new scope provenance without relabeling legacy markers', () => {
+    const assessed = { ...marker, scopeAssessment: 'c'.repeat(64) };
+    const rendered = renderObservationMarker(assessed);
+    expect(rendered).toContain('v=2 level=2');
+    expect(rendered).toContain(`scope=${'c'.repeat(64)}`);
+    expect(parseObservationMarker(rendered)).toEqual(assessed);
+    expect(renderObservationMarker(marker)).toContain('v=1 level=2');
+  });
+
   it('fails closed for correlated, duplicate, or mismatched lineage', () => {
     expect(
       observationMarkerIssue({

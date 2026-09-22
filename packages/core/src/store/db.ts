@@ -277,6 +277,20 @@ function migrate(db: Database.Database): void {
       if (!tableExists(db, 'mutation_receipts')) {
         db.exec(MIGRATIONS[MUTATION_RECEIPTS_MIGRATION_INDEX]!);
       }
+      if (!columnExists(db, 'observation_entries', 'scope_assessment')) {
+        db.exec('ALTER TABLE observation_entries ADD COLUMN scope_assessment TEXT');
+      }
+      if (!tableExists(db, 'observation_scope_verdicts')) {
+        db.exec(`CREATE TABLE observation_scope_verdicts (
+          fingerprint         TEXT PRIMARY KEY,
+          classifier_endpoint TEXT NOT NULL,
+          prompt_version      TEXT NOT NULL,
+          verdict             TEXT NOT NULL,
+          created_at          TEXT NOT NULL
+        );
+        CREATE INDEX observation_scope_verdicts_model
+          ON observation_scope_verdicts(classifier_endpoint, prompt_version, created_at);`);
+      }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);
   })();

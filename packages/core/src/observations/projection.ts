@@ -12,7 +12,7 @@ import {
   type ObservationMarker,
 } from './marker.ts';
 
-export const OBSERVATION_PROJECTION_VERSION = 'observation-v1';
+export const OBSERVATION_PROJECTION_VERSION = 'observation-v2-scope';
 
 export interface ObservationProjectionReport {
   indexed: number;
@@ -38,8 +38,8 @@ export function replaceObservationEntries(
   const entry = store.db.prepare(
     `INSERT INTO observation_entries(
        id, source_page, source_slug, marker_line, payload_line, subject_entity, disposition,
-       payload, payload_hash, proof_count, eligible, issue
-     ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 'pending evidence qualification')`,
+       payload, payload_hash, proof_count, scope_assessment, eligible, issue
+     ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 'pending evidence qualification')`,
   );
   const evidence = store.db.prepare(
     `INSERT INTO observation_evidence(
@@ -86,6 +86,7 @@ export function replaceObservationEntries(
         payload,
         hashPayload(payload),
         marker.proofCount,
+        marker.scopeAssessment ?? null,
       );
       marker.evidence.forEach((locator, ordinal) => {
         evidence.run(
@@ -157,7 +158,7 @@ export function qualifyObservationLines<T extends Line>(
   const rows = store.db
     .prepare(
       `SELECT id, marker_line, payload_line, subject_entity, disposition, payload_hash,
-              proof_count, eligible, issue
+              proof_count, scope_assessment, eligible, issue
          FROM observation_entries WHERE source_page = ?`,
     )
     .all(pageId) as Pick<
@@ -169,6 +170,7 @@ export function qualifyObservationLines<T extends Line>(
     | 'disposition'
     | 'payload_hash'
     | 'proof_count'
+    | 'scope_assessment'
     | 'eligible'
     | 'issue'
   >[];
@@ -239,6 +241,14 @@ export function qualifyObservationLines<T extends Line>(
             disposition: row.disposition,
             proof_count: row.proof_count,
             evidence: observationEvidenceDetails(store, row.id),
+            ...(row.scope_assessment
+              ? {
+                  scope_assessment: {
+                    status: 'assessed' as const,
+                    fingerprint: row.scope_assessment,
+                  },
+                }
+              : {}),
           }
         : {
             status: 'ineligible',
@@ -288,6 +298,7 @@ interface ObservationRow {
   payload: string;
   payload_hash: string;
   proof_count: number;
+  scope_assessment: string | null;
   eligible: number;
   issue: string | null;
 }
@@ -495,5 +506,6 @@ export function markerFromProjection(store: Store, id: string): ObservationMarke
     disposition: row.disposition,
     evidence: observationEvidenceRows(store, id),
     proofCount: row.proof_count,
+    ...(row.scope_assessment ? { scopeAssessment: row.scope_assessment } : {}),
   };
 }

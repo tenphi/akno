@@ -13,7 +13,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 42;
+export const SCHEMA_VERSION = 43;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -1259,6 +1259,21 @@ export const MIGRATIONS: string[] = [
         OR (state != 'completed' AND result IS NULL AND completed_at IS NULL))
   );
   CREATE INDEX mutation_receipts_change ON mutation_receipts(change_id);`,
+  // A scope-assessed observation keeps the opaque assessment fingerprint in its authoritative
+  // Markdown marker. The projection exposes it without relabeling legacy observations as assessed.
+  // Cached verdicts are content-addressed derived state: exact evidence remains in Markdown/facts,
+  // while only a bounded proposed narrowing may be retained beside the typed verdict.
+  `ALTER TABLE observation_entries ADD COLUMN scope_assessment TEXT;
+
+  CREATE TABLE observation_scope_verdicts (
+    fingerprint         TEXT PRIMARY KEY,
+    classifier_endpoint TEXT NOT NULL,
+    prompt_version      TEXT NOT NULL,
+    verdict             TEXT NOT NULL,
+    created_at          TEXT NOT NULL
+  );
+  CREATE INDEX observation_scope_verdicts_model
+    ON observation_scope_verdicts(classifier_endpoint, prompt_version, created_at);`,
 ];
 
 /**

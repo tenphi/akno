@@ -59,11 +59,35 @@ describe('the observation projection', () => {
         { fact: 'fac_22222222', slug: 'logs/two' },
       ],
     });
+    expect(lines.find((line) => line.n === payloadLine)?.observation).not.toHaveProperty('scope_assessment');
 
     replaceObservationEntries(store, 'pag_target', page);
     qualifyObservationEntries(store);
     expect(store.db.prepare('SELECT count(*) AS n FROM observation_entries').get()).toEqual({ n: 1 });
     expect(store.db.prepare('SELECT count(*) AS n FROM observation_evidence').get()).toEqual({ n: 2 });
+  });
+
+  it('rebuilds scope provenance only for an explicitly assessed marker', () => {
+    const marker = { ...markerForFixture(), scopeAssessment: 'd'.repeat(64) };
+    const page = parsePage(
+      'people/ada-marlow.md',
+      `# Ada Marlow\n\n${observationBlock(marker, 'Ada Marlow consistently chooses the quiet route.', [
+        'logs/one',
+        'logs/two',
+      ])}\n`,
+    );
+    replaceObservationEntries(store, 'pag_target', page);
+    qualifyObservationEntries(store);
+    const payloadLine = page.lines.findIndex((line) => line.startsWith('- **Observation:**')) + page.bodyLine;
+    const lines = qualifyObservationLines(
+      store,
+      'pag_target',
+      page.lines.map((text, index) => ({ n: page.bodyLine + index, text })),
+    );
+    expect(lines.find((line) => line.n === payloadLine)?.observation).toMatchObject({
+      status: 'eligible',
+      scope_assessment: { status: 'assessed', fingerprint: 'd'.repeat(64) },
+    });
   });
 
   it('excludes stale lineage and policy drift without rewriting Markdown', () => {

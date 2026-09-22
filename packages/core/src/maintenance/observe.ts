@@ -143,6 +143,20 @@ const TEMPLATE = /\[[a-z ]{3,20}\]/i;
 const HEDGES =
   /\b(might|may|maybe|seems?|appears?|possibly|probably|perhaps|likely|unlikely|could be|suggests?|apparently|tends? to suggest)\b/i;
 
+/** Deterministic wording floor shared by generated and separately narrowed exact proposals. */
+export function observationPatternIssue(pattern: string, knownFacts: string[] = []): string | null {
+  if (pattern.length < 12 || pattern.length > 400) return 'pattern is outside the bounded length';
+  if (HEDGES.test(pattern)) return 'hedged language';
+  if (SENSITIVE.test(pattern)) return "inferring about a person's private life is out of bounds";
+  if (ABOUT_THE_RECORDS.test(pattern)) return 'describes the records rather than what they record';
+  if (RECORDS_SAY.test(pattern)) return 'one fact restated as "the records consistently say it"';
+  if (TEMPLATE.test(pattern)) return 'a template with placeholders, not a claim';
+  if (knownFacts.length > 0 && restatesAFact(pattern, knownFacts)) {
+    return 'restates a fact rather than observing across them';
+  }
+  return null;
+}
+
 export interface ObserveInput {
   subject: string;
   /** Facts as shown to the model. `id` is exact in production; omission keeps fixture callers compatible. */
@@ -245,30 +259,12 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
     if (typeof entry !== 'object' || entry === null) continue;
     const record = entry as Record<string, unknown>;
     const pattern = typeof record.pattern === 'string' ? record.pattern.trim().replace(/\s+/g, ' ') : '';
-    if (pattern.length < 12 || pattern.length > 400) continue;
-
-    if (HEDGES.test(pattern)) {
-      rejected.push({ pattern, reason: 'hedged language' });
-      continue;
-    }
-
-    if (SENSITIVE.test(pattern)) {
-      rejected.push({ pattern, reason: "inferring about a person's private life is out of bounds" });
-      continue;
-    }
-
-    if (ABOUT_THE_RECORDS.test(pattern)) {
-      rejected.push({ pattern, reason: 'describes the records rather than what they record' });
-      continue;
-    }
-
-    if (RECORDS_SAY.test(pattern)) {
-      rejected.push({ pattern, reason: 'one fact restated as "the records consistently say it"' });
-      continue;
-    }
-
-    if (TEMPLATE.test(pattern)) {
-      rejected.push({ pattern, reason: 'a template with placeholders, not a claim' });
+    const wordingIssue = observationPatternIssue(
+      pattern,
+      input.facts.map((fact) => fact.claim).concat(input.knownFacts ?? []),
+    );
+    if (wordingIssue) {
+      rejected.push({ pattern, reason: wordingIssue });
       continue;
     }
 
@@ -327,11 +323,6 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
       continue;
     }
 
-    if (restatesAFact(pattern, input.facts.map((fact) => fact.claim).concat(input.knownFacts ?? []))) {
-      rejected.push({ pattern, reason: 'restates a fact rather than observing across them' });
-      continue;
-    }
-
     const confidence = typeof record.confidence === 'number' ? clamp(record.confidence) : 0.6;
     const splitPattern =
       outcome === 'split' && typeof record.split_pattern === 'string'
@@ -339,6 +330,17 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
         : undefined;
     if (outcome === 'split' && (!splitPattern || splitPattern.length < 12 || splitPattern.length > 400)) {
       rejected.push({ pattern, reason: 'split requires a second bounded pattern' });
+      continue;
+    }
+    if (
+      outcome === 'split' &&
+      splitPattern &&
+      observationPatternIssue(
+        splitPattern,
+        input.facts.map((fact) => fact.claim).concat(input.knownFacts ?? []),
+      )
+    ) {
+      rejected.push({ pattern, reason: 'split contains an invalid second pattern' });
       continue;
     }
     if (

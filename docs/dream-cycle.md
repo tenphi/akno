@@ -149,6 +149,15 @@ and authority, then journalled, re-indexed, verified, and undoable. Invalid line
 recall and graph traversal immediately. If write policy cannot apply the corresponding weaken/retract marker
 update, the cycle reports it as held instead of continuing to use the observation.
 
+Before a new or revised conclusion reaches that plan, a separate evidence-scope assessment sees the complete
+bounded current fact set for the exact subject, including supplied counterevidence rather than only the facts
+the generator cited. It must preserve population, time, circumstances, attribution, quantifiers, and relevant
+exceptions. Independent-source count and model confidence do not substitute for semantic support. The assessor
+may admit the exact sentence, propose one narrower exact sentence, or return a typed hold. A narrowing passes
+the deterministic wording guards and a fresh assessment before it can be sealed. If the complete context or
+required assessment is unavailable, the candidate is held. Content-addressed verdicts avoid another assessment
+on an unchanged repeated cycle; changed context produces a new assessment.
+
 The phase is off by default because guardrails can reject unsafe output but cannot make a weak model insightful.
 It cannot use another observation as same-level evidence, infer private-life claims, or accept hedged or
 record-describing conclusions.
@@ -158,7 +167,9 @@ record-describing conclusions.
 Reflect discovers eligible L2 markers through the index and derives reusable principles from at least three
 distinct observation ids. L3 principles remain on the configured `observations/principles` page and use the
 same plan, decision, stale-input, append-only, re-index, and verification lifecycle. It is also off by default
-because small corpora make “patterns of patterns” especially fragile.
+because small corpora make “patterns of patterns” especially fragile. Its scope assessment expands selected L2
+sources back to their current leaf facts and also sees the other supplied eligible observations; a principle
+cannot silently broaden their time, population, circumstances, exceptions, association, or attribution.
 
 ### 4. Curate
 

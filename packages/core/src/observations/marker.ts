@@ -13,6 +13,8 @@ export interface ObservationMarker {
   disposition: ObservationDisposition;
   evidence: ObservationEvidenceLocator[];
   proofCount: number;
+  /** Opaque fingerprint of the exact separately assessed candidate and complete evidence context. */
+  scopeAssessment?: string;
 }
 
 const ID = /^obs_[A-Za-z0-9_-]{8,72}$/;
@@ -29,10 +31,11 @@ export function observationId(subject: string, pattern: string): string {
 export function renderObservationMarker(marker: ObservationMarker): string {
   const issue = observationMarkerIssue(marker);
   if (issue) throw new Error(`invalid observation marker: ${issue}`);
+  const version = marker.scopeAssessment ? 2 : 1;
   return (
-    `<!-- akno:observation ${marker.id} v=1 level=2 subject=${marker.subject} ` +
+    `<!-- akno:observation ${marker.id} v=${version} level=2 subject=${marker.subject} ` +
     `disposition=${marker.disposition} evidence=${marker.evidence.map(renderLocator).join(',')} ` +
-    `proofs=${marker.proofCount} -->`
+    `proofs=${marker.proofCount}${marker.scopeAssessment ? ` scope=${marker.scopeAssessment}` : ''} -->`
   );
 }
 
@@ -47,12 +50,22 @@ export function parseObservationMarker(line: string): ObservationMarker | null {
     cursor += 1;
     return token.slice(name.length + 1);
   };
-  if (take('v') !== '1' || take('level') !== '2') return null;
+  const version = take('v');
+  if ((version !== '1' && version !== '2') || take('level') !== '2') return null;
   const subject = take('subject');
   const disposition = take('disposition');
   const evidenceRaw = take('evidence');
   const proofCountRaw = take('proofs');
-  if (!subject || !disposition || !evidenceRaw || !proofCountRaw || cursor !== tokens.length) return null;
+  const scopeAssessment = version === '2' ? take('scope') : null;
+  if (
+    !subject ||
+    !disposition ||
+    !evidenceRaw ||
+    !proofCountRaw ||
+    (version === '2' && !scopeAssessment) ||
+    cursor !== tokens.length
+  )
+    return null;
   const evidence = evidenceRaw.split(',').map(parseLocator);
   const proofCount = Number(proofCountRaw);
   if (evidence.some((entry) => entry === null) || !Number.isInteger(proofCount)) return null;
@@ -62,6 +75,7 @@ export function parseObservationMarker(line: string): ObservationMarker | null {
     disposition: disposition as ObservationDisposition,
     evidence: evidence as ObservationEvidenceLocator[],
     proofCount,
+    ...(scopeAssessment ? { scopeAssessment } : {}),
   };
   return observationMarkerIssue(marker) ? null : marker;
 }
@@ -78,6 +92,9 @@ export function observationMarkerIssue(marker: ObservationMarker): string | null
   const proofs = independentProofGroups(marker.evidence);
   if (marker.proofCount !== proofs.size) return 'proof-count mismatch';
   if (marker.proofCount < 2) return 'insufficient independent proof';
+  if (marker.scopeAssessment !== undefined && !HASH.test(marker.scopeAssessment)) {
+    return 'invalid scope assessment';
+  }
   return null;
 }
 

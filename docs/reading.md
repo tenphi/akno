@@ -116,6 +116,12 @@ queries may promote it. Malformed markers and blocks whose facts, hashes, proof 
 authority no longer qualify remain readable with `status: "ineligible"`, but are excluded from factual recall,
 automatic context, and graph traversal.
 
+New observations that passed the separate evidence-scope gate also expose
+`scope_assessment: {status: "assessed", fingerprint}`. The fingerprint binds the exact sentence, complete
+bounded evidence context, prompt, and configured model; it is not a probability or certificate of world truth.
+Legacy observations omit this field and are never relabeled as having passed a check that did not exist when
+they were created.
+
 ### Reranking also qualifies
 
 A successful reranker may remove judged-irrelevant candidates. Candidates outside its bounded window are
