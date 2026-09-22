@@ -97,6 +97,12 @@ describe('the socket door', () => {
         'plan',
         'migrate',
       ]);
+      expect(client.hello.runtime).toMatchObject({
+        pid: process.pid,
+        executable: process.execPath,
+        entrypoint: process.argv[1] ?? null,
+        state_dir: stateDir,
+      });
     } finally {
       await client.close();
     }
@@ -340,6 +346,82 @@ describe('the socket door', () => {
       });
       expect(fellBack).toBe(false);
     } finally {
+      mem.dream = originalDream;
+    }
+  });
+
+  it('does not replay an accepted command whose service response is unavailable', async () => {
+    const originalDream = mem.dream;
+    mem.dream = async () => {
+      throw new AknoError('unavailable', 'the accepted dream lost its response connection');
+    };
+    let fellBack = false;
+
+    try {
+      await expect(
+        runMaintenance(
+          'dream',
+          { phase: 'housekeeping' },
+          { json: true },
+          { aknoPath: root, stateDir },
+          async () => {
+            fellBack = true;
+            throw new Error('the accepted command was incorrectly replayed');
+          },
+        ),
+      ).rejects.toMatchObject({
+        code: 'unavailable',
+        message: 'the accepted dream lost its response connection',
+      });
+      expect(fellBack).toBe(false);
+    } finally {
+      mem.dream = originalDream;
+    }
+  });
+
+  it('keeps an operator command connected beyond the former default deadline', async () => {
+    const originalDream = mem.dream;
+    let release!: () => void;
+    let started!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const accepted = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    mem.dream = async (...args) => {
+      started();
+      await gate;
+      return originalDream(...args);
+    };
+    const client = await connect({ socket: server.path });
+
+    try {
+      let state: 'pending' | 'resolved' | 'rejected' = 'pending';
+      const result = client.command('dream', { phase: 'housekeeping' }).then(
+        (value) => {
+          state = 'resolved';
+          return { value };
+        },
+        (error: unknown) => {
+          state = 'rejected';
+          return { error };
+        },
+      );
+      await accepted;
+
+      vi.useFakeTimers();
+      await vi.advanceTimersByTimeAsync(15 * 60_000 + 1);
+      expect(state).toBe('pending');
+
+      vi.useRealTimers();
+      release();
+      expect(await result).toHaveProperty('value');
+      expect(state).toBe('resolved');
+    } finally {
+      vi.useRealTimers();
+      release();
+      await client.close();
       mem.dream = originalDream;
     }
   });

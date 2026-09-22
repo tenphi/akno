@@ -265,23 +265,33 @@ function systemctlError(args: string[], result: SpawnSyncReturns<string>): Error
 }
 
 export function isCompatibleAknoHello(line: string): boolean {
+  const hello = parseAknoHello(line);
+  return hello !== null && hello.protocol === PROTOCOL_VERSION;
+}
+
+function parseAknoHello(line: string): Hello | null {
   try {
     const hello = Hello.safeParse(JSON.parse(line.trim()));
-    return hello.success && hello.data.protocol === PROTOCOL_VERSION;
+    return hello.success ? hello.data : null;
   } catch {
-    return false;
+    return null;
   }
 }
 
 export async function aknoSocketIsReady(socketPath: string): Promise<boolean> {
+  const hello = await readAknoHello(socketPath);
+  return hello !== null && hello.protocol === PROTOCOL_VERSION;
+}
+
+export async function readAknoHello(socketPath: string): Promise<Hello | null> {
   const socket = net.createConnection(socketPath);
   socket.setEncoding('utf8');
   try {
     await once(socket, 'connect', { signal: AbortSignal.timeout(500) });
     const [chunk] = (await once(socket, 'data', { signal: AbortSignal.timeout(500) })) as [string];
-    return isCompatibleAknoHello(chunk.split('\n')[0] ?? '');
+    return parseAknoHello(chunk.split('\n')[0] ?? '');
   } catch {
-    return false;
+    return null;
   } finally {
     socket.destroy();
   }

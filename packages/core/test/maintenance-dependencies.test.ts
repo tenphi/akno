@@ -155,6 +155,10 @@ describe('maintenance plan dependencies', () => {
     expect(maintenancePlanStatusAfterApply(mixed)).toBe('failed');
     mixed.items[1]!.statusCode = 'dependency_unmet';
     expect(maintenancePlanStatusAfterApply(mixed)).toBe('failed');
+    mixed.items[1]!.statusCode = null;
+    expect(maintenancePlanStatusAfterApply(mixed)).toBe('failed');
+    mixed.items[1]!.statusCode = 'inverse_transformation';
+    expect(maintenancePlanStatusAfterApply(mixed)).toBe('failed');
   });
 
   it('orders canonical creators and blocks deletions that would invalidate sealed references', () => {

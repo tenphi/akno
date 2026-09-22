@@ -182,12 +182,27 @@ export async function runMaintenance<T>(
   const socketPath = target.socketPath;
 
   if (values.connect || fs.existsSync(socketPath)) {
+    let client: Awaited<ReturnType<typeof connectToTarget>> | null = null;
     try {
-      const client = await connectToTarget(target);
+      client = await connectToTarget(target);
+    } catch (err) {
+      const error = AknoError.from(err);
+      // `--connect` means the caller wants the service or nothing; otherwise a stale socket
+      // file from a crashed service must not stop a one-off pass.
+      if (values.connect || error.code !== 'unavailable') throw error;
+      if (!values.json) {
+        process.stderr.write(style.grey(`no service on ${socketPath}; running in-process\n`));
+      }
+    }
+
+    if (client) {
       try {
         if (!values.json) {
           process.stderr.write(style.grey(`via the service on ${socketPath}\n`));
         }
+        // Once the writer has accepted a command, an unavailable response is ambiguous: the
+        // connection may have disappeared while work continues. Never replay that work in a
+        // second process; surface the original result and let the operator inspect its run.
         return await withWaitUpdates(
           client.command(command, input) as Promise<T>,
           'socket',
@@ -196,17 +211,6 @@ export async function runMaintenance<T>(
         );
       } finally {
         await client.close();
-      }
-    } catch (err) {
-      const error = AknoError.from(err);
-      // A command error came from a healthy service and must reach its caller intact. Falling
-      // back here used to turn a precise refusal into a second, misleading in-process attempt.
-      if (error.code !== 'unavailable') throw error;
-      // `--connect` means the caller wants the service or nothing; otherwise a stale socket
-      // file from a crashed service must not stop a one-off pass.
-      if (values.connect) throw error;
-      if (!values.json) {
-        process.stderr.write(style.grey(`no service on ${socketPath}; running in-process\n`));
       }
     }
   }

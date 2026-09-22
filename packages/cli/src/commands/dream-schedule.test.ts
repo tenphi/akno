@@ -38,12 +38,23 @@ describe('dream schedule status', () => {
     );
   });
 
+  it('reports drifted and unverifiable loaded definitions before timing health', () => {
+    const now = new Date(2030, 0, 2, 6, 0);
+    expect(calculateDreamSchedule(probe(now, { definition: 'drifted' }), null).health).toBe(
+      'definition_drift',
+    );
+    expect(calculateDreamSchedule(probe(now, { definition: 'unavailable' }), null).health).toBe(
+      'definition_unknown',
+    );
+  });
+
   it('reports whether the separate missed-cycle checker is actually loaded', () => {
     const status = calculateDreamSchedule(
       probe(new Date(2030, 0, 2, 6, 0), {
         missedCycleCheck: {
           installed: true,
           loaded: true,
+          definition: 'matching',
           calendar: { hour: 5, minute: 5 },
         },
       }),
@@ -53,6 +64,7 @@ describe('dream schedule status', () => {
       label: 'dev.akno.dream-health',
       installed: true,
       loaded: true,
+      definition: 'matching',
       hour: 5,
       minute: 5,
     });
@@ -80,6 +92,7 @@ function probe(
     platform: 'darwin',
     installed: true,
     loaded: true,
+    definition: 'matching',
     installedAt: new Date(2029, 11, 1, 12, 0),
     calendar: { hour: 3, minute: 0 },
     now,

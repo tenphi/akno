@@ -87,6 +87,16 @@ export interface IndexOptions {
    * and the two scopes are genuinely different questions.
    */
   modelPaths?: string[];
+  /**
+   * Carry a completed derivation across an exact structural-only body transition whose factual
+   * view the caller proved unchanged. This is intentionally internal maintenance authority: a
+   * normal write must leave the new body pending derivation.
+   */
+  preserveDerivedViews?: {
+    relPath: string;
+    fromBodyHash: string;
+    toBodyHash: string;
+  }[];
 }
 
 export interface IndexProgress {
@@ -451,6 +461,14 @@ export class Indexer {
         report.warnings.push(`could not index ${file.relPath}: ${errorMessage(err)}`);
       }
       progress({ phase: 'pages', done: ++pageIndex, total: pageFiles.length, detail: file.relPath });
+    }
+    for (const preserved of options.preserveDerivedViews ?? []) {
+      this.#store.db
+        .prepare(
+          `UPDATE pages SET derived_hash = body_hash
+            WHERE rel_path = ? AND derived_hash = ? AND body_hash = ?`,
+        )
+        .run(preserved.relPath, preserved.fromBodyHash, preserved.toBodyHash);
     }
 
     // ── Attachments ────────────────────────────────────────────────────────

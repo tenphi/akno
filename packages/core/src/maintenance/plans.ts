@@ -2116,7 +2116,13 @@ function intersects(left: ReadonlySet<string>, right: ReadonlySet<string>): bool
   return false;
 }
 
-/** Oldest unfinished plan for restart recovery; fresh planning waits until it is resolved. */
+/**
+ * Oldest plan with work that can actually progress after restart.
+ *
+ * Older versions could leave a mixed plan as `partially_completed` after its only remaining
+ * items became blocked, stale, or verification-failed. Plan status alone therefore cannot decide
+ * whether a plan is resumable: selecting that residual forever would starve independent work.
+ */
 export function findActiveMaintenancePlan(
   ctx: AknoContext,
   mode: MaintenanceMode,
@@ -2126,6 +2132,11 @@ export function findActiveMaintenancePlan(
     .prepare(
       `SELECT id FROM maintenance_plans WHERE mode = ? AND phase = ?
        AND status NOT IN ('completed', 'failed', 'superseded')
+       AND EXISTS (
+         SELECT 1 FROM maintenance_items item
+          WHERE item.plan_id = maintenance_plans.id
+            AND item.status IN ('proposed', 'approved', 'applying', 'verification_pending')
+       )
        ORDER BY rowid LIMIT 1`,
     )
     .get(mode, phase) as { id: string } | undefined;
@@ -3738,10 +3749,33 @@ async function indexMaintenanceItem(
   await Promise.all(paths.map((relPath) => safeOperationPath(ctx, relPath)));
   alignRelocatedPageRow(ctx, item, documentState);
   alignMovedDocumentRows(ctx, item.operations, documentState);
+  const preserveDerivedViews =
+    item.kind === 'observe' &&
+    item.evidence.some((entry) => entry.source === item.subject) &&
+    observationOperationIssue(ctx, item, item.operations) === null
+      ? item.operations.flatMap((operation) =>
+          operation.type === 'replace'
+            ? [
+                {
+                  relPath: operation.relPath,
+                  fromBodyHash: parsePage(
+                    operation.relPath,
+                    documentState === 'after' ? operation.before : operation.after,
+                  ).bodyHash,
+                  toBodyHash: parsePage(
+                    operation.relPath,
+                    documentState === 'after' ? operation.after : operation.before,
+                  ).bodyHash,
+                },
+              ]
+            : [],
+        )
+      : [];
   await ctx.indexer.run({
     only: paths,
     modelPaths: [],
     ...(item.kind === 'adopt' ? { reindexUnchanged: true } : {}),
+    ...(preserveDerivedViews.length > 0 ? { preserveDerivedViews } : {}),
   });
 }
 
@@ -4612,7 +4646,21 @@ async function observationEvidenceIssue(
       const bytes = await fsp
         .readFile(path.join(ctx.config.aknoPath, fact.rel_path), 'utf8')
         .catch(() => null);
-      if (bytes === null || sha256(bytes) !== entry.fingerprint) {
+      const coLocatedOperation =
+        phase === 'after' && entry.source === item.subject
+          ? item.operations.find(
+              (operation): operation is ReplaceOperation =>
+                operation.type === 'replace' &&
+                operation.relPath === fact.rel_path &&
+                sha256(operation.before) === entry.fingerprint,
+            )
+          : undefined;
+      if (
+        bytes === null ||
+        (coLocatedOperation
+          ? sha256(bytes) !== coLocatedOperation.afterHash
+          : sha256(bytes) !== entry.fingerprint)
+      ) {
         return `${entry.source} no longer matches its sealed observation evidence.`;
       }
     }
@@ -5518,16 +5566,10 @@ export function maintenancePlanStatusAfterApply(plan: MaintenancePlan): Maintena
   else if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'review')) {
     return 'awaiting_review';
   } else if (statuses.includes('proposed')) return 'ready';
-  else if (
-    plan.items.some((item) =>
-      ['dependency_conflict', 'dependency_unmet', 'snapshot_drift'].includes(item.statusCode ?? ''),
-    )
-  ) {
-    // These items need a new plan, unlike budget and verification deferrals. Keeping this plan
-    // active would make the next cycle resume a terminal item forever instead of replanning it.
-    return 'failed';
-  } else if (statuses.every((value) => value === 'applied' || value === 'rejected')) return 'completed';
-  else if (statuses.includes('applied')) return 'partially_completed';
+  else if (statuses.every((value) => value === 'applied' || value === 'rejected')) return 'completed';
+  // Every status left here is terminal for this sealed item. That includes untyped `blocked` rows
+  // persisted before status codes existed: keeping a mixed applied/blocked plan nonterminal makes
+  // it look resumable even though apply has no legal next step.
   return 'failed';
 }
 
@@ -5539,33 +5581,35 @@ function setPlanStatus(ctx: AknoContext, planId: string, status: MaintenancePlan
 
 export function finalizeRetryableMaintenancePlans(ctx: AknoContext): number {
   requireWritable(ctx);
-  const result = ctx.store.db
-    .prepare(
-      `UPDATE maintenance_plans AS plan
-          SET status = 'failed', updated_at = ?
-        WHERE plan.status = 'partially_completed'
-          AND EXISTS (
-            SELECT 1 FROM maintenance_items item
-             WHERE item.plan_id = plan.id
-               AND item.status_code IN ('dependency_conflict', 'dependency_unmet', 'snapshot_drift')
-          )
-          AND NOT EXISTS (
-            SELECT 1 FROM maintenance_items item
-             WHERE item.plan_id = plan.id
-               AND item.status IN ('proposed', 'approved', 'applying', 'verification_pending')
-          )
-          AND NOT EXISTS (
-            SELECT 1 FROM maintenance_items item
-             WHERE item.plan_id = plan.id
-               AND item.status IN ('blocked', 'stale', 'verification_failed')
-               AND NOT (
-                 (item.status = 'blocked' AND item.status_code IN ('dependency_conflict', 'dependency_unmet'))
-                 OR (item.status = 'stale' AND item.status_code = 'snapshot_drift')
-               )
-          )`,
-    )
-    .run(new Date().toISOString());
-  return result.changes;
+  const now = new Date().toISOString();
+  return ctx.store.transaction(() => {
+    const completed = ctx.store.db
+      .prepare(
+        `UPDATE maintenance_plans AS plan
+            SET status = 'completed', updated_at = ?
+          WHERE plan.status NOT IN ('completed', 'failed', 'superseded')
+            AND EXISTS (SELECT 1 FROM maintenance_items item WHERE item.plan_id = plan.id)
+            AND NOT EXISTS (
+              SELECT 1 FROM maintenance_items item
+               WHERE item.plan_id = plan.id
+                 AND item.status NOT IN ('applied', 'rejected')
+            )`,
+      )
+      .run(now).changes;
+    const failed = ctx.store.db
+      .prepare(
+        `UPDATE maintenance_plans AS plan
+            SET status = 'failed', updated_at = ?
+          WHERE plan.status NOT IN ('completed', 'failed', 'superseded')
+            AND NOT EXISTS (
+              SELECT 1 FROM maintenance_items item
+               WHERE item.plan_id = plan.id
+                 AND item.status IN ('proposed', 'approved', 'applying', 'verification_pending')
+            )`,
+      )
+      .run(now).changes;
+    return completed + failed;
+  });
 }
 
 /**

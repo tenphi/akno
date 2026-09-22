@@ -86,6 +86,38 @@ describe('the observation projection', () => {
     });
   });
 
+  it('fails closed when evidence resolves to the wrong subject', () => {
+    replaceObservationEntries(store, 'pag_target', projectedPage());
+    store.db
+      .prepare("UPDATE graph_fact_status SET subject_entity = NULL WHERE fact_id = 'fac_11111111'")
+      .run();
+
+    expect(qualifyObservationEntries(store)).toEqual({ indexed: 0, issues: 1 });
+    expect(store.db.prepare('SELECT eligible, issue FROM observation_entries').get()).toEqual({
+      eligible: 0,
+      issue: 'evidence fact fac_11111111 is ineligible',
+    });
+  });
+
+  it('fails closed when a sealed independent proof is no longer present', () => {
+    const marker = markerForFixture();
+    marker.evidence[0]!.proofGroups = ['page:pag_missing'];
+    const page = parsePage(
+      'people/ada-marlow.md',
+      `# Ada Marlow\n\n${observationBlock(marker, 'Ada Marlow consistently chooses the quiet route.', [
+        'logs/one',
+        'logs/two',
+      ])}\n`,
+    );
+    replaceObservationEntries(store, 'pag_target', page);
+
+    expect(qualifyObservationEntries(store)).toEqual({ indexed: 0, issues: 1 });
+    expect(store.db.prepare('SELECT eligible, issue FROM observation_entries').get()).toEqual({
+      eligible: 0,
+      issue: 'proof groups changed',
+    });
+  });
+
   it('fails closed when current marker-owned bytes changed before re-indexing', () => {
     const page = projectedPage();
     replaceObservationEntries(store, 'pag_target', page);

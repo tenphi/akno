@@ -64,6 +64,7 @@ export async function serveSocket(
       ops: options.allow ?? Object.keys(OPS),
       mcp_ops: intersect(akno.config.server.mcpAllow, options.allow),
       commands: [...COMMAND_NAMES],
+      runtime: runtimeIdentity(akno.config.stateDir),
     };
     socket.write(encodeLine(hello));
 
@@ -103,6 +104,15 @@ export async function serveSocket(
       await new Promise<void>((resolve) => server.close(() => resolve()));
       fs.rmSync(socketPath, { force: true });
     },
+  };
+}
+
+export function runtimeIdentity(stateDir: string): NonNullable<Hello['runtime']> {
+  return {
+    pid: process.pid,
+    executable: process.execPath,
+    entrypoint: process.argv[1] ?? null,
+    state_dir: stateDir,
   };
 }
 

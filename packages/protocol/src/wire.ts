@@ -95,6 +95,15 @@ export const Hello = z.object({
   mcp_ops: z.array(z.string()).optional(),
   /** Maintenance commands this door accepts. Absent from an older server. */
   commands: z.array(z.string()).optional(),
+  /** Runtime identity used by deployment verification. Absent from an older server. */
+  runtime: z
+    .object({
+      pid: z.number().int().positive(),
+      executable: z.string(),
+      entrypoint: z.string().nullable(),
+      state_dir: z.string(),
+    })
+    .optional(),
 });
 export type Hello = z.infer<typeof Hello>;
 

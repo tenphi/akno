@@ -10,6 +10,7 @@ import { serveMcp } from '../serve/mcp.ts';
 import { resolveOps } from '../ops-handle.ts';
 import { AknoError } from '@tenphi/akno-protocol';
 import { DREAM_HEALTH_LABEL, DREAM_SCHEDULE_LABEL } from './dream-schedule.ts';
+import { inspectLaunchdJob } from './service-launchd.ts';
 
 const SERVE_HELP = `akno serve [options]
 
@@ -283,20 +284,24 @@ export async function serviceCommand(argv: string[]): Promise<number> {
 
   if (action === 'status') {
     let installed = false;
+    let healthy = true;
     for (const [label, target] of [
       [PLIST_LABEL, plistPath],
       [DREAM_SCHEDULE_LABEL, dreamPath],
       [DREAM_HEALTH_LABEL, dreamHealthPath],
     ] as const) {
-      if (fs.existsSync(target)) {
+      const inspection = inspectLaunchdJob(label, target);
+      if (inspection.status !== 'not_installed') {
         installed = true;
-        line(`${style.green('installed')}  ${target}`);
-        line(style.grey(`  launchctl print gui/$(id -u)/${label}   # live state`));
+        healthy &&= inspection.status === 'matching';
+        const mark =
+          inspection.status === 'matching' ? style.green('matching') : style.yellow(inspection.status);
+        line(`${mark}  ${label}`);
       } else {
-        line(`${style.grey('not installed')}  ${target}`);
+        line(`${style.grey('not installed')}  ${label}`);
       }
     }
-    return installed ? 0 : 1;
+    return installed && healthy ? 0 : 1;
   }
 
   if (action === 'uninstall') {
