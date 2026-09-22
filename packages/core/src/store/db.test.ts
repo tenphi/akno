@@ -53,7 +53,7 @@ describe('schema migration', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-mutation-receipt-migration-'));
     const dbPath = path.join(dir, 'akno.db');
     const legacy = new Database(dbPath);
-    for (const migration of MIGRATIONS.slice(0, -1)) legacy.exec(migration);
+    for (const migration of MIGRATIONS.slice(0, 35)) legacy.exec(migration);
     legacy.pragma('user_version = 41');
     legacy.close();
 
@@ -70,6 +70,27 @@ describe('schema migration', () => {
       'started_at',
       'completed_at',
     ]);
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('adds observation scope provenance and the rebuildable verdict cache to version forty-two', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-observation-scope-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 36)) legacy.exec(migration);
+    legacy.pragma('user_version = 42');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const columns = store.db.pragma('table_info(observation_entries)') as { name: string }[];
+    const cache = store.db
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'observation_scope_verdicts'")
+      .get() as { name: string } | undefined;
+    expect(columns.map((row) => row.name)).toContain('scope_assessment');
+    expect(cache?.name).toBe('observation_scope_verdicts');
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
 
     store.close();

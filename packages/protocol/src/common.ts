@@ -311,6 +311,10 @@ export const ObservationQualification = z.discriminatedUnion('status', [
     disposition: ObservationDisposition,
     proof_count: z.number().int().min(2),
     evidence: z.array(ObservationEvidence).min(2),
+    /** Present only when the exact readable conclusion passed the current separate scope gate. */
+    scope_assessment: z
+      .object({ status: z.literal('assessed'), fingerprint: z.string().regex(/^[a-f0-9]{64}$/) })
+      .optional(),
   }),
   z.object({
     status: z.literal('ineligible'),

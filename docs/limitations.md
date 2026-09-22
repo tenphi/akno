@@ -143,6 +143,11 @@ ineligible as soon as their lineage stops qualifying. Their create, reinforce, r
 split transitions are planned and independently decided. Even so, fluent derived Markdown can look more
 certain than it is when read outside Akno.
 
+New conclusions pass a separate model assessment over their complete bounded current evidence context. That
+gate can hold unsupported preference, motive, causal, universal, or otherwise over-broad claims and can require
+an exact narrower sentence to pass again. It remains a fallible semantic assessment, not a theorem prover,
+representativeness test, or independent factual source; generator and assessor can share the same mistake.
+
 Editors and downstream tools should preserve `akno:observation` markers and visible evidence links. A tool that
 ignores markers can display the sentence but cannot reproduce Akno's qualification. Important decisions should
 prefer authored or primary-document evidence over a derived observation.

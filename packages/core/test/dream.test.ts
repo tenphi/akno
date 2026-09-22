@@ -36,6 +36,7 @@ interface StubServer {
   /** What the observe mission and the conflict verifier get back. */
   reply: (value: unknown) => void;
   reflection: (value: unknown) => void;
+  scope: (value: unknown | ((input: string) => unknown)) => void;
   conflict: (value: unknown) => void;
   answer: (generation: unknown, verification: unknown) => void;
   conflictCalls: () => number;
@@ -43,7 +44,8 @@ interface StubServer {
   facts: (byslug: Record<string, DerivedFact[]>) => void;
   /** The last body the observe mission was given, for asserting what it was shown. */
   lastObserveInput: () => string;
-  requestKinds: () => ('observe' | 'reflect' | 'curator')[];
+  lastScopeInput: () => string;
+  requestKinds: () => ('observe' | 'reflect' | 'scope' | 'curator')[];
   onCurator: (hook: () => void) => void;
   onReflect: (hook: () => void | Promise<void>) => void;
 }
@@ -57,6 +59,18 @@ interface StubServer {
 async function startStubChat(): Promise<StubServer> {
   let scripted: unknown = {};
   let reflectionScripted: unknown | null = null;
+  let scopeScripted: unknown | ((input: string) => unknown) = {
+    outcome: 'supported',
+    reason_code: 'other',
+    subject_preserved: true,
+    time_scope_preserved: true,
+    circumstances_preserved: true,
+    attribution_preserved: true,
+    quantifier_supported: true,
+    exceptions_preserved: true,
+    inference_supported: true,
+    narrowed_pattern: null,
+  };
   let conflictScripted: unknown = {
     outcome: 'not_a_conflict',
     current: null,
@@ -67,7 +81,8 @@ async function startStubChat(): Promise<StubServer> {
   let classified = 0;
   let byPage: Record<string, DerivedFact[]> = {};
   let lastObserve = '';
-  const requestKinds: ('observe' | 'reflect' | 'curator')[] = [];
+  let lastScope = '';
+  const requestKinds: ('observe' | 'reflect' | 'scope' | 'curator')[] = [];
   let curatorHook: (() => void) | null = null;
   let reflectHook: (() => void | Promise<void>) | null = null;
 
@@ -84,11 +99,17 @@ async function startStubChat(): Promise<StubServer> {
       const observeRequest = system.startsWith(
         'You look for stable patterns across facts already recorded in a personal knowledge base.',
       );
+      const scopeRequest = system.startsWith(
+        'You independently assess whether one proposed observation or reflected principle',
+      );
       if (observeRequest) {
         const kind = user.startsWith('Subject: decision principles') ? 'reflect' : 'observe';
         requestKinds.push(kind);
         if (kind === 'reflect') await reflectHook?.();
         lastObserve = user;
+      } else if (scopeRequest) {
+        requestKinds.push('scope');
+        lastScope = user;
       } else if (system.startsWith('You are the independent curator for an autonomous memory system')) {
         requestKinds.push('curator');
         curatorHook?.();
@@ -101,18 +122,22 @@ async function startStubChat(): Promise<StubServer> {
             ? (answerScripted?.generation ?? { blocks: [], missing_concepts: [] })
             : system.startsWith('You classify structurally incompatible claims')
               ? conflictScripted
-              : system.startsWith('You are the independent curator for an autonomous memory system')
-                ? {
-                    outcome: 'approve',
-                    reason: 'The sealed contradiction item preserves authored knowledge.',
-                  }
-                : system.startsWith('A personal knowledge base holds two claims')
-                  ? { line: 'Before 2002-02-02, the Zephyr QX-100 warranty was 1111 days.' }
-                  : observeRequest &&
-                      user.startsWith('Subject: decision principles') &&
-                      reflectionScripted !== null
-                    ? reflectionScripted
-                    : scripted;
+              : scopeRequest
+                ? typeof scopeScripted === 'function'
+                  ? scopeScripted(user)
+                  : scopeScripted
+                : system.startsWith('You are the independent curator for an autonomous memory system')
+                  ? {
+                      outcome: 'approve',
+                      reason: 'The sealed contradiction item preserves authored knowledge.',
+                    }
+                  : system.startsWith('A personal knowledge base holds two claims')
+                    ? { line: 'Before 2002-02-02, the Zephyr QX-100 warranty was 1111 days.' }
+                    : observeRequest &&
+                        user.startsWith('Subject: decision principles') &&
+                        reflectionScripted !== null
+                      ? reflectionScripted
+                      : scripted;
 
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(
@@ -138,6 +163,9 @@ async function startStubChat(): Promise<StubServer> {
     reflection: (value) => {
       reflectionScripted = value;
     },
+    scope: (value) => {
+      scopeScripted = value;
+    },
     conflict: (value) => {
       conflictScripted =
         value && typeof value === 'object' && !Array.isArray(value) && !('qualification' in value)
@@ -152,6 +180,7 @@ async function startStubChat(): Promise<StubServer> {
       byPage = value;
     },
     lastObserveInput: () => lastObserve,
+    lastScopeInput: () => lastScope,
     requestKinds: () => [...requestKinds],
     onCurator: (hook) => {
       curatorHook = hook;
@@ -464,6 +493,36 @@ describe('reflect', () => {
     }
   });
 
+  it('holds an L3 broadening after checking the current leaf facts behind its observations', async () => {
+    await withIndexedObservations();
+    const pattern = 'Recurring activities always follow one universal management rule.';
+    server.reflection({
+      observations: [{ pattern, evidence: [...REFLECTION_OBSERVATION_IDS], confidence: 0.9 }],
+    });
+    server.scope({
+      outcome: 'hold',
+      reason_code: 'quantifier_scope',
+      subject_preserved: true,
+      time_scope_preserved: true,
+      circumstances_preserved: true,
+      attribution_preserved: true,
+      quantifier_supported: false,
+      exceptions_preserved: false,
+      inference_supported: false,
+      narrowed_pattern: null,
+    });
+
+    const report = await mem.dream({ phase: 'reflect' });
+    const supplied = JSON.parse(server.lastScopeInput());
+
+    expect(report.maintenancePlan).toBeNull();
+    expect(report.rejected).toContainEqual(expect.objectContaining({ pattern, code: 'quantifier_scope' }));
+    expect(fs.existsSync(path.join(root, 'observations/principles.md'))).toBe(false);
+    expect(
+      supplied.complete_current_evidence.flatMap((entry: { leaves?: unknown[] }) => entry.leaves ?? []),
+    ).toHaveLength(6);
+  });
+
   it('does not read, or cite, the page it writes', async () => {
     await withIndexedObservations();
 
@@ -652,7 +711,7 @@ describe('the full-run planning barrier', () => {
 
     const report = await mem.dream();
 
-    expect(server.requestKinds()).toEqual(['observe', 'reflect', 'curator', 'curator']);
+    expect(server.requestKinds()).toEqual(['observe', 'scope', 'reflect', 'scope', 'curator', 'curator']);
     expect(report.maintenancePlans.map((plan) => plan.phase)).toEqual(['observe', 'reflect']);
     expect(report.maintenancePlans.every((plan) => plan.status === 'completed')).toBe(true);
     expect(report.maintenancePlans.flatMap((plan) => plan.items)).toEqual(
@@ -697,7 +756,7 @@ describe('the full-run planning barrier', () => {
       statusCode: 'budget_exhausted',
       decision: null,
     });
-    expect(server.requestKinds()).toEqual(['observe', 'reflect', 'curator', 'curator']);
+    expect(server.requestKinds()).toEqual(['observe', 'scope', 'reflect', 'scope', 'curator', 'curator']);
     expect(fs.existsSync(path.join(root, 'observations/principles.md'))).toBe(false);
 
     const beforeSecond = server.requestKinds().length;
@@ -815,7 +874,7 @@ describe('the full-run planning barrier', () => {
     });
     // One planning call per eligible subject and one curator call for the only fresh draft. The
     // legacy residual adds no discarded planner or curator work of its own.
-    expect(server.requestKinds().slice(requestCount)).toEqual(['observe', 'observe', 'curator']);
+    expect(server.requestKinds().slice(requestCount)).toEqual(['observe', 'scope', 'observe', 'curator']);
     expect(fs.readFileSync(path.join(root, 'topics/zephyr-calibration.md'), 'utf8')).toContain(
       'Zephyr units are calibrated once per quarter.',
     );
@@ -840,7 +899,16 @@ describe('the full-run planning barrier', () => {
     const reflections = report.maintenancePlans.filter((plan) => plan.phase === 'reflect');
     const [deferred, replanned] = reflections;
 
-    expect(server.requestKinds()).toEqual(['observe', 'reflect', 'curator', 'reflect', 'curator']);
+    expect(server.requestKinds()).toEqual([
+      'observe',
+      'scope',
+      'reflect',
+      'scope',
+      'curator',
+      'reflect',
+      'scope',
+      'curator',
+    ]);
     expect(report.run.status).toBe('completed');
     expect(reflections).toHaveLength(2);
     expect(deferred).toMatchObject({ status: 'superseded' });
@@ -915,7 +983,7 @@ describe('the full-run planning barrier', () => {
     const first = await mem.dream();
     const observation = first.maintenancePlans.find((plan) => plan.phase === 'observe')!;
 
-    expect(server.requestKinds()).toEqual(['observe', 'reflect']);
+    expect(server.requestKinds()).toEqual(['observe', 'scope', 'reflect']);
     expect(first.run.status).toBe('failed');
     expect(first.verification).toMatchObject({
       status: 'failed',
@@ -958,7 +1026,7 @@ describe('the full-run planning barrier', () => {
     const report = await mem.dream();
     const observation = report.maintenancePlans.find((plan) => plan.phase === 'observe')!;
 
-    expect(server.requestKinds()).toEqual(['observe', 'reflect']);
+    expect(server.requestKinds()).toEqual(['observe', 'scope', 'reflect']);
     expect(report.run.status).toBe('failed');
     expect(report.verification).toMatchObject({
       status: 'failed',
@@ -1041,7 +1109,7 @@ describe('the full-run planning barrier', () => {
 
     expect(foregroundFinished).toBe(true);
     expect(foregroundOutcome).toBe('ok');
-    expect(server.requestKinds()).toEqual(['observe', 'reflect']);
+    expect(server.requestKinds()).toEqual(['observe', 'scope', 'reflect']);
     expect(
       (await mem.read({ slug: 'home/foreground-note' })).page?.lines.map((line) => line.text).join('\n'),
     ).toContain('invented note arrived');
@@ -1539,7 +1607,8 @@ describe('observe', () => {
     expect(page.startsWith(before)).toBe(true);
     expect(page).toContain('## Observed patterns');
     expect(page).toContain('akno:observation');
-    expect(page).toContain('v=1 level=2');
+    expect(page).toContain('v=2 level=2');
+    expect(page).toMatch(/scope=[a-f0-9]{64}/);
     expect(page).toContain('- **Observation:**');
     expect(page).toContain('Evidence: [[home/appliances]]');
     expect(page).toContain(PATTERN);
@@ -1550,6 +1619,7 @@ describe('observe', () => {
       level: 2,
       disposition: 'active',
       proof_count: 3,
+      scope_assessment: { status: 'assessed', fingerprint: expect.stringMatching(/^[a-f0-9]{64}$/) },
     });
     const timeline = await mem.timeline({ limit: 50 });
     expect(
@@ -1557,6 +1627,99 @@ describe('observe', () => {
         (event) => event.type === 'event' && event.summary.includes('appliances are serviced'),
       ),
     ).toBe(false);
+  });
+
+  it('holds repeated choices that do not establish a preference', async () => {
+    const before = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+    const pattern = 'Appliance servicing prioritizes low prices over service quality.';
+    server.reply({
+      observations: [
+        {
+          pattern,
+          evidence: ['home/appliances', 'home/laundry'],
+          confidence: 0.99,
+        },
+      ],
+    });
+    server.scope({
+      outcome: 'hold',
+      reason_code: 'unsupported_preference',
+      subject_preserved: true,
+      time_scope_preserved: true,
+      circumstances_preserved: false,
+      attribution_preserved: true,
+      quantifier_supported: false,
+      exceptions_preserved: false,
+      inference_supported: false,
+      narrowed_pattern: null,
+    });
+
+    const report = await mem.dream({ phase: 'observe' });
+
+    expect(report.maintenancePlan).toBeNull();
+    expect(report.observations).toContainEqual(expect.objectContaining({ pattern, action: 'rejected' }));
+    expect(report.rejected).toContainEqual(
+      expect.objectContaining({ pattern, code: 'unsupported_preference' }),
+    );
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toBe(before);
+    expect(server.requestKinds()).toEqual(['observe', 'scope']);
+  });
+
+  it('rechecks and seals an exact narrower observation', async () => {
+    const broad = 'Appliances are always serviced on a universal schedule.';
+    const narrow =
+      'Across the March, June, and September 2026 records, the three appliances received service about three months apart.';
+    server.reply({
+      observations: [
+        {
+          pattern: broad,
+          evidence: ['home/appliances', 'home/laundry', 'home/kitchen'],
+          confidence: 0.9,
+        },
+      ],
+    });
+    server.scope((input) => {
+      const proposed = JSON.parse(input).candidate.pattern;
+      const supported = proposed === narrow;
+      return {
+        outcome: supported ? 'supported' : 'narrow',
+        reason_code: supported ? 'other' : 'quantifier_scope',
+        subject_preserved: true,
+        time_scope_preserved: supported,
+        circumstances_preserved: supported,
+        attribution_preserved: true,
+        quantifier_supported: supported,
+        exceptions_preserved: supported,
+        inference_supported: supported,
+        narrowed_pattern: supported ? null : narrow,
+      };
+    });
+
+    const report = await mem.dream({ phase: 'observe' });
+    const page = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+
+    expect(report.observations[0]).toMatchObject({ pattern: narrow, action: 'created' });
+    expect(page).toContain(narrow);
+    expect(page).not.toContain(broad);
+    expect(server.requestKinds()).toEqual(['observe', 'scope', 'scope', 'curator']);
+  });
+
+  it('preserves assessed scope across restart and projection rebuild', async () => {
+    server.reply(OBSERVED);
+    await mem.dream({ phase: 'observe' });
+    const first = await mem.read({ slug: 'topics/appliance-servicing' });
+    const fingerprint = first.page?.lines.find((line) => line.text.includes(PATTERN))?.observation;
+    expect(fingerprint).toMatchObject({
+      status: 'eligible',
+      scope_assessment: { status: 'assessed', fingerprint: expect.stringMatching(/^[a-f0-9]{64}$/) },
+    });
+
+    await mem.close();
+    mem = await openMem();
+    await mem.index({ rebuild: true, structuralOnly: true });
+    const rebuilt = await mem.read({ slug: 'topics/appliance-servicing' });
+
+    expect(rebuilt.page?.lines.find((line) => line.text.includes(PATTERN))?.observation).toEqual(fingerprint);
   });
 
   it('verifies a co-located observation when the destination supplies sealed evidence', async () => {
@@ -1914,7 +2077,7 @@ describe('observe', () => {
 
     expect(report.observations[0]).toMatchObject({ action: 'split' });
     expect(observationIds(page)).toHaveLength(3);
-    expect(page).toContain(`${id} v=1 level=2`);
+    expect(page).toContain(`${id} v=2 level=2`);
     expect(page).toContain('disposition=superseded');
     expect(page).toContain('Kitchen appliances follow a seasonal service cadence.');
     expect(page).toContain('Laundry appliances follow a separate service cadence.');
@@ -2180,6 +2343,59 @@ describe('observe', () => {
     expect(applied.plan.items[0]).toMatchObject({ status: 'stale' });
     expect(applied.files).toEqual([]);
     expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toBe(before);
+  });
+
+  it('refuses a delayed observation when unselected same-subject context changes', async () => {
+    await mem.close();
+    mem = await openMem({ maintenance: { profile: 'review', observe: { enabled: true } } });
+    await mem.index({});
+    const before = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+    server.reply(OBSERVED);
+
+    const report = await mem.dream({ phase: 'observe' });
+    const item = report.maintenancePlan!.items[0]!;
+    fs.writeFileSync(
+      path.join(root, 'home/garage.md'),
+      '---\ntitle: Garage\n---\n\n# Garage\n\nThe dryer service was postponed in December 2026.\n',
+      'utf8',
+    );
+    server.facts({
+      ...SERVICING,
+      'home/garage': [
+        {
+          claim: 'The dryer service was postponed in December 2026.',
+          subject: 'appliance servicing',
+          attribute: 'serviced',
+          value: 'postponed in December 2026',
+        },
+      ],
+    });
+    await mem.index({});
+    mem.decidePlan(report.maintenancePlan!.id, item.id, 'approve', 'Approved before context changed.');
+
+    const applied = await mem.applyPlan(report.maintenancePlan!.id);
+
+    expect(applied.plan.items[0]).toMatchObject({ status: 'stale' });
+    expect(applied.files).toEqual([]);
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toBe(before);
+  });
+
+  it('rejects revised observation wording that lacks a matching scope assessment', async () => {
+    await mem.close();
+    mem = await openMem({ maintenance: { profile: 'review', observe: { enabled: true } } });
+    await mem.index({});
+    server.reply(OBSERVED);
+
+    const report = await mem.dream({ phase: 'observe' });
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+    const operation = item.operations[0]!;
+    if (operation.type !== 'replace') throw new Error('observation fixture must replace its target page');
+
+    await expect(
+      mem.revisePlan(report.maintenancePlan!.id, item.id, {
+        after: operation.after.replace(PATTERN, 'Household appliances are always serviced quarterly.'),
+      }),
+    ).rejects.toThrow(/wording changed after its evidence-scope assessment/);
   });
 
   it('uses a separate curator and verified plan apply under the autonomous profile', async () => {
@@ -3338,7 +3554,7 @@ describe('the cycle', () => {
     expect(firstPage.startsWith(authored)).toBe(true);
     expect(observationIds(firstPage)).toHaveLength(1);
     const [createdObservationId] = observationIds(firstPage);
-    expect(created.modelUsage.calls).toBe(3);
+    expect(created.modelUsage.calls).toBe(4);
     expect(created.phases[0]?.durationMs).toBeGreaterThanOrEqual(0);
 
     const repeated = await mem.dream({ phase: 'observe' });
@@ -3401,7 +3617,7 @@ describe('the cycle', () => {
     expect(afterRestart.maintenancePlan).toBeNull();
     expect(afterRestart.modelUsage.calls).toBe(0);
     expect(afterRestart.phases[0]?.durationMs).toBeGreaterThanOrEqual(0);
-    expect(server.requestKinds()).toEqual(['observe', 'curator', 'observe', 'curator']);
+    expect(server.requestKinds()).toEqual(['observe', 'scope', 'curator', 'observe', 'curator']);
     expect(mem.changes().filter((change) => change.op === 'maintenance')).toHaveLength(2);
     expect(observationIds(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8'))).toHaveLength(1);
   });

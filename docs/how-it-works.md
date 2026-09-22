@@ -192,10 +192,11 @@ boundary for upgrading strict legacy owned blocks.
 
 Level-two observations use their own versioned `akno:observation` grammar on existing exact-subject knowledge
 pages. The rebuildable projection stores the subject, disposition, payload hash, exact fact/source-line
-locators, and correlated proof groups. Qualification is recomputed after the fact graph on every relevant index
-pass. Unknown marker versions, invalid payload labels, stale facts, changed proof groups, ambiguous subjects,
-and revoked `observe: integrate` authority fail closed without rewriting Markdown. The fact deriver always
-skips the readable payload after an observation marker, so L2 prose cannot re-enter as L1.
+locators, correlated proof groups, and an optional opaque scope-assessment fingerprint from v2 markers. Legacy
+v1 markers remain readable without acquiring that provenance. Qualification is recomputed after the fact graph
+on every relevant index pass. Unknown marker versions, invalid payload labels, stale facts, changed proof groups,
+ambiguous subjects, and revoked `observe: integrate` authority fail closed without rewriting Markdown. The fact
+deriver always skips the readable payload after an observation marker, so L2 prose cannot re-enter as L1.
 
 Reflection consumes only eligible projected L2 ids. Legacy detached observation pages are understood only by
 the explicit `akno migrate --observations` operator path; ordinary observe, recall, graph, and reflect share the

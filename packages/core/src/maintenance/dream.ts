@@ -14,9 +14,16 @@ import {
   serializeYamlStringArray,
 } from '../kb/frontmatter.ts';
 import { runObserveMission, type ObservationCandidate } from './observe.ts';
+import {
+  assessObservationScope,
+  type ObservationScopeEvidence,
+  type ObservationScopeHoldCode,
+  type ObservationScopeReceipt,
+} from './observation-scope.ts';
 import { planBrokenLinks, type BrokenLinkDraft, type LinkRepair, type RepairResult } from './link-repairs.ts';
 import {
   claimKey,
+  conflictClaimIneligibility,
   findCrossPageConflicts,
   ineligibleConflictClaims,
   verifyConflicts,
@@ -226,7 +233,7 @@ export interface DreamReport {
   /** Aggregate inspection and repair outcomes for Akno-owned inline fragments. */
   managedItems: ManagedItemReport;
   /** Candidates a guardrail refused, with the guard that refused them. */
-  rejected: { pattern: string; reason: string }[];
+  rejected: { pattern: string; reason: string; code?: ObservationScopeHoldCode }[];
   /** Documents given a page of their own, and any that were left alone. */
   adopted: AdoptedDocument[];
   conflicts: CrossPageConflict[];
@@ -1578,6 +1585,9 @@ interface SubjectGroup {
   targetSlug: string;
   targetRelPath: string;
   facts: ObservationFact[];
+  scopeFacts: ObservationScopeEvidence[];
+  scopeContextComplete: boolean;
+  scopeCharacters: number;
 }
 
 interface ObservationFact {
@@ -1632,11 +1642,15 @@ async function observePhase(
   if (plan && !planMatchesPolicies(plan, { observe: observePolicy })) plan = null;
 
   const previouslyRejected: ObservationWritten[] = [];
+  const scopeHeld: ObservationWritten[] = [];
   if (!plan) {
     const prepared = await collectPreparedObservations(ctx, report);
     const drafts: ObservationPlanDraft[] = [];
     for (const entry of prepared) {
-      if (!entry.draft) continue;
+      if (!entry.draft) {
+        if (entry.rejectionCode) scopeHeld.push({ ...entry.written, action: 'rejected' });
+        continue;
+      }
       if (inferenceWasRejected(ctx, 'observe', entry.draft)) {
         previouslyRejected.push({ ...entry.written, action: 'rejected' });
       } else {
@@ -1646,7 +1660,7 @@ async function observePhase(
     plan = createObservationPlan(ctx, observePolicy, drafts, observePolicy);
   }
   if (!plan) {
-    report.observations.push(...previouslyRejected);
+    report.observations.push(...scopeHeld, ...previouslyRejected);
     return;
   }
 
@@ -1661,7 +1675,7 @@ async function observePhase(
     }
   }
 
-  report.observations.push(...plan.items.map(observationFromPlanItem), ...previouslyRejected);
+  report.observations.push(...plan.items.map(observationFromPlanItem), ...scopeHeld, ...previouslyRejected);
   const changeIds = plan.items
     .map((item) => item.changeId)
     .filter((changeId): changeId is string => changeId !== null);
@@ -1691,6 +1705,7 @@ interface PreparedObservation {
   written: ObservationWritten;
   draft: ObservationPlanDraft | null;
   rejectionReason?: string;
+  rejectionCode?: ObservationScopeHoldCode;
 }
 
 async function collectPreparedObservations(
@@ -1701,7 +1716,11 @@ async function collectPreparedObservations(
   const prepared: PreparedObservation[] = await staleObservationOutcomes(ctx);
   for (const entry of prepared) {
     if (entry.rejectionReason)
-      report.rejected.push({ pattern: entry.written.pattern, reason: entry.rejectionReason });
+      report.rejected.push({
+        pattern: entry.written.pattern,
+        reason: entry.rejectionReason,
+        ...(entry.rejectionCode ? { code: entry.rejectionCode } : {}),
+      });
   }
   if (groups.length === 0) return prepared;
 
@@ -1711,6 +1730,12 @@ async function collectPreparedObservations(
   const observationsBySlug = indexedObservations(ctx);
 
   for (const group of groups) {
+    if (!group.scopeContextComplete) {
+      report.warnings.push(
+        `observe (${group.subject}): scope_context_incomplete — complete current evidence exceeded the bounded assessment`,
+      );
+      continue;
+    }
     const result = await runObserveMission({
       // The display label comes from the canonical entity page. Group membership itself is the
       // exact resolved entity id below, never a folder or a model-generated subject string.
@@ -1740,20 +1765,79 @@ async function collectPreparedObservations(
     report.rejected.push(...result.rejected);
 
     for (const observation of result.observations) {
-      const outcome = await prepareCoLocatedObservation(ctx, group, observation);
+      const scopeCandidate = exactObservationCandidateForScope(ctx, observation);
+      const scope = await assessObservationScope({
+        store: ctx.store,
+        model: ctx.models.derive,
+        level: 'observation',
+        subject: group.subject,
+        candidate: scopeCandidate,
+        evidence: group.scopeFacts
+          .map((fact) => ({
+            ...fact,
+            status: observation.evidence.includes(fact.id) ? ('selected_support' as const) : fact.status,
+          }))
+          .sort((a, b) => `${a.slug}\0${a.id}`.localeCompare(`${b.slug}\0${b.id}`)),
+        contextComplete: group.scopeContextComplete,
+      });
+      if (!scope.candidate || !scope.receipt) {
+        const held: PreparedObservation = {
+          written: {
+            slug: group.targetSlug,
+            pattern: observation.pattern,
+            evidence: [],
+            action: 'rejected',
+          },
+          draft: null,
+          rejectionReason: scope.hold?.reason ?? 'the evidence-scope assessment held the candidate',
+          ...(scope.hold ? { rejectionCode: scope.hold.code } : {}),
+        };
+        prepared.push(held);
+        report.rejected.push({
+          pattern: observation.pattern,
+          reason: held.rejectionReason!,
+          ...(held.rejectionCode ? { code: held.rejectionCode } : {}),
+        });
+        continue;
+      }
+      const assessed = scope.candidate;
+      const outcome = await prepareCoLocatedObservation(ctx, group, assessed, scope.receipt);
       prepared.push(outcome);
       if (outcome.rejectionReason) {
-        report.rejected.push({ pattern: observation.pattern, reason: outcome.rejectionReason });
+        report.rejected.push({
+          pattern: assessed.pattern,
+          reason: outcome.rejectionReason,
+          ...(outcome.rejectionCode ? { code: outcome.rejectionCode } : {}),
+        });
       }
       // So a later group in this same run sees it. Without this, cross-page duplicates are caught
       // only from the second night onwards — the night they are created, they both go through.
       observationsBySlug.set(group.targetSlug, [
         ...(observationsBySlug.get(group.targetSlug) ?? []),
-        observation.pattern,
+        assessed.pattern,
       ]);
     }
   }
   return prepared;
+}
+
+function exactObservationCandidateForScope(
+  ctx: AknoContext,
+  candidate: ObservationCandidate,
+): ObservationCandidate {
+  if (candidate.outcome !== 'reinforce' || !candidate.targetId) return candidate;
+  const row = ctx.store.db
+    .prepare(
+      `SELECT payload FROM observation_entries
+        WHERE id = ? AND disposition = 'active' AND eligible = 1`,
+    )
+    .get(candidate.targetId) as { payload: string } | undefined;
+  if (!row) return candidate;
+  const pattern = row.payload
+    .replace(/^- \*\*Observation:\*\*\s*/, '')
+    .replace(/\s+Evidence:\s+(?:\[\[[^\]]+\]\]\s*)+$/, '')
+    .trim();
+  return pattern ? { ...candidate, pattern } : candidate;
 }
 
 async function staleObservationOutcomes(ctx: AknoContext): Promise<PreparedObservation[]> {
@@ -1873,11 +1957,12 @@ function subjectGroups(
   maxSubjects: number,
   conflicts: CrossPageConflict[],
 ): SubjectGroup[] {
-  const ineligible = ineligibleConflictClaims(conflicts);
+  const conflictStatus = conflictClaimIneligibility(conflicts);
   const rows = ctx.store.db
     .prepare(
       `SELECT f.id, f.claim, f.line_start, f.source_line_hash, f.item_id,
               p.id AS page_id, p.slug, p.updated_at, g.subject_entity,
+              g.eligibility, g.traversable,
               e.canonical_page, cp.slug AS canonical_slug, cp.rel_path AS canonical_rel_path,
               cp.observe_management AS canonical_observe
          FROM facts f JOIN pages p ON p.id = f.page_id
@@ -1888,9 +1973,7 @@ function subjectGroups(
           AND f.confidence >= 0.5
           AND p.role = 'knowledge'
           AND p.derived_hash = p.body_hash
-          AND g.eligibility = 'eligible'
-          AND g.traversable = 1
-        ORDER BY p.updated_at DESC`,
+        ORDER BY p.updated_at DESC, p.slug, f.line_start, f.id`,
     )
     .all() as {
     id: string;
@@ -1902,6 +1985,8 @@ function subjectGroups(
     slug: string;
     updated_at: string | null;
     subject_entity: string;
+    eligibility: string;
+    traversable: number;
     canonical_page: string;
     canonical_slug: string;
     canonical_rel_path: string;
@@ -1910,43 +1995,59 @@ function subjectGroups(
 
   const groups = new Map<string, SubjectGroup>();
   for (const row of rows) {
-    if (ineligible.has(claimKey(row.slug, row.line_start))) continue;
     const target = observationTarget(ctx, row);
     if (!target) continue;
     const proofs = [...proofGroupsForFact(ctx.store, row.id, row.page_id, row.item_id)].sort();
-    if (proofs.length === 0) continue;
     const key = row.subject_entity;
+    const conflictReason = conflictStatus.get(claimKey(row.slug, row.line_start));
+    const canSupport =
+      !conflictReason && row.eligibility === 'eligible' && row.traversable === 1 && proofs.length > 0;
 
-    const existing = groups.get(key);
-    if (existing) {
-      if (existing.targetSlug !== target.slug) {
+    let group = groups.get(key);
+    if (group) {
+      if (group.targetSlug !== target.slug) {
         groups.delete(key);
         continue;
       }
-      if (existing.facts.length < 30) {
-        existing.facts.push({
-          id: row.id,
-          claim: row.claim,
-          slug: row.slug,
-          sourceLineHash: row.source_line_hash,
-          proofGroups: proofs,
-        });
-      }
     } else {
-      groups.set(key, {
+      group = {
         subject: target.title,
         subjectEntity: row.subject_entity,
         targetSlug: target.slug,
         targetRelPath: target.relPath,
-        facts: [
-          {
-            id: row.id,
-            claim: row.claim,
-            slug: row.slug,
-            sourceLineHash: row.source_line_hash,
-            proofGroups: proofs,
-          },
-        ],
+        facts: [],
+        scopeFacts: [],
+        scopeContextComplete: true,
+        scopeCharacters: 0,
+      };
+      groups.set(key, group);
+    }
+
+    const scopeCharacters = row.id.length + row.claim.length + row.slug.length;
+    if (group.scopeFacts.length >= 80 || group.scopeCharacters + scopeCharacters > 80_000) {
+      group.scopeContextComplete = false;
+    } else {
+      group.scopeFacts.push({
+        id: row.id,
+        claim: row.claim,
+        slug: row.slug,
+        status: conflictReason ? 'counterevidence' : canSupport ? 'eligible_context' : 'ineligible_context',
+        ...(!canSupport
+          ? {
+              statusReason:
+                conflictReason ?? `graph_${row.eligibility}_${row.traversable ? 'linked' : 'held'}`,
+            }
+          : {}),
+      });
+      group.scopeCharacters += scopeCharacters;
+    }
+    if (canSupport && group.facts.length < 30) {
+      group.facts.push({
+        id: row.id,
+        claim: row.claim,
+        slug: row.slug,
+        sourceLineHash: row.source_line_hash,
+        proofGroups: proofs,
       });
     }
   }
@@ -2037,6 +2138,7 @@ async function prepareCoLocatedObservation(
   ctx: AknoContext,
   group: SubjectGroup,
   observation: ObservationCandidate,
+  scopeReceipt: ObservationScopeReceipt,
 ): Promise<PreparedObservation> {
   let selected = observation.evidence.flatMap((id) => {
     const fact = group.facts.find((candidate) => candidate.id === id);
@@ -2137,6 +2239,7 @@ async function prepareCoLocatedObservation(
     disposition: 'active' as const,
     evidence: locators,
     proofCount,
+    scopeAssessment: scopeReceipt.fingerprint,
   };
   const block = observationBlock(
     marker,
@@ -2220,6 +2323,12 @@ async function prepareCoLocatedObservation(
       observationDisposition: marker.disposition,
       observationProofCount: marker.proofCount,
       observationOutcome: outcome,
+      observationScopeAssessment: scopeReceipt.fingerprint,
+      observationScopeCandidateHash: scopeReceipt.candidateHash,
+      observationScopeContextHash: scopeReceipt.contextHash,
+      observationScopePromptVersion: scopeReceipt.promptVersion,
+      observationScopeModel: scopeReceipt.modelId,
+      observationScopeNarrowed: scopeReceipt.narrowed,
       ...(targetMarker ? { observationTargetId: targetMarker.id } : {}),
     },
   };
@@ -2506,11 +2615,15 @@ async function reflectPhase(
   if (plan && !planMatchesPolicies(plan, { reflect: reflectPolicy })) plan = null;
 
   const previouslyRejected: ObservationWritten[] = [];
+  const scopeHeld: ObservationWritten[] = [];
   if (!plan) {
     const prepared = await collectPreparedReflections(ctx, report);
     const drafts: ObservationPlanDraft[] = [];
     for (const entry of prepared) {
-      if (!entry.draft) continue;
+      if (!entry.draft) {
+        if (entry.rejectionCode) scopeHeld.push({ ...entry.written, action: 'rejected' });
+        continue;
+      }
       if (inferenceWasRejected(ctx, 'reflect', entry.draft)) {
         previouslyRejected.push({ ...entry.written, action: 'rejected' });
       } else {
@@ -2520,7 +2633,7 @@ async function reflectPhase(
     plan = createReflectionPlan(ctx, reflectPolicy, drafts, reflectPolicy);
   }
   if (!plan) {
-    report.observations.push(...previouslyRejected);
+    report.observations.push(...scopeHeld, ...previouslyRejected);
     return;
   }
 
@@ -2535,7 +2648,7 @@ async function reflectPhase(
     }
   }
 
-  report.observations.push(...plan.items.map(observationFromPlanItem), ...previouslyRejected);
+  report.observations.push(...plan.items.map(observationFromPlanItem), ...scopeHeld, ...previouslyRejected);
   const changeIds = plan.items
     .map((item) => item.changeId)
     .filter((changeId): changeId is string => changeId !== null);
@@ -2563,7 +2676,7 @@ async function collectPreparedReflections(
       `SELECT oe.id, oe.source_slug AS slug, oe.payload, oe.payload_hash, p.rel_path
          FROM observation_entries oe JOIN pages p ON p.id = oe.source_page
         WHERE oe.eligible = 1 AND oe.disposition = 'active'
-        ORDER BY p.updated_at DESC, oe.marker_line DESC LIMIT 40`,
+        ORDER BY p.updated_at DESC, oe.source_slug, oe.marker_line DESC, oe.id LIMIT 41`,
     )
     .all() as {
     id: string;
@@ -2577,10 +2690,24 @@ async function collectPreparedReflections(
     report.warnings.push('reflect had fewer than two observations to build on — nothing was written');
     return [];
   }
+  if (rows.length > 40) {
+    report.warnings.push(
+      'reflect: scope_context_incomplete — more than 40 eligible observations require a broader assessment',
+    );
+    return [];
+  }
+  const boundedRows = rows;
+  const scopeBase = reflectionScopeEvidence(ctx, boundedRows);
+  if (!scopeBase.complete) {
+    report.warnings.push(
+      'reflect: scope_context_incomplete — complete current leaf evidence exceeded the bounded assessment',
+    );
+    return [];
+  }
 
   const result = await runObserveMission({
     subject: 'decision principles',
-    facts: rows.map((row) => ({ id: row.id, claim: row.payload, slug: row.slug })),
+    facts: boundedRows.map((row) => ({ id: row.id, claim: row.payload, slug: row.slug })),
     model: ctx.models.derive,
     mission:
       ctx.config.maintenance.reflect.mission ??
@@ -2606,10 +2733,49 @@ async function collectPreparedReflections(
 
   const prepared: PreparedObservation[] = [];
   for (const observation of result.observations) {
-    const outcome = await prepareIndexedReflection(ctx, observation, rows);
+    const scopeEvidence = scopeBase.evidence.map((entry) => ({
+      ...entry,
+      status: observation.evidence.includes(entry.id)
+        ? ('selected_support' as const)
+        : ('eligible_context' as const),
+    }));
+    const scope = await assessObservationScope({
+      store: ctx.store,
+      model: ctx.models.derive,
+      level: 'reflection',
+      subject: 'decision principles',
+      candidate: observation,
+      evidence: scopeEvidence.sort((a, b) => `${a.slug}\0${a.id}`.localeCompare(`${b.slug}\0${b.id}`)),
+      contextComplete: true,
+    });
+    if (!scope.candidate || !scope.receipt) {
+      const held: PreparedObservation = {
+        written: {
+          slug: target,
+          pattern: observation.pattern,
+          evidence: [],
+          action: 'rejected',
+        },
+        draft: null,
+        rejectionReason: scope.hold?.reason ?? 'the evidence-scope assessment held the principle',
+        ...(scope.hold ? { rejectionCode: scope.hold.code } : {}),
+      };
+      prepared.push(held);
+      report.rejected.push({
+        pattern: observation.pattern,
+        reason: held.rejectionReason!,
+        ...(held.rejectionCode ? { code: held.rejectionCode } : {}),
+      });
+      continue;
+    }
+    const outcome = await prepareIndexedReflection(ctx, scope.candidate, boundedRows, scope.receipt);
     prepared.push(outcome);
     if (outcome.rejectionReason) {
-      report.rejected.push({ pattern: observation.pattern, reason: outcome.rejectionReason });
+      report.rejected.push({
+        pattern: scope.candidate.pattern,
+        reason: outcome.rejectionReason,
+        ...(outcome.rejectionCode ? { code: outcome.rejectionCode } : {}),
+      });
     }
   }
   return prepared;
@@ -2632,6 +2798,50 @@ async function recordedPrinciples(ctx: AknoContext): Promise<string[]> {
     .filter(Boolean);
 }
 
+function reflectionScopeEvidence(
+  ctx: AknoContext,
+  rows: { id: string; slug: string; payload: string }[],
+): { evidence: ObservationScopeEvidence[]; complete: boolean } {
+  const evidence: ObservationScopeEvidence[] = [];
+  let complete = true;
+  let leafCount = 0;
+  let characters = 0;
+  for (const row of rows) {
+    const leaves = ctx.store.db
+      .prepare(
+        `SELECT f.id, f.claim, p.slug
+           FROM observation_evidence oe JOIN facts f ON f.id = oe.fact_id
+           JOIN pages p ON p.id = f.page_id
+          WHERE oe.observation_id = ? AND f.valid_to IS NULL
+          ORDER BY oe.ordinal`,
+      )
+      .all(row.id) as { id: string; claim: string; slug: string }[];
+    const expected = ctx.store.db
+      .prepare('SELECT count(*) AS count FROM observation_evidence WHERE observation_id = ?')
+      .get(row.id) as { count: number };
+    if (leaves.length !== expected.count) complete = false;
+    const nextCharacters =
+      row.id.length +
+      row.slug.length +
+      row.payload.length +
+      leaves.reduce((sum, leaf) => sum + leaf.id.length + leaf.slug.length + leaf.claim.length, 0);
+    if (leafCount + leaves.length > 120 || characters + nextCharacters > 80_000) {
+      complete = false;
+      continue;
+    }
+    evidence.push({
+      id: row.id,
+      claim: row.payload,
+      slug: row.slug,
+      status: 'eligible_context',
+      leaves,
+    });
+    leafCount += leaves.length;
+    characters += nextCharacters;
+  }
+  return { evidence, complete };
+}
+
 async function prepareIndexedReflection(
   ctx: AknoContext,
   observation: ObservationCandidate,
@@ -2642,6 +2852,7 @@ async function prepareIndexedReflection(
     payload_hash: string;
     rel_path: string;
   }[],
+  scopeReceipt: ObservationScopeReceipt,
 ): Promise<PreparedObservation> {
   const selected = observation.evidence.flatMap((id) => {
     const row = rows.find((candidate) => candidate.id === id);
@@ -2706,9 +2917,26 @@ async function prepareIndexedReflection(
       before: before === null ? null : sha256(before),
       pattern: observation.pattern,
       evidence,
+      scopeAssessment: scopeReceipt,
     }),
   );
-  return { written, draft: { slug, relPath, inputHash, before, after, evidence } };
+  return {
+    written,
+    draft: {
+      slug,
+      relPath,
+      inputHash,
+      before,
+      after,
+      evidence,
+      observationScopeAssessment: scopeReceipt.fingerprint,
+      observationScopeCandidateHash: scopeReceipt.candidateHash,
+      observationScopeContextHash: scopeReceipt.contextHash,
+      observationScopePromptVersion: scopeReceipt.promptVersion,
+      observationScopeModel: scopeReceipt.modelId,
+      observationScopeNarrowed: scopeReceipt.narrowed,
+    },
+  };
 }
 
 /** A journal entry, as the log wants it: which phase, and what the write added. */
