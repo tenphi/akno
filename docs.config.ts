@@ -10,6 +10,14 @@ export default defineDocsConfig({
     url: 'https://akno.tenphi.me',
     repository: 'https://github.com/tenphi/akno',
     favicon: 'public/akno.svg',
+    headerLinks: [
+      {
+        label: 'Changelog',
+        link: 'https://github.com/tenphi/akno/releases',
+        newTab: true,
+      },
+      { label: 'Get started', link: '/getting-started', variant: 'primary' },
+    ],
   },
   head: [
     {
@@ -40,6 +48,7 @@ export default defineDocsConfig({
       '/',
       {
         label: 'Start here',
+        link: '/overview',
         items: [
           '/overview',
           { label: 'Getting started', link: '/getting-started' },
@@ -67,6 +76,7 @@ export default defineDocsConfig({
       },
       {
         label: 'Internals',
+        link: '/how-it-works',
         items: [{ label: 'How Akno works', link: '/how-it-works' }, '/documentation'],
       },
     ],
