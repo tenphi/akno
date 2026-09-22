@@ -1644,9 +1644,9 @@ describe('observe', () => {
     const item = mem.plan(planned.id).items[0]!;
     mem.decidePlan(planned.id, item.id, 'approve', 'The invented pattern has exact support.');
     const database = new Database(mem.config.dbPath);
-    database.prepare("UPDATE maintenance_items SET status = 'applying', policy = 'auto' WHERE id = ?").run(
-      item.id,
-    );
+    database
+      .prepare("UPDATE maintenance_items SET status = 'applying', policy = 'auto' WHERE id = ?")
+      .run(item.id);
     database.prepare("UPDATE maintenance_plans SET mode = 'auto' WHERE id = ?").run(planned.id);
     database.close();
     const operation = item.operations[0]!;
@@ -3328,6 +3328,84 @@ describe('housekeeping', () => {
 });
 
 describe('the cycle', () => {
+  it('remains bounded across repeated cycles, retraction, rebuild, and restart', async () => {
+    const authored = PAGES[OBSERVE_TARGET]!;
+    server.reply(OBSERVED);
+
+    const created = await mem.dream({ phase: 'observe' });
+    const createdPlan = created.maintenancePlan!;
+    const firstPage = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+    expect(firstPage.startsWith(authored)).toBe(true);
+    expect(observationIds(firstPage)).toHaveLength(1);
+    const [createdObservationId] = observationIds(firstPage);
+    expect(created.modelUsage.calls).toBe(3);
+    expect(created.phases[0]?.durationMs).toBeGreaterThanOrEqual(0);
+
+    const repeated = await mem.dream({ phase: 'observe' });
+    expect(repeated.observations).toEqual([]);
+    expect(repeated.maintenancePlan).toBeNull();
+    expect(repeated.modelUsage.calls).toBe(1);
+    expect(observationIds(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8'))).toHaveLength(1);
+
+    // A later derivation retracts two supports. The cycle must revise its existing owned block,
+    // not duplicate it or leave the old exact lineage eligible.
+    server.facts({ 'home/appliances': SERVICING['home/appliances']! });
+    await mem.index({ rederive: true });
+    server.reply({ observations: [] });
+    const corrected = await mem.dream({ phase: 'observe' });
+    const correctedPage = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+    expect(corrected.observations[0]).toMatchObject({ action: 'weakened', pattern: PATTERN });
+    expect(correctedPage.startsWith(authored)).toBe(true);
+    expect(observationIds(correctedPage)).toHaveLength(1);
+    expect(corrected.modelUsage.calls).toBe(2);
+
+    await mem.close();
+    mem = await openMem();
+    await mem.index({ structuralOnly: true });
+
+    const read = await mem.read({ slug: 'topics/appliance-servicing' });
+    expect(read.page?.lines.find((entry) => entry.text.includes(PATTERN))?.observation).toMatchObject({
+      status: 'ineligible',
+      disposition: 'weakened',
+    });
+    const recalled = await mem.recall({
+      query: 'dishwasher repaired March 2026',
+      mode: 'lookup',
+      expand: false,
+    });
+    expect(recalled.results.some((entry) => entry.type === 'page' && entry.slug === 'home/appliances')).toBe(
+      true,
+    );
+
+    const database = new Database(mem.config.dbPath, { readonly: true });
+    const currentFacts = database
+      .prepare(
+        `SELECT count(*) AS current
+           FROM facts f JOIN pages p ON p.id = f.page_id
+          WHERE p.slug IN ('home/appliances', 'home/laundry', 'home/kitchen')
+            AND f.valid_to IS NULL`,
+      )
+      .get() as { current: number };
+    const sealedLineage = database
+      .prepare('SELECT count(*) AS evidence FROM observation_evidence WHERE observation_id = ?')
+      .get(createdObservationId) as { evidence: number };
+    database.close();
+    expect(currentFacts).toEqual({ current: 1 });
+    expect(sealedLineage).toEqual({ evidence: 3 });
+    expect(mem.plan(createdPlan.id).items[0]?.decision).toMatchObject({
+      actor: 'curator',
+      outcome: 'approve',
+    });
+
+    const afterRestart = await mem.dream({ phase: 'observe' });
+    expect(afterRestart.maintenancePlan).toBeNull();
+    expect(afterRestart.modelUsage.calls).toBe(0);
+    expect(afterRestart.phases[0]?.durationMs).toBeGreaterThanOrEqual(0);
+    expect(server.requestKinds()).toEqual(['observe', 'curator', 'observe', 'curator']);
+    expect(mem.changes().filter((change) => change.op === 'maintenance')).toHaveLength(2);
+    expect(observationIds(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8'))).toHaveLength(1);
+  });
+
   it('persists a content-safe receipt tied to the indexed state at run start', async () => {
     await mem.index({ structuralOnly: true });
     const first = await mem.dream({ phase: 'housekeeping' });
