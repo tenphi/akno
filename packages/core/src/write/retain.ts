@@ -520,7 +520,7 @@ export type RetainCandidate = ProvidedRetainCandidate & {
   retention_scope?: RetentionScope;
 };
 
-export type RetentionScope = 'global' | 'entity' | 'document' | 'event' | 'task' | 'unknown';
+type RetentionScope = 'global' | 'entity' | 'document' | 'event' | 'task' | 'unknown';
 
 export interface RetainHeldCandidate {
   hold_stage?: 'validation' | 'verification';
