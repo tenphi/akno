@@ -4,6 +4,7 @@ import { isIP } from 'node:net';
 import { AknoError, OPS, PROTOCOL_VERSION, isOpName, type Hello, type OpName } from '@tenphi/akno-protocol';
 import type { Akno } from '@tenphi/akno-core';
 import { AKNO_VERSION } from '../version.ts';
+import { runtimeIdentity } from './socket.ts';
 
 export interface HttpServer {
   readonly address: string;
@@ -145,6 +146,7 @@ async function route(
       writable: akno.writable && access.ops.some((op) => OPS[op].kind === 'write'),
       akno_path: akno.config.aknoPath,
       ops: access.ops,
+      runtime: runtimeIdentity(akno.config.stateDir),
     };
     send(response, 200, hello);
     return;

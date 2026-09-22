@@ -481,6 +481,7 @@ function printDreamSchedule(schedule: DreamScheduleStatus): void {
   kv([
     ['installed', schedule.installed ? 'yes' : 'no'],
     ['loaded', schedule.loaded === null ? 'unsupported' : schedule.loaded ? 'yes' : 'no'],
+    ['loaded definition', schedule.definition],
     [
       'cadence',
       schedule.hour === null || schedule.minute === null
@@ -500,13 +501,17 @@ function printDreamSchedule(schedule: DreamScheduleStatus): void {
       'missed-cycle check',
       !schedule.missedCycleCheck.installed
         ? 'not installed'
-        : schedule.missedCycleCheck.loaded === false
-          ? 'installed but not loaded'
-          : schedule.missedCycleCheck.hour === null || schedule.missedCycleCheck.minute === null
-            ? 'installed schedule is unreadable'
-            : `loaded · daily at ${String(schedule.missedCycleCheck.hour).padStart(2, '0')}:${String(
-                schedule.missedCycleCheck.minute,
-              ).padStart(2, '0')}`,
+        : schedule.missedCycleCheck.definition === 'drifted'
+          ? 'loaded definition differs from installed definition'
+          : schedule.missedCycleCheck.definition === 'unavailable'
+            ? 'loaded definition unavailable'
+            : schedule.missedCycleCheck.loaded === false
+              ? 'installed but not loaded'
+              : schedule.missedCycleCheck.hour === null || schedule.missedCycleCheck.minute === null
+                ? 'installed schedule is unreadable'
+                : `loaded · daily at ${String(schedule.missedCycleCheck.hour).padStart(2, '0')}:${String(
+                    schedule.missedCycleCheck.minute,
+                  ).padStart(2, '0')}`,
     ],
   ]);
 }
@@ -514,11 +519,15 @@ function printDreamSchedule(schedule: DreamScheduleStatus): void {
 function scheduleHealthLabel(health: DreamScheduleHealth): string {
   switch (health) {
     case 'unsupported':
-      return 'launchd status is available on macOS only';
+      return 'schedule status is unsupported on this platform';
     case 'not_installed':
       return 'not scheduled';
     case 'installed_not_loaded':
       return 'installed but not loaded';
+    case 'definition_drift':
+      return 'loaded definition differs from installed definition';
+    case 'definition_unknown':
+      return 'loaded definition could not be verified';
     case 'invalid_schedule':
       return 'installed schedule is unreadable';
     case 'not_due':

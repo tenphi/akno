@@ -5,8 +5,10 @@ import {
   redeployPlan,
   redeployTarget,
   redeployWaitPolicy,
+  serviceRuntimeIssue,
   socketWasReplaced,
 } from './redeploy-cmd.ts';
+import { PROTOCOL_VERSION, type Hello } from '@tenphi/akno-protocol';
 
 /**
  * `redeploy` shells out twice and its interesting part is neither call — it is the decision about
@@ -104,5 +106,51 @@ describe('redeploy readiness', () => {
     expect(socketWasReplaced(previous, { ...previous, inode: 44 })).toBe(true);
     expect(socketWasReplaced(null, previous)).toBe(true);
     expect(socketWasReplaced(previous, null)).toBe(false);
+  });
+});
+
+describe('redeploy runtime identity', () => {
+  const hello: Hello = {
+    hello: 'akno',
+    protocol: PROTOCOL_VERSION,
+    version: '0.0.0-invented',
+    writable: true,
+    akno_path: '/invented/brain',
+    ops: [],
+    runtime: {
+      pid: 4242,
+      executable: '/invented/node',
+      entrypoint: '/invented/current.js',
+      state_dir: '/invented/state',
+    },
+  };
+  const expected = {
+    definition: {
+      arguments: ['/invented/node', '/invented/current.js', 'serve'],
+      calendar: null,
+    },
+    pid: 4242,
+    aknoPath: '/invented/brain',
+    stateDir: '/invented/state',
+  };
+
+  it('accepts only the serving process declared by the loaded job', () => {
+    expect(serviceRuntimeIssue(hello, expected)).toBeNull();
+    expect(serviceRuntimeIssue({ ...hello, runtime: { ...hello.runtime!, pid: 4343 } }, expected)).toMatch(
+      /loaded launchd job/,
+    );
+  });
+
+  it('rejects a compatible response forwarded from another checkout or target', () => {
+    expect(
+      serviceRuntimeIssue(
+        { ...hello, runtime: { ...hello.runtime!, entrypoint: '/invented/stale.js' } },
+        expected,
+      ),
+    ).toMatch(/entrypoint/);
+    expect(serviceRuntimeIssue({ ...hello, akno_path: '/invented/other-brain' }, expected)).toMatch(
+      /knowledge-base target/,
+    );
+    expect(serviceRuntimeIssue({ ...hello, runtime: undefined }, expected)).toMatch(/unavailable/);
   });
 });

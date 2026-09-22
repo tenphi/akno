@@ -97,6 +97,12 @@ describe('the socket door', () => {
         'plan',
         'migrate',
       ]);
+      expect(client.hello.runtime).toMatchObject({
+        pid: process.pid,
+        executable: process.execPath,
+        entrypoint: process.argv[1] ?? null,
+        state_dir: stateDir,
+      });
     } finally {
       await client.close();
     }

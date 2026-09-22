@@ -1,16 +1,25 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { AknoError } from '@tenphi/akno-protocol';
+import { AknoError, PROTOCOL_VERSION, type Hello } from '@tenphi/akno-protocol';
 
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, kv, line, style } from '../output.ts';
 import {
   aknoSocketIsReady,
+  readAknoHello,
   readSystemdInstallTarget,
   systemdPaths,
   type SystemdInstallTarget,
 } from './service-systemd.ts';
+import {
+  inspectLaunchdJob,
+  reloadLaunchdJob,
+  type LaunchdDefinition,
+  type LaunchdDefinitionStatus,
+  type LaunchdJobInspection,
+} from './service-launchd.ts';
+import { DREAM_HEALTH_LABEL, DREAM_SCHEDULE_LABEL } from './dream-schedule.ts';
 
 /**
  * `akno redeploy` — one command to apply local changes end-to-end.
@@ -94,6 +103,42 @@ export interface SocketIdentity {
   device: number;
   inode: number;
   changedAtMs: number;
+}
+
+export function serviceRuntimeIssue(
+  hello: Hello,
+  expected: {
+    definition: LaunchdDefinition;
+    pid: number | null;
+    aknoPath: string;
+    stateDir: string;
+  },
+): string | null {
+  if (hello.protocol !== PROTOCOL_VERSION) return 'service protocol is incompatible with this client';
+  if (!hello.runtime) return 'service runtime identity is unavailable';
+  if (pathIdentity(hello.akno_path) !== pathIdentity(expected.aknoPath)) {
+    return 'service knowledge-base target differs from the installed definition';
+  }
+  if (pathIdentity(hello.runtime.state_dir) !== pathIdentity(expected.stateDir)) {
+    return 'service state target differs from the installed definition';
+  }
+  if (
+    !expected.definition.arguments[0] ||
+    pathIdentity(hello.runtime.executable) !== pathIdentity(expected.definition.arguments[0])
+  ) {
+    return 'service executable differs from the installed definition';
+  }
+  if (
+    !expected.definition.arguments[1] ||
+    hello.runtime.entrypoint === null ||
+    pathIdentity(hello.runtime.entrypoint) !== pathIdentity(expected.definition.arguments[1])
+  ) {
+    return 'service entrypoint differs from the installed definition';
+  }
+  if (expected.pid === null || hello.runtime.pid !== expected.pid) {
+    return 'service process does not match the loaded launchd job';
+  }
+  return null;
 }
 
 /** A pre-restart listener is not evidence that the replacement is ready. */
@@ -182,12 +227,16 @@ export async function redeployCommand(argv: string[]): Promise<number> {
     restarted: boolean;
     socket: string | null;
     ready: boolean;
+    definitions: Record<string, LaunchdDefinitionStatus>;
+    reloaded: string[];
     note?: string;
   } = {
     built: process.env[AFTER_BUILD_ENV] === '1',
     restarted: false,
     socket: null,
     ready: false,
+    definitions: {},
+    reloaded: [],
   };
 
   // ── Build ─────────────────────────────────────────────────────────────────
@@ -269,20 +318,44 @@ export async function redeployCommand(argv: string[]): Promise<number> {
 
   const previousSocket = socketIdentity(target.socketPath);
   if (!values.json) heading('restarting');
-  const restartCommand = darwin
-    ? (['launchctl', ['kickstart', '-k', `gui/${process.getuid?.() ?? ''}/${LABEL}`]] as const)
-    : (['systemctl', ['--user', 'restart', `${LABEL}.service`]] as const);
-  const kick = spawnSync(restartCommand[0], restartCommand[1], {
-    stdio: values.json ? 'pipe' : 'inherit',
-    encoding: 'utf8',
-  });
-  if (kick.status !== 0) {
-    fail(
-      values.json,
-      result,
-      `${restartCommand[0]} restart failed (exit ${kick.status ?? 'unknown'})${buildTail(kick.stderr)}`,
-    );
-    return 1;
+  let serviceInspection: LaunchdJobInspection | null = null;
+  let serviceReloaded = false;
+  if (darwin) {
+    const agents = path.dirname(serviceDefinition);
+    for (const label of [LABEL, DREAM_SCHEDULE_LABEL, DREAM_HEALTH_LABEL]) {
+      const plistPath = path.join(agents, `${label}.plist`);
+      if (!fs.existsSync(plistPath)) continue;
+      const inspected = inspectLaunchdJob(label, plistPath);
+      result.definitions[label] = inspected.status;
+      const replacement = reloadLaunchdJob(inspected);
+      if (replacement.error) {
+        fail(values.json, result, `launchd reload failed: ${replacement.error}`);
+        return 1;
+      }
+      result.definitions[label] = replacement.inspection.status;
+      if (replacement.reloaded) result.reloaded.push(label);
+      if (label === LABEL) {
+        serviceInspection = replacement.inspection;
+        serviceReloaded = replacement.reloaded;
+      }
+    }
+  }
+  if (!serviceReloaded) {
+    const restartCommand = darwin
+      ? (['launchctl', ['kickstart', '-k', `gui/${process.getuid?.() ?? ''}/${LABEL}`]] as const)
+      : (['systemctl', ['--user', 'restart', `${LABEL}.service`]] as const);
+    const kick = spawnSync(restartCommand[0], restartCommand[1], {
+      stdio: values.json ? 'pipe' : 'inherit',
+      encoding: 'utf8',
+    });
+    if (kick.status !== 0) {
+      fail(
+        values.json,
+        result,
+        `${restartCommand[0]} restart failed (exit ${kick.status ?? 'unknown'})${buildTail(kick.stderr)}`,
+      );
+      return 1;
+    }
   }
   result.restarted = true;
 
@@ -316,6 +389,30 @@ export async function redeployCommand(argv: string[]): Promise<number> {
         'check `akno service status` and the log',
     );
     return 1;
+  }
+
+  if (darwin) {
+    serviceInspection = inspectLaunchdJob(LABEL, serviceDefinition);
+    result.definitions[LABEL] = serviceInspection.status;
+    if (serviceInspection.status !== 'matching' || !serviceInspection.installed) {
+      fail(values.json, result, 'service loaded definition could not be verified after restart');
+      return 1;
+    }
+    const hello = await readAknoHello(target.socketPath);
+    if (!hello) {
+      fail(values.json, result, 'service identity could not be read after restart');
+      return 1;
+    }
+    const identityIssue = serviceRuntimeIssue(hello, {
+      definition: serviceInspection.installed,
+      pid: serviceInspection.pid,
+      aknoPath: target.aknoPath,
+      stateDir: target.stateDir,
+    });
+    if (identityIssue) {
+      fail(values.json, result, identityIssue);
+      return 1;
+    }
   }
 
   report(values.json, result, null);
@@ -387,7 +484,15 @@ function buildTail(stderr: string | null): string {
   return tail ? `\n${tail}` : '';
 }
 
-type Result = { built: boolean; restarted: boolean; socket: string | null; ready: boolean; note?: string };
+type Result = {
+  built: boolean;
+  restarted: boolean;
+  socket: string | null;
+  ready: boolean;
+  definitions: Record<string, LaunchdDefinitionStatus>;
+  reloaded: string[];
+  note?: string;
+};
 
 function report(asJson: boolean | undefined, result: Result, note: string | null): void {
   if (note) result.note = note;
@@ -399,9 +504,20 @@ function report(asJson: boolean | undefined, result: Result, note: string | null
   kv([
     ['built', result.built ? 'yes' : 'skipped'],
     ['restarted', result.restarted ? LABEL : 'no'],
+    ['definitions', Object.keys(result.definitions).length > 0 ? 'verified' : null],
+    ['reloaded', result.reloaded.length > 0 ? result.reloaded.join(', ') : 'none'],
     ['socket', result.ready ? `${result.socket} (up)` : (result.socket ?? null)],
   ]);
   if (note) line(style.grey(`\n  ${note}`));
+}
+
+function pathIdentity(candidate: string): string {
+  const resolved = path.resolve(candidate);
+  try {
+    return fs.realpathSync.native(resolved);
+  } catch {
+    return resolved;
+  }
 }
 
 function fail(asJson: boolean | undefined, result: Result, message: string): void {

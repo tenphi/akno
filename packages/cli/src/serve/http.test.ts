@@ -59,6 +59,7 @@ describe('the HTTP door', () => {
     try {
       expect(client.hello.ops).toEqual(['recall', 'read']);
       expect(client.hello.writable).toBe(false);
+      expect(client.hello.runtime).toMatchObject({ pid: process.pid, state_dir: stateDir });
       await expect(
         client.write({ slug: 'private/ada-note', content: 'Invented note.' }),
       ).rejects.toMatchObject({
