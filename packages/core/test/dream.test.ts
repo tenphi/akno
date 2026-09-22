@@ -711,6 +711,117 @@ describe('the full-run planning barrier', () => {
     expect(fs.readFileSync(path.join(root, 'observations/principles.md'), 'utf8')).toContain(principle);
   });
 
+  it('retires a legacy blocked residual after restart and lets independent work progress', async () => {
+    server.reply(OBSERVED);
+    const first = await mem.dream({ phase: 'observe' });
+    const oldPlan = first.maintenancePlan!;
+    const oldItem = oldPlan.items[0]!;
+    const dbPath = mem.config.dbPath;
+    await mem.close();
+
+    const database = new Database(dbPath);
+    database
+      .prepare(
+        `INSERT INTO maintenance_items (
+           id, plan_id, ord, revision, kind, risk, status, subject, rationale, input_hash,
+           operations, checks, decision_actor, decision_outcome, decision_reason, decided_at,
+           change_id, verification, updated_at, evidence, policy, status_code, component_count,
+           recovery_recorded_at
+         )
+         SELECT 'item_legacy_blocked', plan_id, ord + 1, revision, kind, risk, 'blocked',
+                'topics/invented-legacy-residual', rationale, input_hash, operations, checks,
+                NULL, NULL, 'An older version stored this terminal reason without a status code.',
+                updated_at, NULL, NULL, updated_at, evidence, policy, NULL, component_count, NULL
+           FROM maintenance_items WHERE id = ?`,
+      )
+      .run(oldItem.id);
+    database
+      .prepare("UPDATE maintenance_plans SET status = 'partially_completed' WHERE id = ?")
+      .run(oldPlan.id);
+    database.close();
+
+    const newPages: Record<string, string> = {
+      'topics/zephyr-calibration.md':
+        '---\ntitle: Zephyr calibration\nakno:\n  management:\n    observe: integrate\n---\n\n# Zephyr calibration\n\nAuthored calibration overview.\n',
+      'lab/zephyr-alpha.md':
+        '---\ntitle: Zephyr alpha\n---\n\n# Zephyr alpha\n\nThe alpha unit was calibrated in January 2031.\n',
+      'lab/zephyr-beta.md':
+        '---\ntitle: Zephyr beta\n---\n\n# Zephyr beta\n\nThe beta unit was calibrated in April 2031.\n',
+      'lab/zephyr-gamma.md':
+        '---\ntitle: Zephyr gamma\n---\n\n# Zephyr gamma\n\nThe gamma unit was calibrated in July 2031.\n',
+    };
+    for (const [relPath, body] of Object.entries(newPages)) {
+      fs.mkdirSync(path.join(root, path.dirname(relPath)), { recursive: true });
+      fs.writeFileSync(path.join(root, relPath), body, 'utf8');
+    }
+    server.facts({
+      ...SERVICING,
+      'lab/zephyr-alpha': [
+        {
+          claim: 'The alpha unit was calibrated in January 2031.',
+          subject: 'zephyr calibration',
+          attribute: 'calibrated',
+          value: 'January 2031',
+        },
+      ],
+      'lab/zephyr-beta': [
+        {
+          claim: 'The beta unit was calibrated in April 2031.',
+          subject: 'zephyr calibration',
+          attribute: 'calibrated',
+          value: 'April 2031',
+        },
+      ],
+      'lab/zephyr-gamma': [
+        {
+          claim: 'The gamma unit was calibrated in July 2031.',
+          subject: 'zephyr calibration',
+          attribute: 'calibrated',
+          value: 'July 2031',
+        },
+      ],
+    });
+    mem = await openMem();
+    await mem.index({ rederive: true });
+    const requestCount = server.requestKinds().length;
+    server.reply({
+      observations: [
+        {
+          pattern: 'Zephyr units are calibrated once per quarter.',
+          evidence: ['lab/zephyr-alpha', 'lab/zephyr-beta', 'lab/zephyr-gamma'],
+          confidence: 0.9,
+        },
+      ],
+    });
+
+    const recovered = await mem.dream({ phase: 'observe' });
+    const persisted = mem.plan(oldPlan.id);
+
+    expect(persisted).toMatchObject({ status: 'failed' });
+    expect(persisted.items.find((item) => item.id === oldItem.id)).toMatchObject({
+      status: 'applied',
+      decision: oldItem.decision,
+      changeId: oldItem.changeId,
+    });
+    expect(persisted.items.find((item) => item.id === 'item_legacy_blocked')).toMatchObject({
+      status: 'blocked',
+      statusCode: null,
+      statusReason: expect.stringContaining('older version'),
+    });
+    expect(recovered.maintenancePlan?.id).not.toBe(oldPlan.id);
+    expect(recovered.maintenancePlan?.items[0]).toMatchObject({
+      status: 'applied',
+      subject: 'topics/zephyr-calibration',
+    });
+    // One planning call per eligible subject and one curator call for the only fresh draft. The
+    // legacy residual adds no discarded planner or curator work of its own.
+    expect(server.requestKinds().slice(requestCount)).toEqual(['observe', 'observe', 'curator']);
+    expect(fs.readFileSync(path.join(root, 'topics/zephyr-calibration.md'), 'utf8')).toContain(
+      'Zephyr units are calibrated once per quarter.',
+    );
+    expect(mem.changes().filter((change) => change.op === 'maintenance')).toHaveLength(2);
+  });
+
   it('replans a dependency-deferred phase once from the post-apply index', async () => {
     await withInferencePolicies(undefined, true);
     const principle = 'Maintenance records support deliberate household planning.';

@@ -902,8 +902,20 @@ async function runPhase(
     case 'curate': {
       const policyMatrix = !options.dryRun;
       const policies = curationPolicies(ctx, options);
-      const managedItemResult =
-        policies.managed_item === 'off'
+      const allowedKinds = new Set<CurateTransformationKind>(
+        (['hygiene', 'synthesis', 'split', 'extract', 'merge'] as const).filter(
+          (kind) => policies[kind] !== 'off',
+        ),
+      );
+      // Resolve persisted work before any candidate planner can call a model. In particular,
+      // managed-item routing is model-backed; running it first generated usable drafts and then
+      // discarded them whenever an older plan won queue selection.
+      const mode = policyMatrix ? highestPolicyMode(Object.values(policies)) : null;
+      let plan = mode ? findActiveMaintenancePlan(ctx, mode, 'curate') : null;
+      if (plan && policyMatrix && !planMatchesPolicies(plan, policies)) plan = null;
+      const managedItemResult = plan
+        ? { drafts: [], report: report.managedItems }
+        : policies.managed_item === 'off'
           ? { drafts: [], report: report.managedItems }
           : await planManagedItems(ctx, {
               conflictClaims: ineligibleConflictClaims(report.conflicts),
@@ -914,15 +926,9 @@ async function runPhase(
           `${managedItemResult.report.outcomes.held} managed-item finding${managedItemResult.report.outcomes.held === 1 ? '' : 's'} require${managedItemResult.report.outcomes.held === 1 ? 's' : ''} inspection; surrounding page bytes were not changed`,
         );
       }
-      const allowedKinds = new Set<CurateTransformationKind>(
-        (['hygiene', 'synthesis', 'split', 'extract', 'merge'] as const).filter(
-          (kind) => policies[kind] !== 'off',
-        ),
-      );
       // A configured mode is how a full scheduled run gets plan-backed curation without
       // turning the scheduler into a curate-only command. An explicit dry run keeps its
       // existing read-only path; creating a durable plan needs the service's write handle.
-      const mode = policyMatrix ? highestPolicyMode(Object.values(policies)) : null;
       if (policyMatrix && !mode) return 'all curation policies are off';
       if (!ctx.models.derive.available && !mode) {
         telemetry.degrade('curate', ctx.models.derive.degradedReason({}), 'unavailable');
@@ -931,8 +937,6 @@ async function runPhase(
       if (mode) {
         // Reuse every unfinished plan, not only autonomous ones. Re-running audit or review must
         // not spend another model call to rediscover a decision already waiting in the queue.
-        let plan = findActiveMaintenancePlan(ctx, mode, 'curate');
-        if (plan && policyMatrix && !planMatchesPolicies(plan, policies)) plan = null;
         if (plan) {
           report.curated = plan.items.filter(isGeneralCurationItem).map((item) => ({
             slug: item.subject,
@@ -1117,17 +1121,25 @@ async function runPhase(
     case 'adopt': {
       const adoptPolicy = policyMode(effectiveTransformPolicy(ctx.config, 'adopt', options.mode));
       if (!adoptPolicy) return 'adopt policy is off';
-      const result = await planOrphanAdoptions(ctx, {
-        limit: ctx.config.maintenance.adopt.maxPages,
-      });
-      report.adopted = result.adopted;
-      if (options.dryRun) return null;
+      if (options.dryRun) {
+        const result = await planOrphanAdoptions(ctx, {
+          limit: ctx.config.maintenance.adopt.maxPages,
+        });
+        report.adopted = result.adopted;
+        return null;
+      }
       const mode = adoptPolicy;
 
       let plan = findActiveMaintenancePlan(ctx, mode, 'adopt');
       if (plan && !planMatchesPolicies(plan, { adopt: adoptPolicy })) plan = null;
-      if (!plan && result.drafts.length > 0) {
-        plan = createAdoptionPlan(ctx, mode, result.drafts, report.run.snapshot, adoptPolicy);
+      if (!plan) {
+        const result = await planOrphanAdoptions(ctx, {
+          limit: ctx.config.maintenance.adopt.maxPages,
+        });
+        report.adopted = result.adopted;
+        if (result.drafts.length > 0) {
+          plan = createAdoptionPlan(ctx, mode, result.drafts, report.run.snapshot, adoptPolicy);
+        }
       }
       if (!plan) return null;
       for (const item of plan.items.filter((candidate) => candidate.kind === 'adopt')) {
