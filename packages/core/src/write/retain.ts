@@ -56,8 +56,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v57';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v41';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v58';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v42';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
 const RETRIEVAL_UNIT_CONTRACT = `A retained record is one independently retrievable semantic unit:
@@ -227,7 +227,12 @@ uses active, cancelled or superseded; question uses active or resolved. A questi
 none: uncertainty about its answer does not make the question itself tentative or asserted.
 
 Keep durable facts, accepted decisions, stated preferences, active plans, actual events, durable open
-questions, and proven experience. Keep a considered, rejected, tentative, hypothetical, cancelled,
+questions, and proven experience. A command to finish or clean up this one document or task is not
+a standing preference, even when phrased in the first person. A question asked only to complete the
+current task is not automatically a durable open question; an unresolved question worth returning to is.
+Keep the original document, person, project, trip, or event scope in the readable record. Do not turn
+an advertisement, quotation, or nearby project mention into a fact about that project. Keep a
+considered, rejected, tentative, hypothetical, cancelled,
 completed, or superseded item only when its readable sentence explicitly preserves that status.
 When relevant to the supplied retention mission, discussed hypotheses, fictional examples, suspicions,
 and unaccepted proposals are useful records too. Lack of established truth is not a reason to discard them.
@@ -357,6 +362,21 @@ hypotheses without hedging the actual act. A merely proposed, denied or hedged d
 actor, an asserted alternative, lost evidentiary limits or lost personal nonselection still fails verification.
 For ordinary_tentative, tentative qualifies the selected uncertain proposition normally. Do not interpret
 record-level metadata as syntactically modifying every verb regardless of the supplied label definition.
+
+Independently classify retention admission from the complete source before approving placement.
+For each candidate, retention.durability is durable only when the selected proposition remains useful
+beyond this one source-processing task. A one-task command, a transient live reading, and a question
+whose only purpose is finishing the current task are not durable. A genuine standing preference and
+an unresolved question worth revisiting are durable, even if their wording is brief. Choose uncertain
+when the source does not establish which. Classify source_scope from the selected source proposition,
+not the candidate's proposed page or subject label. Classify candidate_scope from the readable text:
+global for a standing preference across tasks, including a named person's cross-context preference;
+entity for one named product/project/trip/booking or one person's specific profile fact,
+document for one named document, event for one occurrence, task for a one-task instruction, and
+unknown when the boundary is absent. A document-specific command restated as a global deletion
+preference has source_scope=document and candidate_scope=global, even if its words are source-entailing
+in isolation. Never widen a source's scope to make a destination convenient. Admission and factual
+support are separate decisions: a faithful task-only record can still be held as not durable.
 
 For every supplied candidate id, first audit its exact frame and use comparison.source_meaning and
 comparison.candidate_meaning to identify the governing retained predicate and its actor separately from
@@ -496,7 +516,11 @@ export type RetainCandidate = ProvidedRetainCandidate & {
   /** Compatibility fields consumed by the existing remember result and evidence archive. */
   origin?: 'user' | 'assistant';
   evidence?: string;
+  /** Verifier-derived boundary for automatic placement; never supplied by the extraction model. */
+  retention_scope?: RetentionScope;
 };
+
+export type RetentionScope = 'global' | 'entity' | 'document' | 'event' | 'task' | 'unknown';
 
 export interface RetainHeldCandidate {
   hold_stage?: 'validation' | 'verification';
@@ -894,7 +918,12 @@ export async function runRetain(
     };
   }
 
-  const accepted = cleaned.candidates.filter((candidate) => verified.accepted.has(candidate.candidate_id));
+  const accepted = cleaned.candidates
+    .filter((candidate) => verified.accepted.has(candidate.candidate_id))
+    .map((candidate) => ({
+      ...candidate,
+      retention_scope: verified.scopes.get(candidate.candidate_id)!,
+    }));
   const heldByVerification = cleaned.candidates
     .filter((candidate) => !verified.accepted.has(candidate.candidate_id))
     .map((candidate) => ({
@@ -936,12 +965,14 @@ async function verifyCandidates(
 ): Promise<{
   accepted: Set<string>;
   reasons: Map<string, RetainHoldReason>;
+  scopes: Map<string, RetentionScope>;
   receipt: RetainModelCallReceipt;
   error: string | null;
 }> {
   const outcomes: ModelOutcome<string>[] = [];
   const accepted = new Set<string>();
   const reasons = new Map<string, RetainHoldReason>();
+  const scopes = new Map<string, RetentionScope>();
   // Two disjoint candidates fit the default derive-role ceiling without truncating a large batch.
   // Relations still see the complete candidate context; candidates themselves are never evidence.
   for (let start = 0; start < candidates.length; start += 2) {
@@ -959,11 +990,13 @@ async function verifyCandidates(
       return {
         accepted: new Set(),
         reasons: new Map(),
+        scopes: new Map(),
         error: checked.error,
         receipt: modelCallReceipt(model, aggregateSemanticOutcomes(outcomes)),
       };
     for (const id of checked.accepted) accepted.add(id);
     for (const [id, reason] of checked.reasons) reasons.set(id, reason);
+    for (const [id, scope] of checked.scopes) scopes.set(id, scope);
   }
   // A source-supported relation still cannot persist when its target record was withheld.
   // Iterate because a rejected target may invalidate a chain spanning several verification batches.
@@ -986,6 +1019,7 @@ async function verifyCandidates(
   return {
     accepted,
     reasons,
+    scopes,
     error: null,
     receipt: modelCallReceipt(model, aggregateSemanticOutcomes(outcomes)),
   };
@@ -1001,6 +1035,7 @@ async function verifyCandidateBatch(
 ): Promise<{
   accepted: Set<string>;
   reasons: Map<string, RetainHoldReason>;
+  scopes: Map<string, RetentionScope>;
   outcome: ModelOutcome<string>;
   error: string | null;
 }> {
@@ -1043,6 +1078,11 @@ async function verifyCandidateBatch(
       proposition_supported: semanticVerdictFields.proposition_supported,
       action_arguments_preserved: semanticVerdictFields.action_arguments_preserved,
       qualification_scope_preserved: semanticVerdictFields.qualification_scope_preserved,
+      retention: z.strictObject({
+        durability: z.enum(['durable', 'task_only', 'transient', 'uncertain']),
+        source_scope: z.enum(['global', 'entity', 'document', 'event', 'task', 'unknown']),
+        candidate_scope: z.enum(['global', 'entity', 'document', 'event', 'task', 'unknown']),
+      }),
       reason_code: reason.nullable(),
     });
   });
@@ -1106,6 +1146,7 @@ async function verifyCandidateBatch(
     return {
       accepted: new Set(),
       reasons: new Map(),
+      scopes: new Map(),
       outcome,
       error: outcome.error ?? 'verification failed',
     };
@@ -1141,7 +1182,13 @@ async function verifyCandidateBatch(
     )
   ) {
     model.reportInvalidResponse();
-    return { accepted: new Set(), reasons: new Map(), outcome, error: 'verification returned invalid JSON' };
+    return {
+      accepted: new Set(),
+      reasons: new Map(),
+      scopes: new Map(),
+      outcome,
+      error: 'verification returned invalid JSON',
+    };
   }
   const byId = new Map(parsed.data.verdicts.map((verdict) => [verdict.candidate_id, verdict]));
   if (
@@ -1153,6 +1200,7 @@ async function verifyCandidateBatch(
     return {
       accepted: new Set(),
       reasons: new Map(),
+      scopes: new Map(),
       outcome,
       error: 'verification omitted or duplicated candidate verdicts',
     };
@@ -1171,16 +1219,43 @@ async function verifyCandidateBatch(
           // A source-side classification is compared with immutable metadata, independently of
           // positive prose verdicts. Disagreement is a semantic hold, never permission to relabel.
           verdict.source_selected_polarity ===
-            candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.polarity,
+            candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.polarity &&
+          admissionReason(verdict.retention) === null,
       )
       .map((verdict) => verdict.candidate_id),
   );
   const reasons = new Map<string, RetainHoldReason>();
+  const scopes = new Map<string, RetentionScope>();
   for (const verdict of parsed.data.verdicts) {
-    if (!accepted.has(verdict.candidate_id))
-      reasons.set(verdict.candidate_id, verdict.reason_code ?? 'discourse_uncertain');
+    if (accepted.has(verdict.candidate_id)) scopes.set(verdict.candidate_id, verdict.retention.source_scope);
+    if (!accepted.has(verdict.candidate_id)) {
+      const semanticFailure =
+        !verdict.proposition_supported ||
+        !verdict.action_arguments_preserved ||
+        !verdict.qualification_scope_preserved ||
+        verdict.source_selected_polarity !==
+          candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.polarity;
+      reasons.set(
+        verdict.candidate_id,
+        semanticFailure
+          ? (verdict.reason_code ?? 'discourse_uncertain')
+          : (verdict.reason_code ?? admissionReason(verdict.retention) ?? 'discourse_uncertain'),
+      );
+    }
   }
-  return { accepted, reasons, outcome, error: null };
+  return { accepted, reasons, scopes, outcome, error: null };
+}
+
+function admissionReason(retention: {
+  durability: 'durable' | 'task_only' | 'transient' | 'uncertain';
+  source_scope: RetentionScope;
+  candidate_scope: RetentionScope;
+}): RetainHoldReason | null {
+  if (retention.durability === 'task_only' || retention.durability === 'transient') return 'not_durable';
+  if (retention.durability === 'uncertain' || retention.source_scope === 'unknown')
+    return 'noncanonical_without_context';
+  if (retention.source_scope !== retention.candidate_scope) return 'scope_mismatch';
+  return retention.source_scope === 'task' ? 'scope_mismatch' : null;
 }
 
 /** Source spellings help classification; generated subjects cannot certify their own language. */

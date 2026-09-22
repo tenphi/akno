@@ -47,7 +47,14 @@ interface StubServer {
 
 interface StubOwnershipInput {
   allowed_selections: string[];
-  memory: { text: string; subject: string; kind: string; time: Record<string, unknown> | null };
+  memory: {
+    text: string;
+    subject: string;
+    kind: string;
+    time: Record<string, unknown> | null;
+    retention_scope: string | null;
+    deciding_frame: string[];
+  };
   existing_pages: { id: string; title: string; headings: string[]; excerpt: string }[];
   proposed_page: { slug: string; title: string } | null;
 }
@@ -621,7 +628,7 @@ describe('the title on a page remember creates', () => {
     // page after that first fact would make every later recall misdescribe the broader subject.
     server.respondWith([
       {
-        text: 'The Zephyr QX-100 uses a brass calibration dial.',
+        text: 'During the Blackwater expedition, the Zephyr QX-100 uses a brass calibration dial.',
         subject: 'Zephyr calibration',
         page: 'home/blackwater-expedition',
         kind: 'claim',
@@ -629,7 +636,9 @@ describe('the title on a page remember creates', () => {
     ]);
     const mem = await openMem();
     try {
-      await mem.remember({ text: 'The Zephyr QX-100 uses a brass calibration dial.' });
+      await mem.remember({
+        text: 'During the Blackwater expedition, the Zephyr QX-100 uses a brass calibration dial.',
+      });
       const content = created('home/blackwater-expedition');
       expect(content).toContain('title: "Blackwater Expedition"');
       expect(content).not.toContain('Zephyr calibration');
@@ -829,6 +838,67 @@ describe('routing when the best-ranked page is not the best-judged one', () => {
 });
 
 describe('canonical destination qualification', () => {
+  it('routes flight details to the named trip instead of an existing year index', async () => {
+    fs.mkdirSync(path.join(root, 'trips'), { recursive: true });
+    const yearPath = path.join(root, 'trips/2031.md');
+    const tripPath = path.join(root, 'trips/blackwater-bay-2031.md');
+    fs.writeFileSync(yearPath, '# 2031\n\nTravel index for 2031.\n');
+    fs.writeFileSync(tripPath, '# Blackwater Bay 2031\n\nAda Marlow Blackwater Bay trip booking.\n');
+    const yearBefore = fs.readFileSync(yearPath, 'utf8');
+    const text = "Ada Marlow's Blackwater Bay trip includes flight ZX-1111.";
+    server.respondWith([
+      { text, subject: 'Ada Marlow Blackwater Bay trip', page: 'trips/2031', kind: 'claim' },
+    ]);
+    server.decideOwnershipWith((input) => {
+      expect(input.existing_pages.map((page) => page.title)).not.toContain('2031');
+      const trip = input.existing_pages.find((page) => page.title === 'Blackwater Bay 2031');
+      return { selection: trip?.id ?? 'uncertain' };
+    });
+    const mem = await openMem({
+      models: {
+        embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
+        reranker: { id: null, enabled: false },
+        derive: { provider: 'stub', id: 'stub-derive' },
+        expansion: { provider: 'stub', id: 'stub-derive' },
+      },
+    });
+    try {
+      await mem.index({});
+      const result = await mem.remember({ text });
+      expect(result.wrote?.[0]?.slug).toBe('trips/blackwater-bay-2031');
+      expect(fs.readFileSync(yearPath, 'utf8')).toBe(yearBefore);
+      expect(fs.readFileSync(tripPath, 'utf8')).toContain(text);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('does not turn a game advertisement into a neighboring software project', async () => {
+    fs.mkdirSync(path.join(root, 'projects'), { recursive: true });
+    const projectPath = path.join(root, 'projects/zephyr-app.md');
+    fs.writeFileSync(projectPath, '# Zephyr App\n\nBlackwater Quest software project notes.\n');
+    const before = fs.readFileSync(projectPath, 'utf8');
+    const text = 'An advertisement promoted Blackwater Quest as downloadable game software.';
+    server.respondWith([
+      { text, subject: 'Blackwater Quest game', page: 'projects/software', kind: 'claim' },
+    ]);
+    server.decideOwnershipWith((input) => {
+      expect(input.proposed_page).toBeNull();
+      expect(input.memory.deciding_frame).toContain(text);
+      return { selection: 'uncertain' };
+    });
+    const mem = await openMem();
+    try {
+      await mem.index({});
+      const result = await mem.remember({ text });
+      expect(result.wrote).toBeUndefined();
+      expect(fs.existsSync(path.join(root, 'projects/software.md'))).toBe(false);
+      expect(fs.readFileSync(projectPath, 'utf8')).toBe(before);
+    } finally {
+      await mem.close();
+    }
+  });
+
   it.each([
     ['proposed', 'people/ada-marlow', true],
     ['uncertain', 'people/ada-marlow', false],
@@ -1257,6 +1327,27 @@ describe('configured remember fallback', () => {
   const configured = {
     maintenance: { retain: { fallback_page: 'memory/inbox' } },
   };
+
+  it('holds an ambiguous page choice instead of treating the inbox as its owner', async () => {
+    fs.mkdirSync(path.join(root, 'memory'), { recursive: true });
+    const inbox = path.join(root, 'memory/inbox.md');
+    fs.writeFileSync(inbox, '# Inbox\n');
+    const before = fs.readFileSync(inbox, 'utf8');
+    const text = 'Ada Marlow selected a five-year Zephyr QX-100 warranty.';
+    server.respondWith([{ text, subject: 'Zephyr QX-100 warranty', page: 'home/lease', kind: 'decision' }]);
+    server.decideOwnershipWith(() => ({ selection: 'uncertain' }));
+    const mem = await openMem(configured);
+    try {
+      await mem.index({});
+      const result = await mem.remember({ text });
+      expect(result.wrote).toBeUndefined();
+      expect(result.considered?.[0]?.kept).toBe(false);
+      expect(result.fallback).toBeUndefined();
+      expect(fs.readFileSync(inbox, 'utf8')).toBe(before);
+    } finally {
+      await mem.close();
+    }
+  });
 
   it('uses an admitted fallback after a read-only semantic match, including in dry-run', async () => {
     fs.mkdirSync(path.join(root, 'household'), { recursive: true });

@@ -302,7 +302,10 @@ describe('one transactional structural repair', () => {
       expect(
         request.repair_targets.map((entry: { candidate_index: number }) => entry.candidate_index),
       ).toEqual([0]);
-      expect(result.candidates.find((candidate) => candidate.text === minor)).toEqual(original[0]);
+      expect(result.candidates.find((candidate) => candidate.text === minor)).toEqual({
+        ...original[0],
+        retention_scope: 'entity',
+      });
       expect(result.candidates).toHaveLength(verify ? 2 : 1);
       expect(result.modelUsage.repair?.latency_ms).toBe(22);
       expect(result.degradedReason).toBeNull();
@@ -336,7 +339,9 @@ describe('one transactional structural repair', () => {
     const result = await runRetain(source, model);
     expect(chat).toHaveBeenCalledTimes(3);
     expect(result.candidates).toEqual(
-      cleanCandidateBatch([bad, good], { sourceText: source, generated: true }).candidates,
+      cleanCandidateBatch([bad, good], { sourceText: source, generated: true }).candidates.map(
+        (candidate) => ({ ...candidate, retention_scope: 'entity' }),
+      ),
     );
     expect(result.held).toHaveLength(1);
     expect(result.held[0]?.hold_stage).toBe('validation');
