@@ -154,6 +154,48 @@ describe('the socket door', () => {
     }
   }, 15_000);
 
+  it('replays a keyed mutation through an explicitly writable MCP door', async () => {
+    mem.config.server.mcpAllow = [...mem.config.server.mcpAllow, 'write'];
+    await server.close();
+    server = await serveSocket(mem, path.join(stateDir, 'akno.sock'));
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: [
+        path.resolve('packages/cli/src/bin.ts'),
+        'serve',
+        '--mcp',
+        '--no-watch',
+        '--akno-path',
+        root,
+        '--state-dir',
+        stateDir,
+      ],
+      stderr: 'pipe',
+    });
+    const client = new Client({ name: 'replay-fixture', version: '1.0.0' });
+    try {
+      await client.connect(transport);
+      expect((await client.listTools()).tools.map((tool) => tool.name)).toContain('write');
+      const request = {
+        name: 'write',
+        arguments: {
+          slug: 'home/lease',
+          append: '- Agent: Bo Winters',
+          idempotency_key: 'mcp-write-1',
+        },
+      } as const;
+      const first = await client.callTool(request);
+      const replay = await client.callTool(request);
+      expect(JSON.parse((replay.content[0] as { text: string }).text)).toEqual({
+        ...JSON.parse((first.content[0] as { text: string }).text),
+        replayed: true,
+      });
+      expect(fs.readFileSync(path.join(root, 'home/lease.md'), 'utf8').match(/Bo Winters/g)).toHaveLength(1);
+    } finally {
+      await client.close();
+    }
+  }, 15_000);
+
   it('refuses a live service whose knowledge base does not match the requested target', async () => {
     const otherRoot = path.join(root, 'invented-other-memory');
     fs.mkdirSync(otherRoot);
@@ -213,6 +255,59 @@ describe('the socket door', () => {
       const result = await client.write({ slug: 'home/lease', append: '- Deposit: 2222 EUR' });
       expect(result.outcome).toBe('ok');
       expect(fs.readFileSync(path.join(root, 'home/lease.md'), 'utf8')).toContain('2222 EUR');
+    } finally {
+      await client.close();
+    }
+  });
+
+  it('replays a keyed mutation through the generated socket client', async () => {
+    const client = await connect({ socket: server.path });
+    try {
+      const request = {
+        slug: 'home/lease',
+        append: '- Insurer: Vulpine Mutual',
+        idempotency_key: 'socket-write-1',
+      };
+      const first = await client.write(request);
+      const replay = await client.write(request);
+      expect(replay).toEqual({ ...first, replayed: true });
+      expect(fs.readFileSync(path.join(root, 'home/lease.md'), 'utf8').match(/Vulpine Mutual/g)).toHaveLength(
+        1,
+      );
+    } finally {
+      await client.close();
+    }
+  });
+
+  it('recovers the original result when an inner adapter deadline loses the first reply', async () => {
+    const client = await connect({ socket: server.path });
+    try {
+      const request = {
+        slug: 'home/lease',
+        append: '- Location: Blackwater Bay',
+        idempotency_key: 'socket-lost-reply-1',
+      };
+      const underlying = client.write(request);
+      const finished = underlying.then(() => undefined);
+      await expect(
+        Promise.race([
+          finished.then(() => {
+            throw new Error('the reply arrived before the fixture deadline');
+          }),
+          new Promise<never>((_resolve, reject) =>
+            setTimeout(() => reject(new Error('inner request deadline expired')), 0),
+          ),
+        ]),
+      ).rejects.toThrow('inner request deadline expired');
+
+      // The adapter already returned its timeout; wait only so the test can prove what the service
+      // eventually committed, without using or returning the discarded response value.
+      await finished;
+      const replay = await client.write(request);
+      expect(replay).toMatchObject({ replayed: true, change_id: expect.any(String) });
+      expect(fs.readFileSync(path.join(root, 'home/lease.md'), 'utf8').match(/Blackwater Bay/g)).toHaveLength(
+        1,
+      );
     } finally {
       await client.close();
     }

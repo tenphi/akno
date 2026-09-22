@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ResultEnvelope } from '../common.ts';
+import { IdempotencyKey, ResultEnvelope } from '../common.ts';
 
 /**
  * There is no `add_event` op, and nothing about line syntax reaches a
@@ -57,6 +57,8 @@ export const WriteInput = z
     dry_run: z.boolean().optional(),
     /** Approve past a conflict the caller has already resolved with the user. */
     resolve_conflict: z.string().optional(),
+    /** Retry identity scoped by actor and operation. Identical retries return the first result. */
+    idempotency_key: IdempotencyKey.optional(),
   })
   .refine((v) => Boolean(v.slug || v.propose_slug || v.event), {
     message: 'write requires a slug, a proposed slug, or an event',

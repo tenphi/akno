@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ResultEnvelope } from '../common.ts';
+import { IdempotencyKey, ResultEnvelope } from '../common.ts';
 import { ApprovalRequest, FolderRequired, WriteTarget } from './write.ts';
 
 /**
@@ -90,6 +90,8 @@ export const ForgetInput = z
     memory: z.string().optional(),
     slug: z.string().optional(),
     document: z.string().optional(),
+    /** Retry identity scoped by actor and operation. Identical retries return the first result. */
+    idempotency_key: IdempotencyKey.optional(),
   })
   .refine((v) => [v.fact, v.memory, v.slug, v.document].filter(Boolean).length === 1, {
     message: 'forget takes exactly one of: fact, memory, slug, document',
@@ -127,6 +129,8 @@ export type UndoOutput = z.infer<typeof UndoOutput>;
 export const MoveInput = z.object({
   from: z.string().min(1),
   to: z.string().min(1),
+  /** Retry identity scoped by actor and operation. Identical retries return the first result. */
+  idempotency_key: IdempotencyKey.optional(),
 });
 export type MoveInput = z.infer<typeof MoveInput>;
 

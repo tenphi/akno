@@ -89,8 +89,14 @@ describe('the HTTP door', () => {
     try {
       expect(client.hello.ops).toEqual(['read', 'write']);
       expect(client.hello.writable).toBe(true);
-      const result = await client.write({ slug: 'private/ada-note', content: 'Invented note.' });
+      const request = {
+        slug: 'private/ada-note',
+        content: 'Invented note.',
+        idempotency_key: 'http-write-1',
+      };
+      const result = await client.write(request);
       expect(result.outcome).toBe('ok');
+      expect(await client.write(request)).toEqual({ ...result, replayed: true });
       expect(fs.existsSync(path.join(root, 'private/ada-note.md'))).toBe(true);
     } finally {
       await client.close();

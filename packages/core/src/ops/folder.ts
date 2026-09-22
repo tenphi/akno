@@ -9,6 +9,7 @@ import { compileRules } from '../rules/compile.ts';
 import { FolderRuleDoc, type FolderRule } from '../config/schema.ts';
 import { fileEntry } from '../write/journal.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
+import { beginMutation } from '../write/mutation-receipts.ts';
 import { isReserved } from '../reserved.ts';
 import { normalizeSlug } from './write.ts';
 
@@ -99,6 +100,7 @@ export async function folder(ctx: AknoContext, rawInput: unknown): Promise<Folde
     if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
   }
 
+  beginMutation(ctx);
   const written = await writeFileAtomic(ctx.config.aknoPath, relPath, addFolderRule(source, { glob, rule }));
 
   // The directory too. A rule for a folder nobody has created describes nothing, and the point
@@ -115,6 +117,7 @@ export async function folder(ctx: AknoContext, rawInput: unknown): Promise<Folde
     op: 'folder',
     summary: `declared ${folderPath}`,
     files: [fileEntry(written)],
+    receipt: ctx.mutationReceipt,
   });
   // A folder declaration changes live write authority but is excluded from page indexing. It
   // still invalidates a dream planner snapshot acquired under the previous rule set.

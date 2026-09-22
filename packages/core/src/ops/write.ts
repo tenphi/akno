@@ -17,6 +17,7 @@ import { extract } from '../ingest/extract.ts';
 import { provenanceLines, recordDocument, storeDocument } from '../ingest/store.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
+import { beginMutation } from '../write/mutation-receipts.ts';
 import { ledgerSlug } from '../reserved.ts';
 import type { Extraction } from '../ingest/extract.ts';
 import {
@@ -154,6 +155,19 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
   const files: ChangeFile[] = [];
   const wrote: WriteTarget[] = [];
 
+  // Reject a missing attachment before the page itself changes. Once the receipt crosses the
+  // mutation boundary every failure has to be treated as possibly applied, so cheap complete
+  // preflight here avoids manufacturing an interrupted write we already know cannot finish.
+  const documentSources = new Map<NonNullable<typeof input.documents>[number], string>();
+  for (const document of input.documents ?? []) {
+    const source = path.resolve(document.path);
+    if (!(await fsp.stat(source).catch(() => null))) {
+      throw new AknoError('not_found', `no file to attach at ${source}`);
+    }
+    documentSources.set(document, source);
+  }
+
+  beginMutation(ctx);
   const result = await writeFileAtomic(ctx.config.aknoPath, relPath, edited.content);
   files.push(fileEntry(result));
   wrote.push({
@@ -168,10 +182,7 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
   const attached: PendingAttachment[] = [];
   if (input.documents?.length) {
     for (const document of input.documents) {
-      const source = path.resolve(document.path);
-      if (!(await fsp.stat(source).catch(() => null))) {
-        throw new AknoError('not_found', `no file to attach at ${source}`);
-      }
+      const source = documentSources.get(document)!;
 
       const stored = await storeDocument({ ctx, source, pageSlug: slug, move: false });
       files.push(stored.file);
@@ -212,6 +223,7 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
     op: 'write',
     summary: `${existing ? actionFor(edit) : 'created'} ${slug}${input.event ? ' + event' : ''}`,
     files,
+    receipt: ctx.mutationReceipt,
   });
 
   // ── Index ───────────────────────────────────────────────────────────────
@@ -382,6 +394,7 @@ async function writeEventOnly(
     op: 'write',
     summary: `event ${event.date}: ${event.summary.slice(0, 60)}`,
     files: [ledger.file],
+    receipt: ctx.mutationReceipt,
   });
 
   await ctx.indexer.runForeground({ only: [ledger.file.relPath], modelPaths: [] });
@@ -421,6 +434,7 @@ export async function appendToLedger(
   // to reverse an event that was never appended, and the caller would be told it had been kept.
   if (inserted.content === current) return { file: null, line: inserted.line };
 
+  beginMutation(ctx);
   const result = await writeFileAtomic(ctx.config.aknoPath, relPath, inserted.content);
   return { file: fileEntry(result), line: inserted.line };
 }

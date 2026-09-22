@@ -22,6 +22,11 @@ import { effectiveRule, matchRules } from './rules/compile.ts';
 import { looksLikeLedger } from './reserved.ts';
 import type { AknoContext } from './context.ts';
 import { Journal, type ChangeSummary } from './write/journal.ts';
+import {
+  executeReplaySafeMutation,
+  isReplaySafeOperation,
+  recoverInterruptedMutationReceipts,
+} from './write/mutation-receipts.ts';
 import { Gate, type ProposalRow } from './write/gate.ts';
 import { recall } from './ops/recall.ts';
 import { answer as answerOp } from './ops/answer.ts';
@@ -302,6 +307,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
   // The write handle proves that no predecessor is still applying. Finalize its unfinished
   // lifecycle rows before status or scheduling can mistake a crashed run for a live one.
   recoverInterruptedDreamRuns(ctx);
+  recoverInterruptedMutationReceipts(ctx);
 
   if (writable && config.createReservedPaths) ensureReservedPaths(config);
 
@@ -383,6 +389,14 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     // proposal as the person who answered it.
     const forCall =
       callOptions.actor && callOptions.actor !== ctx.actor ? { ...ctx, actor: callOptions.actor } : ctx;
+    if (isReplaySafeOperation(op)) {
+      return executeReplaySafeMutation(
+        forCall,
+        op,
+        parsed.data as Record<string, unknown>,
+        (mutationContext, mutationInput) => implementation(mutationContext, mutationInput),
+      ) as Promise<OpResult<N>>;
+    }
     return implementation(forCall, parsed.data);
   }
 

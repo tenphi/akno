@@ -1,7 +1,8 @@
 /**
  * One SQLite file holds both reproducible projections and deliberately durable workflow state.
  * `akno index --rebuild` refreshes the former in place; deleting this file loses the journal,
- * live maintenance plans, replayable managed-item source quotes, retain receipts and recovery state.
+ * live maintenance plans, replayable managed-item source quotes, retain and mutation receipts,
+ * and recovery state.
  * The journal keeps prior bytes for undo; a sealed plan keeps exact proposed bytes so a decision
  * survives a restart and never has to regenerate a possibly different rewrite; one bounded exact
  * quote lets a generated sentence be checked later; the receipt explains the lifecycle around them.
@@ -12,7 +13,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 41;
+export const SCHEMA_VERSION = 42;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -48,6 +49,7 @@ export const RETAIN_SOURCE_LIFETIME_MIGRATION_INDEX = 32;
 export const PAGE_SOURCE_INTEGRITY_MIGRATION_INDEX = 33;
 
 export const PROSE_PROJECTION_MIGRATION_INDEX = 34;
+export const MUTATION_RECEIPTS_MIGRATION_INDEX = 35;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -1235,6 +1237,28 @@ export const MIGRATIONS: string[] = [
     source_hash TEXT NOT NULL,
     PRIMARY KEY(source_page, line)
   );`,
+  // A caller may lose the reply after a filesystem mutation has committed. Keep only the
+  // content-free request fingerprint and a bounded result locator: the Markdown and journal
+  // remain the source of truth, while retries can prove whether they are the same request.
+  // Receipts intentionally have no expiry or prune path. Caller keys are opaque, so deleting an
+  // old receipt could never prove that its next appearance names a genuinely new mutation.
+  `CREATE TABLE mutation_receipts (
+    actor           TEXT NOT NULL,
+    operation       TEXT NOT NULL,
+    idempotency_key TEXT NOT NULL,
+    request_hash    TEXT NOT NULL,
+    state           TEXT NOT NULL,
+    change_id       TEXT REFERENCES changes(id) ON DELETE SET NULL,
+    result          TEXT,
+    started_at      TEXT NOT NULL,
+    completed_at    TEXT,
+    PRIMARY KEY(actor, operation, idempotency_key),
+    CHECK (operation IN ('write', 'move', 'forget', 'folder')),
+    CHECK (state IN ('reserved', 'running', 'committed', 'completed', 'interrupted')),
+    CHECK ((state = 'completed' AND result IS NOT NULL AND completed_at IS NOT NULL)
+        OR (state != 'completed' AND result IS NULL AND completed_at IS NULL))
+  );
+  CREATE INDEX mutation_receipts_change ON mutation_receipts(change_id);`,
 ];
 
 /**
