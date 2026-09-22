@@ -58,6 +58,7 @@ export interface ConnectOptions {
   http?: string;
   /** Bearer credential for a server.http_access identity. HTTP only. */
   token?: string;
+  /** Timeout for ops and, when explicitly set, operator commands. Commands are unbounded by default. */
   timeoutMs?: number;
   /** Fail rather than warn when the server's protocol version differs. */
   strictVersion?: boolean;
@@ -201,14 +202,22 @@ async function connectSocket(socketPath: string, options: ConnectOptions): Promi
         ...(actor ? { actor } : {}),
       }),
     );
-    // A command is maintenance: reconciling a large tree or running the cycle takes minutes,
-    // where an op that slow has already failed at its job.
-    const deadline = kind === 'command' ? Math.max(timeoutMs, 15 * 60_000) : timeoutMs;
-    return withTimeout(
-      promise,
-      deadline,
-      new AknoError('unavailable', `${op} did not respond within ${deadline}ms`),
-    );
+    // A command is maintenance: reconciling a large tree or running the cycle can take an
+    // unbounded number of model calls, while an op that slow has already failed at its job.
+    // Keep an explicit caller deadline useful, but do not invent one for operator work.
+    const deadline = kind === 'command' ? options.timeoutMs : timeoutMs;
+    if (deadline === undefined) return promise;
+    try {
+      return await withTimeout(
+        promise,
+        deadline,
+        new AknoError('unavailable', `${op} did not respond within ${deadline}ms`),
+      );
+    } finally {
+      // A timed-out response can still arrive later. It no longer has a caller and must not
+      // retain a pending entry for the life of this connection.
+      pending.delete(id);
+    }
   }
 
   async function call<N extends OpName>(

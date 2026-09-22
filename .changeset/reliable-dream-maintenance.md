@@ -1,6 +1,7 @@
 ---
 '@tenphi/akno-core': patch
 '@tenphi/akno': patch
+'@tenphi/akno-client': patch
 '@tenphi/akno-protocol': patch
 ---
 
