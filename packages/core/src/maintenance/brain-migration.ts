@@ -7,6 +7,7 @@ import { sha256 } from '../store/ids.ts';
 import { restoreFile, writeFileAtomic } from '../write/atomic.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import {
+  managedMemoryPayloadIssue,
   managedMemoryFingerprint,
   parseManagedMemoryMarker,
   renderManagedMemoryMarker,
@@ -23,6 +24,7 @@ export interface BrainMigrationReport {
   scannedPages: number;
   legacyMarkers: number;
   migrated: number;
+  normalizedPayloads: number;
   held: number;
   changedPaths: string[];
   changeId?: string;
@@ -48,7 +50,9 @@ const HEADING_OR_COMMENT = /^\s*(?:<!--|#{1,6}(?:\s+|$))/;
 
 /**
  * Upgrade brain bytes explicitly. The normal parser accepts v2 only; this file is the sole v1
- * decoder and is reachable only through the operator migration command.
+ * decoder. It also adds missing visible status labels to otherwise valid v2 items: the marker
+ * already declares the semantics, but an unlabeled payload stays out of the memory projection.
+ * Both repairs are reachable only through the journalled operator migration command.
  */
 export async function migrateBrain(
   ctx: AknoContext,
@@ -67,6 +71,7 @@ export async function migrateBrain(
   const legacyIds = new Map<string, number>();
   let legacyMarkers = 0;
   let migrated = 0;
+  let normalizedPayloads = 0;
   let held = 0;
 
   for (const file of pages) {
@@ -84,7 +89,8 @@ export async function migrateBrain(
   for (const page of readable) {
     const result = migratePage(page.before, page.slug, duplicateIds);
     legacyMarkers += result.legacy;
-    migrated += result.supports.length;
+    migrated += result.supports.length + result.normalizedPayloads;
+    normalizedPayloads += result.normalizedPayloads;
     held += result.held;
     if (result.after !== page.before) {
       changes.push({ relPath: page.relPath, after: result.after, supports: result.supports });
@@ -96,6 +102,7 @@ export async function migrateBrain(
     scannedPages: pages.length,
     legacyMarkers,
     migrated,
+    normalizedPayloads,
     held,
     changedPaths: changes.map((change) => change.relPath),
     dryRun,
@@ -111,7 +118,7 @@ export async function migrateBrain(
     changeId = ctx.journal.record({
       actor: ctx.actor,
       op: 'migrate',
-      summary: `migrated ${migrated} managed memory item(s) to brain schema v2`,
+      summary: `migrated or normalized ${migrated} managed memory item(s)`,
       files,
     });
   } catch (error) {
@@ -175,6 +182,7 @@ function migratePage(
   legacy: number;
   held: number;
   supports: MigratedSupport[];
+  normalizedPayloads: number;
 } {
   const frontmatter = parseFrontmatter(content);
   const prefix = content.slice(0, frontmatter.bodyOffset);
@@ -182,10 +190,30 @@ function migratePage(
   const supports: MigratedSupport[] = [];
   let legacy = 0;
   let held = 0;
+  let normalizedPayloads = 0;
 
   for (let index = 0; index < lines.length; index++) {
     const line = lines[index]!;
-    if (!MARKER_LIKE.test(line) || parseManagedMemoryMarker(line)) continue;
+    if (!MARKER_LIKE.test(line)) continue;
+    const current = parseManagedMemoryMarker(line);
+    if (current) {
+      // A label is display metadata, not a new claim. Restrict this to one bare payload line so
+      // migration never rewrites a person's own Markdown structure or an already labeled item.
+      const payload = lines[index + 1]?.trim() ?? '';
+      if (
+        payload &&
+        !HEADING_OR_COMMENT.test(payload) &&
+        !/^[-*]\s/.test(payload) &&
+        managedMemoryPayloadIssue(current, payload) !== null
+      ) {
+        const normalized = renderManagedMemoryPayload(payload, current);
+        if (managedMemoryPayloadIssue(current, normalized) === null) {
+          lines[index + 1] = normalized;
+          normalizedPayloads++;
+        }
+      }
+      continue;
+    }
     legacy += 1;
     const match = LEGACY_MARKER.exec(line);
     if (!match) {
@@ -237,7 +265,7 @@ function migratePage(
       slug,
     });
   }
-  return { after: prefix + lines.join('\n'), legacy, held, supports };
+  return { after: prefix + lines.join('\n'), legacy, held, supports, normalizedPayloads };
 }
 
 function legacyPayloadIndex(lines: readonly string[], markerIndex: number): number | null {

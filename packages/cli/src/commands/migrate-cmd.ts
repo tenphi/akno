@@ -5,7 +5,7 @@ import { runMaintenance } from '../ops-handle.ts';
 
 const MIGRATE_HELP = `akno migrate [options]
 
-  Upgrade Akno-owned Markdown memory blocks to the current brain schema. This is
+  Upgrade Akno-owned Markdown memory blocks and restore missing visible status labels. This is
   explicit, journalled and undoable; indexing never rewrites brain bytes.
 
   --dry-run       Report eligible and held legacy items without writing.
@@ -41,6 +41,9 @@ export async function migrateCommand(argv: string[]): Promise<number> {
     ['pages scanned', report.scannedPages],
     ['legacy markers', report.legacyMarkers],
     ['migrated', report.migrated],
+    ...('normalizedPayloads' in report
+      ? [['normalized labels', report.normalizedPayloads] as [string, number]]
+      : []),
     ['held', report.held],
     ['files changed', report.changedPaths.length],
     ['change', 'changeIds' in report ? report.changeIds.join(', ') || '-' : (report.changeId ?? '-')],
