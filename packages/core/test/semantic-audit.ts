@@ -49,6 +49,11 @@ export function retentionAudit(
 ) {
   const audit = semanticAudit(proposition, action, qualification);
   return {
+    retention: {
+      durability: 'durable' as const,
+      source_scope: 'entity' as const,
+      candidate_scope: 'entity' as const,
+    },
     comparison: audit.comparison,
     mismatches: audit.mismatches.map((mismatch) => ({
       ...mismatch,

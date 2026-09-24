@@ -41,11 +41,31 @@ interface AutomaticRetainStub {
   setCandidate: (candidate: Record<string, unknown>) => void;
   setCandidates: (candidates: Record<string, unknown>[]) => void;
   setVerification: (supported: boolean) => void;
+  setRetention: (decision: {
+    durability: 'durable' | 'task_only' | 'transient' | 'uncertain';
+    source_scope: 'global' | 'entity' | 'document' | 'event' | 'task' | 'unknown';
+    candidate_scope: 'global' | 'entity' | 'document' | 'event' | 'task' | 'unknown';
+  }) => void;
+  setRetentionByKind: (
+    decisions: Partial<Record<string, Parameters<AutomaticRetainStub['setRetention']>[0]>>,
+  ) => void;
+  setEventIdentity: (selection: string) => void;
+  setOwnership: (selection: string | null) => void;
+  identityCalls: () => number;
 }
 
 async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
   let candidates: Record<string, unknown>[] = [];
   let verificationSupported = true;
+  let retention: Parameters<AutomaticRetainStub['setRetention']>[0] = {
+    durability: 'durable',
+    source_scope: 'entity',
+    candidate_scope: 'entity',
+  };
+  let retentionByKind: Partial<Record<string, typeof retention>> = {};
+  let eventIdentity = 'uncertain';
+  let ownership: string | null = null;
+  let identityCalls = 0;
   const counts = { extraction: 0, verification: 0, routing: 0, placement: 0 };
   const instance = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
@@ -60,19 +80,23 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
       if (system.includes('independently verify proposed retained memories')) {
         counts.verification++;
         const payload = JSON.parse(user) as {
-          candidates?: { candidate_id: string; polarity: 'affirmed' | 'negated' }[];
+          candidates?: { candidate_id: string; kind: string; polarity: 'affirmed' | 'negated' }[];
         };
         content = {
           verdicts: (payload.candidates ?? []).map((item) => ({
             candidate_id: item.candidate_id,
             source_selected_polarity: item.polarity,
             ...retentionAudit(item, verificationSupported, true, true),
+            retention: retentionByKind[item.kind] ?? retention,
             proposition_supported: verificationSupported,
             action_arguments_preserved: true,
             qualification_scope_preserved: true,
             reason_code: verificationSupported ? null : 'discourse_uncertain',
           })),
         };
+      } else if (system.startsWith('Decide whether one new retained event')) {
+        identityCalls++;
+        content = { selection: eventIdentity };
       } else if (system.includes('You place durable knowledge into one Markdown page')) {
         counts.placement++;
         const items = /Items:\n(\[[\s\S]*\])$/.exec(user)?.[1];
@@ -88,11 +112,13 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
           existing_pages?: { id: string }[];
           proposed_page?: { slug: string } | null;
         };
-        content = payload.proposed_page
-          ? { selection: 'proposed' }
-          : payload.existing_pages?.[0]
-            ? { selection: payload.existing_pages[0].id }
-            : { selection: 'uncertain' };
+        content = ownership
+          ? { selection: ownership }
+          : payload.proposed_page
+            ? { selection: 'proposed' }
+            : payload.existing_pages?.[0]
+              ? { selection: payload.existing_pages[0].id }
+              : { selection: 'uncertain' };
       } else if (system.includes('You extract durable memory from one untrusted source')) {
         counts.extraction++;
         content = {
@@ -124,10 +150,23 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
     setVerification: (supported) => {
       verificationSupported = supported;
     },
+    setRetention: (decision) => {
+      retention = decision;
+    },
+    setRetentionByKind: (decisions) => {
+      retentionByKind = decisions;
+    },
+    setEventIdentity: (selection) => {
+      eventIdentity = selection;
+    },
+    setOwnership: (selection) => {
+      ownership = selection;
+    },
+    identityCalls: () => identityCalls,
   };
 }
 
-async function openAutomaticMem(url: string): Promise<Akno> {
+async function openAutomaticMem(url: string, fallbackPage?: string): Promise<Akno> {
   return open({
     aknoPath: root,
     stateDir,
@@ -144,6 +183,7 @@ async function openAutomaticMem(url: string): Promise<Akno> {
         expansion: { id: null },
       },
       folders: { 'memory/**': { role: 'knowledge', remember: 'integrate' } },
+      ...(fallbackPage ? { maintenance: { retain: { fallback_page: fallbackPage } } } : {}),
     },
   });
 }
@@ -1021,6 +1061,290 @@ describe('provided exact retain', () => {
 });
 
 describe('automatic retain', () => {
+  it('does not bury an uncertain ownership decision in the configured inbox', async () => {
+    const stub = await startAutomaticRetainStub();
+    const text = 'The Zephyr QX-100 warranty lasts five years.';
+    stub.setCandidate({
+      text,
+      subject: 'Zephyr QX-100 warranty',
+      page: 'memory/equipment',
+      kind: 'claim',
+      evidence: text,
+      frame: text,
+    });
+    stub.setOwnership('uncertain');
+    const inbox = path.join(root, 'memory/inbox.md');
+    fs.writeFileSync(inbox, '# Inbox\n');
+    const before = fs.readFileSync(inbox, 'utf8');
+    const mem = await openAutomaticMem(stub.url, 'memory/inbox');
+    try {
+      await mem.index({ structuralOnly: true });
+      const result = await mem.retain({
+        sources: [
+          {
+            source_id: 'conversation:ownership-hold',
+            revision: '1',
+            input: { text },
+            retention: { mode: 'extract' },
+          },
+        ],
+      });
+      expect(result.sources[0]).toMatchObject({
+        outcome: 'held',
+        candidates: [{ outcome: 'held', hold_stage: 'placement', routing_reason: 'ownership_uncertain' }],
+      });
+      expect(fs.readFileSync(inbox, 'utf8')).toBe(before);
+      expect(stub.calls()).toEqual({ extraction: 1, verification: 1, routing: 1, placement: 0 });
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
+  it.each([
+    [
+      'one-task document cleanup',
+      'Ada Marlow said: Keep the Zephyr QX-100 document on one page and remove its duplicate files.',
+      'Ada Marlow prefers deleting duplicate files globally.',
+      { durability: 'task_only', source_scope: 'document', candidate_scope: 'global' },
+      'not_durable',
+    ],
+    [
+      'document scope widened into a standing preference',
+      'For the Zephyr QX-100 document, Ada Marlow prefers one page rather than duplicate files.',
+      'Ada Marlow prefers one page rather than duplicate files everywhere.',
+      { durability: 'durable', source_scope: 'document', candidate_scope: 'global' },
+      'scope_mismatch',
+    ],
+    [
+      'a question only needed for the current task',
+      'Ada Marlow asked: Can we find the Zephyr QX-100 document for this upload?',
+      'Ada Marlow has an open question about finding the Zephyr QX-100 document.',
+      { durability: 'transient', source_scope: 'task', candidate_scope: 'entity' },
+      'not_durable',
+    ],
+  ] as const)(
+    'holds %s before routing and replays the admission decision',
+    async (_name, sourceText, text, decision, reason) => {
+      const stub = await startAutomaticRetainStub();
+      stub.setCandidate({
+        text,
+        subject: 'Ada Marlow',
+        page: 'memory/ada-marlow',
+        kind: 'preference',
+        evidence: sourceText,
+        frame: sourceText,
+      });
+      stub.setRetention(decision);
+      const mem = await openAutomaticMem(stub.url);
+      try {
+        const input = {
+          sources: [
+            {
+              source_id: `conversation:${reason}`,
+              revision: '1',
+              input: { text: sourceText },
+              retention: { mode: 'extract' as const },
+            },
+          ],
+        };
+        const first = await mem.retain(input);
+        expect(first.sources[0]).toMatchObject({
+          outcome: 'held',
+          candidates: [{ outcome: 'held', reason_code: reason, hold_stage: 'verification' }],
+        });
+        expect(stub.calls()).toEqual({ extraction: 1, verification: 1, routing: 0, placement: 0 });
+        expect(fs.existsSync(path.join(root, 'memory/ada-marlow.md'))).toBe(false);
+        const replay = await mem.retain(input);
+        expect(replay.sources[0]?.outcome).toBe('replayed');
+        expect(stub.calls()).toEqual({ extraction: 1, verification: 1, routing: 0, placement: 0 });
+      } finally {
+        await mem.close();
+        await stub.close();
+      }
+    },
+  );
+
+  it('keeps both a standing preference and a useful open question', async () => {
+    const stub = await startAutomaticRetainStub();
+    const preference = 'Ada Marlow prefers paper maps for future trips.';
+    const question =
+      'Ada Marlow still needs to learn whether the Zephyr QX-100 warranty covers water damage.';
+    stub.setCandidates([
+      {
+        text: preference,
+        subject: 'Ada Marlow',
+        page: 'memory/ada-marlow',
+        kind: 'preference',
+        evidence: preference,
+        frame: preference,
+      },
+      {
+        text: question,
+        subject: 'Zephyr QX-100 warranty',
+        page: 'memory/zephyr-warranty',
+        kind: 'question',
+        evidence: question,
+        frame: question,
+      },
+    ]);
+    stub.setRetentionByKind({
+      preference: { durability: 'durable', source_scope: 'global', candidate_scope: 'global' },
+      question: { durability: 'durable', source_scope: 'entity', candidate_scope: 'entity' },
+    });
+    const mem = await openAutomaticMem(stub.url);
+    try {
+      const result = await mem.retain({
+        sources: [
+          {
+            source_id: 'conversation:durable',
+            revision: '1',
+            input: { text: `${preference} ${question}` },
+            retention: { mode: 'extract' },
+          },
+        ],
+      });
+      expect(result.sources[0]?.candidates.map((candidate) => candidate.outcome)).toEqual([
+        'written',
+        'written',
+      ]);
+      expect(fs.readFileSync(path.join(root, 'memory/ada-marlow.md'), 'utf8')).toContain(preference);
+      expect(fs.readFileSync(path.join(root, 'memory/zephyr-warranty.md'), 'utf8')).toContain(question);
+      expect(stub.calls()).toEqual({ extraction: 1, verification: 1, routing: 2, placement: 2 });
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
+  it('keeps a durable document preference on its named document instead of widening it', async () => {
+    const stub = await startAutomaticRetainStub();
+    const text = 'Ada Marlow prefers keeping the Zephyr QX-100 document on one page.';
+    stub.setCandidate({
+      text,
+      subject: 'Zephyr QX-100 document',
+      page: 'memory/zephyr-qx-100-document',
+      kind: 'preference',
+      evidence: text,
+      frame: text,
+    });
+    stub.setRetention({ durability: 'durable', source_scope: 'document', candidate_scope: 'document' });
+    const mem = await openAutomaticMem(stub.url);
+    try {
+      const result = await mem.retain({
+        sources: [
+          {
+            source_id: 'conversation:document-preference',
+            revision: '1',
+            input: { text },
+            retention: { mode: 'extract' },
+          },
+        ],
+      });
+      expect(result.sources[0]?.candidates[0]).toMatchObject({
+        outcome: 'written',
+        slug: 'memory/zephyr-qx-100-document',
+      });
+      expect(fs.readFileSync(path.join(root, 'memory/zephyr-qx-100-document.md'), 'utf8')).toContain(text);
+      expect(stub.calls()).toEqual({ extraction: 1, verification: 1, routing: 1, placement: 1 });
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
+  it('consolidates a repeated identified event but not another event on the same day', async () => {
+    const stub = await startAutomaticRetainStub();
+    stub.setRetention({ durability: 'durable', source_scope: 'event', candidate_scope: 'event' });
+    let mem = await openAutomaticMem(stub.url);
+    const page = path.join(root, 'memory/ada-blackwater-flight.md');
+    const retainEvent = async (
+      sourceId: string,
+      text: string,
+      mentionedAt: string,
+      eventDate = '2031-05-03',
+    ) => {
+      stub.setCandidate({
+        text,
+        subject: 'Ada Marlow Blackwater flight',
+        page: 'memory/ada-blackwater-flight',
+        kind: 'event',
+        evidence: text,
+        frame: text,
+        time: {
+          start: eventDate,
+          precision: 'day',
+          relation: 'occurred',
+          status: 'actual',
+          mentioned_at: mentionedAt,
+          timezone: 'UTC',
+        },
+      });
+      return mem.retain({
+        sources: [
+          {
+            source_id: sourceId,
+            revision: '1',
+            mentioned_at: mentionedAt,
+            input: { text },
+            retention: { mode: 'extract' },
+          },
+        ],
+      });
+    };
+    try {
+      const first = await retainEvent(
+        'conversation:flight-1',
+        'Ada Marlow boarded flight ZX-1111 to Blackwater Bay on May 3, 2031.',
+        '2031-05-04T12:00:00Z',
+      );
+      expect(first.sources[0]?.candidates[0]?.outcome).toBe('written');
+      await mem.close();
+      mem = await openAutomaticMem(stub.url);
+      stub.setEventIdentity('event_1');
+      const repeat = await retainEvent(
+        'conversation:flight-2',
+        'On May 3, 2031, Ada Marlow took flight ZX-1111 to Blackwater Bay.',
+        '2031-05-05T12:00:00Z',
+      );
+      expect(stub.identityCalls()).toBe(1);
+      expect(repeat.sources[0]?.candidates[0]?.outcome).toBe('support_added');
+      expect(fs.readFileSync(page, 'utf8').match(/akno:item/g) ?? []).toHaveLength(1);
+      const distinct = await retainEvent(
+        'conversation:flight-3',
+        'Ada Marlow boarded flight ZX-2222 to Blackwater Bay on May 3, 2031.',
+        '2031-05-06T12:00:00Z',
+      );
+      expect(distinct.sources[0]?.candidates[0]?.outcome).toBe('written');
+      expect(fs.readFileSync(page, 'utf8').match(/akno:item/g) ?? []).toHaveLength(2);
+      expect(stub.identityCalls()).toBe(1);
+      const changedDate = await retainEvent(
+        'conversation:flight-4',
+        'Ada Marlow boarded flight ZX-1111 to Blackwater Bay on May 4, 2031.',
+        '2031-05-07T12:00:00Z',
+        '2031-05-04',
+      );
+      expect(changedDate.sources[0]?.candidates[0]?.outcome).toBe('written');
+      expect(fs.readFileSync(page, 'utf8').match(/akno:item/g) ?? []).toHaveLength(3);
+      expect(stub.identityCalls()).toBe(1);
+      const db = new Database(path.join(stateDir, 'akno.db'));
+      expect(db.prepare('SELECT COUNT(*) AS total FROM retain_supports').get()).toEqual({ total: 4 });
+      db.close();
+      const calls = stub.calls();
+      const replay = await retainEvent(
+        'conversation:flight-2',
+        'On May 3, 2031, Ada Marlow took flight ZX-1111 to Blackwater Bay.',
+        '2031-05-05T12:00:00Z',
+      );
+      expect(replay.sources[0]?.outcome).toBe('replayed');
+      expect(stub.calls()).toEqual(calls);
+      expect(stub.identityCalls()).toBe(1);
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
   it('extracts, independently verifies, places, and replays before another model call', async () => {
     const stub = await startAutomaticRetainStub();
     const sourceText = 'Ada Marlow selected the Zephyr QX-100 warranty for five years.';

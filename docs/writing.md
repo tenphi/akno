@@ -267,17 +267,22 @@ structured source item. Every accepted source has at most one journal change, an
 erase successful siblings. On an existing page, a named exact section must already exist exactly once; omission
 uses the deterministic `## Unsorted` fallback. Reports, hypotheses, proposals, plans, questions, and rejected
 options stay searchable with visible status and typed line qualification but are excluded from ordinary derived
-facts and factual `answer` evidence. Automatic routing can write only to an existing admitted knowledge page, a
-new managed page under an exactly admitted folder, or the configured admitted fallback. Recall candidates are
-globally nominated and then qualified for page ownership; the extractor's folder suggestion is not a search
-boundary. A stronger read-only match blocks a weaker writable destination. Exact managed-memory duplicates are
-recognized across pages and attach support to the existing block instead of creating another copy.
+facts and factual `answer` evidence. Automatic retention verifies durability and source scope before routing:
+a one-task instruction is not promoted to a standing preference, while a useful open question can remain.
+Routing can write only to an existing admitted knowledge page, a new managed page under an exactly admitted
+folder, or a configured admitted fallback when no semantic home was nominated. An uncertain ownership choice
+is held rather than buried in the fallback. Recall candidates are globally nominated and then qualified for
+page ownership; the extractor's folder suggestion is not a search boundary. A stronger read-only match blocks
+a weaker writable destination, and a bare year page cannot own an individual fragment. Exact managed-memory
+duplicates attach support to the existing block. Repeated actual events with the same specific identifier and
+time may also attach support after a separate identity check; ambiguous or independent events remain separate.
 
 Automatic responses include content-free receipts for extraction, verification, destination-qualification, and
 section-placement model calls. Both routing calls use the existing `placement` receipt list for protocol
 compatibility. `held` candidates carry stable reason codes such as `discourse_uncertain`, `time_unresolved`,
-`routing_uncertain`, and `no_writable_destination`; callers should branch on those codes rather than explanatory
-prose. A source-level `apply_failed` is reported as typed degradation rather than a successful empty result.
+`not_durable`, `scope_mismatch`, `routing_uncertain`, and `no_writable_destination`; callers should branch on
+those codes rather than explanatory prose. A source-level `apply_failed` is reported as typed degradation
+rather than a successful empty result.
 `--dry-run` computes the same interpretation and routing but writes no page, journal change, or replay
 receipt.
 

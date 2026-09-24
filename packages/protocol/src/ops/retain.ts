@@ -261,6 +261,8 @@ export const RetainHoldReason = z.enum([
   'context_too_large',
   'time_unresolved',
   'noncanonical_without_context',
+  'not_durable',
+  'scope_mismatch',
   'no_writable_destination',
   'routing_uncertain',
   'conflict',
