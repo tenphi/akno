@@ -1405,7 +1405,23 @@ export class Indexer {
       hasPartOne: (groupKey) => onDisk(groupKey),
     });
     const pageId = this.attachmentOwner(group.groupKey) ?? this.attachmentOwner(target);
-    const id = `doc_${(file.sha256 ?? file.relPath).slice(0, 12)}`;
+    // Content-derived ids keep a moved original stable, but two independent attachments may
+    // have identical bytes. Keep an existing path's id and disambiguate a new collision by path;
+    // otherwise one duplicate aborts the whole index pass on documents.id.
+    const existing = this.#store.db
+      .prepare('SELECT id FROM documents WHERE rel_path = ?')
+      .get(file.relPath) as { id: string } | undefined;
+    let id = existing?.id ?? `doc_${(file.sha256 ?? file.relPath).slice(0, 12)}`;
+    let collision = 0;
+    if (!existing) {
+      while (
+        this.#store.db
+          .prepare('SELECT rel_path FROM documents WHERE id = ? AND rel_path != ?')
+          .get(id, file.relPath)
+      ) {
+        id = `doc_${sha256(`${file.sha256 ?? ''}\0${file.relPath}\0${collision++}`).slice(0, 16)}`;
+      }
+    }
     this.#store.transaction(() => {
       this.#store.db
         .prepare(

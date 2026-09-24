@@ -217,6 +217,36 @@ describe('graph operation', () => {
     await memory.close();
   });
 
+  it('does not call the graph partial when an ineligible prose fact has no graph node', async () => {
+    const { root, stateDir } = graphFixture();
+    let memory = await openFixture(root, stateDir);
+    await memory.index({ structuralOnly: true });
+    await memory.close();
+
+    const store = openStore({ dbPath: path.join(stateDir, 'akno.db'), embeddingDimensions: 1024 });
+    const page = store.db.prepare("SELECT id FROM pages WHERE slug = 'people/ada-marlow'").get() as {
+      id: string;
+    };
+    store.db.prepare('UPDATE pages SET derived_hash = body_hash WHERE id = ?').run(page.id);
+    const claim = 'An invented report says Ada Marlow moved away.';
+    store.db
+      .prepare(
+        `INSERT INTO facts(
+           id, page_id, claim, subject, attribute, value, line_start, line_end,
+           source_line_hash, confidence, first_seen, last_seen
+         ) VALUES('fac_ineligible_report', ?, ?, 'Ada Marlow', 'Residence', 'Elsewhere',
+                  11, 11, ?, 0.9, '2028-01-01T00:00:00.000Z', '2028-01-01T00:00:00.000Z')`,
+      )
+      .run(page.id, claim, sha256(claim));
+    rebuildEvidenceGraph(store);
+    store.close();
+
+    memory = await openFixture(root, stateDir);
+    const result = await memory.graph({ slug: 'people/ada-marlow' });
+    expect(result.degraded ?? []).not.toContain('partial_graph_index');
+    await memory.close();
+  });
+
   it('traverses typed retained-memory relations only through the selected semantic view', async () => {
     const root = temporaryDirectory('akno-graph-memory-kb-');
     const stateDir = temporaryDirectory('akno-graph-memory-state-');

@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import Database from 'better-sqlite3';
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
+import { renderManagedMemoryMarker, type ManagedMemoryMarker } from '../src/write/managed-memory.ts';
 
 let root: string;
 let stateDir: string;
@@ -111,6 +112,60 @@ it('holds every occurrence of a duplicate legacy item id', async () => {
         fs.readFileSync(path.join(root, relPath), 'utf8'),
       ),
     ).toEqual(originals);
+  } finally {
+    await mem.close();
+  }
+});
+
+it('restores a missing visible status label on a valid v2 item without changing its claim', async () => {
+  fs.rmSync(path.join(root, 'memory/equipment.md'));
+  const marker: ManagedMemoryMarker = {
+    id: 'mem_2222',
+    supports: [
+      {
+        receipt: 'aaaaaaaaaaaa',
+        candidate: 'bbbbbbbbbbbb',
+        proofGroup: 'cccccccccccc',
+        selection: 'provided',
+      },
+    ],
+    kind: 'claim',
+    subject: 'unresolved',
+    sourceRole: 'external',
+    speaker: 'Vulpine Mutual',
+    reporters: [],
+    commitment: 'asserted',
+    disposition: 'active',
+    polarity: 'affirmed',
+    basis: 'source_report',
+    evidence: [],
+    links: [],
+  };
+  const target = path.join(root, 'memory/report.md');
+  const claim = 'Vulpine Mutual reported a five-year warranty for the Zephyr QX-100.';
+  const before = `# Report\n\n${renderManagedMemoryMarker(marker)}\n${claim}\n`;
+  fs.writeFileSync(target, before);
+
+  const mem = await openMem();
+  try {
+    await mem.index({ structuralOnly: true });
+    const preview = await mem.migrateBrain({ dryRun: true });
+    expect(preview).toMatchObject({ migrated: 1, normalizedPayloads: 1, legacyMarkers: 0, held: 0 });
+    expect(fs.readFileSync(target, 'utf8')).toBe(before);
+
+    const applied = await mem.migrateBrain();
+    expect(applied).toMatchObject({ status: 'ok', migrated: 1, normalizedPayloads: 1, held: 0 });
+    expect(fs.readFileSync(target, 'utf8')).toContain(`- **Reported by Vulpine Mutual:** ${claim}`);
+    const indexed = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+    expect(
+      (indexed.prepare('SELECT COUNT(*) AS n FROM managed_memory_projection_issues').get() as { n: number })
+        .n,
+    ).toBe(0);
+    indexed.close();
+    expect(await mem.migrateBrain()).toMatchObject({ status: 'noop', migrated: 0, normalizedPayloads: 0 });
+
+    await mem.undo({ change_id: applied.changeId! });
+    expect(fs.readFileSync(target, 'utf8')).toBe(before);
   } finally {
     await mem.close();
   }
