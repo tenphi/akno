@@ -1,3 +1,9 @@
+import {
+  TimelineSelector,
+  TimelineMembership,
+  TimelineDescriptor,
+  TimelineMigrationEntry,
+} from '../timelines.ts';
 import { z } from 'zod';
 import {
   ClockRelation,
@@ -41,6 +47,9 @@ const TimelineSourceFilter = z.enum([
 /** Reading remains bounded even when a recurring series has no end. */
 export const TimelineInput = z
   .object({
+    timeline: TimelineSelector.optional(),
+    /** Preview legacy ledger placement without editing source files. */
+    migration_preview: z.boolean().optional(),
     since: DatePrefix.optional(),
     until: DatePrefix.optional(),
     match: z.string().optional(),
@@ -67,6 +76,7 @@ export const TimelineInput = z
 export type TimelineInput = z.infer<typeof TimelineInput>;
 
 const TimelineFields = {
+  ...TimelineMembership.partial().shape,
   start: z.string().nullable(),
   until: z.string().nullable(),
   precision: TemporalPrecision,
@@ -205,6 +215,10 @@ const groupCount = <T extends z.ZodType>(value: T) =>
 export const TimelineOutput = ResultEnvelope.extend({
   /** Authoritative mixed authored-event, retained-memory, and document-evidence results. */
   results: z.array(TimelineResult),
+  selected_timelines: z.array(z.string()).optional(),
+  timelines: z.array(TimelineDescriptor).optional(),
+  migration: z.array(TimelineMigrationEntry).optional(),
+  migration_total: z.number().int().nonnegative().optional(),
   total: z.number().int().nonnegative(),
   /** True when a recurrence safety bound prevented an authoritative total. */
   truncated: z.boolean().optional(),

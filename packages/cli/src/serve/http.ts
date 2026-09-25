@@ -142,6 +142,7 @@ async function route(
     const hello: Hello = {
       hello: 'akno',
       protocol: PROTOCOL_VERSION,
+      features: ['folder_timelines'],
       version: AKNO_VERSION,
       writable: akno.writable && access.ops.some((op) => OPS[op].kind === 'write'),
       akno_path: akno.config.aknoPath,

@@ -10,7 +10,7 @@ knowledge base, and which model roles may be involved.
 | `recall <query>`      | Find and rank cited page/document evidence                              | No                         | Expansion, embedding, reranker                |
 | `answer <question>`   | Return a direct grounded answer and citations                           | No                         | Expansion, embedding, answer; reranker opt-in |
 | `read <slug>`         | Read one exact page or document                                         | No                         | None                                          |
-| `list`                | Browse folders, pages, or a tree                                        | No                         | None                                          |
+| `list`                | Browse folders, pages, a tree, or timelines                             | No                         | None                                          |
 | `graph [seed]`        | Inspect bounded exact evidence paths and locators                       | No                         | None                                          |
 | `timeline`            | Read unified event, state, plan, deadline, and document time            | No                         | None                                          |
 | `context <query>`     | Assemble broad context or precision-first automatic recall              | No                         | Embedding; reranker at an ambiguous boundary  |
@@ -66,6 +66,9 @@ behind the default socket; pair `--akno-path` with that memory's `--state-dir` w
 - Use `answer` when you want Akno to answer a memory question and verify its support.
 - Use `read` when you already know the exact slug or document id.
 - Use `graph` when the relationship path matters more than page content.
+- Use `list --kind timelines` to discover [folder-owned timelines](folder-timelines.md).
+- Use `timeline --timeline work/timeline` for one chronology, or `--timeline '*'` to combine all.
+  Without a selector, the root timeline excludes inner timelines. `--migration-preview` reports legacy entries needing review without editing them.
 - Use `timeline` when time is the primary filter. Its clock is explicit in the result; `--view actionable`
   narrows active or accepted scheduled work without hiding history from the default view.
 - Use `context --profile auto_recall` from an agent host before a substantive turn with no explicit memory

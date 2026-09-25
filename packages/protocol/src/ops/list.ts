@@ -1,3 +1,4 @@
+import { TimelineDescriptor } from '../timelines.ts';
 import { z } from 'zod';
 import { PageRole, ResultEnvelope } from '../common.ts';
 
@@ -8,7 +9,7 @@ export const ListInput = z.object({
   tag: z.string().optional(),
   role: PageRole.optional(),
   /** `folders` walks the tree one level; `pages` lists page stubs. */
-  kind: z.enum(['folders', 'pages', 'tree']).optional(),
+  kind: z.enum(['folders', 'pages', 'tree', 'timelines']).optional(),
   order: z.enum(['recent', 'slug', 'size']).optional(),
   limit: z.number().int().positive().max(2000).optional(),
   /** Depth for `tree`. 1 is the top level. */
@@ -55,6 +56,7 @@ export const FolderStub = z.object({
 export type FolderStub = z.infer<typeof FolderStub>;
 
 export const ListOutput = ResultEnvelope.extend({
+  timelines: z.array(TimelineDescriptor).optional(),
   folders: z.array(FolderStub).optional(),
   pages: z.array(PageStub).optional(),
   /** Indented outline, for the structure section of a `context` bundle. */

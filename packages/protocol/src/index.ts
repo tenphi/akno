@@ -4,6 +4,7 @@ export * from './common.ts';
 export * from './registry.ts';
 export * from './wire.ts';
 export * from './platform.ts';
+export * from './timelines.ts';
 
 export * from './ops/recall.ts';
 export * from './ops/answer.ts';

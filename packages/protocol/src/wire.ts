@@ -87,6 +87,8 @@ export const Hello = z.object({
   hello: z.literal('akno'),
   protocol: z.number().int(),
   version: z.string(),
+  /** Optional-field capabilities, so new selectors cannot be silently ignored by older services. */
+  features: z.array(z.string()).optional(),
   /** Read-only means another process holds the write handle. */
   writable: z.boolean(),
   akno_path: z.string(),

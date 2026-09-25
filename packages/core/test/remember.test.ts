@@ -42,6 +42,7 @@ interface StubServer {
   lastSystem: () => string;
   forget: () => void;
   respondWith: (candidates: StubCandidate[]) => void;
+  eventsWith: (events: { date: string; summary: string }[], selection: unknown) => void;
   decideOwnershipWith: (decider: (input: StubOwnershipInput) => unknown) => void;
   setRetention: (decision: {
     durability: 'durable' | 'task_only' | 'transient' | 'uncertain';
@@ -93,6 +94,8 @@ function topicEmbedding(text: string): number[] {
 
 async function startStubChat(): Promise<typeof server> {
   let system = '';
+  let events: { date: string; summary: string }[] = [];
+  let eventSelection: unknown = { selection: 'uncertain' };
   let candidates: StubCandidate[] = [
     { text: 'The rent is 1111 EUR per month.', subject: 'apartment rent', kind: 'claim' },
   ];
@@ -138,6 +141,10 @@ async function startStubChat(): Promise<typeof server> {
       };
       const requestSystem = body.messages?.find((message) => message.role === 'system')?.content ?? '';
       const sourceText = body.messages?.find((message) => message.role === 'user')?.content ?? '';
+      if (requestSystem.startsWith('Select the one timeline whose stated purpose owns this event')) {
+        response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(eventSelection) } }] }));
+        return;
+      }
       if (requestSystem.includes('independently verify proposed retained memories')) {
         const payload = JSON.parse(sourceText) as {
           candidates?: { candidate_id?: string; polarity: 'affirmed' | 'negated' }[];
@@ -216,7 +223,7 @@ async function startStubChat(): Promise<typeof server> {
               message: {
                 content: JSON.stringify({
                   candidates: grounded,
-                  events: [],
+                  events,
                 }),
               },
             },
@@ -241,6 +248,10 @@ async function startStubChat(): Promise<typeof server> {
     },
     respondWith: (next) => {
       candidates = next;
+    },
+    eventsWith: (next, selection) => {
+      events = next;
+      eventSelection = selection;
     },
     decideOwnershipWith: (decider) => {
       ownershipDecider = decider;
@@ -1027,7 +1038,9 @@ describe('canonical destination qualification', () => {
         calls += 1;
         expect(input.memory).toMatchObject({ text, subject: 'Ada Marlow' });
         expect(input.memory.text).not.toContain('Zephyr');
-        expect(input.proposed_page).toEqual(page ? { slug: page, title: 'Ada Marlow' } : null);
+        expect(input.proposed_page).toEqual(
+          page ? expect.objectContaining({ slug: page, title: 'Ada Marlow' }) : null,
+        );
         expect(input.allowed_selections.includes('proposed')).toBe(!!page);
         return { selection };
       });
@@ -1925,3 +1938,141 @@ describe('answering a held proposal', () => {
     }
   });
 });
+
+it.each(['', '# Timeline\n\nZephyr prototype development.\n'])(
+  'remembers mixed dated items on their owning timelines without caller labels (%j)',
+  async (declaration) => {
+    fs.mkdirSync(path.join(root, 'work'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'work/timeline.md'), declaration);
+    const home = 'Ada Marlow completed the household repair on 1 April 2031.';
+    const work = 'Ada Marlow delivered the Zephyr prototype on 2 April 2031.';
+    server.respondWith([
+      {
+        text: home,
+        subject: 'household repair',
+        page: 'home/household-repair',
+        kind: 'event',
+        evidence: home,
+        frame: home,
+        time: {
+          start: '2031-04-01',
+          precision: 'day',
+          relation: 'occurred',
+          status: 'actual',
+          mentioned_at: '2031-04-03T10:00:00Z',
+          timezone: 'UTC',
+        },
+      },
+      {
+        text: work,
+        subject: 'Zephyr prototype',
+        page: 'work/zephyr-prototype',
+        kind: 'event',
+        evidence: work,
+        frame: work,
+        time: {
+          start: '2031-04-02',
+          precision: 'day',
+          relation: 'occurred',
+          status: 'actual',
+          mentioned_at: '2031-04-03T10:00:00Z',
+          timezone: 'UTC',
+        },
+      },
+    ]);
+    server.setRetention({ durability: 'durable', source_scope: 'event', candidate_scope: 'event' });
+    server.eventsWith([{ date: '2031-04-03', summary: 'Zephyr inspection recorded.' }], {
+      selection: 'timeline_1',
+    });
+    server.decideOwnershipWith((input) => ({ selection: input.proposed_page ? 'proposed' : 'uncertain' }));
+    const mem = await openMem();
+    try {
+      const result = await mem.remember({
+        text: `${home} ${work} Zephyr inspection recorded.`,
+        mentioned_at: '2031-04-03T10:00:00Z',
+        timezone: 'UTC',
+      });
+      expect(result.wrote).toEqual([
+        expect.objectContaining({ slug: 'home/household-repair', timeline: 'timeline' }),
+        expect.objectContaining({ slug: 'work/zephyr-prototype', timeline: 'work/timeline' }),
+        expect.objectContaining({ slug: 'work/timeline', timeline: 'work/timeline' }),
+      ]);
+      expect((await mem.timeline({})).results).toHaveLength(1);
+      expect((await mem.timeline({ timeline: 'work/timeline' })).results).toHaveLength(2);
+      expect(result.change_ids).toHaveLength(2);
+      for (const change of [...result.change_ids!].reverse()) await mem.undo({ change_id: change });
+      expect((await mem.timeline({ timeline: '*' })).total).toBe(0);
+      expect(fs.readFileSync(path.join(root, 'work/timeline.md'), 'utf8')).toBe(declaration);
+    } finally {
+      await mem.close();
+    }
+  },
+);
+
+it.each(['', '# Timeline\n\nZephyr prototype development.\n'])(
+  'journals several legacy events in one timeline with exact undo and duplicate replay (%j)',
+  async (before) => {
+    fs.mkdirSync(path.join(root, 'work'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'work/timeline.md'), before);
+    const events = [
+      { date: '2031-04-01', summary: 'Zephyr prototype tested.' },
+      { date: '2031-04-02', summary: 'Zephyr prototype delivered.' },
+    ];
+    server.respondWith([]);
+    server.eventsWith(events, { selection: 'timeline_1' });
+    const mem = await openMem();
+    try {
+      const result = await mem.remember({ text: events.map((event) => event.summary).join(' ') });
+      expect(result.wrote).toHaveLength(2);
+      expect(result.wrote?.every((item) => item.timeline === 'work/timeline')).toBe(true);
+      const lines = fs.readFileSync(path.join(root, 'work/timeline.md'), 'utf8').split('\n');
+      expect(result.wrote?.map((item) => lines[item.line! - 1])).toEqual([
+        expect.stringContaining(events[1]!.summary),
+        expect.stringContaining(events[0]!.summary),
+      ]);
+      expect((await mem.timeline({ timeline: 'work/timeline' })).total).toBe(2);
+      const replay = await mem.remember({ text: events.map((event) => event.summary).join(' ') });
+      expect(replay.change_id).toBeUndefined();
+      await mem.undo({ change_id: result.change_id! });
+      expect(fs.readFileSync(path.join(root, 'work/timeline.md'), 'utf8')).toBe(before);
+      expect((await mem.timeline({ timeline: 'work/timeline' })).total).toBe(0);
+    } finally {
+      await mem.close();
+    }
+  },
+);
+
+it.each([
+  ['uncertain', { selection: 'uncertain' }, 'ownership_uncertain', false],
+  ['malformed', { selection: 'invented_timeline' }, 'invalid_model_response', true],
+  ['read-only', { selection: 'timeline_1' }, 'read_only_match', false],
+] as const)(
+  'holds %s legacy event ownership without writing the root ledger',
+  async (kind, selection, reason, degraded) => {
+    fs.mkdirSync(path.join(root, 'work'), { recursive: true });
+    const ledger =
+      (kind === 'read-only' ? '---\nakno:\n  management:\n    remember: deny\n---\n' : '') +
+      '# Timeline\n\nPrototype development.\n';
+    fs.writeFileSync(path.join(root, 'work/timeline.md'), ledger);
+    server.respondWith([]);
+    server.eventsWith([{ date: '2031-04-01', summary: 'Zephyr prototype tested.' }], selection);
+    const mem = await openMem();
+    try {
+      const rootBefore = fs.existsSync(path.join(root, 'timeline.md'))
+        ? fs.readFileSync(path.join(root, 'timeline.md'), 'utf8')
+        : null;
+      const result = await mem.remember({ text: 'Zephyr prototype tested.' });
+      expect(result.outcome).toBe('no_writable_destination');
+      expect(result.held_events).toEqual([expect.objectContaining({ routing_reason: reason })]);
+      if (degraded) expect(result).toMatchObject({ status: 'degraded', degraded: ['derive_failed'] });
+      expect(fs.readFileSync(path.join(root, 'work/timeline.md'), 'utf8')).toBe(ledger);
+      expect(
+        fs.existsSync(path.join(root, 'timeline.md'))
+          ? fs.readFileSync(path.join(root, 'timeline.md'), 'utf8')
+          : null,
+      ).toBe(rootBefore);
+    } finally {
+      await mem.close();
+    }
+  },
+);

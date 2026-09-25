@@ -1,3 +1,4 @@
+import { TimelineMembership } from '../timelines.ts';
 import { z } from 'zod';
 import { DegradedReason, IanaTimezone, ResultEnvelope, RetainedTime } from '../common.ts';
 
@@ -298,6 +299,7 @@ export const RetainRoutingReason = z.enum([
 export type RetainRoutingReason = z.infer<typeof RetainRoutingReason>;
 
 export const RetainCandidateResult = z.object({
+  ...TimelineMembership.partial().shape,
   hold_stage: z.enum(['validation', 'verification', 'placement', 'apply']).optional(),
   routing_reason: RetainRoutingReason.optional(),
 

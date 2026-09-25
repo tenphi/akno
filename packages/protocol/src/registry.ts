@@ -106,7 +106,7 @@ export const OPS = {
     implemented: true,
     description:
       'Browse structure rather than search it: folders and their page counts, a tree outline, or pages ' +
-      'filtered by type, tag, role or recency. Use this to find out what exists before guessing a slug.',
+      'filtered by type, tag, role or recency. kind=timelines discovers folder-owned timeline declarations and their status. Use this to find out what exists before guessing a slug.',
   }),
   timeline: op({
     name: 'timeline',
@@ -116,6 +116,8 @@ export const OPS = {
     implemented: true,
     description:
       'One read-time clock over authored events, retained states/plans/deadlines, and dated document evidence. ' +
+      'Defaults to the root timeline, excluding inner boundaries. Select a ledger slug with timeline, or "*" to combine all. ' +
+      'migration_preview reports legacy placement suggestions without changing files. ' +
       'Filter by clock relation, source meaning, status, disposition, subject, or range; use the actionable view ' +
       'for accepted upcoming or overdue work. Partial dates stay partial and document dates never become events.',
   }),

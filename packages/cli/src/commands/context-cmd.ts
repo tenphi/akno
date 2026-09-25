@@ -15,6 +15,7 @@ const CONTEXT_HELP = `akno context [query] [options]
                       discussion | all. Inferred conservatively by default.
   --turn <role:text>  Recent user/assistant turn for reference resolution; repeatable.
   --pin <slug,...>    Pages always included, before anything else competes.
+  --timeline <slug>   Timeline for recent history; "*" explicitly combines all.
   --days <n>          Days of timeline to include. 0 omits the section.
   --no-structure      Omit the folder outline.
   --json              What a host would actually send.`;
@@ -24,6 +25,7 @@ export async function contextCommand(argv: string[]): Promise<number> {
     budget?: string;
     pin?: string;
     days?: string;
+    timeline?: string;
     structure: boolean;
     profile?: string;
     'memory-view'?: string;
@@ -32,6 +34,7 @@ export async function contextCommand(argv: string[]): Promise<number> {
     budget: { type: 'string' },
     pin: { type: 'string' },
     days: { type: 'string' },
+    timeline: { type: 'string' },
     structure: { type: 'boolean', default: true },
     profile: { type: 'string' },
     'memory-view': { type: 'string' },
@@ -54,6 +57,7 @@ export async function contextCommand(argv: string[]): Promise<number> {
       ...(values.pin ? { pinned: values.pin.split(',').map((slug) => slug.trim()) } : {}),
       ...(values.days ? { timeline_days: Number(values.days) } : {}),
       structure: values.structure,
+      ...(values.timeline ? { timeline: values.timeline } : {}),
     });
 
     if (values.json) {

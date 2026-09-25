@@ -17,6 +17,7 @@ const WRITE_HELP = `akno write [options]
   --replace <find>      With --with: replace one unique occurrence.
   --with <text>
   --patch <-|file>      A unified diff. Context must match exactly.
+  --timeline <slug>    Explicit ledger for a standalone event.
   --event <YYYY-MM-DD=summary>
                         Also append a timeline line, in the same change.
   --title / --type / --tag <t,...> / --link <slug,...>
@@ -41,6 +42,7 @@ export async function writeCommand(argv: string[]): Promise<number> {
     with?: string;
     patch?: string;
     event?: string;
+    timeline?: string;
     title?: string;
     type?: string;
     tag?: string;
@@ -58,6 +60,7 @@ export async function writeCommand(argv: string[]): Promise<number> {
     with: { type: 'string' },
     patch: { type: 'string' },
     event: { type: 'string' },
+    timeline: { type: 'string' },
     title: { type: 'string' },
     type: { type: 'string' },
     tag: { type: 'string' },
@@ -105,6 +108,7 @@ export async function writeCommand(argv: string[]): Promise<number> {
       ...(patch !== undefined ? { patch } : {}),
       ...(values.replace !== undefined ? { replace: { find: values.replace, with: values.with! } } : {}),
       ...(event ? { event } : {}),
+      ...(values.timeline ? { timeline: values.timeline } : {}),
       ...(values.title ? { title: values.title } : {}),
       ...(values.type ? { type: values.type } : {}),
       ...(values.tag ? { tags: values.tag.split(',').map((t) => t.trim()) } : {}),
@@ -144,9 +148,16 @@ export function printWriteOutcome(result: {
   documents?: { id: string; rel_path: string; text_from?: string }[];
   conflict?: { slug: string; line: number; existing: string; incoming: string; token: string };
   approval?: { proposal_id: string; reason: string; nearest: string[] };
+  hold?: { reason: 'timeline_required'; timelines: string[] };
   requires_folder?: { folder: string; nearest: string[] };
   note?: string;
 }): number {
+  if (result.hold?.reason === 'timeline_required') {
+    heading(style.yellow('choose a timeline — nothing was written'));
+    line(`  ${style.grey('available')}  ${result.hold.timelines.join(', ')}`);
+    line(`  ${style.bold('akno write --timeline <ledger-slug> --event …')}`);
+    return 2;
+  }
   if (result.outcome === 'conflict' && result.conflict) {
     const conflict = result.conflict;
     heading(style.yellow('conflict — nothing was written'));
@@ -283,7 +294,7 @@ export async function rememberCommand(argv: string[]): Promise<number> {
 
     if (values.json) {
       json(result);
-      return 0;
+      return result.outcome === 'ok' || result.outcome === 'noop' ? 0 : 2;
     }
 
     // The outcome only when it says something the status does not: a successful remember
@@ -332,6 +343,13 @@ export async function rememberCommand(argv: string[]): Promise<number> {
           `  ${style.green(target.action.padEnd(9))} ${target.line ? `${target.slug}:${target.line}` : target.slug}`,
         );
       }
+      const changes = result.change_ids ?? (result.change_id ? [result.change_id] : []);
+      for (const change of [...changes].reverse()) line(`  ${style.grey(`undo: akno undo ${change}`)}`);
+    }
+
+    for (const held of result.held_events ?? []) {
+      line(`  ${style.yellow('held event')} ${held.date}: ${held.summary}`);
+      line(`    ${style.grey(held.routing_reason ?? held.reason_code)}`);
     }
 
     for (const approval of result.approvals ?? []) {
@@ -340,7 +358,7 @@ export async function rememberCommand(argv: string[]): Promise<number> {
       line(`  ${style.bold(`akno approve ${approval.proposal_id}`)}`);
     }
 
-    return (result.approvals?.length ?? 0) > 0 ? 2 : 0;
+    return result.outcome === 'ok' || result.outcome === 'noop' ? 0 : 2;
   } finally {
     await handle.close();
   }

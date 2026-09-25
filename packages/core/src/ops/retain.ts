@@ -1,3 +1,10 @@
+import {
+  timelineCatalog,
+  owningTimeline,
+  timelineReadable,
+  timelinePlacement,
+  timelineFallbackAllowed,
+} from '../timeline/boundaries.ts';
 import { dependencyOrder } from '../write/retained-relations.ts';
 import { spanCoveredByFrame } from '../write/retained-spans.ts';
 import { explicitlyUnknownTime } from '../write/retained-time.ts';
@@ -568,6 +575,7 @@ async function retainCandidates(
   );
   const candidateMemoryIds = new Map<string, string>();
   const eventDedupDegraded: DegradedReason[] = [];
+  const timelines = timelineCatalog(ctx.config, ctx.store);
   const ordered = dependencyOrder(candidates);
 
   for (const candidate of candidates) {
@@ -625,7 +633,20 @@ async function retainCandidates(
     const marker = markerFromProvidedCandidate(proposedId, candidate, support, candidateMemoryIds);
     const payload = renderManagedMemoryPayload(candidate.text, marker);
     let slug = normalizeSlug(candidate.destination.slug);
-    const duplicateSlug = await globalManagedDuplicateSlug(ctx, stages, marker, payload, slug);
+    if (!timelineReadable(owningTimeline(timelines, slug))) {
+      eventDedupDegraded.push('timeline_boundary_unavailable');
+      candidateResults.push({
+        candidate_id: candidate.candidate_id,
+        outcome: 'held',
+        slug,
+        reason_code: 'no_writable_destination',
+        hold_stage: 'placement',
+        reason: 'the owning timeline boundary is unavailable',
+        ...timelinePlacement(timelines, slug),
+      });
+      continue;
+    }
+    const duplicateSlug = await globalManagedDuplicateSlug(ctx, stages, marker, payload, slug, timelines);
     if (duplicateSlug) slug = duplicateSlug;
     const stage = await pageStage(ctx, stages, slug, candidate.subject);
     if ('issue' in stage) {
@@ -774,7 +795,13 @@ async function retainCandidates(
       input_hash: sourceHash,
     });
     if (!candidateResults.some((result) => result.candidate_id === candidate.candidate_id)) {
-      candidateResults.push({ candidate_id: candidate.candidate_id, outcome, memory_id: memoryId, slug });
+      candidateResults.push({
+        candidate_id: candidate.candidate_id,
+        outcome,
+        memory_id: memoryId,
+        slug,
+        ...timelinePlacement(timelines, slug),
+      });
     }
     candidateMemoryIds.set(candidate.candidate_id, memoryId);
   }
@@ -979,6 +1006,7 @@ async function resolveAutomaticCandidates(
   const degraded = new Set<DegradedReason>();
   const catalog = folderCatalog(ctx.config, ctx.store);
   const fallback = await resolveRememberFallback(ctx, catalog);
+  const timelines = timelineCatalog(ctx.config, ctx.store);
   const curator = retentionModel(ctx);
 
   for (const candidate of candidates) {
@@ -1013,6 +1041,11 @@ async function resolveAutomaticCandidates(
       fallback &&
       fallback.status !== 'unavailable' &&
       routed.reason === 'no_admitted_destination' &&
+      timelineFallbackAllowed(
+        timelines,
+        fallback.slug,
+        [suggested, routed.blocked, ...routed.nearest].filter((value): value is string => Boolean(value)),
+      ) &&
       !/^(?:19|20|21)\d{2}$/u.test(fallback.slug.slice(fallback.slug.lastIndexOf('/') + 1))
     ) {
       slug = fallback.slug;
@@ -1054,10 +1087,12 @@ async function globalManagedDuplicateSlug(
   marker: ManagedMemoryMarker,
   payload: string,
   excludedSlug: string,
+  timelines: ReturnType<typeof timelineCatalog>,
 ): Promise<string | null> {
   for (const [slug, stage] of stages) {
     if (
       stage.managedDestination &&
+      owningTimeline(timelines, slug).slug === owningTimeline(timelines, excludedSlug).slug &&
       slug !== excludedSlug &&
       managedBlocks(stage.after).some(
         (block) => block.payload === payload && sameManagedMemorySemantics(block.marker, marker),
@@ -1077,6 +1112,7 @@ async function globalManagedDuplicateSlug(
     )
     .all(sha256(payload.trim()), excludedSlug) as { slug: string; rel_path: string }[];
   for (const row of rows) {
+    if (owningTimeline(timelines, row.slug).slug !== owningTimeline(timelines, excludedSlug).slug) continue;
     const content =
       stages.get(row.slug)?.after ??
       (await fsp.readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8').catch(() => null));

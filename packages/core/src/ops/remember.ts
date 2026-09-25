@@ -1,4 +1,12 @@
 import {
+  timelineCatalog,
+  owningTimeline,
+  timelinePlacement,
+  timelineFallbackAllowed,
+  timelineReadable,
+} from '../timeline/boundaries.ts';
+import { routeLegacyEvent } from '../timeline/route-event.ts';
+import {
   RememberInput,
   type ApprovalRequest,
   type FolderRequired,
@@ -68,6 +76,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   // config states a standing policy, a call states what is true of this text.
   const mission = input.mission ?? ctx.config.maintenance.retain.mission;
   const catalog = folderCatalog(ctx.config, ctx.store);
+  const timelines = timelineCatalog(ctx.config, ctx.store);
 
   const retained = await runRetain(input.text, curator, {
     ...(input.mentioned_at ? { mentionedAt: input.mentioned_at } : {}),
@@ -109,6 +118,28 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     };
   }
 
+  const eventRoutes = await Promise.all(
+    retained.events.map(async (event) => ({
+      event,
+      ...(await routeLegacyEvent(event, timelines, curator)),
+    })),
+  );
+  const heldEvents = eventRoutes
+    .filter((entry) => !entry.timeline)
+    .map(({ event, reason }) => ({
+      ...event,
+      reason_code: 'routing_uncertain' as const,
+      routing_reason: reason,
+    }));
+  const eventDegraded = eventRoutes.flatMap((entry) => (entry.degraded ? [entry.degraded] : []));
+  const eventRetentionStatus =
+    eventDegraded.length > 0
+      ? {
+          status: 'degraded' as const,
+          degraded: [...new Set([...(retentionStatus.degraded ?? []), ...eventDegraded])],
+        }
+      : retentionStatus;
+
   // ── Route ───────────────────────────────────────────────────────────────
   const subjectResolved = retained.candidates.map((candidate) => {
     const subjectRef = resolveRetainedSubject(ctx.store, candidate);
@@ -141,6 +172,13 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
       configuredFallback !== null &&
       configuredFallback.status !== 'unavailable' &&
       !broadPeriodSlug(configuredFallback.slug) &&
+      timelineFallbackAllowed(
+        timelines,
+        configuredFallback.slug,
+        [candidateFallback, entry.blocked, ...entry.nearest].filter((value): value is string =>
+          Boolean(value),
+        ),
+      ) &&
       (entry.reason === 'no_admitted_destination' || entry.reason === 'read_only_match');
     if (ordinarySlug === null) fallbackNeeded = true;
     if (canUseConfiguredFallback) fallbackUsed = true;
@@ -162,6 +200,16 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   });
 
   if (input.dry_run) {
+    const unavailableBoundary = considered.some(
+      (entry) => entry.slug !== null && !timelineReadable(owningTimeline(timelines, entry.slug)),
+    );
+    for (const entry of considered) {
+      if (entry.slug !== null && !timelineReadable(owningTimeline(timelines, entry.slug))) {
+        entry.kept = false;
+        entry.slug = null;
+        entry.destination = 'no_writable_destination';
+      }
+    }
     const folders = fallbackUsed ? [] : requiredFolders(ctx, catalog, routed);
     const needsApproval = routed.some((entry, index) => {
       if (considered[index]!.kept || folders.some((folder) => folder.folder === suggestedFolder(entry))) {
@@ -180,15 +228,29 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
       return unroutedReasonCode(entry.nearest, refused, entry.blocked) === 'no_writable_destination';
     });
     return {
-      ...retentionStatus,
+      ...eventRetentionStatus,
+      ...(unavailableBoundary
+        ? {
+            status: 'degraded' as const,
+            degraded: [
+              ...new Set([
+                ...(eventRetentionStatus.degraded ?? []),
+                'timeline_boundary_unavailable' as const,
+              ]),
+            ],
+          }
+        : {}),
       outcome:
         folders.length > 0
           ? 'requires_folder'
-          : noWritableDestination
+          : noWritableDestination || unavailableBoundary
             ? 'no_writable_destination'
-            : needsApproval
-              ? 'requires_approval'
-              : 'ok',
+            : heldEvents.length > 0
+              ? 'no_writable_destination'
+              : needsApproval
+                ? 'requires_approval'
+                : 'ok',
+      ...(heldEvents.length > 0 ? { held_events: heldEvents } : {}),
       considered,
       ...(folders.length > 0 ? { requires_folder: folders } : {}),
       ...fallbackResult(fallbackNeeded, fallbackUsed, configuredFallback),
@@ -320,15 +382,29 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     }
   }
   for (const slug of changedSlugs) {
-    wrote.push({ slug, action: existedBefore.get(slug) ? 'appended' : 'created' });
+    wrote.push({
+      slug,
+      ...timelinePlacement(timelines, slug),
+      action: existedBefore.get(slug) ? 'appended' : 'created',
+    });
   }
 
   const files: ChangeFile[] = [];
-  for (const event of retained.events) {
-    const ledger = await appendToLedger(ctx, event);
-    if (ledger.file) files.push(ledger.file);
+  // Newest first means a later insertion cannot shift a line already cited in this receipt.
+  for (const { event, timeline } of [...eventRoutes].sort((a, b) =>
+    b.event.date.localeCompare(a.event.date),
+  )) {
+    if (!timeline) continue;
+    const ledger = await appendToLedger(ctx, event, timeline.slug);
+    if (ledger.file) {
+      // Undo needs the first before-image and the final after-image for each ledger.
+      const prior = files.find((file) => file.relPath === ledger.file!.relPath);
+      if (prior) prior.after = ledger.file.after;
+      else files.push(ledger.file);
+    }
     wrote.push({
-      slug: ctx.config.paths.timeline.replace(/\.(md|markdown)$/i, ''),
+      slug: ledger.slug,
+      ...timelinePlacement(timelines, ledger.slug, 'ledger'),
       line: ledger.line,
       action: 'event',
     });
@@ -352,6 +428,14 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     added += report.factsDerived;
   }
   const changeId = retainedResult.change_id ?? eventChangeId;
+  const changeIds = [retainedResult.change_id, eventChangeId].filter((id): id is string => Boolean(id));
+  const finalDegraded = [
+    ...new Set([...(eventRetentionStatus.degraded ?? []), ...(retainedResult.degraded ?? [])]),
+  ];
+  const finalStatus =
+    finalDegraded.length > 0
+      ? { status: 'degraded' as const, degraded: finalDegraded }
+      : eventRetentionStatus;
 
   // Deduplicated: three findings bound for the same new folder are one thing to do, not three.
   const folders = deduplicateRequiredFolders(foldersNeeded);
@@ -359,9 +443,12 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   // `requires_folder` outranks `requires_approval` in the outcome, because they ask different
   // people. A folder is the caller's to declare, now, without leaving the turn; an approval
   // waits on the user. Reporting the first as the second is how a caller learns to stop.
-  const noWritableDestination = approvals.some(
-    (approval) => approval.reason_code === 'no_writable_destination',
-  );
+  const noWritableDestination =
+    retainedResult.candidates.some(
+      (entry) => entry.outcome === 'held' && entry.reason_code === 'no_writable_destination',
+    ) ||
+    heldEvents.length > 0 ||
+    approvals.some((approval) => approval.reason_code === 'no_writable_destination');
   const routingApproval = approvals.some((approval) => approval.reason_code !== 'no_writable_destination');
   const outcome =
     folders.length > 0
@@ -384,8 +471,9 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
 
   if (wrote.length === 0) {
     return {
-      ...retentionStatus,
+      ...finalStatus,
       outcome: outcome ?? 'noop',
+      ...(heldEvents.length > 0 ? { held_events: heldEvents } : {}),
       considered,
       ...(approvals.length > 0 ? { approvals } : {}),
       ...(folders.length > 0 ? { requires_folder: folders } : {}),
@@ -395,10 +483,12 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   }
 
   return {
-    ...retentionStatus,
+    ...finalStatus,
     outcome: outcome ?? 'ok',
     ...(changeId ? { change_id: changeId } : {}),
+    ...(changeIds.length > 1 ? { change_ids: changeIds } : {}),
     wrote,
+    ...(heldEvents.length > 0 ? { held_events: heldEvents } : {}),
     facts: { retired: 0, added },
     considered,
     ...(approvals.length > 0 ? { approvals } : {}),
@@ -532,6 +622,7 @@ async function qualifyAutomaticOwnership(
   routed: ScoredRoute,
   model: ModelClient,
 ): Promise<AutomaticRouteDecision> {
+  const timelines = timelineCatalog(ctx.config, ctx.store);
   const suggested = candidate.page;
   const suggestedExists = suggested ? pageExists(ctx, suggested) : false;
   const temporalBoundary = retainedTemporalBoundary(candidate.time, candidate.text);
@@ -603,14 +694,17 @@ async function qualifyAutomaticOwnership(
             retention_scope: candidate.retention_scope ?? null,
             deciding_frame: candidate.discourse_frame.map((span) => span.quote),
           },
-          existing_pages: profiles.map(({ token, title, summary, headings, excerpt }) => ({
+          existing_pages: profiles.map(({ token, slug, title, summary, headings, excerpt }) => ({
+            timeline: owningTimeline(timelines, slug),
             id: token,
             title,
             summary,
             headings,
             excerpt,
           })),
-          proposed_page: proposed ? { slug: proposed, title: candidate.subject } : null,
+          proposed_page: proposed
+            ? { slug: proposed, title: candidate.subject, timeline: owningTimeline(timelines, proposed) }
+            : null,
         }),
       },
     ],

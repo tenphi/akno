@@ -630,6 +630,8 @@ export const DegradedReason = z.enum([
   'partial_memory_index',
   /** A bounded recurrence/range guard stopped timeline expansion. */
   'timeline_range_limited',
+  /** A declared timeline boundary could not be read safely. */
+  'timeline_boundary_unavailable',
   'expansion_failed',
   'no_vector_index',
   'partial_index',

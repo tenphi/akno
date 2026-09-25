@@ -6,7 +6,7 @@ const LIST_HELP = `akno list [options]
 
   Browse structure. Folders by default; pages when a filter is given.
 
-  --kind <k>          folders | pages | tree
+  --kind <k>          folders | pages | tree | timelines
   --folder <path>     Scope to a folder.
   --type <t>          Filter pages by frontmatter type.
   --tag <t>           Filter pages by tag.
@@ -45,7 +45,7 @@ export async function listCommand(argv: string[]): Promise<number> {
   const handle = await resolveOps(values, openOptionsFrom(values));
   try {
     const result = await handle.ops.list({
-      ...(values.kind ? { kind: values.kind as 'folders' | 'pages' | 'tree' } : {}),
+      ...(values.kind ? { kind: values.kind as 'folders' | 'pages' | 'tree' | 'timelines' } : {}),
       ...(values.folder ? { folder: values.folder } : {}),
       ...(values.type ? { type: values.type } : {}),
       ...(values.tag ? { tag: values.tag } : {}),
@@ -60,6 +60,17 @@ export async function listCommand(argv: string[]): Promise<number> {
       return 0;
     }
 
+    if (result.timelines) {
+      heading(`${result.total} timelines`);
+      for (const entry of result.timelines) {
+        line(
+          `  ${entry.slug} [${entry.status}; ${entry.writable ? 'writable' : 'read-only'}${entry.default ? '; default' : ''}]`,
+        );
+        if (entry.description) line(`    ${entry.description}`);
+        if (entry.note) line(style.yellow(`    ${entry.note}`));
+      }
+      return 0;
+    }
     if (result.tree) {
       line(result.tree);
       return 0;
