@@ -85,7 +85,7 @@ export interface MaintenancePathPolicy {
   };
   transformations: MaintenancePathTransformPolicy[];
   pathIndependent: {
-    kind: Extract<MaintenanceTransform, 'observe' | 'reflect' | 'adopt'>;
+    kind: Extract<MaintenanceTransform, 'observe' | 'reflect' | 'adopt' | 'timeline_history'>;
     policy: MaintenancePolicy;
     enabled: boolean;
     reason: string;
@@ -186,6 +186,13 @@ export function explainMaintenancePath(
       ),
     ),
     pathIndependent: [
+      {
+        kind: 'timeline_history',
+        policy: effectiveTransformPolicy(ctx.config, 'timeline_history', runMode),
+        enabled: ctx.config.maintenance.curate.maxTimelineEvents > 0,
+        reason:
+          'timeline history starts from live writable declarations, extracts qualified actual dated events from authored knowledge, and may transfer exact ancestor entries after ownership assessment',
+      },
       {
         kind: 'observe',
         policy: effectiveTransformPolicy(ctx.config, 'observe', runMode),

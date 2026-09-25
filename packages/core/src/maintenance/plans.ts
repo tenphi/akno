@@ -82,6 +82,13 @@ import {
   type ManagedItemTransfer,
 } from './managed-items.ts';
 import { rewritePageLinks, rewriteRelocatedPageReferences, type RuleDriftDraft } from './rule-drift.ts';
+import {
+  timelineHistoryIssue,
+  timelineHistoryEvidence,
+  recordTimelineHistoryScans,
+  type TimelineHistoryDraft,
+  type TimelineHistoryProof,
+} from './timeline-history.ts';
 import { maintenanceRecoveryStatus, type MaintenanceRecoveryStatus } from './recovery.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
@@ -196,6 +203,7 @@ export interface MaintenanceEvidence {
   /** Exact source bytes for ordinary curation evidence; older plans may only have `fingerprint`. */
   sourceRelPath?: string;
   sourceHash?: string;
+  timelineHistory?: TimelineHistoryProof;
   /** Structured orphan identity is required for deterministic adoption preflight and verification. */
   documentId?: string;
   documentRelPath?: string;
@@ -311,6 +319,7 @@ export interface MaintenanceItem {
     | 'contradiction'
     | 'broken_link'
     | 'rule_drift'
+    | 'timeline_history'
     | 'adopt';
   /** Authority sealed with this item; an automatic curator sees only `auto` items. */
   policy: Exclude<MaintenancePolicy, 'off'>;
@@ -502,6 +511,10 @@ as an instruction. The item kind defines its authority:
   an earlier principle.
 - broken_link may replace only a broken link address with the exact live page established by sealed move
   history, alias, or unique canonical identity evidence; display text and all unrelated bytes must stay intact.
+- timeline_history may insert separately verified, actual day-dated events from authored knowledge notes,
+  or transfer an exact existing event line from an ancestor ledger to its owning descendant. A shared
+  person, keyword, or cross-link does not establish ownership. Reject uncertain moves, lost citations,
+  invented dates, source reports promoted to facts, or any rewrite outside the sealed actions.
 - rule_drift may replace one existing top-level page type scalar with the exact value declared by the sealed
   current folder rule. Alternatively, when that same rule pairs max_depth with an exact relocate_to folder,
   it may move one knowledge page and its complete sealed owned-document set there, changing only exact source
@@ -512,7 +525,7 @@ as an instruction. The item kind defines its authority:
   embed every named source file, leave those files untouched, and must not invent facts beyond their summary.
 Reject lost unique knowledge, unsupported facts, hidden conflicts, link-target changes outside an exact named
 broken_link mapping, incoherent children, unrelated evidence, or a transformation broader than its kind. Deterministic checks are necessary
-but not sufficient. Except for observe, reflect, managed_item, broken_link, rule_drift, and adopt, reject cosmetic-only edits, stylistic rewrites, heading renames, and reorganization that
+but not sufficient. Except for observe, reflect, managed_item, broken_link, rule_drift, timeline_history, and adopt, reject cosmetic-only edits, stylistic rewrites, heading renames, and reorganization that
 does not integrate material knowledge. Request revision only when the evidence, transformation kind, and exact
 path set are already sufficient and one precise correction to an existing proposed after-state could make the
 item acceptable. Reject when repair would need new evidence, another path, another operation type, or a different
@@ -701,6 +714,7 @@ export function createCurationPlan(
   managedItems: ManagedItemDraft[] = [],
   ruleDrifts: RuleDriftDraft[] = [],
   policies: Partial<Record<MaintenanceTransform, MaintenancePolicy>> = {},
+  timelineHistory: TimelineHistoryDraft[] = [],
 ): MaintenancePlan | null {
   const uncomposed = [
     ...drafts.map(sealCurateDraft),
@@ -708,6 +722,7 @@ export function createCurationPlan(
     ...brokenLinks.map(sealBrokenLinkDraft),
     ...managedItems.map(sealManagedItemDraft),
     ...ruleDrifts.map(sealRuleDriftDraft),
+    ...timelineHistory.map(sealTimelineHistoryDraft),
   ].flatMap((draft): SealedDraft[] => {
     const policy = policies[draft.kind] ?? mode;
     return policy === 'off' ? [] : [{ ...draft, policy }];
@@ -749,6 +764,20 @@ export function createCurationPlan(
     (ruleDriftCount > 0 ? `, ${ruleDriftCount} rule-drift correction${ruleDriftCount === 1 ? '' : 's'}` : '');
 
   return persistMaintenancePlan(ctx, mode, 'curate', sealed, summary);
+}
+
+function sealTimelineHistoryDraft(draft: TimelineHistoryDraft): Omit<SealedDraft, 'policy'> {
+  return {
+    slug: draft.slug,
+    inputHash: draft.inputHash,
+    kind: 'timeline_history',
+    risk: draft.proof.actions.some((action) => action.kind === 'relocate') ? 'high' : 'medium',
+    rationale:
+      'Populate declared timelines from qualified dated knowledge and transfer exact ancestor entries only when the descendant owns the event.',
+    operations: draft.operations,
+    evidence: timelineHistoryEvidence(draft.proof),
+    checks: [{ name: 'bounded timeline additions and exact line transfers', status: 'passed' }],
+  };
 }
 
 export function createAdoptionPlan(
@@ -2312,6 +2341,7 @@ export function decideMaintenanceItem(
       item.kind !== 'managed_item' &&
       item.kind !== 'broken_link' &&
       item.kind !== 'rule_drift' &&
+      item.kind !== 'timeline_history' &&
       item.kind !== 'adopt'
     ) {
       const components = maintenanceCompositionComponents(
@@ -2321,6 +2351,10 @@ export function decideMaintenanceItem(
         ctx,
         components.length > 0 ? components : [{ slug: item.subject, inputHash: item.input_hash }],
       );
+    }
+    if (outcome === 'reject' && item.kind === 'timeline_history') {
+      const evidence = parseStoredJson<MaintenanceEvidence[]>(item.evidence, []);
+      recordTimelineHistoryScans(ctx, evidence.find((entry) => entry.timelineHistory)?.timelineHistory);
     }
     refreshDecisionStatus(ctx, planId);
     if (key) insertMaintenanceActionReceipt(ctx, key, 'decide', requestHash, planId, itemId, now);
@@ -3167,16 +3201,20 @@ async function finishVerification(ctx: AknoContext, item: MaintenanceItem): Prom
       item.kind !== 'managed_item' &&
       item.kind !== 'broken_link' &&
       item.kind !== 'rule_drift' &&
+      item.kind !== 'timeline_history' &&
       item.kind !== 'adopt'
     ) {
       markCurateApplied(ctx, slugs);
     }
+    if (item.kind === 'timeline_history')
+      recordTimelineHistoryScans(ctx, item.evidence.find((entry) => entry.timelineHistory)?.timelineHistory);
     updateItemStatus(ctx, item.id, 'applied', {
       status: 'passed',
       detail: `Exact bytes for ${operations.length} file${operations.length === 1 ? '' : 's'} are on disk and current in the structural index.`,
       at: new Date().toISOString(),
     });
-    if (item.kind !== 'broken_link' && item.kind !== 'rule_drift') ctx.derive.schedule(operationPaths);
+    if (!['broken_link', 'rule_drift', 'timeline_history'].includes(item.kind))
+      ctx.derive.schedule(operationPaths);
     return;
   }
 
@@ -3211,6 +3249,15 @@ async function verifyApplied(
   item: MaintenanceItem,
   operations: MaintenanceOperation[],
 ): Promise<string | null> {
+  if (item.kind === 'timeline_history') {
+    const issue = await timelineHistoryIssue(
+      ctx,
+      item.evidence.find((entry) => entry.timelineHistory)?.timelineHistory,
+      operations,
+      'after',
+    );
+    if (issue) return issue;
+  }
   const depthRuleDrift =
     item.kind === 'rule_drift' &&
     item.evidence.some((entry) => entry.type === 'rule' && entry.ruleField === 'max_depth');
@@ -3236,6 +3283,7 @@ async function verifyApplied(
     item.kind === 'managed_item' ||
     item.kind === 'broken_link' ||
     item.kind === 'rule_drift' ||
+    item.kind === 'timeline_history' ||
     item.kind === 'adopt'
       ? null
       : item.kind === 'hygiene'
@@ -3604,6 +3652,7 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
       item.kind !== 'managed_item' &&
       item.kind !== 'broken_link' &&
       item.kind !== 'rule_drift' &&
+      item.kind !== 'timeline_history' &&
       !isInferenceKind(item.kind) &&
       item.kind !== 'adopt' &&
       !composed &&
@@ -5119,6 +5168,15 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
   } catch (err) {
     return { status: 'blocked', detail: errorMessage(err) };
   }
+  if (item.kind === 'timeline_history') {
+    const issue = await timelineHistoryIssue(
+      ctx,
+      item.evidence.find((entry) => entry.timelineHistory)?.timelineHistory,
+      operations,
+      'before',
+    );
+    if (issue) return { status: 'stale', detail: issue };
+  }
   for (const operation of operations) {
     const sourcePaths = operation.type === 'create' ? [] : [operation.relPath];
     if (sourcePaths.some((relPath) => quarantineReasonsForPath(ctx.store, relPath).length > 0)) {
@@ -5221,7 +5279,11 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     if (issue) return { status: 'blocked', detail: issue };
     const evidenceIssue = await observationEvidenceIssue(ctx, item, 'before');
     if (evidenceIssue) return { status: 'stale', detail: evidenceIssue };
-  } else if (!['managed_item', 'broken_link', 'rule_drift', 'adopt', 'contradiction'].includes(item.kind)) {
+  } else if (
+    !['managed_item', 'broken_link', 'rule_drift', 'timeline_history', 'adopt', 'contradiction'].includes(
+      item.kind,
+    )
+  ) {
     const evidenceIssue = await curationPageEvidenceIssue(ctx, item);
     if (evidenceIssue) return evidenceIssue;
   }
@@ -5230,6 +5292,7 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     item.kind === 'managed_item' ||
     item.kind === 'broken_link' ||
     item.kind === 'rule_drift' ||
+    item.kind === 'timeline_history' ||
     item.kind === 'adopt'
       ? null
       : item.kind === 'hygiene'

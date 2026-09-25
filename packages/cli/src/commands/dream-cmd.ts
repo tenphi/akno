@@ -46,8 +46,8 @@ akno dream notify --schedule-health
                    exact fact lineage; never restates a fact or edits adjacent prose.
     reflect        Plan-backed decision principles built on eligible L2 observations.
                    Off by default until the observation tier has enough repeated history.
-    curate         Managed-fragment repair plus page-authorized hygiene or synthesis.
-                   Runs a draft pass, a verification pass and deterministic guards.
+    curate         Managed-fragment repair, timeline history, and page-authorized curation.
+                   Seals exact proposals, verifies evidence, and applies deterministic guards.
     adopt          A page for a document that has none, written beside the file — so its
                    text can be returned at all. Honours \`ingest: "file"\`.
     conflicts      The thorough pass inline checking cannot do: facts from different
@@ -818,6 +818,18 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
     }
   }
 
+  const history = report.timelineHistory;
+  if (history && (history.inspected || history.cached || Object.keys(history.held).length)) {
+    heading('Timeline history');
+    kv([
+      ['inspected', history.inspected],
+      ['unchanged inputs', history.cached],
+      ['planned additions', history.additions],
+      ['planned transfers', history.relocations],
+      ...Object.entries(history.held).map(([code, count]): [string, number] => [`held: ${code}`, count]),
+    ]);
+  }
+
   const hasManagedFindings = Object.values(report.managedItems.findings).some((count) => count > 0);
   if (report.managedItems.inspectedMarkers > 0 || hasManagedFindings) {
     heading('Managed knowledge-page audit');
@@ -1264,6 +1276,7 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
       guardrails: curationGuardSummary(report),
     },
     managedItems: safeManagedItemReport(report.managedItems),
+    timelineHistory: report.timelineHistory,
     semanticMerge: report.semanticMerge,
     verification: report.verification,
     conflictRefresh: report.conflictRefresh,

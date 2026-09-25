@@ -135,6 +135,7 @@ describe('maintenance profiles', () => {
         contradiction: 'off',
         broken_link: 'off',
         rule_drift: 'off',
+        timeline_history: 'off',
         adopt: 'off',
       },
       observe: { enabled: true },

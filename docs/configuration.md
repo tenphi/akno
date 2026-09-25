@@ -307,7 +307,8 @@ Transformation policies can lower individual classes:
 ```
 
 Policy values are `off`, `audit`, `review`, and `auto`. Supported classes are `observe`, `reflect`, `hygiene`,
-`managed_item`, `synthesis`, `split`, `extract`, `merge`, `contradiction`, `broken_link`, `rule_drift`, and `adopt`. Page
+`managed_item`, `synthesis`, `split`, `extract`, `merge`, `contradiction`, `broken_link`, `rule_drift`,
+`timeline_history`, and `adopt`. Page
 opt-ins, folder restrictions, merge allowlists, feature switches, and write budgets remain additional ceilings.
 
 `max_revision_attempts` is the number of correction calls permitted after an automatic curator returns
@@ -320,6 +321,15 @@ without writing or caching a semantic rejection, so a later cycle can retry from
 a strict `akno:item` marker on `remember: integrate` knowledge pages; those pages do not also need `dream`
 authority. Its deterministic repair set removes empty markers and byte-identical payload/provenance duplicates.
 Malformed or conflicting markers are counted as held findings and leave the page unchanged.
+
+`timeline_history` starts from existing writable timeline declarations, including empty `timeline.md`
+files. It can extract actual day-dated events from authored knowledge notes or propose exact transfers
+from an ancestor ledger to its owning descendant. It requires no whole-page dream opt-in: the declaration,
+remembering policy, and maintenance profile supply its bounded authority. The shared retention verifier,
+separate automatic curator, stale-input checks, journal, and apply budgets still govern every write.
+`maintenance.curate.max_timeline_events` defaults to `20` and bounds events and ownership calls per cycle;
+extraction additionally uses `max_pages`. See [folder timelines](folder-timelines.md#existing-history-and-boundary-changes)
+for source eligibility, review, and undo behavior.
 
 `rule_drift` is also independent from page-wide dream opt-in. It can replace an existing top-level scalar
 `type` on a knowledge page only when a matching folder rule explicitly declares the exact expected `type`.

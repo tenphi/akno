@@ -1,3 +1,8 @@
+import {
+  planTimelineHistory,
+  emptyTimelineHistoryReport,
+  type TimelineHistoryReport,
+} from './timeline-history.ts';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import type { AknoContext, DeriveScheduler } from '../context.ts';
@@ -174,6 +179,7 @@ const CURATE_POLICY_KINDS: Exclude<MaintenanceTransform, 'observe' | 'reflect' |
   'contradiction',
   'broken_link',
   'rule_drift',
+  'timeline_history',
 ];
 
 export interface ObservationWritten {
@@ -232,6 +238,7 @@ export interface DreamReport {
   curated: CuratedPage[];
   /** Aggregate inspection and repair outcomes for Akno-owned inline fragments. */
   managedItems: ManagedItemReport;
+  timelineHistory: TimelineHistoryReport;
   /** Candidates a guardrail refused, with the guard that refused them. */
   rejected: { pattern: string; reason: string; code?: ObservationScopeHoldCode }[];
   /** Documents given a page of their own, and any that were left alone. */
@@ -340,6 +347,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     phases: [],
     observations: [],
     curated: [],
+    timelineHistory: emptyTimelineHistoryReport(),
     managedItems: {
       eligiblePages: 0,
       inspectedMarkers: 0,
@@ -1070,6 +1078,14 @@ async function runPhase(
             ...linkDrafts.flatMap(linkDraftPaths),
             ...selectedRuleDrifts.flatMap(ruleDriftPaths),
           ]);
+          const history =
+            policies.timeline_history === 'off'
+              ? { drafts: [], report: emptyTimelineHistoryReport(), degraded: [] }
+              : await planTimelineHistory(ctx, { recordState: true, protectedPaths });
+          report.timelineHistory = history.report;
+          for (const reason of history.degraded) telemetry.degrade('curate', reason, 'unavailable');
+          for (const draft of history.drafts)
+            for (const source of draft.proof.sources) protectedPaths.add(source.relPath);
           const curationDrafts = result.drafts.filter(
             (draft) => !operationsTouchedByCurateDraft(draft).some((relPath) => protectedPaths.has(relPath)),
           );
@@ -1094,6 +1110,7 @@ async function runPhase(
             managedItemResult.drafts,
             selectedRuleDrifts,
             policies,
+            history.drafts,
           );
         }
         if (!plan) return null;
@@ -1109,10 +1126,26 @@ async function runPhase(
             applied.push(...appliedResult.files.map((file) => asApplied('curate', file)));
           }
         }
+        const historyActions = plan.items.flatMap((item) =>
+          item.kind === 'timeline_history'
+            ? item.evidence.flatMap((entry) => entry.timelineHistory?.actions ?? [])
+            : [],
+        );
+        report.timelineHistory.additions = historyActions.filter(
+          (action) => action.kind === 'extract',
+        ).length;
+        report.timelineHistory.relocations = historyActions.filter(
+          (action) => action.kind === 'relocate',
+        ).length;
         report.curated = curationReportFromPlan(report.curated, plan);
         report.repaired = repairResultFromPlan(plan, report.repaired?.declined ?? []);
         recordMaintenancePlan(report, plan);
         return null;
+      }
+      if (policies.timeline_history !== 'off') {
+        const history = await planTimelineHistory(ctx);
+        report.timelineHistory = history.report;
+        for (const reason of history.degraded) telemetry.degrade('curate', reason, 'unavailable');
       }
       const result = await curatePages(ctx, { dryRun: true, recordState: false, allowedKinds });
       report.curated = result.pages;
@@ -1247,6 +1280,7 @@ function isGeneralCurationItem(item: MaintenanceItem): boolean {
     item.kind !== 'managed_item' &&
     item.kind !== 'broken_link' &&
     item.kind !== 'rule_drift' &&
+    item.kind !== 'timeline_history' &&
     item.kind !== 'adopt'
   );
 }

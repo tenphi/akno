@@ -338,6 +338,7 @@ export const MAINTENANCE_TRANSFORMS = [
   'contradiction',
   'broken_link',
   'rule_drift',
+  'timeline_history',
   'adopt',
 ] as const;
 export type MaintenanceTransform = (typeof MAINTENANCE_TRANSFORMS)[number];
@@ -363,6 +364,7 @@ const MaintenancePoliciesDoc = z.object({
   contradiction: MaintenancePolicyDoc.optional(),
   broken_link: MaintenancePolicyDoc.optional(),
   rule_drift: MaintenancePolicyDoc.optional(),
+  timeline_history: MaintenancePolicyDoc.optional(),
   adopt: MaintenancePolicyDoc.optional(),
 });
 
@@ -440,6 +442,8 @@ const MaintenanceDoc = z.object({
       max_merges: z.number().int().nonnegative().optional(),
       /** Exact scalar type repairs and explicitly routed max-depth relocations per cycle. */
       max_rule_drifts: z.number().int().nonnegative().optional(),
+      /** Historical timeline additions and exact ancestor-ledger transfers per cycle. */
+      max_timeline_events: z.number().int().nonnegative().optional(),
       /** Exact folder prefixes eligible for identity-backed merge discovery; empty keeps merge disabled. */
       merge_folders: z.array(z.string().min(1)).optional(),
       /** Semantic adds the qualified embedding-plus-classifier candidate source; exact is model-free. */
@@ -700,6 +704,7 @@ export interface AknoConfig {
       maxExtracts: number;
       maxMerges: number;
       maxRuleDrifts: number;
+      maxTimelineEvents: number;
       mergeFolders: string[];
       mergeDiscovery: 'exact' | 'semantic';
       maxChildrenPerPage: number;

@@ -57,6 +57,11 @@ Profile and policy are not the only gates. Whole-page transformations require a 
 rules, protected paths, transformation-specific evidence, merge allowlists, model availability, and whole-run
 budgets can only reduce authority.
 
+`timeline_history` uses existing writable timeline declarations. It prepares qualified historical additions
+from authored notes and exact ancestor-to-descendant transfers, preserving source notes and citations.
+It follows the same audit, review, and automatic curator workflow; discovery and indexing remain read-only.
+See [folder timelines](folder-timelines.md#existing-history-and-boundary-changes) for details and limits.
+
 ## Defaults and opt-ins
 
 Akno ships maintenance in `audit`: curation and adoption can produce exact plans, but nothing is applied

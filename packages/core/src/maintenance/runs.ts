@@ -49,6 +49,7 @@ export interface DreamRunCounts {
   curated: number;
   /** Aggregate owned-fragment outcomes; absent only on receipts written before this counter shipped. */
   managedItems?: { planned: number; held: number; valid: number; suppressed: number };
+  timelineHistory?: DreamReport['timelineHistory'];
   rejectedByGuard: number;
   adopted: number;
   conflicts: number;
@@ -517,6 +518,7 @@ function reportCounts(report: DreamReport): DreamRunCounts {
     observations: report.observations.length,
     curated: report.curated.length,
     managedItems: { ...report.managedItems.outcomes },
+    timelineHistory: report.timelineHistory,
     rejectedByGuard: report.rejected.length,
     adopted: report.adopted.length,
     conflicts: report.conflicts.length,

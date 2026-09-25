@@ -46,6 +46,7 @@ export function configuredMaintenanceAuthority(config: AknoConfig): MaintenanceA
     config.maintenance.conflicts.resolve ? policies.contradiction : 'off',
     config.maintenance.repair.links ? policies.broken_link : 'off',
     policies.rule_drift,
+    config.maintenance.curate.maxTimelineEvents > 0 ? policies.timeline_history : 'off',
   ]);
   const adopt = policyPhaseAuthority(true, [policies.adopt]);
   const automaticKnowledgeBaseWrites = MAINTENANCE_TRANSFORMS.some(
@@ -120,6 +121,7 @@ function transformEnabled(config: AknoConfig, kind: MaintenanceTransform): boole
   if (kind === 'reflect') return config.maintenance.reflect.enabled;
   if (kind === 'contradiction') return config.maintenance.conflicts.resolve;
   if (kind === 'broken_link') return config.maintenance.repair.links;
+  if (kind === 'timeline_history') return config.maintenance.curate.maxTimelineEvents > 0;
   return true;
 }
 
