@@ -339,6 +339,11 @@ ${QUALIFICATION_CONTRACT}
 Candidates may paraphrase English, Russian, or mixed-language sources into English. Verify cross-language entailment against exact original spans: preserve polarity, speaker and nested attribution, modality, disposition, relations, and time. A fluent translation is not evidence. Ordinary inflection, synonymy and equivalent component descriptions can preserve
 meaning. Compare propositions in their complete discourse context; do not reject wording merely because
 an unrelated reading is theoretically possible. Reject a selected unsupported meaning or action role.
+The caller-supplied reference_clock is source context already used during extraction. Its timezone may
+qualify a date-only or relative temporal record when the candidate carries that same timezone; this
+does not claim the source named an event location or timezone. Still require the source itself to
+support the event, its date and its temporal status. A different timezone or an event date inferred
+only from processing time is unsupported.
 A possessive identifying the example a person proposed discussing can express discourse association,
 without claiming they authored or invented it. Distinguish that contextual reading from an explicit
 unsupported creation claim. The proposal still does not establish that discussion actually occurred.
@@ -894,6 +899,7 @@ export async function runRetain(
   const verified = await verifyCandidates(
     model,
     source,
+    options.mentionedAt ? { mentioned_at: options.mentionedAt, timezone: options.timezone ?? null } : null,
     cleaned.candidates,
     cleaned.candidates.flatMap((candidate) => {
       const original = repairObligations.get(cleanedBatch.positions.get(candidate.candidate_id)!);
@@ -962,6 +968,7 @@ function emptyResult(): RetainResult {
 async function verifyCandidates(
   model: ModelClient,
   source: { kind: string; text?: string; items?: readonly RetainSourceItem[] },
+  referenceClock: { mentioned_at: string; timezone: string | null } | null,
   candidates: readonly RetainCandidate[],
   repairObligations: readonly { candidate_id: string; original: unknown }[],
   reportLimitConcerns: ReadonlySet<string>,
@@ -983,6 +990,7 @@ async function verifyCandidates(
     const checked = await verifyCandidateBatch(
       model,
       source,
+      referenceClock,
       batch,
       repairObligations,
       candidates,
@@ -1031,6 +1039,7 @@ async function verifyCandidates(
 async function verifyCandidateBatch(
   model: ModelClient,
   source: { kind: string; text?: string; items?: readonly RetainSourceItem[] },
+  referenceClock: { mentioned_at: string; timezone: string | null } | null,
   candidates: readonly RetainCandidate[],
   repairObligations: readonly { candidate_id: string; original: unknown }[],
   allCandidates: readonly RetainCandidate[],
@@ -1104,6 +1113,7 @@ async function verifyCandidateBatch(
       {
         role: 'user',
         content: JSON.stringify({
+          reference_clock: referenceClock,
           source,
           repair_obligations: repairObligations.filter((entry) => ids.includes(entry.candidate_id)),
           typed_label_contracts: candidates.map((candidate) => ({

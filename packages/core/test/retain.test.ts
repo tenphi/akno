@@ -37,6 +37,7 @@ async function openMem(): Promise<Akno> {
 interface AutomaticRetainStub {
   url: string;
   calls: () => { extraction: number; verification: number; routing: number; placement: number };
+  verificationClocks: () => Array<{ mentioned_at: string; timezone: string | null } | null>;
   close: () => Promise<void>;
   setCandidate: (candidate: Record<string, unknown>) => void;
   setCandidates: (candidates: Record<string, unknown>[]) => void;
@@ -67,6 +68,7 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
   let ownership: string | null = null;
   let identityCalls = 0;
   const counts = { extraction: 0, verification: 0, routing: 0, placement: 0 };
+  const verificationClocks: Array<{ mentioned_at: string; timezone: string | null } | null> = [];
   const instance = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
     request.on('data', (chunk: Buffer) => chunks.push(chunk));
@@ -81,7 +83,9 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
         counts.verification++;
         const payload = JSON.parse(user) as {
           candidates?: { candidate_id: string; kind: string; polarity: 'affirmed' | 'negated' }[];
+          reference_clock?: { mentioned_at: string; timezone: string | null } | null;
         };
+        verificationClocks.push(payload.reference_clock ?? null);
         content = {
           verdicts: (payload.candidates ?? []).map((item) => ({
             candidate_id: item.candidate_id,
@@ -137,6 +141,7 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
   return {
     url: `http://127.0.0.1:${port}/v1`,
     calls: () => ({ ...counts }),
+    verificationClocks: () => [...verificationClocks],
     close: async () => {
       instance.close();
       instance.closeAllConnections();
@@ -1061,6 +1066,67 @@ describe('provided exact retain', () => {
 });
 
 describe('automatic retain', () => {
+  it('verifies an assistant report with the same source clock used for event extraction', async () => {
+    const stub = await startAutomaticRetainStub();
+    stub.setRetention({ durability: 'durable', source_scope: 'event', candidate_scope: 'event' });
+    const text =
+      'Luna reported that Ada Marlow collected the Zephyr QX-100 on 2 February 2026, according to Vulpine Mutual.';
+    stub.setCandidate({
+      text,
+      subject: 'Ada Marlow Zephyr QX-100 collection',
+      page: 'memory/ada-zephyr-collection',
+      kind: 'event',
+      attribution: { source_role: 'assistant', source_speaker: 'Luna', chain: [] },
+      epistemic: { basis: 'source_report' },
+      support: [{ quote: text, item_id: 'report-1' }],
+      discourse_frame: [{ quote: text, item_id: 'report-1' }],
+      time: {
+        start: '2026-02-02',
+        precision: 'day',
+        relation: 'occurred',
+        status: 'actual',
+        mentioned_at: '2026-02-03T08:03:00Z',
+        timezone: 'Europe/Amsterdam',
+      },
+    });
+    const mem = await openAutomaticMem(stub.url);
+    try {
+      const source = {
+        source_id: 'luna:scheduled:invented-run',
+        revision: '1',
+        source_kind: 'note' as const,
+        mentioned_at: '2026-02-03T08:00:00Z',
+        timezone: 'Europe/Amsterdam',
+        input: {
+          items: [
+            {
+              item_id: 'report-1',
+              text,
+              role: 'assistant' as const,
+              speaker: 'Luna',
+              mentioned_at: '2026-02-03T08:03:00Z',
+            },
+          ],
+        },
+        retention: { mode: 'extract' as const },
+      };
+      const result = await mem.retain({ sources: [source] });
+      expect(result.sources[0]?.candidates[0]).toMatchObject({ outcome: 'written' });
+      expect(stub.verificationClocks()).toEqual([
+        { mentioned_at: '2026-02-03T08:00:00Z', timezone: 'Europe/Amsterdam' },
+      ]);
+      const timeline = await mem.timeline({ since: '2026-02-02', until: '2026-02-02' });
+      expect(timeline.results).toEqual(
+        expect.arrayContaining([expect.objectContaining({ type: 'memory', start: '2026-02-02' })]),
+      );
+      expect((await mem.retain({ sources: [source] })).sources[0]?.outcome).toBe('replayed');
+      expect(stub.calls().verification).toBe(1);
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
   it('does not bury an uncertain ownership decision in the configured inbox', async () => {
     const stub = await startAutomaticRetainStub();
     const text = 'The Zephyr QX-100 warranty lasts five years.';
