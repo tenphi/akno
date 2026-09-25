@@ -851,6 +851,64 @@ describe('routing when the best-ranked page is not the best-judged one', () => {
   });
 });
 
+describe('routing past source-heavy search results', () => {
+  it('offers a lower-ranked writable page to the ownership check', async () => {
+    fs.mkdirSync(path.join(root, 'references'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'household'), { recursive: true });
+    for (let index = 1; index <= 6; index += 1) {
+      fs.writeFileSync(
+        path.join(root, `references/meal-report-${index}.md`),
+        `# Meal report ${index}\n\nVulpine Lodge meal supplier report ${index}.\n`,
+      );
+    }
+    fs.writeFileSync(
+      path.join(root, 'household/meal-updates.md'),
+      '# Meal updates\n\nCanonical meal delivery updates for Vulpine Lodge.\n',
+    );
+    const text = 'Vulpine Lodge confirmed that meal deliveries now arrive on Thursdays.';
+    server.respondWith([{ text, subject: 'Vulpine Lodge meal deliveries', kind: 'claim' }]);
+    server.decideOwnershipWith((input) => {
+      const owner = input.existing_pages.find((page) => page.title === 'Meal updates');
+      return { selection: owner?.id ?? 'uncertain' };
+    });
+    const mem = await openMem({
+      models: {
+        embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
+        reranker: { id: null, enabled: false },
+        derive: { provider: 'stub', id: 'stub-derive' },
+        expansion: { provider: 'stub', id: 'stub-derive' },
+      },
+      folders: {
+        'references/**': { role: 'source', remember: 'deny', rank: 2 },
+        'household/**': { role: 'knowledge', remember: 'integrate', rank: 0.1 },
+      },
+    });
+    try {
+      await mem.index({});
+      const search = await mem.recall({
+        query: text,
+        mode: 'lookup',
+        memory_view: 'all',
+        depth: 'summary',
+        limit: 20,
+        expand: false,
+      });
+      const ownerRank = search.results.findIndex(
+        (result) => result.type === 'page' && result.slug === 'household/meal-updates',
+      );
+      expect(
+        search.results.slice(0, 5).every((result) => result.type === 'page' && result.role === 'source'),
+      ).toBe(true);
+      expect(ownerRank).toBeGreaterThanOrEqual(5);
+      const result = await mem.remember({ text });
+      expect(result.wrote?.[0]?.slug).toBe('household/meal-updates');
+      expect(result.wrote?.some((entry) => entry.slug.startsWith('references/'))).toBeFalsy();
+    } finally {
+      await mem.close();
+    }
+  });
+});
+
 describe('canonical destination qualification', () => {
   it('uses a document-scoped preference to choose its document over the speaker page', async () => {
     fs.mkdirSync(path.join(root, 'people'), { recursive: true });
