@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.13.6
+
+### Patch Changes
+
+- [#93](https://github.com/tenphi/akno/pull/93) [`b970ebf`](https://github.com/tenphi/akno/commit/b970ebf3f810bbe1c46b9dfb50e7c40e0264c7e0) Thanks [@tenphi](https://github.com/tenphi)! - Keep explicitly authored timeline events in the event index when another ledger line contains qualified prose, and rebuild the projection after upgrade.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.13.6
+
 ## 0.13.5
 
 ### Patch Changes
