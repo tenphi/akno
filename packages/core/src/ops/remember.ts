@@ -713,7 +713,10 @@ async function scoreDestinations(
     mode: 'lookup',
     // Destination relevance includes historical and qualified context, without granting fact eligibility.
     memory_view: 'all',
-    limit: 5,
+    // Source pages and documents may occupy the first several hits, but cannot own a retained
+    // claim. Keep a bounded wider window so a writable canonical page can reach the ownership
+    // check after those hits are filtered out.
+    limit: 20,
     // Summaries only: routing is a decision about *which page*, and line windows
     // are budget spent on text nobody reads here.
     depth: 'summary',
