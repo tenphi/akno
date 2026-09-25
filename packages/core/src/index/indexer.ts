@@ -1111,7 +1111,7 @@ export class Indexer {
       report.observationsIndexed += observations.indexed;
       report.observationProjectionIssues += observations.issues;
       const managedMemories = replaceManagedMemoryEntries(this.#store, pageId, page, resolved.role);
-      replaceProseEntries(this.#store, pageId, page);
+      replaceProseEntries(this.#store, pageId, page, isLedger(page.slug, this.#config));
       report.managedMemoriesIndexed += managedMemories.indexed;
       report.managedMemoryRelationsIndexed += managedMemories.relations;
       report.managedMemoryProjectionIssues += managedMemories.issues;
