@@ -1,3 +1,4 @@
+import { TimelineSelector } from '../timelines.ts';
 import { z } from 'zod';
 import {
   Card,
@@ -38,6 +39,8 @@ export const ContextInput = z
     /** Slugs always included, before anything else competes for room. Ignored by auto-recall. */
     pinned: z.array(z.string()).optional(),
     /** Days of ledger to include. 0 omits the section. Ignored by auto-recall. */
+    /** Applies only to the recent timeline section, not general recall. */
+    timeline: TimelineSelector.optional(),
     timeline_days: z.number().int().nonnegative().optional(),
     /** Include a folder outline so the agent knows what exists. Ignored by auto-recall. */
     structure: z.boolean().optional(),

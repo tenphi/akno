@@ -1,3 +1,4 @@
+import { timelineCatalog, timelineReadable } from '../timeline/boundaries.ts';
 import { ListInput, type ListOutput, type PageRole } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { physicalFolders } from '../kb/folders.ts';
@@ -12,6 +13,19 @@ export async function list(ctx: AknoContext, rawInput: unknown): Promise<ListOut
   const input = ListInput.parse(rawInput);
   const kind = input.kind ?? (input.folder || input.type || input.tag || input.role ? 'pages' : 'folders');
 
+  if (kind === 'timelines') {
+    const catalog = timelineCatalog(ctx.config, ctx.store).filter(
+      (entry) =>
+        !input.folder || entry.folder === input.folder || entry.folder.startsWith(`${input.folder}/`),
+    );
+    const broken = catalog.some((entry) => !timelineReadable(entry));
+    return {
+      status: broken ? 'degraded' : catalog.length ? 'ok' : 'empty',
+      ...(broken ? { degraded: ['timeline_boundary_unavailable' as const] } : {}),
+      timelines: catalog.slice(0, input.limit ?? 200),
+      total: catalog.length,
+    };
+  }
   if (kind === 'tree') return listTree(ctx, input);
   if (kind === 'folders') return listFolders(ctx, input);
   return listPages(ctx, input);

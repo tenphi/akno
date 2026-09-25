@@ -96,7 +96,13 @@ async function assembleContext(ctx: AknoContext, rawInput: unknown): Promise<Con
   if (days > 0) {
     const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
     const until = new Date().toISOString().slice(0, 10);
-    const ledger = await timeline(ctx, { since, until, limit: 60, order: 'nearest' });
+    const ledger = await timeline(ctx, {
+      since,
+      until,
+      limit: 60,
+      order: 'nearest',
+      ...(input.timeline ? { timeline: input.timeline } : {}),
+    });
     // The ledger is capped at a fraction of the budget: recent history is
     // context, not the answer, and a long ledger must not crowd out the cards.
     let ledgerBudget = Math.floor(remaining * 0.25);

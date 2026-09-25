@@ -167,3 +167,25 @@ describe('orphan document timeline evidence', () => {
     expect(result.results).toEqual([]);
   });
 });
+
+it('uses the nearest boundary for orphan evidence before totals and limits', async () => {
+  write('work/timeline.md', '# Timeline\n');
+  write('work/project-example/timeline.md', '# Timeline\n');
+  write('documents/service.txt', 'Service completed on 4 August 2026.');
+  write('work/service.txt', 'Inspection completed on 5 August 2026.');
+  write('work/project-example/service.txt', 'Prototype checked on 6 August 2026.');
+  await mem.index({});
+  const rootResult = await mem.timeline({ source: 'document' });
+  expect(rootResult.results.map((entry) => entry.path)).toEqual(['documents/service.txt']);
+  const workResult = await mem.timeline({ timeline: 'work/timeline', source: 'document', limit: 1 });
+  expect(workResult.total).toBe(1);
+  expect(workResult.results[0]).toMatchObject({
+    path: 'work/service.txt',
+    timeline: 'work/timeline',
+    timeline_basis: 'document_path',
+    temporal_status: 'evidence',
+  });
+  const combined = await mem.timeline({ timeline: '*', source: 'document', limit: 1 });
+  expect(combined.total).toBe(3);
+  expect(combined.groups.source_kind).toEqual([{ value: 'document_evidence', count: 3 }]);
+});

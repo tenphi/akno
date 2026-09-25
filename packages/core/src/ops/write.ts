@@ -18,7 +18,8 @@ import { provenanceLines, recordDocument, storeDocument } from '../ingest/store.
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
 import { beginMutation } from '../write/mutation-receipts.ts';
-import { ledgerSlug } from '../reserved.ts';
+import { isLedgerSlug } from '../reserved.ts';
+import { timelineCatalog, timelinePlacement, eventTimeline } from '../timeline/boundaries.ts';
 import type { Extraction } from '../ingest/extract.ts';
 import {
   hasInlineMergeConflict,
@@ -40,18 +41,52 @@ import {
 export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteOutput> {
   const input = WriteInput.parse(rawInput);
   const actor = ctx.actor;
+  const catalog = timelineCatalog(ctx.config, ctx.store);
+  const rawOwner = input.slug ?? input.propose_slug;
+  const ownerSlug = rawOwner ? normalizeSlug(rawOwner) : undefined;
+  if (input.timeline && !input.event) throw new AknoError('invalid', 'timeline selection requires an event');
+  const selectedTimeline = input.event ? eventTimeline(catalog, ownerSlug, input.timeline) : null;
+  if (input.event && !selectedTimeline) {
+    return {
+      status: 'ok',
+      outcome: 'requires_approval',
+      hold: { reason: 'timeline_required', timelines: catalog.map((entry) => entry.slug) },
+      note: 'choose a timeline or an owning page for this standalone event; nothing was written',
+    };
+  }
 
   // An event with no slug is a real case, not a degenerate one: plenty of things
   // happen that will never have a page. It goes straight to the ledger.
-  if (!input.slug && !input.propose_slug && input.event) {
-    return writeEventOnly(ctx, input.event, input.dry_run ?? false);
+  if (
+    input.event &&
+    input.content === undefined &&
+    input.append === undefined &&
+    input.patch === undefined &&
+    input.replace === undefined &&
+    !input.documents?.length
+  ) {
+    const target = ownerSlug && !isLedgerSlug(ownerSlug, ctx.config) ? normalizeSlug(ownerSlug) : undefined;
+    if (target) {
+      const page = ctx.store.db.prepare('SELECT rel_path FROM pages WHERE slug = ?').get(target) as
+        { rel_path: string } | undefined;
+      if (!page)
+        throw new AknoError('not_found', 'the event detail page must exist or be supplied with content');
+      assertMarkdownDestinationWritable(ctx, page.rel_path, `page '${target}'`);
+    }
+    return writeEventOnly(
+      ctx,
+      { ...input.event, ...(target ? { slug: target } : {}) },
+      input.dry_run ?? false,
+      selectedTimeline!.slug,
+    );
   }
 
-  const slug = normalizeSlug(input.slug ?? input.propose_slug!);
+  if (!ownerSlug) throw new AknoError('invalid', 'a page body or attachments require an owning page slug');
+  const slug = ownerSlug;
   if (
     refusesLedgerProse({
       slug,
-      ledger: ledgerSlug(ctx.config),
+      ledger: isLedgerSlug(slug, ctx.config) ? slug : '',
       actor,
       edit: input.content !== undefined ? 'content' : input.append !== undefined ? 'append' : null,
     })
@@ -75,7 +110,6 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
       reason: 'source_conflict',
     });
   }
-  if (input.event) assertLedgerWritable(ctx);
 
   // ── Gate ────────────────────────────────────────────────────────────────
   if (!existing) {
@@ -108,7 +142,7 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
     });
   }
 
-  if (edited.content === before) {
+  if (edited.content === before && !input.event) {
     return { status: 'ok', outcome: 'noop', note: 'the page already reads exactly that way' };
   }
 
@@ -143,9 +177,19 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
       wrote: [
         {
           slug,
+          ...timelinePlacement(catalog, slug),
           action: existing ? actionFor(edit) : 'created',
           ...(edited.firstChangedLine ? { line: edited.firstChangedLine } : {}),
         },
+        ...(selectedTimeline
+          ? [
+              {
+                slug: selectedTimeline.slug,
+                action: 'event' as const,
+                ...timelinePlacement(catalog, selectedTimeline.slug, 'ledger'),
+              },
+            ]
+          : []),
       ],
       note: 'dry run — nothing was written',
     };
@@ -172,6 +216,7 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
   files.push(fileEntry(result));
   wrote.push({
     slug,
+    ...timelinePlacement(catalog, slug),
     action: existing ? actionFor(edit) : 'created',
     ...(edited.firstChangedLine ? { line: edited.firstChangedLine } : {}),
   });
@@ -211,11 +256,20 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
   // The ledger line and the page land in one change, so the promise holds:
   // there is no way to get a ledger line whose detail page was never written.
   if (input.event) {
-    const ledger = await appendToLedger(ctx, { ...input.event, slug });
+    const ledger = await appendToLedger(ctx, { ...input.event, slug }, selectedTimeline!.slug);
     // No file when the day already has this event: the page part of this change still stands, and
     // the caller is still told which ledger line the event is on — the existing one.
-    if (ledger.file) files.push(ledger.file);
-    wrote.push({ slug: ledgerSlug(ctx.config), line: ledger.line, action: 'event' });
+    if (ledger.file) {
+      const prior = files.find((file) => file.relPath === ledger.file!.relPath);
+      if (prior) prior.after = ledger.file.after;
+      else files.push(ledger.file);
+    }
+    wrote.push({
+      slug: ledger.slug,
+      line: ledger.line,
+      action: 'event',
+      ...timelinePlacement(catalog, ledger.slug, 'ledger'),
+    });
   }
 
   const changeId = ctx.journal.record({
@@ -363,20 +417,21 @@ export function refusesLedgerProse(input: {
 
 async function writeEventOnly(
   ctx: AknoContext,
-  event: { date: string; summary: string },
+  event: { date: string; summary: string; slug?: string },
   dryRun: boolean,
+  timeline: string,
 ): Promise<WriteOutput> {
-  assertLedgerWritable(ctx);
+  const membership = { timeline, timeline_basis: 'ledger' as const };
   if (dryRun) {
     return {
       status: 'ok',
       outcome: 'ok',
-      wrote: [{ slug: ledgerSlug(ctx.config), action: 'event' }],
+      wrote: [{ slug: timeline, ...membership, action: 'event' }],
       note: 'dry run — nothing was written',
     };
   }
 
-  const ledger = await appendToLedger(ctx, event);
+  const ledger = await appendToLedger(ctx, event, timeline);
 
   // The day already has this event. Journalling anyway would put a change in `undo --list` that
   // reverses nothing, and tell the caller something was kept when the ledger is exactly as it was.
@@ -385,7 +440,7 @@ async function writeEventOnly(
       status: 'ok',
       outcome: 'noop',
       note: 'the ledger already records this event for that date',
-      wrote: [{ slug: ledgerSlug(ctx.config), line: ledger.line, action: 'event' }],
+      wrote: [{ slug: timeline, ...membership, line: ledger.line, action: 'event' }],
     };
   }
 
@@ -408,15 +463,18 @@ async function writeEventOnly(
     change_id: changeId,
     // Addressable as `timeline:47`, so it obeys the same provenance rule as
     // everything else — the ledger is a page like any other.
-    wrote: [{ slug: ledgerSlug(ctx.config), line: ledger.line, action: 'event' }],
+    wrote: [{ slug: timeline, ...membership, line: ledger.line, action: 'event' }],
   };
 }
 
 export async function appendToLedger(
   ctx: AknoContext,
   event: { date: string; summary: string; slug?: string },
-): Promise<{ file: ChangeFile | null; line: number }> {
-  const relPath = ctx.config.paths.timeline;
+  timeline?: string,
+): Promise<{ file: ChangeFile | null; line: number; slug: string }> {
+  const selected = eventTimeline(timelineCatalog(ctx.config, ctx.store), event.slug, timeline);
+  if (!selected) throw new AknoError('invalid', 'standalone event needs an explicit timeline');
+  const relPath = selected.path;
   assertMarkdownDestinationWritable(ctx, relPath, 'the timeline');
   const absPath = path.join(ctx.config.aknoPath, relPath);
 
@@ -432,15 +490,11 @@ export async function appendToLedger(
   // Nothing to write: the day already has this event, in these words or in others. Rewriting the
   // file with its own bytes would journal a change that added nothing — `undo --list` would offer
   // to reverse an event that was never appended, and the caller would be told it had been kept.
-  if (inserted.content === current) return { file: null, line: inserted.line };
+  if (inserted.content === current) return { file: null, line: inserted.line, slug: selected.slug };
 
   beginMutation(ctx);
   const result = await writeFileAtomic(ctx.config.aknoPath, relPath, inserted.content);
-  return { file: fileEntry(result), line: inserted.line };
-}
-
-function assertLedgerWritable(ctx: AknoContext): void {
-  assertMarkdownDestinationWritable(ctx, ctx.config.paths.timeline, 'the timeline');
+  return { file: fileEntry(result), line: inserted.line, slug: selected.slug };
 }
 
 function assertMarkdownDestinationWritable(ctx: AknoContext, relPath: string, label: string): void {

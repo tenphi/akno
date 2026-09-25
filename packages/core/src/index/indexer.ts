@@ -5,7 +5,7 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import type { AknoConfig } from '../config/schema.ts';
 import { indexScanIgnore } from '../config/load.ts';
-import { ledgerSlug } from '../reserved.ts';
+import { isLedgerSlug } from '../reserved.ts';
 import { extract, type Extraction } from '../ingest/extract.ts';
 import { documentPart, documentRendition } from '../ingest/parts.ts';
 import { looksLikeRendition, renditionBody, renditionPathFor, renditionWanted } from '../ingest/rendition.ts';
@@ -1309,11 +1309,11 @@ export class Indexer {
        VALUES(?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING`,
     );
     for (const event of page.events) {
-      // Duplicates collapse on (date, target, summary), so an event that exists
-      // both in the ledger and on its page counts once.
+      // Keep every source occurrence: timeline boundaries can change without editing this page.
+      // The reader collapses duplicate occurrences within the selected timeline.
       const target = event.targetSlug ?? (isLedger(page.slug, this.#config) ? null : page.slug);
       insert.run(
-        eventId(event.date, target, event.summary),
+        `evt_${sha256(`${eventId(event.date, target, event.summary)}\0${pageId}`).slice(0, 12)}`,
         event.date,
         event.summary,
         target,
@@ -2251,7 +2251,7 @@ export class Indexer {
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function isLedger(slug: string, config: AknoConfig): boolean {
-  return slug === ledgerSlug(config);
+  return isLedgerSlug(slug, config);
 }
 
 function nowIso(): string {

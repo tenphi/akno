@@ -8,7 +8,7 @@
  * Kept as a plain script rather than a vitest case so CI exercises the built
  * `dist` output and the real argument parsing, not the source modules.
  */
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -182,6 +182,49 @@ try {
     ([relPath, content]) => fs.readFileSync(path.join(root, relPath), 'utf8') === content,
   );
   check('leaves the knowledge base byte-identical', untouched);
+
+  // Exercise the built CLI's selectors and mutation receipts against a user-declared boundary.
+  fs.mkdirSync(path.join(root, 'work'));
+  const workLedger = '# Timeline\n\nZephyr prototype development.\n';
+  fs.writeFileSync(path.join(root, 'work/timeline.md'), workLedger);
+  run('index');
+  const discovery = JSON.parse(run('list', '--kind', 'timelines'));
+  check(
+    'discovers an inner timeline through the CLI',
+    discovery.timelines.some((item) => item.slug === 'work/timeline'),
+  );
+  const held = spawnSync(process.execPath, [cli, 'write', '--event', '2031-04-01=Prototype tested.'], {
+    env,
+    encoding: 'utf8',
+  });
+  check(
+    'standalone events ask for a timeline with exit code 2',
+    held.status === 2 && held.stdout.includes('choose a timeline'),
+  );
+  const written = JSON.parse(
+    run('write', '--timeline', 'work/timeline', '--event', '2031-04-01=Prototype tested.'),
+  );
+  check('event receipts identify the selected ledger', written.wrote[0]?.timeline === 'work/timeline');
+  const work = JSON.parse(run('timeline', '--timeline', 'work/timeline'));
+  check(
+    'inner timeline selection survives a process restart',
+    work.total === 1 && work.results[0]?.timeline === 'work/timeline',
+  );
+  check('default chronology excludes the inner event', JSON.parse(run('timeline')).total === timeline.total);
+  check(
+    'combined chronology explicitly includes both domains',
+    JSON.parse(run('timeline', '--timeline', '*')).total === timeline.total + 1,
+  );
+  const migration = JSON.parse(run('timeline', '--timeline', 'work/timeline', '--migration-preview'));
+  check(
+    'migration preview reports unlinked legacy ownership',
+    migration.migration[0]?.reason === 'unlinked_event',
+  );
+  run('undo', written.change_id);
+  check(
+    'selected-ledger write has exact undo',
+    fs.readFileSync(path.join(root, 'work/timeline.md'), 'utf8') === workLedger,
+  );
 
   const failed = checks.filter((entry) => !entry.ok);
   for (const entry of checks) {

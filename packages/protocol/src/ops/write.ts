@@ -1,3 +1,4 @@
+import { TimelineSelector, TimelineMembership } from '../timelines.ts';
 import { z } from 'zod';
 import { IdempotencyKey, ResultEnvelope } from '../common.ts';
 
@@ -51,6 +52,8 @@ export const WriteInput = z
      */
     section: z.string().optional(),
     event: EventInput.optional(),
+    /** Exact ledger selection for an event; must match a supplied page owner. */
+    timeline: TimelineSelector.optional(),
     documents: z.array(DocumentInput).optional(),
     links: z.array(z.string()).optional(),
     /** Report what would happen without touching disk. */
@@ -69,6 +72,7 @@ export const WriteInput = z
 export type WriteInput = z.infer<typeof WriteInput>;
 
 export const WriteTarget = z.object({
+  ...TimelineMembership.partial().shape,
   slug: z.string(),
   line: z.number().int().positive().optional(),
   action: z.enum(['created', 'appended', 'patched', 'replaced', 'superseded', 'event', 'attached']),
@@ -116,6 +120,7 @@ export type FolderRequired = z.infer<typeof FolderRequired>;
 export const WriteOutput = ResultEnvelope.extend({
   /** Distinguishes a committed write from one waiting on the user. */
   outcome: z.enum(['ok', 'requires_approval', 'requires_folder', 'conflict', 'noop']),
+  hold: z.object({ reason: z.literal('timeline_required'), timelines: z.array(z.string()) }).optional(),
   /** Durable — `undo` takes an id that outlives the session. */
   change_id: z.string().optional(),
   wrote: z.array(WriteTarget).optional(),

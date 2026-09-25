@@ -555,3 +555,31 @@ describe('the socket door', () => {
     );
   });
 });
+
+it('preserves folder timeline discovery, selection, membership, and write receipts over the socket', async () => {
+  fs.mkdirSync(path.join(root, 'work'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'work/timeline.md'), '# Timeline\n\nProject milestones.\n');
+  const client = await connect({ socket: server.path });
+  try {
+    expect(client.hello.features).toContain('folder_timelines');
+    expect((await client.list({ kind: 'timelines' })).timelines?.map((entry) => entry.slug)).toEqual([
+      'timeline',
+      'work/timeline',
+    ]);
+    const write = await client.write({
+      timeline: 'work/timeline',
+      event: { date: '2031-04-02', summary: 'Prototype delivered.' },
+    });
+    expect(write.wrote?.[0]).toMatchObject({
+      slug: 'work/timeline',
+      timeline: 'work/timeline',
+      timeline_basis: 'ledger',
+    });
+    expect((await client.timeline({ since: '2031-04' })).results).toEqual([]);
+    const scoped = await client.timeline({ timeline: 'work/timeline', since: '2031-04' });
+    expect(scoped.results[0]).toMatchObject({ timeline: 'work/timeline', summary: 'Prototype delivered.' });
+    expect((await client.timeline({ timeline: '*' })).total).toBe(1);
+  } finally {
+    await client.close();
+  }
+});

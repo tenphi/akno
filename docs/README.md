@@ -5,6 +5,8 @@
 The root [README](../README.md) is the short introduction. These guides explain the workflows and design in
 more depth without making every reader carry the complete implementation history.
 
+See [Folder-owned timelines](folder-timelines.md) to give work, projects, or other folders independent histories.
+
 ## Start here
 
 1. [Getting started](getting-started.md) — install Akno, choose a setup, index, and run the first recall.

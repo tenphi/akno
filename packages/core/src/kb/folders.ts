@@ -1,3 +1,4 @@
+import { timelineCatalog, owningTimeline } from '../timeline/boundaries.ts';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { PageRole, RememberManagement } from '@tenphi/akno-protocol';
@@ -16,6 +17,7 @@ export interface FolderCatalogEntry {
   admittedPages: string[];
   eligible: boolean;
   description?: string;
+  timeline?: { slug: string; description: string; status: string };
 }
 
 /**
@@ -79,6 +81,7 @@ export function physicalFolderExists(config: AknoConfig, folder: string): boolea
  * invent a parallel taxonomy for exactly the folders whose purpose was stated most explicitly.
  */
 export function folderCatalog(config: AknoConfig, store: Store): FolderCatalogEntry[] {
+  const timelines = timelineCatalog(config, store);
   const paths = new Set(physicalFolders(config, { depth: Number.MAX_SAFE_INTEGER }));
   const rows = store.db
     .prepare("SELECT slug, role, frontmatter FROM pages WHERE role != 'ignored' ORDER BY slug")
@@ -123,7 +126,9 @@ export function folderCatalog(config: AknoConfig, store: Store): FolderCatalogEn
                 declaresRememberIntegration(row.frontmatter),
             )
             .map((row) => row.slug);
+      const timeline = owningTimeline(timelines, `${folderPath}/x`);
       return {
+        timeline: { slug: timeline.slug, description: timeline.description, status: timeline.status },
         path: folderPath,
         role,
         remember,

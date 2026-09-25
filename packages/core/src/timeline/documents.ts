@@ -12,6 +12,7 @@ export interface DocumentTimelineOptions {
   match?: string;
   subject?: string;
   clock: TimelineClock;
+  accepts?: (source: string) => boolean;
 }
 
 interface DocumentDateRow {
@@ -68,6 +69,7 @@ export function documentTimelineEvidence(
 
   const groups = new Map<string, DocumentDateRow[]>();
   for (const row of rows) {
+    if (options.accepts && !options.accepts(row.rel_path)) continue;
     const key = row.group_key ?? row.rel_path;
     const current = groups.get(key);
     if (current) current.push(row);

@@ -162,3 +162,23 @@ describe('the HTTP door', () => {
     }
   });
 });
+
+it('preserves timeline boundaries through the HTTP read contract', async () => {
+  await server.close();
+  fs.mkdirSync(path.join(root, 'work'), { recursive: true });
+  fs.writeFileSync(
+    path.join(root, 'work/timeline.md'),
+    '# Timeline\n\n## 2031\n- **2031-04-02** | Prototype delivered.\n',
+  );
+  await mem.index({ structuralOnly: true });
+  server = await serveHttp(mem, '127.0.0.1:0', { publicAllow: ['list', 'timeline'] });
+  const client = await connect({ http: server.address });
+  try {
+    expect(client.hello.features).toContain('folder_timelines');
+    expect((await client.timeline({})).total).toBe(0);
+    expect((await client.timeline({ timeline: 'work/timeline' })).results[0]?.timeline).toBe('work/timeline');
+    expect((await client.list({ kind: 'timelines' })).timelines).toHaveLength(2);
+  } finally {
+    await client.close();
+  }
+});

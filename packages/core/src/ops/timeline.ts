@@ -1,4 +1,12 @@
 import {
+  timelineCatalog,
+  owningTimeline,
+  selectTimelines,
+  timelineReadable,
+  timelinePlacement,
+} from '../timeline/boundaries.ts';
+import { eventId } from '../store/ids.ts';
+import {
   RetainedTime,
   TimelineInput,
   type DegradedReason,
@@ -25,7 +33,7 @@ import {
 } from '../timeline/clock.ts';
 import { expandRetainedRecurrence } from '../timeline/recurrence.ts';
 import { TEMPORAL_PROJECTION_VERSION } from '../timeline/projection.ts';
-import { quarantineSummary } from '../index/page-quarantine.ts';
+import { quarantineDetails } from '../index/page-quarantine.ts';
 
 interface TemporalEntryRow {
   memory_id: string;
@@ -56,7 +64,20 @@ export async function timeline(ctx: AknoContext, rawInput: unknown): Promise<Tim
   const range = normalizeTimelineRange(input.since, input.until);
   const limit = input.limit ?? 100;
   const degraded = new Set<DegradedReason>();
-  const sourceConflict = quarantineSummary(ctx.store).candidates > 0;
+  const catalog = timelineCatalog(ctx.config, ctx.store);
+  const selected = selectTimelines(catalog, input.timeline);
+  const selectedSlugs = new Set(selected.map((entry) => entry.slug));
+  const accepts = (source: string) => {
+    const owner = owningTimeline(catalog, source);
+    return selectedSlugs.has(owner.slug) && timelineReadable(owner);
+  };
+  const boundaryUnavailable = selected.some((entry) => !timelineReadable(entry));
+  if (boundaryUnavailable) degraded.add('timeline_boundary_unavailable');
+  const sourceConflict =
+    selected.some((entry) => entry.status === 'quarantined') ||
+    quarantineDetails(ctx.store).some((entry) =>
+      selectedSlugs.has(owningTimeline(catalog, entry.relPath).slug),
+    );
   if (sourceConflict) degraded.add('source_conflict');
   let recurrenceLimited = false;
   let temporalIssueCount = 0;
@@ -72,7 +93,7 @@ export async function timeline(ctx: AknoContext, rawInput: unknown): Promise<Tim
     input.source === 'both' ||
     input.source === 'document' ||
     input.source === 'document_evidence';
-  const authored = includeAuthored ? authoredEvents(ctx, clock) : [];
+  const authored = includeAuthored ? authoredEvents(ctx, clock, accepts) : [];
   const needsTemporalProjection = input.source !== 'document' && input.source !== 'document_evidence';
   const projectionAvailable =
     tableExists(ctx, 'temporal_entries') && tableExists(ctx, 'temporal_projection_issues');
@@ -83,9 +104,15 @@ export async function timeline(ctx: AknoContext, rawInput: unknown): Promise<Tim
     degraded.add('partial_temporal_index');
   }
   if (needsTemporalProjection && projectionAvailable) {
-    temporalIssueCount = count(ctx, 'SELECT count(*) AS c FROM temporal_projection_issues');
+    temporalIssueCount = (
+      ctx.store.db
+        .prepare(
+          'SELECT page.slug FROM temporal_projection_issues issue JOIN pages page ON page.id = issue.source_page',
+        )
+        .all() as { slug: string }[]
+    ).filter((entry) => accepts(entry.slug)).length;
     if (temporalIssueCount > 0) degraded.add('partial_temporal_index');
-    const expanded = retainedMemories(ctx, clock, range, limit);
+    const expanded = retainedMemories(ctx, clock, range, limit, accepts);
     retained = expanded.results;
     recurrenceLimited = expanded.limited;
     if (expanded.invalid > 0) {
@@ -102,10 +129,24 @@ export async function timeline(ctx: AknoContext, rawInput: unknown): Promise<Tim
         ...(input.match ? { match: input.match } : {}),
         ...(input.subject ? { subject: input.subject } : {}),
         clock,
+        accepts,
       })
     : [];
 
+  const seenEvents = new Set<string>();
   const matching = [...authored, ...retained, ...documents]
+    .map((entry) => ({
+      ...entry,
+      ...timelinePlacement(
+        catalog,
+        entry.type === 'event' ? entry.source : entry.type === 'memory' ? entry.slug : entry.path,
+        entry.type === 'document_evidence'
+          ? 'document_path'
+          : entry.type === 'event' && catalog.some((item) => item.slug === entry.source)
+            ? 'ledger'
+            : 'source_page',
+      ),
+    }))
     .filter((entry) => temporalOverlapsRange(timeFor(entry), range, clock.timezone))
     .filter((entry) => matchesSource(entry, input.source))
     .filter((entry) => matchesSubject(entry, input.subject))
@@ -118,7 +159,19 @@ export async function timeline(ctx: AknoContext, rawInput: unknown): Promise<Tim
         (entry.temporal_status !== 'evidence' && entry.temporal_status === input.temporal_status),
     )
     .filter((entry) => !input.disposition || entry.disposition === input.disposition)
-    .filter((entry) => input.view !== 'actionable' || entry.actionable);
+    .filter((entry) => input.view !== 'actionable' || entry.actionable)
+    .sort(
+      (left, right) =>
+        Number(right.timeline_basis === 'ledger') - Number(left.timeline_basis === 'ledger') ||
+        left.id.localeCompare(right.id),
+    )
+    .filter((entry) => {
+      if (entry.type !== 'event') return true;
+      const key = `${entry.timeline}:${eventId(entry.date, entry.slug, entry.summary)}`;
+      if (seenEvents.has(key)) return false;
+      seenEvents.add(key);
+      return true;
+    });
 
   matching.sort(resultOrder(input.order ?? 'newest', clock));
   const results = matching.slice(0, limit);
@@ -134,8 +187,9 @@ export async function timeline(ctx: AknoContext, rawInput: unknown): Promise<Tim
     );
   const temporalOnlyRequested =
     input.source === 'state' || input.source === 'plan' || input.source === 'deadline';
-  const status =
-    temporalOnlyRequested && !projectionAvailable
+  const status = selected.every((entry) => !timelineReadable(entry))
+    ? 'unavailable'
+    : temporalOnlyRequested && !projectionAvailable
       ? 'unavailable'
       : unavailableDocumentsOnly
         ? 'unavailable'
@@ -145,23 +199,57 @@ export async function timeline(ctx: AknoContext, rawInput: unknown): Promise<Tim
             ? 'empty'
             : 'ok';
 
+  const migration = input.migration_preview
+    ? matching.flatMap((entry) => {
+        if (entry.type !== 'event' || !entry.line || !catalog.some((item) => item.slug === entry.source))
+          return [];
+        const target = entry.slug
+          ? ctx.store.db.prepare('SELECT slug FROM pages WHERE slug = ?').get(entry.slug)
+          : null;
+        const suggestion = target && entry.slug ? owningTimeline(catalog, entry.slug).slug : null;
+        if (suggestion === entry.timeline) return [];
+        return [
+          {
+            source: entry.source,
+            line: entry.line,
+            date: entry.date,
+            summary: entry.summary,
+            timeline: entry.timeline,
+            suggested_timeline: suggestion,
+            reason: suggestion
+              ? ('cross_timeline_link' as const)
+              : entry.slug
+                ? ('unresolved_target' as const)
+                : ('unlinked_event' as const),
+          },
+        ];
+      })
+    : undefined;
+
   return {
     status,
     ...(degraded.size > 0 ? { degraded: [...degraded] } : {}),
     ...(status !== 'ok' && status !== 'empty'
       ? {
-          note: timelineNote({
-            projectionAvailable,
-            projectionCurrent,
-            temporalIssueCount,
-            recurrenceLimited,
-            hasMissingDocument,
-            unavailableDocumentsOnly,
-            sourceConflict,
-          }),
+          note:
+            (boundaryUnavailable
+              ? 'a selected timeline boundary is unavailable; inspect list({kind: "timelines"}); '
+              : '') +
+            timelineNote({
+              projectionAvailable,
+              projectionCurrent,
+              temporalIssueCount,
+              recurrenceLimited,
+              hasMissingDocument,
+              unavailableDocumentsOnly,
+              sourceConflict,
+            }),
         }
       : {}),
     results,
+    selected_timelines: selected.map((entry) => entry.slug),
+    timelines: selected,
+    ...(migration ? { migration: migration.slice(0, limit), migration_total: migration.length } : {}),
     total: matching.length,
     ...(recurrenceLimited ? { truncated: true } : {}),
     range,
@@ -175,7 +263,11 @@ export async function timeline(ctx: AknoContext, rawInput: unknown): Promise<Tim
   };
 }
 
-function authoredEvents(ctx: AknoContext, clock: TimelineClock): TimelineEvent[] {
+function authoredEvents(
+  ctx: AknoContext,
+  clock: TimelineClock,
+  accepts: (source: string) => boolean,
+): TimelineEvent[] {
   const rows = ctx.store.db
     .prepare(
       `SELECT e.id, e.date, e.summary, e.target_slug, e.source_slug, e.line
@@ -189,36 +281,38 @@ function authoredEvents(ctx: AknoContext, clock: TimelineClock): TimelineEvent[]
     source_slug: string;
     line: number | null;
   }[];
-  return rows.map((row) => {
-    const time = {
-      start: row.date,
-      until: row.date,
-      precision: 'day' as const,
-      relation: 'occurred' as const,
-      status: 'actual' as const,
-    };
-    return {
-      type: 'event',
-      origin: 'authored',
-      source_kind: 'event',
-      id: row.id,
-      date: row.date,
-      summary: row.summary,
-      slug: row.target_slug,
-      source: row.source_slug,
-      line: row.line,
-      start: row.date,
-      until: row.date,
-      precision: 'day',
-      relation: 'occurred',
-      temporal_status: 'actual',
-      disposition: 'active',
-      clock_relation: classifyRetainedTime(time, 'active', clock),
-      timezone: null,
-      mentioned_at: null,
-      actionable: false,
-    };
-  });
+  return rows
+    .filter((row) => accepts(row.source_slug))
+    .map((row) => {
+      const time = {
+        start: row.date,
+        until: row.date,
+        precision: 'day' as const,
+        relation: 'occurred' as const,
+        status: 'actual' as const,
+      };
+      return {
+        type: 'event',
+        origin: 'authored',
+        source_kind: 'event',
+        id: row.id,
+        date: row.date,
+        summary: row.summary,
+        slug: row.target_slug,
+        source: row.source_slug,
+        line: row.line,
+        start: row.date,
+        until: row.date,
+        precision: 'day',
+        relation: 'occurred',
+        temporal_status: 'actual',
+        disposition: 'active',
+        clock_relation: classifyRetainedTime(time, 'active', clock),
+        timezone: null,
+        mentioned_at: null,
+        actionable: false,
+      };
+    });
 }
 
 function retainedMemories(
@@ -226,8 +320,9 @@ function retainedMemories(
   clock: TimelineClock,
   range: TimelineRange,
   maxOccurrences: number,
+  accepts: (source: string) => boolean,
 ): { results: TimelineMemory[]; limited: boolean; invalid: number } {
-  const rows = ctx.store.db
+  const allRows = ctx.store.db
     .prepare(
       `SELECT memory_id, source_slug, line, summary, kind, subject, relation,
               temporal_status, disposition, precision, start, until, timezone,
@@ -235,12 +330,13 @@ function retainedMemories(
          FROM temporal_entries`,
     )
     .all() as TemporalEntryRow[];
+  const rows = allRows.filter((row) => accepts(row.source_slug));
   const results: TimelineMemory[] = [];
   let limited = false;
   let invalid = 0;
   let expandedOccurrences = 0;
   const duplicateIds = new Set(
-    [...countValues(rows.map((row) => row.memory_id)).entries()]
+    [...countValues(allRows.map((row) => row.memory_id)).entries()]
       .filter(([, occurrences]) => occurrences > 1)
       .map(([memoryId]) => memoryId),
   );
@@ -426,10 +522,6 @@ function tableExists(ctx: AknoContext, name: string): boolean {
     .prepare("SELECT 1 AS present FROM sqlite_master WHERE type = 'table' AND name = ?")
     .get(name) as { present: number } | undefined;
   return row?.present === 1;
-}
-
-function count(ctx: AknoContext, sql: string): number {
-  return (ctx.store.db.prepare(sql).get() as { c: number }).c;
 }
 
 function timelineNote(options: {

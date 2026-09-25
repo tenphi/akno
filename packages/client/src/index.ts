@@ -225,6 +225,7 @@ async function connectSocket(socketPath: string, options: ConnectOptions): Promi
     input: OpInput<N>,
     callOptions: { actor?: 'user' | 'agent' | 'akno' } = {},
   ): Promise<OpResult<N>> {
+    assertFeatures(resolved, op, input);
     return (await send(op, input, 'op', callOptions.actor ?? options.actor)) as OpResult<N>;
   }
 
@@ -289,6 +290,7 @@ async function connectHttp(address: string, options: ConnectOptions): Promise<Ak
     input: OpInput<N>,
     callOptions: { actor?: 'user' | 'agent' | 'akno' } = {},
   ): Promise<OpResult<N>> {
+    assertFeatures(hello, op, input);
     if (callOptions.actor) {
       throw new AknoError(
         'forbidden',
@@ -388,3 +390,20 @@ export type {
   OpName,
   RecallMode,
 } from '@tenphi/akno-protocol';
+
+/** Zod on an older server strips unknown fields; refuse before a scoped request can become global. */
+function assertFeatures(hello: HelloMessage, op: OpName, input: unknown): void {
+  if (!input || typeof input !== 'object') return;
+  const request = input as Record<string, unknown>;
+  const needsTimelines =
+    (['timeline', 'context', 'write'].includes(op) && request.timeline !== undefined) ||
+    (op === 'timeline' && request.migration_preview === true) ||
+    (op === 'list' && request.kind === 'timelines');
+  if (needsTimelines && !hello.features?.includes('folder_timelines')) {
+    throw new AknoError(
+      'not_implemented',
+      'this Akno service does not support folder-owned timelines; upgrade it before selecting a timeline',
+      { feature: 'folder_timelines' },
+    );
+  }
+}

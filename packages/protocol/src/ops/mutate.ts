@@ -1,3 +1,4 @@
+import { RetainRoutingReason } from './retain.ts';
 import { z } from 'zod';
 import { IdempotencyKey, ResultEnvelope } from '../common.ts';
 import { ApprovalRequest, FolderRequired, WriteTarget } from './write.ts';
@@ -33,8 +34,20 @@ export const RememberInput = z.object({
 export type RememberInput = z.infer<typeof RememberInput>;
 
 export const RememberOutput = ResultEnvelope.extend({
+  held_events: z
+    .array(
+      z.object({
+        date: z.string(),
+        summary: z.string(),
+        reason_code: z.literal('routing_uncertain'),
+        routing_reason: RetainRoutingReason.optional(),
+      }),
+    )
+    .optional(),
   outcome: z.enum(['ok', 'requires_approval', 'requires_folder', 'no_writable_destination', 'noop']),
   change_id: z.string().optional(),
+  /** All changes, in apply order, when legacy ledger events accompany retained page memories. */
+  change_ids: z.array(z.string()).optional(),
   wrote: z.array(WriteTarget).optional(),
   facts: z.object({ retired: z.number().int(), added: z.number().int() }).optional(),
   /** Candidates that cleared the retain mission but had nowhere to go and no name to give one. */

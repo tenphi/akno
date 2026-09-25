@@ -7,6 +7,8 @@ const TIMELINE_HELP = `akno timeline [options]
   One clock-relative view of authored events, retained states/plans/deadlines,
   and document date evidence without collapsing their meanings.
 
+  --timeline <slug>   Ledger slug; "*" combines all timelines. Default: root ledger.
+  --migration-preview  Report legacy ledger entries needing placement review.
   --since <YYYY[-MM[-DD]]>
   --until <YYYY[-MM[-DD]]>
   --match <text>      Substring match on the summary.
@@ -27,6 +29,8 @@ const TIMELINE_HELP = `akno timeline [options]
 
 export async function timelineCommand(argv: string[]): Promise<number> {
   const { values } = parse<{
+    timeline?: string;
+    'migration-preview'?: boolean;
     since?: string;
     until?: string;
     match?: string;
@@ -42,6 +46,8 @@ export async function timelineCommand(argv: string[]): Promise<number> {
     'as-of'?: string;
     timezone?: string;
   }>(argv, {
+    timeline: { type: 'string' },
+    'migration-preview': { type: 'boolean' },
     since: { type: 'string' },
     until: { type: 'string' },
     match: { type: 'string' },
@@ -66,6 +72,8 @@ export async function timelineCommand(argv: string[]): Promise<number> {
   const handle = await resolveOps(values, openOptionsFrom(values));
   try {
     const result = await handle.ops.timeline({
+      ...(values.timeline ? { timeline: values.timeline } : {}),
+      ...(values['migration-preview'] ? { migration_preview: true } : {}),
       ...(values.since ? { since: values.since } : {}),
       ...(values.until ? { until: values.until } : {}),
       ...(values.match ? { match: values.match } : {}),
@@ -116,8 +124,23 @@ export async function timelineCommand(argv: string[]): Promise<number> {
         `${result.results.length < result.total ? style.grey(` (showing ${result.results.length})`) : ''}`,
     );
     line(style.grey(`  as of ${result.clock.as_of} in ${result.clock.timezone}`));
+    if (result.selected_timelines) line(style.grey(`  timelines: ${result.selected_timelines.join(', ')}`));
+    if (result.migration) {
+      line(
+        style.grey(
+          `  migration review: ${result.migration.length} of ${result.migration_total ?? result.migration.length} entries; no files changed`,
+        ),
+      );
+      for (const item of result.migration)
+        line(
+          style.yellow(
+            `  review ${item.source}:${item.line}: ${item.reason}${item.suggested_timeline ? ` → ${item.suggested_timeline}` : ''}`,
+          ),
+        );
+    }
     if (result.note) line(style.yellow(`  ${result.note}`));
     for (const entry of result.results) {
+      if ((result.selected_timelines?.length ?? 0) > 1) line(style.grey(`  [${entry.timeline}]`));
       if (entry.type === 'document_evidence') {
         const page = entry.matched_page ? ` p${entry.matched_page}` : '';
         line(

@@ -213,7 +213,8 @@ describe('pre-index Markdown quarantine', () => {
     expect(report.quarantine.byReason.sync_conflict_path).toBe(1);
 
     const timeline = await mem.timeline({ source: 'event' });
-    expect(timeline.status).toBe('degraded');
+    expect(timeline.status).toBe('unavailable');
+    expect(timeline.degraded).toContain('timeline_boundary_unavailable');
     expect(timeline.degraded).toContain('source_conflict');
     expect(timeline.results).toEqual([]);
     await expect(

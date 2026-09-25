@@ -1299,7 +1299,8 @@ function formatFolderCatalog(folders: FolderCatalogEntry[]): string {
       (folder) =>
         `- ${folder.path}/ [role=${folder.role}; remember=${folder.remember}; eligible=${folder.eligible}; creatable=${folder.creatable}` +
         `${folder.admittedPages.length > 0 ? `; admitted_pages=${folder.admittedPages.join(',')}` : ''}]` +
-        `${folder.description ? ` — ${folder.description}` : ''}`,
+        `${folder.description ? ` — ${folder.description}` : ''}` +
+        `${folder.timeline ? ` [timeline=${folder.timeline.slug}; status=${folder.timeline.status}; purpose=${folder.timeline.description}]` : ''}`,
     )
     .join('\n');
 }

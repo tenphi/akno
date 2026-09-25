@@ -44,6 +44,7 @@ export function reservedSlugs(config: AknoConfig): string[] {
 
 /** True when `slug` is a reserved path or lives underneath one. */
 export function isReserved(slug: string, config: AknoConfig): boolean {
+  if (isLedgerSlug(slug, config) || slug.split('/').slice(0, -1).includes('timeline')) return true;
   return reservedSlugs(config).some((reserved) => slug === reserved || slug.startsWith(`${reserved}/`));
 }
 
@@ -65,4 +66,9 @@ export function looksLikeLedger(absPath: string): boolean {
     // failures; refusing to start over one would be the wrong call.
     return true;
   }
+}
+
+/** Conventional ledger names are reserved even before creation, so retention cannot invent one. */
+export function isLedgerSlug(slug: string, config: AknoConfig): boolean {
+  return slug === ledgerSlug(config) || slug.endsWith('/timeline');
 }

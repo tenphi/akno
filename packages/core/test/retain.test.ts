@@ -1665,3 +1665,133 @@ describe('automatic retain', () => {
     }
   });
 });
+
+describe('folder-owned timeline retention', () => {
+  it('routes a mixed conversation per item and preserves placement on exact replay', async () => {
+    fs.mkdirSync(path.join(root, 'memory/work'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'memory/work/timeline.md'),
+      '# Timeline\n\nZephyr prototype development.\n',
+    );
+    const stub = await startAutomaticRetainStub();
+    stub.setRetention({ durability: 'durable', source_scope: 'event', candidate_scope: 'event' });
+    const home = 'Ada Marlow completed the household repair on 1 April 2031.';
+    const work = 'Ada Marlow delivered the Zephyr prototype on 2 April 2031.';
+    stub.setCandidates([
+      {
+        text: home,
+        subject: 'household repair',
+        page: 'memory/household-repair',
+        kind: 'event',
+        evidence: home,
+        frame: home,
+        time: {
+          start: '2031-04-01',
+          precision: 'day',
+          relation: 'occurred',
+          status: 'actual',
+          mentioned_at: '2031-04-03T10:00:00Z',
+          timezone: 'UTC',
+        },
+      },
+      {
+        text: work,
+        subject: 'Zephyr prototype',
+        page: 'memory/work/zephyr-prototype',
+        kind: 'event',
+        evidence: work,
+        frame: work,
+        time: {
+          start: '2031-04-02',
+          precision: 'day',
+          relation: 'occurred',
+          status: 'actual',
+          mentioned_at: '2031-04-03T10:00:00Z',
+          timezone: 'UTC',
+        },
+      },
+    ]);
+    const mem = await openAutomaticMem(stub.url);
+    try {
+      const source = {
+        source_id: 'conversation:mixed-timelines',
+        revision: '1',
+        mentioned_at: '2031-04-03T10:00:00Z',
+        timezone: 'UTC',
+        input: { text: `${home} ${work}` },
+        retention: { mode: 'extract' as const },
+      };
+      const result = await mem.retain({ sources: [source] });
+      expect(result.sources[0]?.candidates).toEqual([
+        expect.objectContaining({
+          outcome: 'written',
+          timeline: 'timeline',
+          slug: 'memory/household-repair',
+        }),
+        expect.objectContaining({
+          outcome: 'written',
+          timeline: 'memory/work/timeline',
+          slug: 'memory/work/zephyr-prototype',
+        }),
+      ]);
+      expect((await mem.timeline({})).results).toHaveLength(1);
+      expect((await mem.timeline({ timeline: 'memory/work/timeline' })).results).toHaveLength(1);
+      const replay = await mem.retain({ sources: [source] });
+      expect(replay.sources[0]?.outcome).toBe('replayed');
+      expect(replay.sources[0]?.candidates).toEqual(result.sources[0]?.candidates);
+      expect(stub.calls().extraction).toBe(1);
+      const retracted = await mem.retain({
+        sources: [
+          {
+            source_id: source.source_id,
+            revision: '2',
+            retention: { mode: 'retract', target_revision: '1', reason: 'user_request' },
+          },
+        ],
+      });
+      expect(retracted.sources[0]?.candidates.every((item) => item.outcome === 'retracted')).toBe(true);
+      expect((await mem.timeline({ timeline: '*' })).results).toEqual([]);
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
+  it('does not redirect identical provided memory across a timeline boundary', async () => {
+    fs.mkdirSync(path.join(root, 'memory/work'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'memory/work/timeline.md'), '# Timeline\n');
+    fs.writeFileSync(path.join(root, 'memory/work/equipment.md'), '# Equipment\n\n## Warranty\n');
+    const mem = await openMem();
+    try {
+      await mem.index({ structuralOnly: true });
+      const household = upsert('conversation:home', '1');
+      const work = upsert('conversation:work', '1');
+      work.retention.candidates[0]!.destination.slug = 'memory/work/equipment';
+      const first = await mem.retain({ sources: [household] });
+      const second = await mem.retain({ sources: [work] });
+      expect(first.sources[0]?.candidates[0]).toMatchObject({ outcome: 'written', timeline: 'timeline' });
+      expect(second.sources[0]?.candidates[0]).toMatchObject({
+        outcome: 'written',
+        timeline: 'memory/work/timeline',
+        slug: 'memory/work/equipment',
+      });
+      expect(second.sources[0]?.candidates[0]?.memory_id).not.toBe(
+        first.sources[0]?.candidates[0]?.memory_id,
+      );
+      expect(fs.readFileSync(path.join(root, 'memory/work/equipment.md'), 'utf8')).toContain(
+        'five-year warranty',
+      );
+      expect(fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8')).toContain('five-year warranty');
+      fs.writeFileSync(path.join(root, 'memory/work/timeline.md'), '# Unrelated notes\n');
+      const rejected = upsert('conversation:invalid-timeline', '1');
+      rejected.retention.candidates[0]!.destination.slug = 'memory/work/equipment';
+      expect((await mem.retain({ sources: [rejected] })).sources[0]?.candidates[0]).toMatchObject({
+        outcome: 'held',
+        reason_code: 'no_writable_destination',
+        timeline: 'memory/work/timeline',
+      });
+    } finally {
+      await mem.close();
+    }
+  });
+});
