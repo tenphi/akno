@@ -6,6 +6,7 @@ import { indexScanIgnore } from '../config/load.ts';
 import type { Store } from '../store/db.ts';
 import { parsePage, resolvePagePolicy } from '../kb/page.ts';
 import { effectiveRule } from '../rules/compile.ts';
+import { isLedgerPage } from '../reserved.ts';
 import {
   hasInlineMergeConflict,
   matchesConflictPath,
@@ -105,11 +106,11 @@ export function timelineCatalog(config: AknoConfig, store: Store): TimelineDescr
         return { ...result, status: 'quarantined', note: 'timeline has a Markdown source conflict' };
       }
       const page = parsePage(rel, content);
-      if (page.type !== 'timeline' && !/^#\s*Timeline\b/im.test(page.body) && page.events.length === 0) {
+      if (!isLedgerPage(page)) {
         return {
           ...result,
           status: 'invalid',
-          note: 'timeline.md needs type: timeline, a # Timeline heading, or authored event lines',
+          note: 'timeline.md must be empty or have type: timeline, a # Timeline heading, or authored event lines',
         };
       }
       const policy = resolvePagePolicy(page, effectiveRule(slug, config.rules), config.paths.observations);
@@ -120,7 +121,7 @@ export function timelineCatalog(config: AknoConfig, store: Store): TimelineDescr
         .slice(0, 1000);
       return {
         ...result,
-        title: page.title,
+        title: content.trim().length === 0 ? result.title : page.title,
         description: introduction,
         status: policy.role === 'ignored' ? 'unavailable' : 'ready',
         writable:

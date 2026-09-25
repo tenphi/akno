@@ -22,7 +22,7 @@ function put(file: string, content: string) {
 }
 const read = (file: string) => fs.readFileSync(path.join(root, file), 'utf8');
 
-async function start(timeline = 'timeline.md') {
+async function start(timeline = 'timeline.md', folderRules: Record<string, unknown> = {}) {
   return open({
     aknoPath: root,
     stateDir,
@@ -40,7 +40,7 @@ async function start(timeline = 'timeline.md') {
         derive: { id: null },
         expansion: { id: null },
       },
-      folders: { '**': { role: 'knowledge', remember: 'integrate' } },
+      folders: { '**': { role: 'knowledge', remember: 'integrate' }, ...folderRules },
     },
   });
 }
@@ -89,6 +89,100 @@ it('discovers visible boundaries, defaults to root, and excludes nested and sibl
   expect(TimelineOutput.parse(combined).total).toBe(4);
   expect(combined.groups.source_kind).toEqual([{ value: 'event', count: 4 }]);
   await expect(mem.timeline({ timeline: 'work/missing' })).rejects.toThrow('unknown timeline');
+});
+
+it.each(['', '\uFEFF \t\r\n\n'])(
+  'recognizes an empty declaration without changing its bytes (%j)',
+  async (blank) => {
+    put('work/subproject/notes.md', '# Subproject\n\n' + memory('mem_empty_scope', 'occurred', '2031-04-01'));
+    await mem.index({ structuralOnly: true });
+    expect((await mem.timeline({ timeline: 'work/timeline' })).total).toBe(2);
+    put('work/subproject/timeline.md', blank);
+
+    const discovery = await mem.list({ kind: 'timelines' });
+    expect(discovery.timelines).toContainEqual(
+      expect.objectContaining({
+        slug: 'work/subproject/timeline',
+        status: 'ready',
+        writable: true,
+      }),
+    );
+    const nested = await mem.timeline({ timeline: 'work/subproject/timeline' });
+    expect(nested).toMatchObject({ status: 'ok', total: 1 });
+    expect(nested.results[0]).toMatchObject({ type: 'memory', timeline: 'work/subproject/timeline' });
+    expect((await mem.timeline({ timeline: 'work/timeline' })).total).toBe(1);
+    expect((await mem.timeline({})).total).toBe(1);
+    await mem.index({ rebuild: true, structuralOnly: true });
+    expect(read('work/subproject/timeline.md')).toBe(blank);
+    expect((await mem.timeline({ timeline: 'work/subproject/timeline' })).results).toEqual(nested.results);
+    const dryRun = await mem.write({
+      timeline: 'work/subproject/timeline',
+      dry_run: true,
+      event: { date: '2031-04-02', summary: 'Zephyr prototype inspected.' },
+    });
+    expect(dryRun.outcome).toBe('ok');
+    expect(read('work/subproject/timeline.md')).toBe(blank);
+  },
+);
+
+it.each(['timeline.md', 'work/timeline.md', 'meta/history.markdown'])(
+  'initializes %s on the first event write and preserves replay and exact undo',
+  async (file) => {
+    await mem.close();
+    const blank = file === 'work/timeline.md' ? '' : ' \t\r\n';
+    put(file, blank);
+    mem = await start(file === 'meta/history.markdown' ? file : 'timeline.md');
+    await mem.index({ structuralOnly: true });
+    const slug = file.replace(/\.(md|markdown)$/, '');
+    const beforeTimeline = await mem.timeline({ timeline: slug });
+    expect(beforeTimeline.results.some((item) => item.type === 'event' && item.source === slug)).toBe(false);
+    const input = {
+      timeline: slug,
+      event: { date: '2031-04-03', summary: 'Zephyr prototype inspected.' },
+      idempotency_key: 'initialize-empty-ledger',
+    };
+    const result = await mem.write(input);
+    expect(result.outcome).toBe('ok');
+    const after = read(file);
+    expect(after).toContain('type: timeline');
+    expect(after).toContain('# Timeline');
+    expect(after).toContain('## 2031');
+    expect(after.split('\n')[result.wrote![0]!.line! - 1]).toBe(
+      '- **2031-04-03** | Zephyr prototype inspected.',
+    );
+    const replay = await mem.write(input);
+    expect(replay).toMatchObject({ change_id: result.change_id, replayed: true });
+    expect(read(file)).toBe(after);
+    expect((await mem.timeline({ timeline: slug })).total).toBe(beforeTimeline.total + 1);
+    await mem.undo({ change_id: result.change_id! });
+    expect(read(file)).toBe(blank);
+    expect((await mem.timeline({ timeline: slug })).results).toEqual(beforeTimeline.results);
+  },
+);
+
+it.each([
+  { role: 'knowledge', remember: 'deny' },
+  { role: 'source', remember: 'integrate' },
+])('respects folder write policy for an empty ledger (%j)', async (rule) => {
+  await mem.close();
+  put('work/timeline.md', '');
+  mem = await start('timeline.md', { 'work/**': rule });
+  const rootBefore = read('timeline.md');
+  expect((await mem.list({ kind: 'timelines' })).timelines).toContainEqual(
+    expect.objectContaining({
+      slug: 'work/timeline',
+      status: 'ready',
+      writable: false,
+    }),
+  );
+  await expect(
+    mem.write({
+      timeline: 'work/timeline',
+      event: { date: '2031-04-03', summary: 'Zephyr prototype inspected.' },
+    }),
+  ).rejects.toThrow('read-only');
+  expect(read('work/timeline.md')).toBe('');
+  expect(read('timeline.md')).toBe(rootBefore);
 });
 
 it('routes page-plus-event and page-owned event-only writes to their nearest ledger, with exact undo', async () => {

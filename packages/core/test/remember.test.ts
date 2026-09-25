@@ -1939,102 +1939,108 @@ describe('answering a held proposal', () => {
   });
 });
 
-it('remembers mixed dated items on their owning timelines without caller labels', async () => {
-  fs.mkdirSync(path.join(root, 'work'), { recursive: true });
-  fs.writeFileSync(path.join(root, 'work/timeline.md'), '# Timeline\n\nZephyr prototype development.\n');
-  const home = 'Ada Marlow completed the household repair on 1 April 2031.';
-  const work = 'Ada Marlow delivered the Zephyr prototype on 2 April 2031.';
-  server.respondWith([
-    {
-      text: home,
-      subject: 'household repair',
-      page: 'home/household-repair',
-      kind: 'event',
-      evidence: home,
-      frame: home,
-      time: {
-        start: '2031-04-01',
-        precision: 'day',
-        relation: 'occurred',
-        status: 'actual',
-        mentioned_at: '2031-04-03T10:00:00Z',
-        timezone: 'UTC',
+it.each(['', '# Timeline\n\nZephyr prototype development.\n'])(
+  'remembers mixed dated items on their owning timelines without caller labels (%j)',
+  async (declaration) => {
+    fs.mkdirSync(path.join(root, 'work'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'work/timeline.md'), declaration);
+    const home = 'Ada Marlow completed the household repair on 1 April 2031.';
+    const work = 'Ada Marlow delivered the Zephyr prototype on 2 April 2031.';
+    server.respondWith([
+      {
+        text: home,
+        subject: 'household repair',
+        page: 'home/household-repair',
+        kind: 'event',
+        evidence: home,
+        frame: home,
+        time: {
+          start: '2031-04-01',
+          precision: 'day',
+          relation: 'occurred',
+          status: 'actual',
+          mentioned_at: '2031-04-03T10:00:00Z',
+          timezone: 'UTC',
+        },
       },
-    },
-    {
-      text: work,
-      subject: 'Zephyr prototype',
-      page: 'work/zephyr-prototype',
-      kind: 'event',
-      evidence: work,
-      frame: work,
-      time: {
-        start: '2031-04-02',
-        precision: 'day',
-        relation: 'occurred',
-        status: 'actual',
-        mentioned_at: '2031-04-03T10:00:00Z',
-        timezone: 'UTC',
+      {
+        text: work,
+        subject: 'Zephyr prototype',
+        page: 'work/zephyr-prototype',
+        kind: 'event',
+        evidence: work,
+        frame: work,
+        time: {
+          start: '2031-04-02',
+          precision: 'day',
+          relation: 'occurred',
+          status: 'actual',
+          mentioned_at: '2031-04-03T10:00:00Z',
+          timezone: 'UTC',
+        },
       },
-    },
-  ]);
-  server.setRetention({ durability: 'durable', source_scope: 'event', candidate_scope: 'event' });
-  server.eventsWith([{ date: '2031-04-03', summary: 'Zephyr inspection recorded.' }], {
-    selection: 'timeline_1',
-  });
-  server.decideOwnershipWith((input) => ({ selection: input.proposed_page ? 'proposed' : 'uncertain' }));
-  const mem = await openMem();
-  try {
-    const result = await mem.remember({
-      text: `${home} ${work} Zephyr inspection recorded.`,
-      mentioned_at: '2031-04-03T10:00:00Z',
-      timezone: 'UTC',
+    ]);
+    server.setRetention({ durability: 'durable', source_scope: 'event', candidate_scope: 'event' });
+    server.eventsWith([{ date: '2031-04-03', summary: 'Zephyr inspection recorded.' }], {
+      selection: 'timeline_1',
     });
-    expect(result.wrote).toEqual([
-      expect.objectContaining({ slug: 'home/household-repair', timeline: 'timeline' }),
-      expect.objectContaining({ slug: 'work/zephyr-prototype', timeline: 'work/timeline' }),
-      expect.objectContaining({ slug: 'work/timeline', timeline: 'work/timeline' }),
-    ]);
-    expect((await mem.timeline({})).results).toHaveLength(1);
-    expect((await mem.timeline({ timeline: 'work/timeline' })).results).toHaveLength(2);
-    expect(result.change_ids).toHaveLength(2);
-    for (const change of [...result.change_ids!].reverse()) await mem.undo({ change_id: change });
-    expect((await mem.timeline({ timeline: '*' })).total).toBe(0);
-  } finally {
-    await mem.close();
-  }
-});
+    server.decideOwnershipWith((input) => ({ selection: input.proposed_page ? 'proposed' : 'uncertain' }));
+    const mem = await openMem();
+    try {
+      const result = await mem.remember({
+        text: `${home} ${work} Zephyr inspection recorded.`,
+        mentioned_at: '2031-04-03T10:00:00Z',
+        timezone: 'UTC',
+      });
+      expect(result.wrote).toEqual([
+        expect.objectContaining({ slug: 'home/household-repair', timeline: 'timeline' }),
+        expect.objectContaining({ slug: 'work/zephyr-prototype', timeline: 'work/timeline' }),
+        expect.objectContaining({ slug: 'work/timeline', timeline: 'work/timeline' }),
+      ]);
+      expect((await mem.timeline({})).results).toHaveLength(1);
+      expect((await mem.timeline({ timeline: 'work/timeline' })).results).toHaveLength(2);
+      expect(result.change_ids).toHaveLength(2);
+      for (const change of [...result.change_ids!].reverse()) await mem.undo({ change_id: change });
+      expect((await mem.timeline({ timeline: '*' })).total).toBe(0);
+      expect(fs.readFileSync(path.join(root, 'work/timeline.md'), 'utf8')).toBe(declaration);
+    } finally {
+      await mem.close();
+    }
+  },
+);
 
-it('journals several legacy events in one timeline with exact undo and duplicate replay', async () => {
-  fs.mkdirSync(path.join(root, 'work'), { recursive: true });
-  const before = '# Timeline\n\nZephyr prototype development.\n';
-  fs.writeFileSync(path.join(root, 'work/timeline.md'), before);
-  const events = [
-    { date: '2031-04-01', summary: 'Zephyr prototype tested.' },
-    { date: '2031-04-02', summary: 'Zephyr prototype delivered.' },
-  ];
-  server.respondWith([]);
-  server.eventsWith(events, { selection: 'timeline_1' });
-  const mem = await openMem();
-  try {
-    const result = await mem.remember({ text: events.map((event) => event.summary).join(' ') });
-    expect(result.wrote).toHaveLength(2);
-    expect(result.wrote?.every((item) => item.timeline === 'work/timeline')).toBe(true);
-    const lines = fs.readFileSync(path.join(root, 'work/timeline.md'), 'utf8').split('\n');
-    expect(result.wrote?.map((item) => lines[item.line! - 1])).toEqual([
-      expect.stringContaining(events[1]!.summary),
-      expect.stringContaining(events[0]!.summary),
-    ]);
-    expect((await mem.timeline({ timeline: 'work/timeline' })).total).toBe(2);
-    const replay = await mem.remember({ text: events.map((event) => event.summary).join(' ') });
-    expect(replay.change_id).toBeUndefined();
-    await mem.undo({ change_id: result.change_id! });
-    expect(fs.readFileSync(path.join(root, 'work/timeline.md'), 'utf8')).toBe(before);
-    expect((await mem.timeline({ timeline: 'work/timeline' })).total).toBe(0);
-  } finally {
-    await mem.close();
-  }
-});
+it.each(['', '# Timeline\n\nZephyr prototype development.\n'])(
+  'journals several legacy events in one timeline with exact undo and duplicate replay (%j)',
+  async (before) => {
+    fs.mkdirSync(path.join(root, 'work'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'work/timeline.md'), before);
+    const events = [
+      { date: '2031-04-01', summary: 'Zephyr prototype tested.' },
+      { date: '2031-04-02', summary: 'Zephyr prototype delivered.' },
+    ];
+    server.respondWith([]);
+    server.eventsWith(events, { selection: 'timeline_1' });
+    const mem = await openMem();
+    try {
+      const result = await mem.remember({ text: events.map((event) => event.summary).join(' ') });
+      expect(result.wrote).toHaveLength(2);
+      expect(result.wrote?.every((item) => item.timeline === 'work/timeline')).toBe(true);
+      const lines = fs.readFileSync(path.join(root, 'work/timeline.md'), 'utf8').split('\n');
+      expect(result.wrote?.map((item) => lines[item.line! - 1])).toEqual([
+        expect.stringContaining(events[1]!.summary),
+        expect.stringContaining(events[0]!.summary),
+      ]);
+      expect((await mem.timeline({ timeline: 'work/timeline' })).total).toBe(2);
+      const replay = await mem.remember({ text: events.map((event) => event.summary).join(' ') });
+      expect(replay.change_id).toBeUndefined();
+      await mem.undo({ change_id: result.change_id! });
+      expect(fs.readFileSync(path.join(root, 'work/timeline.md'), 'utf8')).toBe(before);
+      expect((await mem.timeline({ timeline: 'work/timeline' })).total).toBe(0);
+    } finally {
+      await mem.close();
+    }
+  },
+);
 
 it.each([
   ['uncertain', { selection: 'uncertain' }, 'ownership_uncertain', false],

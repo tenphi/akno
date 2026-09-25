@@ -185,13 +185,17 @@ try {
 
   // Exercise the built CLI's selectors and mutation receipts against a user-declared boundary.
   fs.mkdirSync(path.join(root, 'work'));
-  const workLedger = '# Timeline\n\nZephyr prototype development.\n';
+  const workLedger = '';
   fs.writeFileSync(path.join(root, 'work/timeline.md'), workLedger);
   run('index');
   const discovery = JSON.parse(run('list', '--kind', 'timelines'));
   check(
     'discovers an inner timeline through the CLI',
     discovery.timelines.some((item) => item.slug === 'work/timeline'),
+  );
+  check(
+    'indexing and discovery leave an empty declaration unchanged',
+    fs.readFileSync(path.join(root, 'work/timeline.md'), 'utf8') === workLedger,
   );
   const held = spawnSync(process.execPath, [cli, 'write', '--event', '2031-04-01=Prototype tested.'], {
     env,
@@ -205,6 +209,10 @@ try {
     run('write', '--timeline', 'work/timeline', '--event', '2031-04-01=Prototype tested.'),
   );
   check('event receipts identify the selected ledger', written.wrote[0]?.timeline === 'work/timeline');
+  check(
+    'first event write initializes an empty declaration',
+    fs.readFileSync(path.join(root, 'work/timeline.md'), 'utf8').includes('type: timeline'),
+  );
   const work = JSON.parse(run('timeline', '--timeline', 'work/timeline'));
   check(
     'inner timeline selection survives a process restart',

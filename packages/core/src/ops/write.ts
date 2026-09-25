@@ -483,9 +483,12 @@ export async function appendToLedger(
     current = await fsp.readFile(absPath, 'utf8');
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
-    current = newLedger(event.date.slice(0, 4));
+    current = '';
   }
 
+  // Initialize only at the admitted write boundary; the journal still captures the
+  // original empty file (including whitespace) for exact undo.
+  if (current.trim().length === 0) current = newLedger(event.date.slice(0, 4));
   const inserted = insertEvent(current, event);
   // Nothing to write: the day already has this event, in these words or in others. Rewriting the
   // file with its own bytes would journal a change that added nothing — `undo --list` would offer

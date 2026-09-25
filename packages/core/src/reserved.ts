@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import type { AknoConfig } from './config/schema.ts';
+import { parsePage, type ParsedPage } from './kb/page.ts';
 
 /**
  * Reserved paths. Almost everything in a knowledge base is the user's; this
@@ -53,14 +54,21 @@ function stripExtension(relPath: string): string {
 }
 
 /**
- * An event ledger has event lines in it. A project plan someone happens to have
- * called `timeline.md` does not, and appending `- **2026-08-06** | …` into the
- * middle of their document is not a recoverable mistake.
+ * A blank declaration is intentional opt-in; nonempty content must identify itself
+ * as a ledger so an unrelated document cannot be adopted by its filename alone.
  */
+export function isLedgerPage(page: ParsedPage): boolean {
+  return (
+    page.content.trim().length === 0 ||
+    page.type === 'timeline' ||
+    /^#\s*Timeline\b/im.test(page.body) ||
+    page.events.length > 0
+  );
+}
+
 export function looksLikeLedger(absPath: string): boolean {
   try {
-    const head = fs.readFileSync(absPath, 'utf8').slice(0, 8000);
-    return /^\s*[-*]\s+\*\*\d{4}-\d{2}-\d{2}\*\*\s*\|/m.test(head) || /^#\s*Timeline/im.test(head);
+    return isLedgerPage(parsePage('timeline.md', fs.readFileSync(absPath, 'utf8')));
   } catch {
     // Unreadable is not the same as "wrong shape". The indexer reports read
     // failures; refusing to start over one would be the wrong call.

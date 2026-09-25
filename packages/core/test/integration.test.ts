@@ -747,6 +747,22 @@ describe('reserved paths', () => {
     expect(fs.readFileSync(path.join(scratch, 'timeline.md'), 'utf8')).toBe(ledger);
     await scratchMem.close();
   });
+
+  it.each(['', ' \t\r\n', '---\ntype: timeline\n---\n\n# Project history\n'])(
+    'accepts a blank or explicitly declared ledger on startup and in diagnostics (%j)',
+    async (content) => {
+      fs.writeFileSync(path.join(scratch, 'timeline.md'), content);
+      const scratchMem = await openScratch(true);
+      try {
+        expect(fs.readFileSync(path.join(scratch, 'timeline.md'), 'utf8')).toBe(content);
+        const report = await scratchMem.doctor({ probeModels: false });
+        expect(report.reserved).toContainEqual({ path: 'timeline.md', state: 'ok' });
+        expect(fs.readFileSync(path.join(scratch, 'timeline.md'), 'utf8')).toBe(content);
+      } finally {
+        await scratchMem.close();
+      }
+    },
+  );
 });
 
 /**

@@ -20,8 +20,12 @@ An event owned by `home/repairs` belongs to the root timeline. An event owned by
 
 ## Declare and discover
 
-Create a Markdown file named exactly `timeline.md` in the folder that needs its own chronology. Give it a
-short introduction explaining what belongs there. A minimal declaration is:
+Create a file named exactly `timeline.md` in the folder that needs its own chronology. An empty file is
+enough, including a file containing only whitespace. Akno recognizes it immediately and initializes its
+Markdown structure on the first admitted event write. Discovery, queries, indexing, rebuilds, and dry
+runs leave the file unchanged. Undo restores its exact original bytes.
+
+You can also give it a short introduction explaining what belongs there:
 
 ```markdown
 ---
@@ -36,6 +40,10 @@ Prototype development, testing, and delivery for the example project.
 The existing `# Timeline` heading and authored event-line formats are also recognized. An unrelated file
 with that name is reported as an invalid boundary and is never adopted or overwritten. Creating a
 boundary does not create or modify any other file. Akno does not automatically create inner timelines.
+
+Already indexed temporal items on pages in the folder appear in its chronological view even while the
+ledger is empty. Extracting additional history from ordinary notes and relocating old parent-ledger
+entries are separate from initialization; creating an empty file does not trigger those writes.
 
 ```sh
 akno list --kind timelines
