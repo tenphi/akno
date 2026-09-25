@@ -1,5 +1,20 @@
 # @tenphi/akno
 
+## 0.14.0
+
+### Minor Changes
+
+- [#96](https://github.com/tenphi/akno/pull/96) [`2cb2349`](https://github.com/tenphi/akno/commit/2cb23495f212acb5bf4c1a6d45ae3a1af68aa7a6) Thanks [@tenphi](https://github.com/tenphi)! - Discover folder-owned timelines from existing `timeline.md` files. Remembered temporal items inherit their owning page's nearest timeline; event writes select that ledger and receipts identify it. Timeline queries and recent-history context default to the root chronology, with explicit selection and combined views. Add timeline discovery, unavailable-boundary reporting, and a read-only preview of legacy ledger entries that need placement review.
+
+  Empty timeline declarations are valid boundaries. Initialize their Markdown structure on the first admitted event write, preserving read-only indexing, write policy, and exact undo.
+
+### Patch Changes
+
+- Updated dependencies [[`2cb2349`](https://github.com/tenphi/akno/commit/2cb23495f212acb5bf4c1a6d45ae3a1af68aa7a6)]:
+  - @tenphi/akno-core@0.14.0
+  - @tenphi/akno-protocol@0.14.0
+  - @tenphi/akno-client@0.14.0
+
 ## 0.13.6
 
 ### Patch Changes
