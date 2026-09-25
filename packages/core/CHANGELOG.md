@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.13.5
+
+### Patch Changes
+
+- [#91](https://github.com/tenphi/akno/pull/91) [`c02b1db`](https://github.com/tenphi/akno/commit/c02b1db8e904b7466c391bd0e7dc078497811ecb) Thanks [@tenphi](https://github.com/tenphi)! - Consider more search results when choosing a writable home for retained memory, so source-heavy topics do not hide an eligible canonical page.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.13.5
+
 ## 0.13.4
 
 ### Patch Changes
