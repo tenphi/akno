@@ -3,7 +3,7 @@ import { fromMarkdown } from 'mdast-util-from-markdown';
 import { parseFrontmatter } from './frontmatter.ts';
 import { sha256 } from '../store/ids.ts';
 
-export const PROSE_PROJECTION_VERSION = 'prose-v4';
+export const PROSE_PROJECTION_VERSION = 'prose-v5';
 type Meaning = Pick<ProseQualification, 'view' | 'reason'>;
 const FACTUAL: Meaning = { view: 'factual', reason: 'asserted' };
 const CONDITIONAL =

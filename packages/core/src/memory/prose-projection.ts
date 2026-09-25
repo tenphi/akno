@@ -3,7 +3,12 @@ import type { ParsedPage } from '../kb/page.ts';
 import { hasNonfactualProse, proseQualifications } from '../kb/prose.ts';
 import type { Store } from '../store/db.ts';
 
-export function replaceProseEntries(store: Store, pageId: string, page: ParsedPage): void {
+export function replaceProseEntries(
+  store: Store,
+  pageId: string,
+  page: ParsedPage,
+  authoredEventLedger = false,
+): void {
   store.db.prepare('DELETE FROM prose_entries WHERE source_page = ?').run(pageId);
   const insert = store.db.prepare(
     'INSERT INTO prose_entries(source_page, line, view, eligible, source_hash) VALUES (?, ?, ?, ?, ?)',
@@ -16,13 +21,19 @@ export function replaceProseEntries(store: Store, pageId: string, page: ParsedPa
   }
   if (hasNonfactualProse(page.content))
     store.db.prepare('UPDATE pages SET summary = NULL WHERE id = ?').run(pageId);
-  store.db
-    .prepare(
-      `DELETE FROM events WHERE source_page = ? AND EXISTS (
+  // A dedicated event ledger is a structured record whose lines were deliberately authored as
+  // events. A hedge in one list item can qualify the entire CommonMark list as prose and would
+  // otherwise erase every event from the derived index. Prose eligibility still governs facts,
+  // and dated lines on ordinary pages still obey the nonfactual filter below.
+  if (!authoredEventLedger) {
+    store.db
+      .prepare(
+        `DELETE FROM events WHERE source_page = ? AND EXISTS (
     SELECT 1 FROM prose_entries p WHERE p.source_page = events.source_page
       AND p.line = events.line AND (p.view != 'factual' OR p.eligible = 0))`,
-    )
-    .run(pageId);
+      )
+      .run(pageId);
+  }
   // Existing facts can survive a structural pass while model derivation is deferred.
   // Drop only disqualified derived facts now so they cannot feed inference in that interval.
   store.db
