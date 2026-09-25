@@ -1,5 +1,23 @@
 # @tenphi/akno
 
+## 0.13.2
+
+### Patch Changes
+
+- [#85](https://github.com/tenphi/akno/pull/85) [`6a5b906`](https://github.com/tenphi/akno/commit/6a5b90644f064169f45fb2a0653075971aff0605) Thanks [@tenphi](https://github.com/tenphi)! - Require separate, replayable evidence-scope assessment before admitting new observations and reflected principles, preserving exact bounded wording and explicit provenance through rebuilds.
+
+- [#86](https://github.com/tenphi/akno/pull/86) [`8d98250`](https://github.com/tenphi/akno/commit/8d982501ea651171a84bcef77bc9563ea9a9eedd) Thanks [@tenphi](https://github.com/tenphi)! - Keep documents with duplicate attachment identifiers distinct during indexing, evaluate graph completeness against eligible facts, and migrate unlabeled retained payloads into source files safely.
+
+- [#82](https://github.com/tenphi/akno/pull/82) [`5b36dea`](https://github.com/tenphi/akno/commit/5b36dea8dae3f454a3551124fa5ec8300c919b19) Thanks [@tenphi](https://github.com/tenphi)! - Restore reliable maintenance progress, co-located observation verification, and loaded deployment validation across repeated dream cycles.
+
+- [#84](https://github.com/tenphi/akno/pull/84) [`398f1cf`](https://github.com/tenphi/akno/commit/398f1cf825bf72132a95b41d2036d5d4730df2cb) Thanks [@tenphi](https://github.com/tenphi)! - Add durable actor-scoped idempotency keys for write, move, forget, and folder mutations, including safe replay and explicit interrupted-write recovery.
+
+- [#86](https://github.com/tenphi/akno/pull/86) [`8d98250`](https://github.com/tenphi/akno/commit/8d982501ea651171a84bcef77bc9563ea9a9eedd) Thanks [@tenphi](https://github.com/tenphi)! - Qualify retained facts for durable scope before placement, reject generic destinations, and preserve ambiguous ownership holds while allowing repeated events to add support only after identity is established.
+- Updated dependencies [[`6a5b906`](https://github.com/tenphi/akno/commit/6a5b90644f064169f45fb2a0653075971aff0605), [`8d98250`](https://github.com/tenphi/akno/commit/8d982501ea651171a84bcef77bc9563ea9a9eedd), [`5b36dea`](https://github.com/tenphi/akno/commit/5b36dea8dae3f454a3551124fa5ec8300c919b19), [`398f1cf`](https://github.com/tenphi/akno/commit/398f1cf825bf72132a95b41d2036d5d4730df2cb), [`8d98250`](https://github.com/tenphi/akno/commit/8d982501ea651171a84bcef77bc9563ea9a9eedd)]:
+  - @tenphi/akno-core@0.13.2
+  - @tenphi/akno-client@0.13.2
+  - @tenphi/akno-protocol@0.13.2
+
 ## 0.13.1
 
 ### Patch Changes
