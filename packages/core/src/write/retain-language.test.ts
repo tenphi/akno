@@ -1362,6 +1362,10 @@ describe('cross-language retention boundary', () => {
     ['Для обсуждения Bo Winters представляет вымышленную гарантию Zephyr QX-100.', false],
     ['Bo Winters said the Zephyr QX-100 warranty might last five years.', true],
     ['Bo Winters сообщил, что гарантия Zephyr QX-100 может действовать пять лет.', true],
+    ['Bo Winters confirmed receipt of the Zephyr QX-100 warranty claim.', true],
+    ['Bo Winters emailed that the Zephyr QX-100 warranty might last five years.', true],
+    ['Bo Winters подтвердил получение заявления по гарантии Zephyr QX-100.', true],
+    ['Bo Winters appeared in an email about the Zephyr QX-100 warranty.', false],
     ['According to Bo Winters, the Zephyr QX-100 warranty might last five years.', true],
     ['Со слов Bo Winters, гарантия Zephyr QX-100 может действовать пять лет.', true],
   ])('requires a reporting relation for an inner speaker: %s', (source, valid) => {
@@ -1382,6 +1386,35 @@ describe('cross-language retention boundary', () => {
     );
     expect(result.candidates).toHaveLength(valid ? 1 : 0);
     if (!valid) expect(result.held[0]?.reason).toContain('explicit reporting relation');
+  });
+
+  it('keeps a confirmation attributed through an assistant-authored report', () => {
+    const source =
+      '- Email: Vulpine Mutual confirmed receipt of Zephyr QX-100 warranty case ZQ-1111 on September 17, 2026.';
+    const result = cleanCandidateBatch(
+      [
+        {
+          kind: 'claim',
+          text: 'Luna reports that Vulpine Mutual confirmed receipt of the Zephyr QX-100 warranty case ZQ-1111 on September 17, 2026.',
+          subject: 'Zephyr QX-100',
+          attribution: {
+            source_role: 'assistant',
+            source_speaker: 'Luna',
+            chain: [{ speaker: 'Vulpine Mutual', role: 'external' }],
+          },
+          discourse: { commitment: 'asserted', disposition: 'active' },
+          epistemic: { basis: 'source_report' },
+          support: [{ item_id: 'report-1111', quote: source }],
+          discourse_frame: [{ item_id: 'report-1111', quote: source }],
+        },
+      ],
+      { sourceItems: [{ item_id: 'report-1111', role: 'assistant', speaker: 'Luna', text: source }] },
+    );
+    expect(result.held).toEqual([]);
+    expect(result.candidates).toHaveLength(1);
+    expect(result.candidates[0]?.attribution.chain).toEqual([
+      { speaker: 'Vulpine Mutual', role: 'external' },
+    ]);
   });
 
   it.each([
