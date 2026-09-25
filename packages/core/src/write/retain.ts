@@ -2156,7 +2156,7 @@ function hasExplicitReporter(speaker: string, frame: string, allowColon = true):
   // A name alone may be a fictional participant. This bounded structural check precedes the
   // semantic verifier, which must still establish quotation scope and entailment of the claim.
   const reporting =
-    '(?:said|says|wrote|writes|reported|reports|stated|states|told|asked|asks|claimed|claims|described|describes|noted|notes|suggested|suggests|сообщил[аи]?|сказал[аи]?|написал[аи]?|отметил[аи]?|утвержда(?:ет|ют|л[аи]?)|рассказал[аи]?|спросил[аи]?|предложил[аи]?)';
+    '(?:said|says|wrote|writes|reported|reports|stated|states|told|asked|asks|claimed|claims|described|describes|noted|notes|suggested|suggests|confirmed|confirms|emailed|emails|notified|notifies|сообщил[аи]?|сказал[аи]?|написал[аи]?|отметил[аи]?|утвержда(?:ет|ют|л[аи]?)|рассказал[аи]?|спросил[аи]?|предложил[аи]?|подтвердил[аи]?|подтвержда(?:ет|ют))';
   return new RegExp(
     `(?<![\\p{L}\\p{N}])(?:${name}\\s*(?:${allowColon ? ':|' : ''}(?:[\\p{L}]+\\s+){0,2}${reporting}(?![\\p{L}]))|${allowColon ? `${reporting}\\s+${name}(?![\\p{L}\\p{N}])|` : ''}(?:according to|по словам|со слов)\\s+${name}(?![\\p{L}\\p{N}]))`,
     'iu',
