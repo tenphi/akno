@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.13.3
+
+### Patch Changes
+
+- [#87](https://github.com/tenphi/akno/pull/87) [`8dff5de`](https://github.com/tenphi/akno/commit/8dff5de9e31ed3a36de6faa5f41c4f9ba58337bb) Thanks [@tenphi](https://github.com/tenphi)! - Verify retained event time against the same source supplied reference clock used during extraction. This prevents safe dated reports from being held because their timezone was absent from the report prose.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.13.3
+
 ## 0.13.2
 
 ### Patch Changes
