@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.13.4
+
+### Patch Changes
+
+- [#89](https://github.com/tenphi/akno/pull/89) [`881f67b`](https://github.com/tenphi/akno/commit/881f67b202d736da5147b14143d974c625f25be6) Thanks [@tenphi](https://github.com/tenphi)! - Recognize explicit confirmations and emails as reporting relations when validating nested source attribution in retained memory.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.13.4
+
 ## 0.13.3
 
 ### Patch Changes
