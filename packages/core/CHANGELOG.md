@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.15.2
+
+### Patch Changes
+
+- [#102](https://github.com/tenphi/akno/pull/102) [`598acfa`](https://github.com/tenphi/akno/commit/598acfa47915c3eb1518b8b8afb724cc4b62c59b) Thanks [@tenphi](https://github.com/tenphi)! - Explain the retained-time and exact-evidence contracts during automatic extraction. Give the bounded correction pass precise span errors and temporal schema diagnostics, including date errors hidden behind an earlier evidence failure, so routine reports can be repaired without weakening validation or independent semantic verification.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.15.2
+
 ## 0.15.1
 
 ### Patch Changes
