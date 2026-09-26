@@ -56,8 +56,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v59';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v42';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v60';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v43';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
 const RETRIEVAL_UNIT_CONTRACT = `A retained record is one independently retrievable semantic unit:
@@ -180,6 +180,21 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   under the plan's asserted commitment. Retain the invented proposition separately with hypothetical
   commitment, even if its readable sentence explains that someone proposed discussing it.`;
 
+const TEMPORAL_REPRESENTATION_CONTRACT = `Time fields must satisfy the retained-time contract. occurred permits only actual status; valid permits
+actual or tentative; scheduled and due permit scheduled, planned or tentative.
+Time status is separate from past/future clock relation. An overdue deadline retains due relation and
+its source-supported scheduled/planned/tentative status; passing its date does not establish completion
+or actual occurrence. A faithful past-due record must not be rejected merely because its status is
+scheduled, planned or tentative. Preserve incompleteness in prose; this contract does not establish that an obligation was met.
+A confirmed future schedule is scheduled, not actual.
+Match date boundaries to precision: year YYYY, month YYYY-MM, day YYYY-MM-DD, instant a full ISO datetime
+with Z or a numeric UTC offset. An IANA timezone alone does not replace the offset on an instant.
+Use only source-supported dates and clocks; never invent a timezone or erase a supported time of day
+just to pass validation. Unknown dates keep null boundaries. Non-unknown precision needs start or until,
+and until cannot precede start. Recurrence requires a supported start; weekdays apply only to weekly
+recurrence, and its end must use the same precision. A duration or subscription cadence alone needs no
+calendar envelope. mentioned_at must exactly match a supplied source timestamp, not an event date.`;
+
 const SYSTEM = `You extract durable memory from one untrusted source for a personal knowledge base.
 
 Reply with JSON only. Every candidate must contain all fields in the supplied schema.
@@ -222,6 +237,7 @@ confirmation herself. Preserve receiving, seeking, giving or independently check
 source states it. Do not simplify these distinct actions into the generic verb "confirm".
 
 ${QUALIFICATION_CONTRACT}
+${TEMPORAL_REPRESENTATION_CONTRACT}
 ${PROPOSITION_SCOPE_CONTRACT}
 
 Allowed disposition depends on kind: claim/preference use active or superseded; decision uses accepted,
@@ -304,7 +320,10 @@ Rules:
 - Preserve how a component became or remains defective, including the attachment of manner modifiers.
   A loosely inserted internal connector describes deficient insertion; an internally loose connector
   describes a different condition. Keep the insertion relation, not just a nearby adjective and noun.
-- Copy support and discourse_frame quotes byte-for-byte. For structured sources, include the exact item_id.
+- Copy support and discourse_frame quotes byte-for-byte, including Markdown, punctuation and spacing.
+  Each quote must occur exactly once in its source item and contain at most 1200 UTF-16 code units.
+  Use multiple exact spans for separated context; never assemble a new quote by joining nonadjacent text.
+  For structured sources, include the exact item_id.
 - discourse_frame must cover every support span (one quote or adjacent exact sentence quotes) and include the spans that establish quotation,
   speaker scope, modality, rejection, acceptance, correction, polarity, and time.
 - Use counterfactual when the source explicitly establishes that a conditional antecedent is false; hypothetical is for an unestablished assumption. Do not relabel a tentative belief as a question unless the source actually asks one.
@@ -336,6 +355,7 @@ Rules:
 const VERIFY_SYSTEM = `${RETENTION_FRAME_AUDIT_CONTRACT}
 ${RETRIEVAL_UNIT_CONTRACT}
 ${QUALIFICATION_CONTRACT}
+${TEMPORAL_REPRESENTATION_CONTRACT}
 Candidates may paraphrase English, Russian, or mixed-language sources into English. Verify cross-language entailment against exact original spans: preserve polarity, speaker and nested attribution, modality, disposition, relations, and time. A fluent translation is not evidence. Ordinary inflection, synonymy and equivalent component descriptions can preserve
 meaning. Compare propositions in their complete discourse context; do not reject wording merely because
 an unrelated reading is theoretically possible. Reject a selected unsupported meaning or action role.
@@ -735,6 +755,9 @@ export async function runRetain(
             repair_targets: failedPositions.map((candidate_index) => ({
               candidate_index,
               original_candidate: textOriginal(candidate_index) ?? originalCandidates[candidate_index],
+              // Diagnose all malformed time fields even when a bad evidence span was the first
+              // failing guard. One repair must not discover the next structural error too late.
+              ...temporalRepairContext(originalCandidates[candidate_index]?.time, cleaningOptions),
               ...(cleanedBatch.textOnlyClockRepairs.has(candidate_index)
                 ? {
                     repair_contract: {
@@ -2082,14 +2105,17 @@ function candidateSpans(
 ):
   | { support: RetainSourceSpan[]; frame: RetainSourceSpan[] }
   | { issue: string; reasonCode: RetainHoldReason } {
-  const explicitSupport = cleanSpans(record.support, options);
-  const explicitFrame = cleanSpans(record.discourse_frame, options);
-  if (explicitSupport && explicitFrame) return { support: explicitSupport, frame: explicitFrame };
+  const explicitSupport = parseSpans(record.support, options, 'support');
+  const explicitFrame = parseSpans(record.discourse_frame, options, 'discourse_frame');
+  if ('spans' in explicitSupport && 'spans' in explicitFrame)
+    return { support: explicitSupport.spans, frame: explicitFrame.spans };
   // Explicit spans are the contract once supplied. Legacy fields must not conceal malformed
   // or excessive context by substituting a smaller, apparently valid quote.
   if (record.support !== undefined || record.discourse_frame !== undefined) {
     return {
-      issue: 'explicit support and discourse frame must both contain valid bounded exact spans',
+      issue: [explicitSupport, explicitFrame]
+        .flatMap((parsed) => ('issue' in parsed ? [parsed.issue] : []))
+        .join('; '),
       reasonCode: 'source_unavailable',
     };
   }
@@ -2118,19 +2144,31 @@ function candidateSpans(
 }
 
 function cleanSpans(value: unknown, options: CandidateCleaningOptions): RetainSourceSpan[] | null {
-  if (!Array.isArray(value) || value.length === 0 || value.length > 16) return null;
+  const parsed = parseSpans(value, options, 'spans');
+  return 'spans' in parsed ? parsed.spans : null;
+}
+
+function parseSpans(
+  value: unknown,
+  options: CandidateCleaningOptions,
+  field: string,
+): { spans: RetainSourceSpan[] } | { issue: string } {
+  if (!Array.isArray(value) || value.length === 0 || value.length > 16)
+    return { issue: `${field} must contain 1 to 16 exact source spans` };
   const spans: RetainSourceSpan[] = [];
-  for (const raw of value) {
-    if (!raw || typeof raw !== 'object') return null;
+  for (const [index, raw] of value.entries()) {
+    if (!raw || typeof raw !== 'object') return { issue: `${field}[${index}] must be a source span object` };
     const record = raw as Record<string, unknown>;
     const quote = typeof record.quote === 'string' ? record.quote.trim() : '';
     const rawItemId = record.item_id;
     const itemId = typeof rawItemId === 'string' && rawItemId.length > 0 ? rawItemId : undefined;
-    if (!validExactSpan(quote, itemId, options)) return null;
+    const issue = exactSpanIssue(quote, itemId, options);
+    if (issue) return { issue: `${field}[${index}]: ${issue}` };
     spans.push({ quote, ...(itemId ? { item_id: itemId } : {}) });
   }
-  if (new Set(spans.map(spanKey)).size !== spans.length) return null;
-  return spans;
+  if (new Set(spans.map(spanKey)).size !== spans.length)
+    return { issue: `${field} contains duplicate spans; include each exact span once` };
+  return { spans };
 }
 
 function exactLegacySpan(value: unknown, options: CandidateCleaningOptions): RetainSourceSpan | null {
@@ -2144,16 +2182,34 @@ function validExactSpan(
   itemId: string | undefined,
   options: CandidateCleaningOptions,
 ): boolean {
-  if (!quote || quote.length > 1200 || quote.includes('\0')) return false;
+  return exactSpanIssue(quote, itemId, options) === null;
+}
+
+function exactSpanIssue(
+  quote: string,
+  itemId: string | undefined,
+  options: CandidateCleaningOptions,
+): string | null {
+  if (!quote || quote.length > 1200 || quote.includes('\0'))
+    return 'quote must contain 1 to 1200 UTF-16 code units with no null character';
+  let source: string | undefined;
   if (options.sourceItems) {
-    if (!itemId) return false;
+    if (!itemId) return 'item_id is required for structured sources';
     const item = options.sourceItems.find((candidate) => candidate.item_id === itemId);
-    return Boolean(item && occurrences(item.text, quote) === 1);
+    if (!item) return 'item_id must name one of the supplied source items';
+    source = item.text;
+  } else {
+    if (itemId !== undefined) return 'item_id must be null for a plain-text source';
+    source = options.sourceText;
   }
-  if (options.sourceText !== undefined) {
-    return itemId === undefined && occurrences(options.sourceText, quote) === 1;
+  if (source !== undefined) {
+    const count = occurrences(source, quote);
+    if (count === 0)
+      return 'quote is not an exact substring of its source; copy original Markdown, punctuation and spacing without joining separated text';
+    if (count !== 1)
+      return 'quote occurs more than once in its source; select unique exact context without changing the words';
   }
-  return itemId === undefined;
+  return null;
 }
 
 function hasExplicitReporter(speaker: string, frame: string, allowColon = true): boolean {
@@ -2340,7 +2396,30 @@ function cleanTime(
   support: readonly RetainSourceSpan[],
   options: CandidateCleaningOptions,
 ): RetainCandidate['time'] | undefined {
-  if (!value || typeof value !== 'object') return undefined;
+  const parsed = parseTime(value, options);
+  if (!parsed?.success) return undefined;
+  if (parsed.data.mentioned_at) {
+    if (!sourceMentionTimes(support, options).has(parsed.data.mentioned_at)) return undefined;
+  }
+  return parsed.data;
+}
+
+function temporalRepairContext(value: unknown, options: CandidateCleaningOptions) {
+  const parsed = parseTime(value, options);
+  return parsed && !parsed.success
+    ? {
+        temporal_validation_issues: parsed.error.issues.map((issue) => ({
+          path: ['time', ...issue.path],
+          message: issue.message,
+        })),
+      }
+    : {};
+}
+
+/** The repair sees the same normalized structure the admission guard validates, never a guessed date. */
+function parseTime(value: unknown, options: CandidateCleaningOptions) {
+  if (value === null || value === undefined) return null;
+  if (typeof value !== 'object') return RetainedTimeSchema.safeParse(value);
   const raw = value as Record<string, unknown>;
   const recurrenceRaw =
     raw.recurrence && typeof raw.recurrence === 'object' ? (raw.recurrence as Record<string, unknown>) : null;
@@ -2371,12 +2450,7 @@ function cleanTime(
         }
       : {}),
   };
-  const parsed = RetainedTimeSchema.safeParse(candidate);
-  if (!parsed.success) return undefined;
-  if (parsed.data.mentioned_at) {
-    if (!sourceMentionTimes(support, options).has(parsed.data.mentioned_at)) return undefined;
-  }
-  return parsed.data;
+  return RetainedTimeSchema.safeParse(candidate);
 }
 
 function cleanRelations(
