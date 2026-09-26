@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.15.1
+
+### Patch Changes
+
+- [#100](https://github.com/tenphi/akno/pull/100) [`2172472`](https://github.com/tenphi/akno/commit/217247222494102e326b3214ebc69d8ec042c60d) Thanks [@tenphi](https://github.com/tenphi)! - Give automatic retention enough bounded output space for multi-event reports and their source qualifications. Keep configured model ceilings and report exhausted output as degraded retention rather than accepting a partial extraction.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.15.1
+
 ## 0.15.0
 
 ### Minor Changes
