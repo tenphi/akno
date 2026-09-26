@@ -1,5 +1,21 @@
 # @tenphi/akno-core
 
+## 0.15.0
+
+### Minor Changes
+
+- [#98](https://github.com/tenphi/akno/pull/98) [`5355d5f`](https://github.com/tenphi/akno/commit/5355d5f90a061425bf39420060d4b7325ff350c1) Thanks [@tenphi](https://github.com/tenphi)! - Populate declared folder timelines through the existing maintenance review workflow. The new
+  `timeline_history` transformation extracts independently verified, actual day-dated events from authored
+  knowledge notes and can transfer exact ancestor-ledger entries after semantic ownership assessment.
+  Empty declarations initialize only when an approved change is applied. Plans preserve source citations,
+  check current evidence and boundaries, share maintenance budgets, and support rollback, restart, and
+  exact undo. Retained-memory projections and receipt membership remain unchanged.
+
+### Patch Changes
+
+- Updated dependencies [[`5355d5f`](https://github.com/tenphi/akno/commit/5355d5f90a061425bf39420060d4b7325ff350c1)]:
+  - @tenphi/akno-protocol@0.15.0
+
 ## 0.14.0
 
 ### Minor Changes
