@@ -28,7 +28,7 @@ export function ledgerSlug(config: AknoConfig): string {
  * **Every slug prefix a caller must not aim a page write at.**
  *
  * These are Akno's own structures, not the user's notes: the ledger is maintained by
- * `insertEvent` and nothing else, the inbox is a queue that empties itself, observations are
+ * event insertion and sealed historical transfers, the inbox is a queue that empties itself, observations are
  * written by the cycle with their own evidence, and the journal is a record of what happened.
  * A claim landing on any of them is a claim in a file whose shape means something specific —
  * and on the ledger, where prose is invisible to the event parser, it is a claim in a file

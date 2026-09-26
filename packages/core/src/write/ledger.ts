@@ -9,7 +9,8 @@
  * So Akno maintains it **by appending only** — inserting under the right year
  * heading and never rewriting or reordering what is already there. No edit a human
  * made can be lost, and a hand-written line is indexed exactly like a generated
- * one. Automatic upkeep without the destructive part.
+ * one. Historical maintenance may separately transfer an exact line to its owning
+ * descendant ledger in one reviewed, journalled change; it never regenerates either file.
  *
  * Nothing about this line syntax ever reaches a prompt: there is no
  * `add_event` op). A caller hands over `{date, summary}`.
@@ -156,7 +157,8 @@ export function newLedger(year: string): string {
     `---\ntype: timeline\ntitle: Timeline\n---\n\n# Timeline\n\n` +
     `What actually happened, newest first. One line per event; the detail lives on the linked\n` +
     `page, so this stays an index and never a second copy of a fact.\n\n` +
-    `Append-only: never edit or remove a line, correct it with a new one. Each line reads\n` +
+    `Append new events and corrections. Maintenance may transfer an exact line to its owning\n` +
+    `folder timeline in one journalled change, preserving its citations. Each line reads\n` +
     `\`- **YYYY-MM-DD** | what happened. [[page/with/detail]]\` — that exact shape is what\n` +
     `makes a line an event, and prose Akno cannot match is invisible to search.\n\n` +
     `## ${year}\n`

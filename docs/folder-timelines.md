@@ -43,7 +43,7 @@ boundary does not create or modify any other file. Akno does not automatically c
 
 Already indexed temporal items on pages in the folder appear in its chronological view even while the
 ledger is empty. Extracting additional history from ordinary notes and relocating old parent-ledger
-entries are separate from initialization; creating an empty file does not trigger those writes.
+entries happens through maintenance, separately from discovery and indexing.
 
 ```sh
 akno list --kind timelines
@@ -98,8 +98,49 @@ Creating a ledger does not authorize remembered facts on otherwise read-only sub
 ## Existing history and boundary changes
 
 Membership follows the physical owning page or ledger, never a wikilink to a person or another subject.
-Old mixed entries already in the root ledger stay there until deliberately corrected. Preview entries
-that need review with:
+The `timeline_history` maintenance policy can populate declared timelines, including empty files, from
+existing history. It inherits the maintenance profile: the default `audit` prepares exact plans;
+`review` waits for a human decision; `autonomous` asks a separate curator before applying each plan.
+
+```sh
+akno dream --phase curate --mode audit
+akno dream status --pending
+akno plan diff <plan_id>
+```
+
+The planner handles two cases:
+
+- **Dated notes:** the shared retention extractor and an independent verifier identify actual events
+  with an explicit day-level date. An admitted event is added to the note's nearest declared timeline,
+  with a link to the unchanged source note. No event date is inferred from file timestamps or today's date.
+- **Parent-ledger entries:** semantic ownership assessment can propose transferring a standalone event
+  line to a descendant timeline. The transfer preserves the complete line and all its citations. A shared
+  person, keyword, or cross-link is insufficient; uncertain entries stay where they are.
+
+Give timelines a short purpose description when folder names alone would be ambiguous. Automatic
+relocation only goes from an ancestor to a descendant; sibling or upward corrections remain explicit.
+Multi-line entries, Markdown or HTML citations, relative wikilinks, and ambiguous Markdown structures
+are held for inspection. Copying their bytes alone could lose context or change link targets.
+
+Extraction uses authored knowledge notes that allow remembering. Plans, tentative statements, reports,
+partial dates, source-role pages, and source renditions cannot become unqualified historical facts.
+Pages containing Akno-managed records are left to their existing temporal projection and maintenance;
+this pass does not copy their qualified memories, alter receipt membership, or change replay semantics.
+
+The planner examines at most `maintenance.curate.max_pages` uncached notes per cycle. The separate
+`maintenance.curate.max_timeline_events` ceiling (default `20`) bounds additions/transfers and ownership
+calls; zero disables history planning. Full evidence must fit the bounded curator context. The normal
+shared maintenance budgets still apply. `maintenance.policies.timeline_history: "off"` disables this
+transformation independently of other curation.
+
+Changes to evidence, timeline declarations, purposes, or write policies invalidate a pending plan.
+Transfers remove the parent entry and insert the descendant entry in one journalled item; failed writes
+roll back, and undo restores every affected file, including the exact bytes of an empty declaration.
+Pending plans survive restart without another extraction pass. Unchanged completed or rejected work is
+suppressed; changed inputs can be assessed again. Run receipts expose counts and typed hold reasons;
+private source text and exact diffs stay in the existing maintenance-plan payload.
+
+The separate structural preview remains useful for inspection:
 
 ```sh
 akno timeline --timeline '*' --migration-preview --json
@@ -107,9 +148,9 @@ akno timeline --timeline '*' --migration-preview --json
 
 The preview names source lines, cross-timeline link suggestions, missing targets, and unlinked events
 whose intended home cannot be established structurally. A suggested target is a review aid, not proof
-of ownership. The preview does not move entries. After reviewing their actual ownership, use explicit
-journalled ledger corrections and event writes to relocate selected history. Do not bulk-apply link
-suggestions or have indexing rewrite the old ledger. Keep the original source attribution when correcting.
+of ownership. The preview does not move entries. Use maintenance for assessed ancestor transfers, or
+explicit journalled ledger corrections for other changes. Do not bulk-apply link suggestions or have
+indexing rewrite the old ledger. Keep the original source attribution when correcting.
 
 Creating a boundary immediately separates existing subject-page memories under it. Removing a boundary
 makes those pages inherit the next enclosing timeline. Moving a subject page changes the membership of

@@ -438,6 +438,9 @@
       "max_merges": 2,
       // Exact scalar type correction and explicitly routed max-depth relocation share this cap.
       "max_rule_drifts": 20,
+      // Folder timeline history: at most this many additions/transfers and ownership calls.
+      // Extraction also uses max_pages; unchanged inputs are skipped. Zero disables planning.
+      "max_timeline_events": 20,
       "merge_folders": [],
       // "exact" uses aliases and conservative graph subjects. "semantic" additionally
       // runs the qualified embedding prefilter and strict candidate classifier.

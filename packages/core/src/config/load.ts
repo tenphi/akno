@@ -684,6 +684,7 @@ function resolve(
         maxExtracts: doc.maintenance?.curate?.max_extracts ?? 3,
         maxMerges: doc.maintenance?.curate?.max_merges ?? 2,
         maxRuleDrifts: doc.maintenance?.curate?.max_rule_drifts ?? 20,
+        maxTimelineEvents: doc.maintenance?.curate?.max_timeline_events ?? 20,
         mergeFolders: doc.maintenance?.curate?.merge_folders ?? [],
         mergeDiscovery: doc.maintenance?.curate?.merge_discovery ?? 'exact',
         maxChildrenPerPage: doc.maintenance?.curate?.max_children_per_page ?? 2,
