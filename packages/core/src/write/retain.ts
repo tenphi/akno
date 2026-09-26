@@ -618,7 +618,11 @@ export async function runRetain(
         }),
       },
     ],
-    { schema: RETAIN_SCHEMA, maxTokens: 3_200, languageReferences },
+    // A report can contain many independently qualified records, each with exact evidence,
+    // attribution and temporal fields. Reasoning shares this allowance with that structured
+    // output; the former 3,200 cap could exhaust even its one retry before finishing a digest.
+    // Keep the call bounded, and let ModelClient enforce any smaller configured role ceiling.
+    { schema: RETAIN_SCHEMA, maxTokens: 16_384, languageReferences },
   );
   const extractionReceipt = modelCallReceipt(model, extraction);
   if (!extraction.ok || !extraction.value) {
