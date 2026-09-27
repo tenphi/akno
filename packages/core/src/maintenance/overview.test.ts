@@ -4,7 +4,12 @@ import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../index.ts';
 import { openStore, type Store } from '../store/db.ts';
-import { discoverOverview, overviewFingerprint, overviewRewriteCheck } from './overview.ts';
+import {
+  discoverOverview,
+  overviewFingerprint,
+  overviewRewriteCheck,
+  overviewStatusBrief,
+} from './overview.ts';
 import { temporalClock } from './temporal.ts';
 import { qualifiedSynthesisIssue } from './qualified-synthesis.ts';
 
@@ -96,6 +101,59 @@ describe('declared overview dependencies', () => {
       overviewRewriteCheck(before, before.replace('Upcoming', 'Completed'), evidence).issue,
     ).toBeTruthy();
     expect(overviewRewriteCheck(before, after, discover('2034-03-01T12:00:00Z')).issue).toBeTruthy();
+  });
+
+  it('requires a past-dated status table to retain planning as history, not a present state', async () => {
+    const before =
+      '# Journeys\n\n## Upcoming Trips (2034)\n\n- [[old-target.md|Blackwater Bay (Apr 3 - Apr 5)]]\n\n## Quick Reference Table\n\n| Journey | Dates | Place | Status |\n| --- | --- | --- | --- |\n| [[old-target.md]] | Apr 3 - Apr 5 | Blackwater Bay | planning |\n';
+    const index = path.join(mem.config.aknoPath, 'journeys/index.md');
+    fs.writeFileSync(index, `---\n${declaration}\nyear: 2034\n---\n${before}`);
+    await mem.index({ structuralOnly: true, verify: true });
+    const evidence = discover('2034-05-01T12:00:00Z');
+    expect(overviewStatusBrief(before, evidence)).toMatchObject([
+      { slug: 'old-target', status: 'planning', phase: 'past' },
+    ]);
+    const headingOnly = before.replace('Upcoming', 'Past');
+    expect(overviewRewriteCheck(before, headingOnly, evidence).issue).toMatch(/status table/);
+    const tableOnly = before.replace('| planning |', '| originally planned; dates passed |');
+    expect(overviewRewriteCheck(before, tableOnly, evidence).issue).toMatch(/wrong schedule phase/);
+    const reconciled = headingOnly.replace(
+      '| planning |',
+      '| originally planned; dates passed, outcome unconfirmed |',
+    );
+    expect(overviewRewriteCheck(before, reconciled, evidence)).toMatchObject({
+      material: true,
+      headingChanges: true,
+      issue: null,
+    });
+    expect(overviewStatusBrief(reconciled, evidence)).toEqual([]);
+    const pastHeading = before.replace('Upcoming', 'Past');
+    const statusOnly = pastHeading.replace('| planning |', '| originally planned; dates passed |');
+    expect(overviewRewriteCheck(pastHeading, statusOnly, evidence)).toMatchObject({
+      material: true,
+      headingChanges: false,
+      issue: null,
+    });
+    expect(
+      overviewRewriteCheck(before, headingOnly.replace('| planning |', '| completed |'), evidence).issue,
+    ).toMatch(/does not prove completion/);
+  });
+
+  it('reconciles a linked scoped member without relying on its page type or a legacy label', async () => {
+    await member('journeys/2034/blackwater-bay', 'status: planned\n');
+    const before =
+      '# Journeys\n\n## Upcoming\n\n- [[journeys/2034/blackwater-bay]]\n\n| Journey | Status | Source |\n| --- | --- | --- |\n| [[journeys/2034/blackwater-bay|Bay visit]] | planned | [[notes/route-note]] |\n';
+    const index = path.join(mem.config.aknoPath, 'journeys/index.md');
+    fs.writeFileSync(index, `---\n${declaration}\n---\n${before}`);
+    await mem.index({ structuralOnly: true, verify: true });
+    const evidence = discover('2034-05-01T12:00:00Z');
+    expect(overviewStatusBrief(before, evidence)).toMatchObject([
+      { slug: 'journeys/2034/blackwater-bay', status: 'planned', authoredStatus: 'planned' },
+    ]);
+    const corrected = before
+      .replace('## Upcoming', '## Past schedules')
+      .replace('| planned |', '| planned; dates passed, outcome unknown |');
+    expect(overviewRewriteCheck(before, corrected, evidence).issue).toBeNull();
   });
 
   it('does not classify ambiguous legacy dates or a heading for another year', async () => {

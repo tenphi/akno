@@ -2,7 +2,9 @@ import {
   discoverOverview,
   overviewFingerprint,
   overviewRewriteCheck,
+  overviewStatusBrief,
   OVERVIEW_GUIDANCE,
+  OVERVIEW_VERIFY_GUIDANCE,
   type OverviewEvidence,
 } from './overview.ts';
 import { hasNonfactualProse } from '../kb/prose.ts';
@@ -136,9 +138,10 @@ interface PageRow {
   bytes: number;
   curate_input_hash: string | null;
   curate_status: CurateStatus | null;
+  curated_at: string | null;
 }
 
-type CurateStatus = 'preview' | 'unchanged' | 'rejected' | 'applied';
+type CurateStatus = 'preview' | 'unchanged' | 'rejected' | 'retryable_rejected' | 'applied';
 
 interface ConflictEvidence {
   subject: string;
@@ -355,9 +358,9 @@ owned evidence. Exact duplicate lines may be deduplicated.`;
 export const VERIFY_SCHEMA = z.object({ ok: z.boolean(), issues: z.array(z.string()) });
 
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-// 17: mixed-type scopes and dated unresolved entries can alter overview decisions.
+// 18: reconcile status tables as well as headings at overview schedule boundaries.
 // Decisions from the previous transformation surface must be reconsidered once.
-const CURATE_FINGERPRINT_VERSION = 17;
+const CURATE_FINGERPRINT_VERSION = 18;
 
 export async function curatePages(
   ctx: AknoContext,
@@ -386,7 +389,7 @@ export async function curatePages(
   const rows = ctx.store.db
     .prepare(
       `SELECT id, slug, rel_path, title, role, dream_management, about, frontmatter, aliases, body_hash, bytes,
-              curate_input_hash, curate_status
+              curate_input_hash, curate_status, curated_at
          FROM pages
         WHERE dream_management IN ('hygiene', 'synthesize') AND role = 'knowledge'
         ORDER BY updated_at DESC, slug`,
@@ -635,6 +638,9 @@ export async function curatePages(
               ? `\n\nEvidence coverage (partial is not absence): ${JSON.stringify(selection.coverage)}`
               : '') +
             (overview ? `\n\nOverview membership: ${JSON.stringify(overview)}` : '') +
+            (overview
+              ? `\n\nPast-dated entries with bare prospective table statuses: ${JSON.stringify(overviewStatusBrief(body, overview))}`
+              : '') +
             `\n\nCurrent body:\n${body.slice(0, 40_000)}` +
             (evidence.length ? `\n\nEvidence graph:\n${renderSynthesisEvidence(evidence)}` : '') +
             (conflicts.length ? `\n\nUnresolved conflicts:\n${renderConflicts(conflicts).join('\n')}` : ''),
@@ -660,9 +666,9 @@ export async function curatePages(
         issues: [issue],
         ...temporalResult(temporal, temporalSource, clock, archival),
       });
-      // Provider/transport failures are retryable. A successful model call that returned an
-      // unusable draft is a completed rejection and should not burn another call next night.
-      if (draftResult.ok) queueCurateState(state, row.id, inputHash, 'rejected');
+      // Provider/transport failures remain retryable. A successful but unusable overview
+      // draft gets a bounded later retry; other completed rejections stay cached.
+      if (draftResult.ok) queueCurateState(state, row.id, inputHash, rejectionStatus(overview));
       continue;
     }
 
@@ -687,7 +693,7 @@ export async function curatePages(
         merges: [],
         issues: [discourseIssue],
       });
-      queueCurateState(state, row.id, inputHash, 'rejected');
+      queueCurateState(state, row.id, inputHash, rejectionStatus(overview));
       continue;
     }
     if (!temporal && row.dream_management === 'synthesize' && candidates.length > 0) {
@@ -702,7 +708,7 @@ export async function curatePages(
           merges: [],
           issues: [proposed.issue],
         });
-        queueCurateState(state, row.id, inputHash, 'rejected');
+        queueCurateState(state, row.id, inputHash, rejectionStatus(overview));
         continue;
       }
       if (proposed.metadata) {
@@ -745,7 +751,7 @@ export async function curatePages(
         issues: [issue],
         ...temporalResult(temporal, temporalSource, clock, archival),
       });
-      queueCurateState(state, row.id, inputHash, 'rejected');
+      queueCurateState(state, row.id, inputHash, rejectionStatus(overview));
       continue;
     }
 
@@ -788,7 +794,7 @@ export async function curatePages(
         issues: extractionResult.issues,
         ...temporalResult(temporal, temporalSource, clock, archival),
       });
-      queueCurateState(state, row.id, inputHash, 'rejected');
+      queueCurateState(state, row.id, inputHash, rejectionStatus(overview));
       continue;
     }
     if (extractions.length > 0) nextBody = withExtractionBridge(body, extractions[0]!);
@@ -823,7 +829,7 @@ export async function curatePages(
         issues: deterministic,
         ...temporalResult(temporal, temporalSource, clock, archival),
       });
-      queueCurateState(state, row.id, inputHash, 'rejected');
+      queueCurateState(state, row.id, inputHash, rejectionStatus(overview));
       continue;
     }
 
@@ -856,7 +862,7 @@ export async function curatePages(
         issues: verified.issues,
         ...temporalResult(temporal, temporalSource, clock, archival),
       });
-      if (verified.cacheable) queueCurateState(state, row.id, inputHash, 'rejected');
+      if (verified.cacheable) queueCurateState(state, row.id, inputHash, rejectionStatus(overview));
       continue;
     }
 
@@ -1931,7 +1937,7 @@ async function verifyDraft(
     [
       {
         role: 'system',
-        content: `${VERIFY_SYSTEM}\n\n${QUALIFIED_VERIFY}\n\n${overview ? OVERVIEW_GUIDANCE : ''}`,
+        content: `${VERIFY_SYSTEM}\n\n${QUALIFIED_VERIFY}\n\n${overview ? `${OVERVIEW_GUIDANCE}\n\n${OVERVIEW_VERIFY_GUIDANCE}` : ''}`,
       },
       {
         role: 'user',
@@ -2295,9 +2301,19 @@ function incomingLinkFingerprint(ctx: AknoContext, pageId: string): string {
 function curationDue(page: PageRow, inputHash: string, dryRun: boolean, includePreviewed: boolean): boolean {
   if (page.curate_input_hash !== inputHash) return true;
   if (includePreviewed && page.curate_status === 'preview') return true;
+  // A model-dependent overview rejection is not permanent evidence that the scoped page is
+  // current. Retry on a later maintenance cycle, but not on every manual invocation.
+  if (page.curate_status === 'retryable_rejected') {
+    const lastAttempt = page.curated_at ? Date.parse(page.curated_at) : Number.NaN;
+    return !Number.isFinite(lastAttempt) || Date.now() - lastAttempt >= 20 * 60 * 60 * 1000;
+  }
   // A write-enabled pass must rerun a previously accepted preview once. Rejected and unchanged
   // inputs are already complete decisions, and applied input is current by definition.
   return !dryRun && page.curate_status === 'preview';
+}
+
+function rejectionStatus(overview: OverviewEvidence | null): CurateStatus {
+  return overview?.scope ? 'retryable_rejected' : 'rejected';
 }
 
 /** Mark successfully plan-applied pages against their post-write fingerprints. */
@@ -2377,7 +2393,7 @@ function pageForSlug(ctx: AknoContext, slug: string): PageRow | null {
     (ctx.store.db
       .prepare(
         `SELECT id, slug, rel_path, title, role, dream_management, about, frontmatter, aliases, body_hash, bytes,
-                curate_input_hash, curate_status
+                curate_input_hash, curate_status, curated_at
            FROM pages WHERE slug = ? AND role = 'knowledge'
              AND dream_management IN ('hygiene', 'synthesize')`,
       )
