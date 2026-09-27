@@ -218,7 +218,19 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
   date-prefixed named event remains an event page rather than being mistaken for a calendar bucket;
 
 - **hygiene:** conservative formatting, local-language repair, and structurally safe cleanup;
-- **synthesis:** evidence-backed rewrite or reorganization;
+- **synthesis:** evidence-backed rewrite or reorganization. When ordinary prose contains a quotation,
+  plan, tentative claim, or other qualification, Akno may update independent existing sections. It preserves
+  every root Markdown heading in order, freezes qualified sections and their deciding context byte for byte,
+  and rechecks discourse ownership on the complete result. Nested headings in quotes, lists, or code do not
+  open independent sections. Global reference definitions and sections containing Akno-owned items are also
+  frozen. `curated[].discourse` reports inclusive body-relative protected line ranges and the number of editable
+  sections. A page without an independent section, or a draft that changes protected context, remains
+  `prose_discourse_held`. The usual evidence verifier and independent curator still assess new content; saved
+  plan revisions and application repeat the protection check. Mixed pages cannot split, extract, or infer
+  page-wide temporal metadata through this path. An explicitly declared event boundary still permits an
+  archival assessment of independent sections, preserving unknown outcomes and plans. Hygiene and merge retain
+  their whole-page discourse hold. Mixed-content evidence pages remain excluded until span-level evidence
+  selection is implemented; overview membership discovery and time-boundary refresh are separate work;
 - **split:** keep the canonical page and atomically create bounded child pages for the same subject;
 - **extract:** move one verbatim authored section into an independent reusable subject page, leaving bridges;
 - **merge:** losslessly combine identity-backed duplicates in allowed folders, rewrite eligible inbound links,
