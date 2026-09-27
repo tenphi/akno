@@ -392,9 +392,13 @@ second request rejects the item instead of looping. No revision or decision writ
 ## Final run verification
 
 An item passing once is not the end of an autonomous run. After every apply and bounded dependency retry,
-Akno re-runs the deterministic postconditions for all applied items attached to the run. It checks that each
-has a journal id and passed item receipt, that its sealed final bytes still agree with the structural index,
-and that transformation-specific identity, ownership, and link conditions still hold. It also checks the
+Akno re-runs deterministic postconditions for each current applied result from that invocation. Each item
+must have a journal id and passed item receipt. When a later applied item in the same run updates a path,
+the earlier item's exact bytes are no longer its final state; Akno verifies the later writer and any
+remaining paths of an earlier managed-item repair. Other partially overlapping transformations retain their
+full checks. Rolled-back attempts and older items in a reused plan cannot supersede
+the run's final state. Sealed final bytes must agree with the structural index, and transformation-specific
+identity, ownership, and link conditions must still hold. Akno also checks the
 whole-run budget against the live reservation tracker and proves that per-stage model calls and token totals
 sum to the reported aggregate. Finally, it hashes the complete indexable knowledge-base tree and compares it
 with the run's private start manifest plus the exact operations that reached disk. This catches an unrelated

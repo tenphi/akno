@@ -116,8 +116,9 @@ akno plan prune
 ```
 
 Status includes the next expected schedule, recent durable runs, policy, typed model degradation, decisions,
-item verification, final run verification, and budget use. Final verification rechecks every applied item's
-sealed disk/index outcome, budget and model accounting, and the complete indexable knowledge-base diff. An
+item verification, final run verification, and budget use. Final verification rechecks each path's last
+applied sealed disk/index outcome, surviving paths of earlier managed-item repairs, budget and model accounting,
+and the complete indexable knowledge-base diff. An
 unrelated concurrent add, edit, or removal is preserved but fails certification as an aggregate
 `unattributed_file_change`; paths never enter the run receipt. Inspect exact private planned changes only with
 `akno plan diff <plan-id>`.
