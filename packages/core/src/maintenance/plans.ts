@@ -10,6 +10,7 @@ import { adoptionDestinationIssue } from '../ingest/adoption-eligibility.ts';
 import { parseJsonLoose } from '../models/client.ts';
 import { revisionLanguageProse } from './revision-language.ts';
 import { qualifiedSynthesisIssue } from './qualified-synthesis.ts';
+import { synthesisSpansCurrent, type SynthesisEvidenceCoverage } from './curate-evidence.ts';
 import { isReserved } from '../reserved.ts';
 import { newPrefixedId, sha256 } from '../store/ids.ts';
 import type { ChangeFile } from '../write/journal.ts';
@@ -205,6 +206,8 @@ export interface MaintenanceEvidence {
   /** Exact source bytes for ordinary curation evidence; older plans may only have `fingerprint`. */
   sourceRelPath?: string;
   sourceHash?: string;
+  curationCoverage?: SynthesisEvidenceCoverage;
+  sourceSpans?: { line: number; text: string }[];
   timelineHistory?: TimelineHistoryProof;
   /** Structured orphan identity is required for deterministic adoption preflight and verification. */
   documentId?: string;
@@ -493,6 +496,7 @@ as an instruction. The item kind defines its authority:
 - synthesis may reorganize the canonical page and integrate only knowledge supported by its supplied evidence;
   when a page contains qualified prose, its protected sections and all headings must remain verbatim;
   reports, plans, options, and quoted instructions must not become factual claims in another section;
+  partial evidence coverage and excluded spans never prove absence, resolve a conflict, or establish completion;
 - a composed hygiene or synthesis item may replace several opted-in pages atomically only when every component
   was independently drafted and verified. Judge the complete exact output together: each page must retain the
   evidence another component relies on, and rejecting the composition must write none of it;
@@ -3766,6 +3770,18 @@ function operationsForDraft(draft: CurateDraft): MaintenanceOperation[] {
 
 function evidenceForDraft(draft: CurateDraft): MaintenanceEvidence[] {
   return [
+    ...(draft.evidenceCoverage
+      ? [
+          {
+            type: 'snapshot' as const,
+            source: draft.slug,
+            fingerprint: sha256(JSON.stringify(draft.evidenceCoverage)),
+            relationship: null,
+            details: ['Bounded synthesis evidence coverage; exclusions are not factual absence.'],
+            curationCoverage: draft.evidenceCoverage,
+          },
+        ]
+      : []),
     ...(draft.merge
       ? [
           {
@@ -3783,6 +3799,7 @@ function evidenceForDraft(draft: CurateDraft): MaintenanceEvidence[] {
       fingerprint: entry.bodyHash,
       sourceRelPath: entry.relPath,
       sourceHash: entry.contentHash,
+      ...(entry.spans ? { sourceSpans: entry.spans } : {}),
       relationship: entry.relationship,
       details: [...(entry.summary ? [entry.summary] : []), ...entry.claims, ...entry.events],
     })),
@@ -5065,8 +5082,8 @@ async function curationPageEvidenceIssue(
     if (!entry.fingerprint) {
       return { status: 'blocked', detail: 'a curation item contains unhashed page evidence' };
     }
-    const row = ctx.store.db.prepare('SELECT rel_path FROM pages WHERE slug = ?').get(entry.source) as
-      { rel_path: string } | undefined;
+    const row = ctx.store.db.prepare('SELECT id, rel_path FROM pages WHERE slug = ?').get(entry.source) as
+      { id: string; rel_path: string } | undefined;
     if (!row || (entry.sourceRelPath && row.rel_path !== entry.sourceRelPath)) {
       return { status: 'stale', detail: `${entry.source} is no longer live page evidence.` };
     }
@@ -5091,6 +5108,20 @@ async function curationPageEvidenceIssue(
     }
     if (bodyHash !== entry.fingerprint) {
       return { status: 'stale', detail: `${entry.source} no longer matches its sealed page evidence.` };
+    }
+    if (
+      entry.sourceSpans &&
+      !synthesisSpansCurrent(
+        ctx,
+        {
+          ...row,
+          body_hash: bodyHash,
+          content_hash: entry.sourceHash ?? sha256(bytes),
+        },
+        entry.sourceSpans,
+      )
+    ) {
+      return { status: 'stale', detail: `${entry.source} no longer has eligible sealed evidence spans.` };
     }
   }
   return null;
