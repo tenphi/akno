@@ -604,34 +604,94 @@ describe('declared overview refresh', () => {
     expect(fs.readFileSync(file(), 'utf8')).toBe(fm + body);
   });
 
-  it('corrects a year-qualified heading for an unresolved dated link without rewriting the link or table', async () => {
+  it('reconciles a year-qualified heading and status table without rewriting an unresolved link', async () => {
     vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
     const legacyBody =
       '# Journey index\n\n## Upcoming Trips (2034)\n\n- [[old-target|Blackwater Bay (Apr 3 - Apr 5)]]\n\n## Quick Reference Table\n\n| Journey | State |\n| --- | --- |\n| [[old-target]] | planning |\n';
     const authored = fm.replace('type: overview', 'type: overview\nyear: 2034') + legacyBody;
     fs.writeFileSync(file(), authored);
     await mem.index({ structuralOnly: true, verify: true });
-    const corrected = legacyBody.replace('## Upcoming Trips (2034)', '## Past Trips (2034)');
+    const headingOnly = legacyBody.replace('## Upcoming Trips (2034)', '## Past Trips (2034)');
+    server.qualifiedDraft(headingOnly);
+    const incomplete = await mem.dream({ phase: 'curate', mode: 'review' });
+    expect(incomplete.curated[0]!.issues).toContain(
+      'Overview status table still presents a past schedule as planning or upcoming.',
+    );
+    const calls = server.calls();
+    expect((await mem.dream({ phase: 'curate', mode: 'review' })).curated).toEqual([]);
+    expect(server.calls()).toBe(calls);
+    await mem.close();
+    mem = await openMem(false, undefined, { profile: 'autonomous' });
+    await mem.index({ structuralOnly: true, verify: true });
+    expect((await mem.dream({ phase: 'curate', mode: 'review' })).curated).toEqual([]);
+    expect(server.calls()).toBe(calls);
+    const corrected = headingOnly.replace(
+      '| planning |',
+      '| originally planned; dates passed, outcome unconfirmed |',
+    );
+    vi.setSystemTime(new Date('2034-05-02T09:00:00Z'));
     server.qualifiedDraft(corrected);
     const report = await mem.dream({ phase: 'curate', mode: 'auto' });
     expect(report.curated[0]).toMatchObject({ action: 'updated', issues: [] });
     expect(fs.readFileSync(file(), 'utf8')).toBe(authored.replace(legacyBody, corrected));
-    const calls = server.calls();
+    expect(server.userMessages().join('\n')).toContain('bare prospective table statuses');
+    const appliedCalls = server.calls();
     expect((await mem.dream({ phase: 'curate', mode: 'auto' })).curated).toEqual([]);
-    expect(server.calls()).toBe(calls);
+    expect(server.calls()).toBe(appliedCalls);
+  });
+
+  it('accepts a status-only repair when the temporal heading is already current', async () => {
+    vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
+    const before =
+      '# Journey index\n\n## Past schedules (2034)\n\n- [[old-target.md|Blackwater Bay (Apr 3 - Apr 5)]]\n\n## Quick Reference Table\n\n| Journey | Dates | Place | Status |\n| --- | --- | --- | --- |\n| [[old-target.md]] | Apr 3 - Apr 5 | Blackwater Bay | planning |\n';
+    const authored = fm.replace('type: overview', 'type: overview\nyear: 2034') + before;
+    fs.writeFileSync(file(), authored);
+    await mem.index({ structuralOnly: true, verify: true });
+    const after = before.replace('| planning |', '| planned; dates passed, outcome unknown |');
+    server.qualifiedDraft(after);
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+    expect(report.curated[0]).toMatchObject({ action: 'updated', issues: [] });
+    expect(fs.readFileSync(file(), 'utf8')).toBe(authored.replace(before, after));
+  });
+
+  it('does not let a reviewed overview revision restore a stale table status', async () => {
+    vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
+    const before =
+      '# Journey index\n\n## Upcoming Trips (2034)\n\n- [[old-target|Blackwater Bay (Apr 3 - Apr 5)]]\n\n| Journey | State |\n| --- | --- |\n| [[old-target]] | planning |\n';
+    fs.writeFileSync(file(), fm.replace('type: overview', 'type: overview\nyear: 2034') + before);
+    await mem.index({ structuralOnly: true, verify: true });
+    server.qualifiedDraft(
+      before
+        .replace('Upcoming Trips', 'Past schedules')
+        .replace('| planning |', '| originally planned; dates passed, outcome unconfirmed |'),
+    );
+    const plan = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const item = mem.plan(plan.id).items[0]!;
+    const valid = item.operations[0]!.type === 'replace' ? item.operations[0]!.after : '';
+    expect(valid).toContain('outcome unconfirmed');
+    await expect(
+      mem.revisePlan(plan.id, item.id, {
+        after: valid.replace('originally planned; dates passed, outcome unconfirmed', 'planning'),
+      }),
+    ).rejects.toThrow(/revision refused/);
+    expect(mem.plan(plan.id).items[0]).toMatchObject({ status: 'proposed', revision: 1 });
   });
 
   it('adds a newly discovered member, preserves unresolved links, and converges', async () => {
-    const original = body + '\n## Reference\n\n[[journeys/legacy-target]]\n';
+    const original =
+      body +
+      '\n## Reference\n\n[[journeys/legacy-target]]\n\n## Quick Reference Table\n\n| Journey | Status |\n| --- | --- |\n| [[journeys/2034/blackwater-bay]] | upcoming |\n';
     fs.writeFileSync(file(), fm + original);
     await mem.index({ structuralOnly: true, verify: true });
     server.qualifiedDraft(original);
     await mem.dream({ phase: 'curate' });
     await member('silvermarsh');
-    const after = original.replace(
-      '## Reference',
-      '- [[journeys/2034/silvermarsh]] — 2034-04-03.\n\n## Reference',
-    );
+    const after = original
+      .replace('## Reference', '- [[journeys/2034/silvermarsh]] — 2034-04-03.\n\n## Reference')
+      .replace(
+        '| [[journeys/2034/blackwater-bay]] | upcoming |',
+        '| [[journeys/2034/blackwater-bay]] | upcoming |\n| [[journeys/2034/silvermarsh]] | upcoming |',
+      );
     server.qualifiedDraft(after);
     const report = await mem.dream({ phase: 'curate', mode: 'auto' });
     expect(report.curated[0]).toMatchObject({ action: 'updated', evidenceCoverage: { unresolvedLinks: 1 } });

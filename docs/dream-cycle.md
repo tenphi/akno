@@ -300,11 +300,18 @@ Completeness refers to this bounded indexed scope, never unindexed files or the 
 
 Adding, changing, renaming, removing, or changing the authored status of a member invalidates the overview's
 decision. Crossing a member's start/end boundary also invalidates it, using the member timezone and an
-inclusive end date. Other days do not trigger repeated model calls. Saved plans recheck those same
+inclusive end date. Successful and unchanged decisions do not trigger repeated model calls on other days.
+A model-dependent rejection of a scoped overview may be retried after 20 hours against the same evidence,
+so one bad draft cannot freeze a stale page indefinitely. Saved plans recheck those same
 dependencies before application, including newly admitted members.
 
-A supported move between temporal sections or a heading-only correction is material. The deterministic
-check recognizes `Upcoming`/`Future`, `Current`/`Ongoing`, and `Past`, optionally followed by `trips`, `events`,
+A supported move between temporal sections or a heading-only correction is material. When a past-dated
+entry also appears in a Status/State table, a bare `planning` or `upcoming` cell must be reconciled as well;
+the original planning status can remain as history beside the current past-schedule state. Leaving the cell
+unchanged fails the draft, while elapsed dates alone cannot authorize `completed`. This applies to any
+admitted page type. The curator also checks whether a quick-reference table representing the same cohort
+needs rows for newly admitted members; missing details remain unknown. The deterministic check recognizes
+`Upcoming`/`Future`, `Current`/`Ongoing`, and `Past`, optionally followed by `trips`, `events`,
 or `schedules`. A heading may also end in the overview's authored year, such as `Upcoming Trips (2034)`.
 An unresolved legacy link can be reclassified when its unchanged label has a complete month/day range and
 the overview declares `year`; this supplies schedule evidence only and never repairs its target. Up to 30
