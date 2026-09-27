@@ -1,12 +1,65 @@
 import { describe, expect, it } from 'vitest';
+import Database from 'better-sqlite3';
 import { createMaintenanceBudget, maintenanceBudgetReceipt, reserveMaintenanceBudget } from './budget.ts';
 import {
   budgetReceiptMatchesTracker,
   countUnattributedFileChanges,
+  journalOrderedChangeIds,
   modelUsageIsConsistent,
+  supersededAppliedPaths,
 } from './run-verification.ts';
 
 describe('dream run accounting verification', () => {
+  it('uses journal insertion order when plans report a later write first', () => {
+    const db = new Database(':memory:');
+    try {
+      db.exec('CREATE TABLE changes (id TEXT PRIMARY KEY)');
+      db.prepare('INSERT INTO changes (id) VALUES (?)').run('first');
+      db.prepare('INSERT INTO changes (id) VALUES (?)').run('last');
+      expect(journalOrderedChangeIds(db, ['last', 'missing', 'first'])).toEqual(['first', 'last']);
+    } finally {
+      db.close();
+    }
+  });
+
+  it('attributes a final path to the later applied item, including a partial two-page repair', () => {
+    const replace = (relPath: string) => ({
+      type: 'replace' as const,
+      relPath,
+      beforeHash: 'before',
+      afterHash: 'after',
+      before: 'Invented old page.',
+      after: 'Invented new page.',
+    });
+    const items = [
+      {
+        status: 'applied' as const,
+        changeId: 'prelude',
+        operations: [replace('people/ada-marlow.md')],
+      },
+      {
+        status: 'applied' as const,
+        changeId: 'first',
+        operations: [replace('people/ada-marlow.md'), replace('products/zephyr-qx-100.md')],
+      },
+      {
+        status: 'verification_failed' as const,
+        changeId: 'rolled-back',
+        operations: [replace('people/ada-marlow.md')],
+      },
+      {
+        status: 'applied' as const,
+        changeId: 'last',
+        operations: [replace('people/ada-marlow.md')],
+      },
+    ];
+    const superseded = supersededAppliedPaths(['prelude', 'first', 'rolled-back', 'last'], items);
+    expect([...superseded.get('prelude')!]).toEqual(['people/ada-marlow.md']);
+    expect([...superseded.get('first')!]).toEqual(['people/ada-marlow.md']);
+    expect([...superseded.get('last')!]).toEqual([]);
+    expect(superseded.has('rolled-back')).toBe(false);
+  });
+
   it('detects a budget receipt that does not match the reservations', () => {
     const tracker = createMaintenanceBudget({
       maxItems: 3,

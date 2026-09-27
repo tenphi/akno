@@ -3276,6 +3276,7 @@ async function verifyApplied(
   ctx: AknoContext,
   item: MaintenanceItem,
   operations: MaintenanceOperation[],
+  supersededPaths?: ReadonlySet<string>,
 ): Promise<string | null> {
   if (item.kind === 'timeline_history') {
     const issue = await timelineHistoryIssue(
@@ -3321,6 +3322,9 @@ async function verifyApplied(
   let canonicalPageId: string | null = null;
   let retired: ReturnType<typeof parsePage> | null = null;
   for (const [index, operation] of operations.entries()) {
+    // Only managed-item replacements use partial re-verification. A later sealed write proves
+    // its own final bytes; this item still proves every path it remains responsible for.
+    if (supersededPaths?.has(operation.relPath)) continue;
     if (operation.type === 'move') {
       const source = await fsp.readFile(path.join(ctx.config.aknoPath, operation.relPath)).catch(() => null);
       const destination = await fsp
@@ -3538,9 +3542,15 @@ async function verifyApplied(
 export async function reverifyAppliedMaintenanceItem(
   ctx: AknoContext,
   item: MaintenanceItem,
+  supersededPaths?: ReadonlySet<string>,
 ): Promise<boolean> {
   const operations = supportedOperations(item);
-  return operations.length > 0 && (await verifyApplied(ctx, item, operations)) === null;
+  if (
+    supersededPaths?.size &&
+    (item.kind !== 'managed_item' || operations.some((operation) => operation.type !== 'replace'))
+  )
+    return false;
+  return operations.length > 0 && (await verifyApplied(ctx, item, operations, supersededPaths)) === null;
 }
 
 function planSummary(ctx: AknoContext, row: PlanRow): MaintenancePlanSummary {

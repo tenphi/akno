@@ -67,7 +67,8 @@ export async function verifyDreamRun(
   const uniquePlanIds = [...new Set(planIds)];
   const currentChanges = new Set(runChangeIds);
   const affectedFiles = new Set<string>();
-  const itemsForAttribution: MaintenanceItem[] = [];
+  const currentItems = new Map<string, MaintenanceItem>();
+  const applied: MaintenanceItem[] = [];
   let appliedItems = 0;
   let itemReceiptFailed = false;
   let affectedPathFailed = false;
@@ -84,7 +85,9 @@ export async function verifyDreamRun(
 
     for (const item of items) {
       const belongsToRun = item.changeId !== null && currentChanges.has(item.changeId);
-      if (belongsToRun) itemsForAttribution.push(item);
+      // A reused plan can also contain failed or pending history from an earlier invocation.
+      if (!belongsToRun) continue;
+      currentItems.set(item.changeId!, item);
       if (item.status === 'verification_failed') {
         addIssue(issues, 'item_verification_failed');
         itemReceiptFailed = true;
@@ -96,13 +99,10 @@ export async function verifyDreamRun(
         continue;
       }
       if (item.status !== 'applied') continue;
-      if (!belongsToRun) continue;
 
       appliedItems += 1;
-      for (const operation of item.operations) {
-        affectedFiles.add(operation.relPath);
-        if (operation.type === 'move') affectedFiles.add(operation.toRelPath);
-      }
+      applied.push(item);
+      for (const operation of item.operations) addOperationPaths(affectedFiles, operation);
       if (!item.changeId) {
         addIssue(issues, 'missing_change_id');
         itemReceiptFailed = true;
@@ -111,15 +111,40 @@ export async function verifyDreamRun(
         addIssue(issues, 'item_verification_incomplete');
         itemReceiptFailed = true;
       }
-      try {
-        if (!(await reverifyAppliedMaintenanceItem(ctx, item))) {
-          addIssue(issues, 'affected_path_mismatch');
-          affectedPathFailed = true;
-        }
-      } catch {
+    }
+  }
+
+  // Plan order can differ from apply order after dependency scheduling or a retry wave. The
+  // journal rowid is the write order; timestamps can collide within one millisecond.
+  const journalChangeIds = journalOrderedChangeIds(ctx.store.db, runChangeIds);
+  const journalChanges = new Set(journalChangeIds);
+  for (const item of applied) {
+    if (journalChanges.has(item.changeId!)) continue;
+    addIssue(issues, 'missing_change_id');
+    itemReceiptFailed = true;
+  }
+  const orderedChangeIds = [...journalChangeIds, ...runChangeIds.filter((id) => !journalChanges.has(id))];
+  const superseded = supersededAppliedPaths(orderedChangeIds, applied);
+  for (const item of applied) {
+    const paths = new Set<string>();
+    for (const operation of item.operations) addOperationPaths(paths, operation);
+    const laterPaths = superseded.get(item.changeId!) ?? new Set<string>();
+    // Immediate verification proved the old bytes; later applied writes now own these paths.
+    if (paths.size > 0 && laterPaths.size === paths.size) continue;
+    try {
+      if (
+        !(await reverifyAppliedMaintenanceItem(
+          ctx,
+          item,
+          item.kind === 'managed_item' ? laterPaths : undefined,
+        ))
+      ) {
         addIssue(issues, 'affected_path_mismatch');
         affectedPathFailed = true;
       }
+    } catch {
+      addIssue(issues, 'affected_path_mismatch');
+      affectedPathFailed = true;
     }
   }
 
@@ -132,6 +157,10 @@ export async function verifyDreamRun(
   let wholeSnapshotPassed = true;
   try {
     const observed = await captureCurrentFileManifest(ctx);
+    const itemsForAttribution = orderedChangeIds.flatMap((id) => {
+      const item = currentItems.get(id);
+      return item ? [item] : [];
+    });
     unattributedFiles = countUnattributedFileChanges(baseline, observed, itemsForAttribution);
     if (unattributedFiles > 0) {
       addIssue(issues, 'unattributed_file_change', unattributedFiles);
@@ -164,6 +193,40 @@ export async function verifyDreamRun(
     },
     issues: [...issues].map(([code, count]) => ({ code, count })),
   };
+}
+
+/** SQLite rowid records actual application order even when plans are later reported out of order. */
+export function journalOrderedChangeIds(
+  db: AknoContext['store']['db'],
+  changeIds: readonly string[],
+): string[] {
+  if (changeIds.length === 0) return [];
+  return (
+    db
+      .prepare(`SELECT id FROM changes WHERE id IN (${changeIds.map(() => '?').join(', ')}) ORDER BY rowid`)
+      .all(...changeIds) as { id: string }[]
+  ).map((row) => row.id);
+}
+
+/** A rollback or historical plan item never supersedes a path from this run. */
+export function supersededAppliedPaths(
+  changeIds: readonly string[],
+  items: readonly Pick<MaintenanceItem, 'changeId' | 'status' | 'operations'>[],
+): Map<string, Set<string>> {
+  const byChange = new Map(
+    items.filter((item) => item.status === 'applied' && item.changeId).map((item) => [item.changeId!, item]),
+  );
+  const laterPaths = new Set<string>();
+  const result = new Map<string, Set<string>>();
+  for (const id of [...changeIds].reverse()) {
+    const item = byChange.get(id);
+    if (!item) continue;
+    const paths = new Set<string>();
+    for (const operation of item.operations) addOperationPaths(paths, operation);
+    result.set(id, new Set([...paths].filter((path) => laterPaths.has(path))));
+    for (const path of paths) laterPaths.add(path);
+  }
+  return result;
 }
 
 /**

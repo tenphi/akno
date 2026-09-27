@@ -13,6 +13,8 @@ import {
   managedItemRepairIssue,
 } from '../src/maintenance/managed-items.ts';
 import { managedSectionHeading, repeatsManagedRoutingEdge } from '../src/maintenance/managed-item-routing.ts';
+import { reverifyAppliedMaintenanceItem } from '../src/maintenance/plans.ts';
+import { openStore } from '../src/store/db.ts';
 import { sha256 } from '../src/store/ids.ts';
 
 describe('managed item inspection', () => {
@@ -1618,6 +1620,33 @@ This page holds Zephyr QX-100 equipment and warranty documentation.
 <!-- akno:item itm_route_section v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.`,
     );
+
+    const applied = mem.plan(report.maintenancePlan!.id).items[0]!;
+    const sourcePath = path.join(root, 'people/ada-marlow.md');
+    fs.appendFileSync(sourcePath, '\nA later invented annotation.\n');
+    await mem.index({ structuralOnly: true, verify: true });
+    const reader = openStore({ dbPath: mem.config.dbPath, embeddingDimensions: 2, readOnly: true });
+    try {
+      const context = { config: mem.config, store: reader } as Parameters<
+        typeof reverifyAppliedMaintenanceItem
+      >[0];
+      expect(await reverifyAppliedMaintenanceItem(context, applied)).toBe(false);
+      expect(await reverifyAppliedMaintenanceItem(context, applied, new Set(['people/ada-marlow.md']))).toBe(
+        true,
+      );
+      const destinationPath = path.join(root, 'equipment/zephyr-qx-100.md');
+      fs.appendFileSync(destinationPath, '\nAn unrelated unsealed edit.\n');
+      await mem.index({ structuralOnly: true, verify: true });
+      expect(await reverifyAppliedMaintenanceItem(context, applied, new Set(['people/ada-marlow.md']))).toBe(
+        false,
+      );
+      fs.writeFileSync(destinationPath, destinationAfter);
+      await mem.index({ structuralOnly: true, verify: true });
+    } finally {
+      reader.close();
+    }
+    fs.writeFileSync(sourcePath, sourceAfter);
+    await mem.index({ structuralOnly: true, verify: true });
 
     await mem.undo({ change_id: report.maintenancePlan!.items[0]!.changeId! });
     expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(source);
