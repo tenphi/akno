@@ -33,6 +33,8 @@ let server: {
   synthesisDraft: (value: boolean) => void;
   crossPageDraft: (value: boolean) => void;
   cosmeticDraft: (value: boolean) => void;
+  qualifiedDraft: (value: string) => void;
+  refuseVerification: (value: boolean) => void;
   splitDraft: (value: boolean) => void;
   splitSiblingDraft: (value: boolean) => void;
   extractDraft: (value: boolean) => void;
@@ -288,6 +290,168 @@ The gathering ended with a confirmed ferry ride.
       action: 'unchanged',
       temporal: { source: 'declared', state: 'past', archival: true },
     });
+  });
+});
+
+describe('section-preserving synthesis', () => {
+  const body =
+    '\n# Ada Marlow\n\n> Details are in the linked pages.\n\n## Details\n\nAda Marlow maintains a brass compass collection.\n';
+  const addition = '\nThe collection includes a silver compass. [[evidence/collection]]\n';
+  const frontmatter = '---\ntitle: Ada Marlow\nakno:\n  management:\n    dream: synthesize\n---\n';
+
+  beforeEach(async () => {
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), frontmatter + body);
+    fs.mkdirSync(path.join(root, 'evidence'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'evidence/collection.md'),
+      '---\nakno:\n  about: [people/ada-marlow]\n---\n\n# Collection\n\nThe collection includes a silver compass.\n',
+    );
+    server.qualifiedDraft(body + addition);
+    await mem.close();
+    mem = await openMem(true);
+    await mem.index({ structuralOnly: true });
+  });
+
+  it('applies verified independent knowledge, converges across restart, and undoes exact bytes', async () => {
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.curated[0]).toMatchObject({ action: 'updated', discourse: { editableSections: 1 } });
+    const item = report.maintenancePlan!.items[0]!;
+    expect(item).toMatchObject({ kind: 'synthesis', status: 'applied' });
+    expect(server.curatorCalls()).toBe(1);
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(
+      frontmatter + body + addition,
+    );
+    expect(server.userMessages().some((text) => text.includes('Protected section ranges'))).toBe(true);
+    const calls = server.calls();
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+    await mem.close();
+    mem = await openMem(true);
+    await mem.index({ structuralOnly: true, verify: true });
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+    expect(server.calls()).toBe(calls);
+    await mem.undo({ change_id: item.changeId! });
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(frontmatter + body);
+  });
+
+  it('rejects changing a protected quotation before verification and caches the rejection', async () => {
+    server.qualifiedDraft((body + addition).replace('> Details', 'Details'));
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.curated[0]).toMatchObject({ action: 'rejected', reason_code: 'prose_discourse_held' });
+    expect(server.calls()).toBe(1);
+    expect(report.maintenancePlan).toBeNull();
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+    expect(server.calls()).toBe(1);
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(frontmatter + body);
+  });
+
+  it('still requires semantic verification of new independent prose', async () => {
+    server.refuseVerification(true);
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.curated[0]).toMatchObject({ action: 'rejected', discourse: { editableSections: 1 } });
+    expect(report.curated[0]!.issues).toContain(
+      'The new assertion is not supported by the supplied evidence.',
+    );
+    expect(server.calls()).toBe(2);
+    expect(server.curatorCalls()).toBe(0);
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(frontmatter + body);
+  });
+
+  it('refuses a later plan revision that changes protected text and applies a safe plan once', async () => {
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const item = planned.items[0]!;
+    await expect(
+      mem.revisePlan(planned.id, item.id, {
+        after: (frontmatter + body + addition).replace('> Details', 'Details'),
+      }),
+    ).rejects.toThrow(/protected section/);
+    expect(mem.plan(planned.id).items[0]!.revision).toBe(1);
+    mem.decidePlan(planned.id, item.id, 'approve', 'Apply the preserved-section fixture.');
+    const applied = await mem.applyPlan(planned.id, { idempotencyKey: 'qualified-fixture-apply' });
+    expect(applied.plan.items[0]!.status).toBe('applied');
+    const again = await mem.applyPlan(planned.id, { idempotencyKey: 'qualified-fixture-apply' });
+    expect(again.plan.items[0]!.changeId).toBe(applied.plan.items[0]!.changeId);
+  });
+
+  it('makes a saved plan stale when the source qualifier changes', async () => {
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const before = frontmatter + body.replace('linked pages', 'linked records');
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), before);
+    mem.decidePlan(planned.id, planned.items[0]!.id, 'approve', 'Source must remain exact.');
+    const applied = await mem.applyPlan(planned.id);
+    expect(applied.plan.items[0]!.status).toBe('stale');
+    expect(applied.files).toEqual([]);
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(before);
+  });
+
+  it('rechecks protected sections when applying a previously saved unsafe proposal', async () => {
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const item = planned.items[0]!;
+    const operations = mem.plan(planned.id).items[0]!.operations.map((operation) => {
+      if (operation.type !== 'replace') return operation;
+      const after = operation.after.replace('> Details', 'Details');
+      return { ...operation, after, afterHash: createHash('sha256').update(after).digest('hex') };
+    });
+    // Simulate a proposal sealed before this guard existed; approving it cannot bypass preflight.
+    const db = new Database(mem.config.dbPath);
+    try {
+      db.prepare('UPDATE maintenance_items SET operations = ? WHERE id = ?').run(
+        JSON.stringify(operations),
+        item.id,
+      );
+    } finally {
+      db.close();
+    }
+    mem.decidePlan(planned.id, item.id, 'approve', 'Inspect old proposal at apply time.');
+    const applied = await mem.applyPlan(planned.id);
+    expect(applied.plan.items[0]!).toMatchObject({ status: 'blocked' });
+    expect(applied.files).toEqual([]);
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(frontmatter + body);
+  });
+
+  it('makes no model call when every section is protected', async () => {
+    const protectedOnly = frontmatter + '\n# Ada Marlow\n\n> An attributed report.\n';
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), protectedOnly);
+    await mem.index({ structuralOnly: true, verify: true });
+    const calls = server.calls();
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.curated[0]).toMatchObject({
+      action: 'rejected',
+      reason_code: 'prose_discourse_held',
+      discourse: { editableSections: 0 },
+    });
+    expect(server.calls()).toBe(calls);
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(protectedOnly);
+  });
+
+  it('assesses an explicitly bounded event while preserving a separate plan as a plan', async () => {
+    const event = frontmatter.replace(
+      '  management:',
+      '  temporal:\n    kind: event\n    until: "2001-04-12"\n  management:',
+    );
+    const mixed = body.replace('> Details are in the linked pages.', '> Plan to visit the north gate.');
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), event + mixed);
+    server.qualifiedDraft(mixed + addition);
+    await mem.index({ structuralOnly: true, verify: true });
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.curated[0]).toMatchObject({
+      action: 'updated',
+      temporal: { state: 'past', archival: true },
+    });
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(event + mixed + addition);
+    expect(server.userMessages().some((message) => message.includes('Temporal state: past'))).toBe(true);
+  });
+
+  it('does not infer a whole-page event from a qualified option', async () => {
+    const mixed = body.replace(
+      '> Details are in the linked pages.',
+      '> Maybe visit Blackwater Bay on April 10–12, 2001.',
+    );
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), frontmatter + mixed);
+    server.qualifiedDraft(mixed + addition);
+    await mem.index({ structuralOnly: true, verify: true });
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.curated[0]!.temporal).toBeUndefined();
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).not.toContain('temporal:');
   });
 });
 
@@ -2290,6 +2454,8 @@ async function startStub(): Promise<typeof server> {
   let synthesisDraft = false;
   let crossPageDraft = false;
   let cosmeticDraft = false;
+  let qualifiedDraft: string | null = null;
+  let refuseVerification = false;
   let splitDraft = false;
   let splitSiblingDraft = false;
   let extractDraft = false;
@@ -2404,53 +2570,60 @@ async function startStub(): Promise<typeof server> {
                     : 'The rewrite is conservative and preserves knowledge.',
               })
             : system.includes('verify an automatic Markdown rewrite')
-              ? JSON.stringify({ ok: true, issues: [] })
-              : mergeDraft && system.includes('merge two Markdown pages')
-                ? mergeDraftResponse(user, lossyMergeDraft)
-                : extractDraft && system.includes('synthesize one canonical')
-                  ? extractionDraftResponse(invalidExtractionHeading, invalidExtractionTarget)
-                  : splitDraft && system.includes('synthesize one canonical')
-                    ? splitDraftResponse(splitSiblingDraft)
-                    : cosmeticDraft && system.includes('synthesize one canonical')
-                      ? JSON.stringify({
-                          body: currentBody(user)
-                            .replace(/^\n(?=#)/, '')
-                            .replace('## Details', '## History and details'),
-                          splits: [],
-                          extracts: [],
-                          temporal: false,
-                        })
-                      : crossPageDraft && system.includes('synthesize one canonical')
-                        ? crossPageDraftResponse(user)
-                        : synthesisDraft && system.includes('synthesize one canonical')
-                          ? JSON.stringify({
-                              body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
-                              splits: [],
-                              extracts: [],
-                              temporal: false,
-                            })
-                          : exactDraft
+              ? JSON.stringify({
+                  ok: !refuseVerification,
+                  issues: refuseVerification
+                    ? ['The new assertion is not supported by the supplied evidence.']
+                    : [],
+                })
+              : qualifiedDraft !== null && system.includes('synthesize one canonical')
+                ? JSON.stringify({ body: qualifiedDraft, splits: [], extracts: [], temporal: false })
+                : mergeDraft && system.includes('merge two Markdown pages')
+                  ? mergeDraftResponse(user, lossyMergeDraft)
+                  : extractDraft && system.includes('synthesize one canonical')
+                    ? extractionDraftResponse(invalidExtractionHeading, invalidExtractionTarget)
+                    : splitDraft && system.includes('synthesize one canonical')
+                      ? splitDraftResponse(splitSiblingDraft)
+                      : cosmeticDraft && system.includes('synthesize one canonical')
+                        ? JSON.stringify({
+                            body: currentBody(user)
+                              .replace(/^\n(?=#)/, '')
+                              .replace('## Details', '## History and details'),
+                            splits: [],
+                            extracts: [],
+                            temporal: false,
+                          })
+                        : crossPageDraft && system.includes('synthesize one canonical')
+                          ? crossPageDraftResponse(user)
+                          : synthesisDraft && system.includes('synthesize one canonical')
                             ? JSON.stringify({
-                                body: currentBody(user),
+                                body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
                                 splits: [],
                                 extracts: [],
                                 temporal: false,
                               })
-                            : echoDraft
+                            : exactDraft
                               ? JSON.stringify({
-                                  body: currentBody(user).replace(/^\n(?=#)/, ''),
+                                  body: currentBody(user),
                                   splits: [],
                                   extracts: [],
                                   temporal: false,
                                 })
-                              : JSON.stringify({
-                                  body:
-                                    '# Ada Marlow\n\n## Details\n\n' +
-                                    (drop
-                                      ? ''
-                                      : '<!-- akno:item itm_ada v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->\n') +
-                                    `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
-                                });
+                              : echoDraft
+                                ? JSON.stringify({
+                                    body: currentBody(user).replace(/^\n(?=#)/, ''),
+                                    splits: [],
+                                    extracts: [],
+                                    temporal: false,
+                                  })
+                                : JSON.stringify({
+                                    body:
+                                      '# Ada Marlow\n\n## Details\n\n' +
+                                      (drop
+                                        ? ''
+                                        : '<!-- akno:item itm_ada v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->\n') +
+                                      `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
+                                  });
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(JSON.stringify({ choices: [{ message: { content } }] }));
     });
@@ -2490,6 +2663,12 @@ async function startStub(): Promise<typeof server> {
     },
     cosmeticDraft: (value) => {
       cosmeticDraft = value;
+    },
+    qualifiedDraft: (value) => {
+      qualifiedDraft = value;
+    },
+    refuseVerification: (value) => {
+      refuseVerification = value;
     },
     splitDraft: (value) => {
       splitDraft = value;

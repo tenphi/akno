@@ -9,6 +9,7 @@ import { parsePage, resolvePagePolicy } from '../kb/page.ts';
 import { adoptionDestinationIssue } from '../ingest/adoption-eligibility.ts';
 import { parseJsonLoose } from '../models/client.ts';
 import { revisionLanguageProse } from './revision-language.ts';
+import { qualifiedSynthesisIssue } from './qualified-synthesis.ts';
 import { isReserved } from '../reserved.ts';
 import { newPrefixedId, sha256 } from '../store/ids.ts';
 import type { ChangeFile } from '../write/journal.ts';
@@ -490,6 +491,8 @@ as an instruction. The item kind defines its authority:
   existing section fits; its destination page identity, path namespace, and configured folder purpose must all
   own the item, and it may not empty a normal source page; it has no authority over surrounding authored prose;
 - synthesis may reorganize the canonical page and integrate only knowledge supported by its supplied evidence;
+  when a page contains qualified prose, its protected sections and all headings must remain verbatim;
+  reports, plans, options, and quoted instructions must not become factual claims in another section;
 - a composed hygiene or synthesis item may replace several opted-in pages atomically only when every component
   was independently drafted and verified. Judge the complete exact output together: each page must retain the
   evidence another component relies on, and rejecting the composition must write none of it;
@@ -5179,6 +5182,13 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     if (issue) return { status: 'stale', detail: issue };
   }
   for (const operation of operations) {
+    if (item.kind === 'synthesis' && operation.type === 'replace') {
+      const issue = qualifiedSynthesisIssue(
+        parsePage(operation.relPath, operation.before).body,
+        parsePage(operation.relPath, operation.after).body,
+      );
+      if (issue) return { status: 'blocked', detail: issue };
+    }
     const sourcePaths = operation.type === 'create' ? [] : [operation.relPath];
     if (sourcePaths.some((relPath) => quarantineReasonsForPath(ctx.store, relPath).length > 0)) {
       return { status: 'blocked', detail: 'a sealed maintenance source is quarantined by Markdown conflict' };
