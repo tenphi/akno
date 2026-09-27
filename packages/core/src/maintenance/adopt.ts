@@ -1,8 +1,7 @@
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import type { AknoContext } from '../context.ts';
-import { effectiveRule } from '../rules/compile.ts';
-import { cleanSlug } from '../ingest/name.ts';
+import { adoptionDestinationIssue, documentAdoptionSlug } from '../ingest/adoption-eligibility.ts';
 import type { Extraction } from '../ingest/extract.ts';
 import { provenanceLines } from '../ingest/store.ts';
 import { sha256 } from '../store/ids.ts';
@@ -23,7 +22,7 @@ import { serializeYamlString } from '../kb/frontmatter.ts';
  *
  * - **`ingest: "file"` is honoured.** That rule exists precisely for a folder of media where a
  *   stub page per file would be noise rather than memory, and this is the behaviour it turns
- *   off. `ingest: "ignore"` is skipped too.
+ *   off. `ingest: "ignore"` and destinations that would not resolve to knowledge are skipped too.
  * - **Capped per run.** A folder of 500 unowned PDFs should not become 500 pages overnight
  *   before anyone has seen the first one; the cap makes the first night's report arrive while
  *   it is still small enough to read — and `--dry-run` shows it without writing.
@@ -93,9 +92,8 @@ export async function planOrphanAdoptions(
     if (drafts.length >= options.limit) break;
 
     const first = group.parts[0]!;
-    const directory = path.posix.dirname(first.relPath.replaceAll('\\', '/'));
-    const stem = cleanSlug(path.posix.basename(first.relPath));
-    if (!stem) {
+    const slug = documentAdoptionSlug(first.relPath);
+    if (!slug) {
       adopted.push({
         slug: first.relPath,
         files: group.parts.map((part) => part.relPath),
@@ -105,16 +103,13 @@ export async function planOrphanAdoptions(
       continue;
     }
 
-    const slug = directory === '.' ? stem : `${directory}/${stem}`;
-
-    // The rule governs the *page's* location, which is where it would live.
-    const rule = effectiveRule(slug, ctx.config.rules);
-    if (rule.ingest === 'file' || rule.ingest === 'ignore') {
+    const destinationIssue = adoptionDestinationIssue(ctx.config, slug);
+    if (destinationIssue) {
       adopted.push({
         slug,
         files: group.parts.map((part) => part.relPath),
         action: 'skipped',
-        reason: `the rule for this folder says ingest: ${rule.ingest}`,
+        reason: destinationIssue,
       });
       continue;
     }

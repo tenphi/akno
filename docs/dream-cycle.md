@@ -250,8 +250,16 @@ undoable unit.
 Adopt finds readable unowned documents and plans minimal filing pages. It does not make documents searchable;
 they were already searchable. It improves browsing, page policy, linking, and future synthesis.
 
-Source bytes and ownership are rechecked before apply. Missing originals cannot be adopted because the new page
-would otherwise certify evidence Akno can no longer inspect.
+Only destinations that resolve to `role: knowledge` are eligible. Source, inference, and ignored destinations
+(including the default inference role under the observations path) are skipped before a plan or curator call.
+`ingest: file` and `ingest: ignore` also prevent adoption. The report records the skip and its reason; eligible
+work elsewhere can continue. Recall and timeline cards omit the adoption action for these destinations.
+Adoption does not add a role declaration to override folder policy or promote source material into knowledge.
+
+Destination policy, source bytes, and ownership are rechecked before apply. A policy change blocks an older
+plan before writing. Missing originals cannot be adopted because the new page would otherwise certify
+evidence Akno can no longer inspect. Verification and rollback still protect against failures after a write;
+skipping an ineligible destination does not clear an existing maintenance recovery pause.
 
 ### 6. Repair
 
