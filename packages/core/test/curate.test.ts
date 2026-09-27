@@ -1782,6 +1782,50 @@ An invented interview record.
     ).toBe(true);
   });
 
+  it('completes synthesis and full-run verification while skipping source-folder adoption', async () => {
+    const canonical = path.join(root, 'people/ada-marlow.md');
+    fs.writeFileSync(
+      canonical,
+      fs.readFileSync(canonical, 'utf8').replace('dream: hygiene', 'dream: synthesize'),
+    );
+    fs.mkdirSync(path.join(root, 'evidence'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'evidence/ada-interview.md'),
+      '---\ntitle: Ada interview\nakno:\n  about:\n    - people/ada-marlow\n---\n\nAda Marlow maintains a brass compass collection.\n',
+    );
+    const orphan = path.join(root, 'evidence/vulpine-note.txt');
+    const source = 'The Zephyr QX-100 warranty lasts 1111 days.\n';
+    fs.writeFileSync(orphan, source);
+    server.synthesisDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'auto', { folders: { 'evidence/**': { role: 'source' } } });
+    await mem.index({});
+
+    const report = await mem.dream();
+
+    expect(report.curated).toContainEqual(
+      expect.objectContaining({ slug: 'people/ada-marlow', mode: 'synthesize', action: 'updated' }),
+    );
+    expect(report.adopted).toMatchObject([{ slug: 'evidence/vulpine-note', action: 'skipped' }]);
+    expect(report.run).toMatchObject({ status: 'completed', verification: { status: 'passed' } });
+    expect(fs.readFileSync(canonical, 'utf8')).toContain('brass compass collection');
+    expect(server.curatorCalls()).toBe(1);
+    expect(fs.existsSync(path.join(root, 'evidence/vulpine-note.md'))).toBe(false);
+    expect(fs.readFileSync(orphan, 'utf8')).toBe(source);
+    const calls = server.calls();
+
+    const repeated = await mem.dream();
+    expect(repeated.run).toMatchObject({ status: 'completed', verification: { status: 'passed' } });
+    expect(repeated.adopted).toMatchObject([{ action: 'skipped' }]);
+    expect(repeated.curated).toEqual([]);
+    expect(server.calls()).toBe(calls);
+    expect(mem.maintenanceStatus().recovery).toEqual({
+      automaticApply: 'available',
+      profile: null,
+      transforms: [],
+    });
+  });
+
   it('makes synthesis stale when linked evidence bytes change before apply', async () => {
     const canonical = path.join(root, 'people/ada-marlow.md');
     fs.writeFileSync(

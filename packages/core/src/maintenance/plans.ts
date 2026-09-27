@@ -6,6 +6,7 @@ import { z } from 'zod';
 import type { AknoContext } from '../context.ts';
 import { replaceNestedStringArrayValue, replaceTopLevelString } from '../kb/frontmatter.ts';
 import { parsePage, resolvePagePolicy } from '../kb/page.ts';
+import { adoptionDestinationIssue } from '../ingest/adoption-eligibility.ts';
 import { parseJsonLoose } from '../models/client.ts';
 import { revisionLanguageProse } from './revision-language.ts';
 import { isReserved } from '../reserved.ts';
@@ -5463,13 +5464,8 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
   }
   if (item.kind === 'adopt') {
     const documents = item.evidence.filter((entry) => entry.type === 'document');
-    const rule = effectiveRule(item.subject, ctx.config.rules);
-    if (rule.ingest === 'file' || rule.ingest === 'ignore') {
-      return {
-        status: 'blocked',
-        detail: `the current folder rule now says ingest: ${rule.ingest}`,
-      };
-    }
+    const destinationIssue = adoptionDestinationIssue(ctx.config, item.subject);
+    if (destinationIssue) return { status: 'blocked', detail: destinationIssue };
     const expectedIds = new Set(documents.map((entry) => entry.documentId!));
     const group = documents[0]!.documentGroup!;
     const currentGroup = ctx.store.db

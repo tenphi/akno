@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
 import { insertObservationBlock, observationBlock } from '../src/observations/marker.ts';
 import { SCHEMA_VERSION } from '../src/store/migrations.ts';
+import { compileRules } from '../src/rules/compile.ts';
 
 /**
  * The maintenance cycle, end to end over a real knowledge base on disk.
@@ -3996,16 +3997,16 @@ describe('adopt', () => {
     expect(roleFiltered.results.every((entry) => entry.type === 'page')).toBe(true);
   });
 
-  it('honours the rule that says this folder wants no pages', async () => {
+  it.each(['file', 'ignore'])('honours ingest: %s for an already indexed orphan', async (ingest) => {
     // `ingest: "file"` exists for a folder of media where a stub page per file would be noise
     // rather than memory, and this is the behaviour it turns off.
-    await mem.close();
-    mem = await openMem({ folders: { 'household/**': { ingest: 'file' } } });
     await mem.index({});
+    await mem.close();
+    mem = await openMem({ folders: { 'household/**': { ingest } } });
 
     const report = await mem.dream({ phase: 'adopt' });
     expect(report.adopted[0]!.action).toBe('skipped');
-    expect(report.adopted[0]!.reason).toMatch(/ingest: file/);
+    expect(report.adopted[0]!.reason).toContain(`ingest: ${ingest}`);
     expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
     const found = await mem.recall({
       query: 'lease runs to August 2027',
@@ -4018,6 +4019,157 @@ describe('adopt', () => {
     if (found.results[0]?.type === 'document') {
       expect(found.results[0].suggested_actions).toBeUndefined();
     }
+  });
+
+  it.each(['source', 'inference', 'ignored'] as const)(
+    'skips adoption into a folder with role %s without decisions, writes, or recovery failures',
+    async (role) => {
+      await mem.index({});
+      await mem.close();
+      mem = await openMem({ folders: { 'household/**': { role } } });
+      // An ignored destination can still have orphan rows from before the policy changed.
+      if (role !== 'ignored') await mem.index({});
+      const before = fs.readFileSync(path.join(root, 'household/lease scan.txt'), 'utf8');
+      const recovery = mem.maintenanceStatus().recovery;
+
+      for (let cycle = 0; cycle < 4; cycle++) {
+        const report = await mem.dream({ phase: 'adopt' });
+        expect(report.adopted).toMatchObject([
+          { slug: 'household/lease-scan', action: 'skipped', reason: expect.stringContaining(role) },
+        ]);
+        expect(report.maintenancePlan).toBeNull();
+        expect(report.adoptChangeId).toBeNull();
+        expect(report.run.verification?.status).toBe('passed');
+      }
+      expect(server.requestKinds()).not.toContain('curator');
+      expect(mem.maintenanceStatus().recovery).toEqual(recovery);
+      expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
+      expect(fs.readFileSync(path.join(root, 'household/lease scan.txt'), 'utf8')).toBe(before);
+
+      const found = await mem.recall({ query: 'lease scan.txt', mode: 'lookup', expand: false });
+      const card = found.results.find((entry) => entry.type === 'document');
+      expect(card).toBeDefined();
+      expect(card?.suggested_actions).toBeUndefined();
+      const timeline = await mem.timeline({ source: 'document', subject: 'household/lease scan.txt' });
+      expect(timeline.results).toHaveLength(1);
+      const datedDocument = timeline.results[0];
+      expect(datedDocument?.type).toBe('document_evidence');
+      if (datedDocument?.type === 'document_evidence') {
+        expect(datedDocument.suggested_actions).toBeUndefined();
+      }
+      expect(await mem.adopt({ documentId: card!.id })).toMatchObject({
+        outcome: 'blocked',
+        reason: expect.stringContaining(role),
+      });
+      expect(server.requestKinds()).not.toContain('curator');
+    },
+  );
+
+  it.each([
+    { role: 'source' },
+    { role: 'inference' },
+    { role: 'ignored' },
+    { ingest: 'file' },
+    { ingest: 'ignore' },
+  ])('blocks an approved adoption before writing when policy changes to %j', async (rule) => {
+    await mem.index({});
+    const report = await mem.dream({ phase: 'adopt', mode: 'review' });
+    const plan = report.maintenancePlan!;
+    mem.decidePlan(plan.id, plan.items[0]!.id, 'approve', 'File the unchanged invented document.');
+    await mem.close();
+    mem = await openMem({ folders: { 'household/**': rule } });
+    const recovery = mem.maintenanceStatus().recovery;
+
+    const applied = await mem.applyPlan(plan.id);
+
+    expect(applied.plan.items[0]).toMatchObject({ status: 'blocked', changeId: null });
+    expect(applied.files).toEqual([]);
+    expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, 'household/lease scan.txt'), 'utf8')).toBe(
+      'The lease runs to August 2027.\n',
+    );
+    expect(mem.maintenanceStatus().recovery).toEqual(recovery);
+    expect(server.requestKinds()).not.toContain('curator');
+  });
+
+  it('uses provenance and composed destination rules without overriding them in the filing page', async () => {
+    await mem.close();
+    mem = await openMem({ paths: { observations: 'household' } });
+    await mem.index({});
+    const held = await mem.dream({ phase: 'adopt' });
+    expect(held.adopted[0]).toMatchObject({
+      action: 'skipped',
+      reason: expect.stringContaining('inference'),
+    });
+    expect(held.maintenancePlan).toBeNull();
+
+    await mem.close();
+    mem = await openMem({
+      paths: { observations: 'household' },
+      folders: {
+        'household/**': { role: 'source', ingest: 'file' },
+        'household/lease-scan': { role: 'knowledge', ingest: 'page' },
+      },
+    });
+    await mem.index({});
+    const found = await mem.recall({ query: 'lease scan.txt', mode: 'lookup', expand: false });
+    const card = found.results.find((entry) => entry.type === 'document');
+    expect(card?.suggested_actions).toEqual([{ op: 'adopt', args: { documentId: card!.id } }]);
+    const report = await mem.dream({ phase: 'adopt' });
+    expect(report.adopted[0]).toMatchObject({ action: 'created' });
+    expect(report.maintenancePlan?.items[0]).toMatchObject({
+      status: 'applied',
+      verification: { status: 'passed' },
+    });
+    expect(fs.readFileSync(path.join(root, 'household/lease-scan.md'), 'utf8')).not.toContain('role:');
+  });
+
+  it('rechecks destination policy after the automatic curator decision', async () => {
+    await mem.index({});
+    server.onCurator(() => {
+      mem.config.rules.splice(
+        0,
+        mem.config.rules.length,
+        ...compileRules([{ folders: { 'household/**': { role: 'source' } }, source: 'fixture' }]),
+      );
+    });
+
+    const report = await mem.dream({ phase: 'adopt' });
+
+    expect(server.requestKinds()).toEqual(['curator']);
+    expect(report.maintenancePlan?.items[0]).toMatchObject({ status: 'blocked', changeId: null });
+    expect(report.run.verification?.status).toBe('passed');
+    expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
+    expect(mem.maintenanceStatus().recovery.transforms).toEqual([]);
+  });
+
+  it('still journals and rolls back an eligible adoption whose indexed role fails verification', async () => {
+    await mem.index({});
+    const db = new Database(mem.config.dbPath);
+    try {
+      // Simulate a structural-index defect after the write, beyond the policy preflight.
+      db.exec(`CREATE TRIGGER corrupt_adopted_role AFTER INSERT ON pages
+        WHEN NEW.slug = 'household/lease-scan'
+        BEGIN UPDATE pages SET role = 'source' WHERE id = NEW.id; END`);
+    } finally {
+      db.close();
+    }
+
+    const report = await mem.dream({ phase: 'adopt' });
+
+    expect(report.maintenancePlan?.items[0]).toMatchObject({
+      status: 'verification_failed',
+      changeId: expect.any(String),
+      verification: { status: 'rolled_back' },
+    });
+    expect(report.run.verification?.status).toBe('failed');
+    expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, 'household/lease scan.txt'), 'utf8')).toBe(
+      'The lease runs to August 2027.\n',
+    );
+    expect(mem.maintenanceStatus().recovery.transforms).toContainEqual(
+      expect.objectContaining({ transform: 'adopt', consecutiveFailures: 1 }),
+    );
   });
 
   it('leaves someone else’s page alone when one is already there', async () => {
