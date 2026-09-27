@@ -8,6 +8,7 @@ describe('qualified synthesis sections', () => {
     expect(qualifiedSynthesisScope(body)).toEqual({
       protectedSections: [{ bodyLineStart: 1, bodyLineEnd: 4 }],
       editableSections: 1,
+      editableLeads: 0,
       editableTails: 1,
     });
     expect(qualifiedSynthesisIssue(body, body + 'The gate opens at noon.\n')).toBeNull();
@@ -126,6 +127,44 @@ describe('qualified synthesis sections', () => {
       qualifiedSynthesisIssue(before, before.replace('Keep the option open.', 'Take the option.')),
     ).not.toBeNull();
     expect(qualifiedSynthesisIssue(before, before.replace('Maybe visit', 'Visited'))).not.toBeNull();
+  });
+
+  it('edits an existing factual lead in place before a protected quote', () => {
+    const before = '# Notes\n\nThe gate is blue.\n\n> Maybe visit the north gate.\n\nThe path is gravel.\n';
+    expect(qualifiedSynthesisScope(before)).toMatchObject({
+      editableSections: 0,
+      editableLeads: 1,
+      editableTails: 1,
+      protectedSections: [
+        { bodyLineStart: 1, bodyLineEnd: 1 },
+        { bodyLineStart: 5, bodyLineEnd: 6 },
+      ],
+    });
+    expect(qualifiedSynthesisIssue(before, before.replace('blue', 'green'))).toBeNull();
+    expect(
+      qualifiedSynthesisIssue(before, before.replace('blue', 'green').replace('gravel', 'stone')),
+    ).toBeNull();
+    expect(qualifiedSynthesisIssue(before, before.replace('blue.', 'blue.\nThe gate is green.'))).toMatch(
+      /protected range/,
+    );
+    expect(
+      qualifiedSynthesisIssue(before, before.replace('The gate is blue.', '- The gate is blue.')),
+    ).toMatch(/protected range/);
+    expect(qualifiedSynthesisIssue(before, before.replace('blue', 'maybe green'))).not.toBeNull();
+    expect(qualifiedSynthesisIssue(before, before.replace('Maybe visit', 'Visited'))).not.toBeNull();
+  });
+
+  it('does not rewrite a preceding claim owned by a later correction', () => {
+    const before = '# Notes\n\nThe gate is blue.\n\nCorrection: that was only a tentative report.\n';
+    expect(qualifiedSynthesisScope(before)!.editableLeads).toBe(0);
+    expect(qualifiedSynthesisIssue(before, before.replace('blue', 'green'))).not.toBeNull();
+  });
+
+  it('keeps CRLF protected bytes intact when editing a factual lead', () => {
+    const before = '# Notes\r\n\r\nThe gate is blue.\r\n\r\n> Maybe visit the north gate.\r\n';
+    expect(qualifiedSynthesisScope(before)!.editableLeads).toBe(1);
+    expect(qualifiedSynthesisIssue(before, before.replace('blue', 'green'))).toBeNull();
+    expect(qualifiedSynthesisIssue(before, before.replaceAll('\r\n', '\n'))).not.toBeNull();
   });
 
   it('keeps a correction with its earlier claim while admitting later independent facts', () => {

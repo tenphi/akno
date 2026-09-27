@@ -245,7 +245,8 @@ canonical page remains at its current slug. Suggest splits only for genuinely ov
 sections. Child suffixes are one lowercase hyphenated path segment. Do not add frontmatter.
 
 When protected ranges are supplied, preserve those ranges byte for byte, including their headings and
-whitespace. Factual content after the last protected block in the same section may be updated if independent
+whitespace. An existing factual paragraph before the first protected block may be edited in place without
+changing its line count; factual content after the last protected block may also be updated if independent
 of the qualification. Preserve every heading and the section order throughout the page, except
 the supported reclassification of unprotected temporal headings in an explicitly declared overview.
 Only integrate supported factual knowledge into independent factual areas. Do not split or extract,
@@ -341,6 +342,7 @@ a plan happened merely because its date passed, and reject restructuring with no
 post-event knowledge.`;
 
 const QUALIFIED_VERIFY = `Protected qualified ranges and their deciding context must remain verbatim.
+For an edited factual lead, check that it does not change the meaning or attribution of a later qualified block.
 Reject copying a quotation, report, hypothesis, option or cancelled plan into factual prose elsewhere,
 including paraphrases that claim the same thing happened. Unchanged qualified text is context to preserve,
 not factual evidence for another area. Check the new independent content against supplied evidence.
@@ -359,9 +361,9 @@ owned evidence. Exact duplicate lines may be deduplicated.`;
 export const VERIFY_SCHEMA = z.object({ ok: z.boolean(), issues: z.array(z.string()) });
 
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-// 19: admit independent factual tails after protected qualified blocks.
+// 20: admit existing factual leads before protected qualified blocks.
 // Decisions from the previous transformation surface must be reconsidered once.
-const CURATE_FINGERPRINT_VERSION = 19;
+const CURATE_FINGERPRINT_VERSION = 20;
 
 export async function curatePages(
   ctx: AknoContext,
@@ -536,7 +538,7 @@ export async function curatePages(
       discourse &&
       (row.dream_management !== 'synthesize' ||
         !allowedKinds.has('synthesis') ||
-        discourse.editableSections + discourse.editableTails === 0)
+        discourse.editableSections + discourse.editableLeads + discourse.editableTails === 0)
     ) {
       result.pages.push({
         slug: row.slug,
@@ -633,7 +635,7 @@ export async function curatePages(
               ? `\nTemporal boundary candidates explicitly present in this page: ${candidates.join(', ')}`
               : '') +
             (discourse
-              ? `\nProtected ranges (inclusive, body-relative lines): ${JSON.stringify(discourse.protectedSections)}. Preserve these ranges verbatim and section order; edit only independent factual sections or factual tails after a protected range. ${overview ? 'Only supported temporal headings outside protected ranges may change.' : 'Preserve all headings.'} Splits, extractions and temporal inference are unavailable.`
+              ? `\nProtected ranges (inclusive, body-relative lines): ${JSON.stringify(discourse.protectedSections)}. Preserve these ranges verbatim and section order; edit only independent factual sections, existing same-line-count factual leads before the first protected block, or factual tails after the last protected block. ${overview ? 'Only supported temporal headings outside protected ranges may change.' : 'Preserve all headings.'} Splits, extractions and temporal inference are unavailable.`
               : '') +
             (selection
               ? `\n\nEvidence coverage (partial is not absence): ${JSON.stringify(selection.coverage)}`
