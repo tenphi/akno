@@ -2,6 +2,8 @@ import { fromMarkdown } from 'mdast-util-from-markdown';
 import { hasNonfactualProse, proseQualifications } from '../kb/prose.ts';
 
 interface Section {
+  startOffset: number;
+  endOffset: number;
   firstLine: number;
   lastLine: number;
   heading: string;
@@ -9,9 +11,11 @@ interface Section {
 }
 
 export interface QualifiedSynthesisScope {
-  /** Body-relative, inclusive lines, including the section's deciding heading. */
+  /** Body-relative, inclusive protected ranges, including deciding heading/context lines. */
   protectedSections: { bodyLineStart: number; bodyLineEnd: number }[];
   editableSections: number;
+  /** Sections with an eligible factual tail after their last protected block. */
+  editableTails: number;
 }
 
 function sections(body: string): Section[] {
@@ -31,6 +35,8 @@ function sections(body: string): Section[] {
     const heading = headings.find((node) => node.position!.start.offset === start);
     const text = body.slice(start, end);
     return {
+      startOffset: start,
+      endOffset: end,
       firstLine: body.slice(0, start).split('\n').length,
       lastLine: body.slice(0, end).split('\n').length - (text.endsWith('\n') ? 1 : 0),
       heading: heading ? body.slice(start, heading.position!.end.offset!) : '',
@@ -43,19 +49,49 @@ function inspect(body: string) {
   const parts = sections(body);
   const qualifications = proseQualifications(body.split('\n'));
   const protectedIndexes = new Set<number>();
+  const contentQualified = new Set<number>();
+  const protectedEnds = new Map<number, number>();
+  const fullLocked = new Set<number>();
+  const blocks = fromMarkdown(body).children;
   const owner = (line: number) => parts.findIndex((part) => line >= part.firstLine && line <= part.lastLine);
+  const protect = (line: number) => {
+    const index = owner(line);
+    if (index < 0) return;
+    protectedIndexes.add(index);
+    const blockIndex = blocks.findIndex(
+      (block) => block.position!.start.line <= line && line <= block.position!.end.line,
+    );
+    if (blockIndex < 0) {
+      fullLocked.add(index);
+      return;
+    }
+    // Preserve the complete root Markdown block and its separating whitespace. A nested
+    // quote/list/code line cannot be detached from the syntax that gives it meaning.
+    const next = blocks[blockIndex + 1]?.position!.start.offset ?? parts[index]!.endOffset;
+    const end = Math.min(next, parts[index]!.endOffset);
+    protectedEnds.set(index, Math.max(protectedEnds.get(index) ?? 0, end));
+  };
   for (const [line, qualification] of qualifications) {
     if (qualification.answer_eligible || qualification.reason === 'heading') continue;
-    protectedIndexes.add(owner(line));
-    for (const frame of qualification.frame) protectedIndexes.add(owner(frame.n));
+    protect(line);
+    const index = owner(line);
+    contentQualified.add(index);
+    if (qualification.status === 'unresolved') fullLocked.add(index);
+    for (const frame of qualification.frame) protect(frame.n);
   }
+  // An ancestor heading is a deciding frame, not a content block that can open an
+  // edit window of its own. Its whole section remains stable.
+  for (const index of protectedIndexes) if (!contentQualified.has(index)) fullLocked.add(index);
   // Definitions can change the meaning of a reference in another section. Owned items have
   // their own semantics rather than ordinary prose qualifications; preserve their containers.
   for (const [i, part] of parts.entries()) {
-    if (/<!--\s*(?:akno:(?:item|observation)\b|source\s*-->)/.test(part.text)) protectedIndexes.add(i);
+    if (/<!--\s*(?:akno:(?:item|observation)\b|source\s*-->)/.test(part.text)) {
+      protectedIndexes.add(i);
+      fullLocked.add(i);
+    }
   }
   const definitions: { firstLine: number; text: string }[] = [];
-  const pending = [...fromMarkdown(body).children];
+  const pending = [...blocks];
   while (pending.length) {
     const node = pending.pop()!;
     if (node.type === 'definition')
@@ -65,23 +101,50 @@ function inspect(body: string) {
       });
     if ('children' in node) pending.push(...node.children);
   }
-  for (const definition of definitions) protectedIndexes.add(owner(definition.firstLine));
+  for (const definition of definitions) {
+    const index = owner(definition.firstLine);
+    if (index >= 0) {
+      protectedIndexes.add(index);
+      fullLocked.add(index);
+    }
+  }
   protectedIndexes.delete(-1);
-  return { parts, qualifications, protectedIndexes, definitions };
+  const protectedPrefixes = new Map(
+    [...protectedIndexes].map((index) => {
+      const part = parts[index]!;
+      const end = fullLocked.has(index) ? part.endOffset : (protectedEnds.get(index) ?? part.endOffset);
+      return [index, part.text.slice(0, end - part.startOffset)] as const;
+    }),
+  );
+  return { parts, qualifications, protectedIndexes, protectedPrefixes, fullLocked, definitions };
 }
 
-/** A bounded alternative to a whole-page hold; no independent section means no draft call. */
+function canAppendFactual(body: string, offset: number): boolean {
+  const prefix = body.slice(0, offset);
+  const probe = '\n\nThe gate is blue.\n\n';
+  const line = prefix.split('\n').length + 2;
+  return (
+    proseQualifications((prefix + probe + body.slice(offset)).split('\n')).get(line)?.answer_eligible ?? false
+  );
+}
+
+/** A bounded alternative to a whole-page hold; no independent factual area means no draft call. */
 export function qualifiedSynthesisScope(body: string): QualifiedSynthesisScope | null {
   if (!hasNonfactualProse(body)) return null;
-  const { parts, protectedIndexes } = inspect(body);
+  const { parts, protectedIndexes, protectedPrefixes, fullLocked } = inspect(body);
   return {
     protectedSections: [...protectedIndexes]
       .sort((a, b) => a - b)
       .map((i) => ({
         bodyLineStart: parts[i]!.firstLine,
-        bodyLineEnd: parts[i]!.lastLine,
+        bodyLineEnd:
+          body.slice(0, parts[i]!.startOffset + protectedPrefixes.get(i)!.length).split('\n').length -
+          (protectedPrefixes.get(i)!.endsWith('\n') ? 1 : 0),
       })),
-    editableSections: parts.filter((part, i) => !protectedIndexes.has(i) && part.text.trim()).length,
+    editableSections: parts.filter((part, i) => !protectedIndexes.has(i) && !!part.text.trim()).length,
+    editableTails: parts.filter(
+      (part, i) => protectedIndexes.has(i) && !fullLocked.has(i) && canAppendFactual(body, part.endOffset),
+    ).length,
   };
 }
 
@@ -104,8 +167,12 @@ export function qualifiedSynthesisIssue(
   )
     return 'Qualified synthesis must preserve every heading and its section order.';
   for (const i of prior.protectedIndexes) {
-    if (prior.parts[i]!.text !== next.parts[i]!.text)
-      return 'Qualified synthesis changed a protected section or its deciding context.';
+    if (
+      prior.fullLocked.has(i)
+        ? next.parts[i]!.text !== prior.parts[i]!.text
+        : !next.parts[i]!.text.startsWith(prior.protectedPrefixes.get(i)!)
+    )
+      return 'Qualified synthesis changed a protected range or its deciding context.';
   }
   if (next.definitions.length !== prior.definitions.length)
     return 'Qualified synthesis cannot add or remove global reference definitions.';

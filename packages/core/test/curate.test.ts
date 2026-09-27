@@ -322,7 +322,7 @@ describe('section-preserving synthesis', () => {
     expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(
       frontmatter + body + addition,
     );
-    expect(server.userMessages().some((text) => text.includes('Protected section ranges'))).toBe(true);
+    expect(server.userMessages().some((text) => text.includes('Protected ranges'))).toBe(true);
     const calls = server.calls();
     expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
     await mem.close();
@@ -332,6 +332,41 @@ describe('section-preserving synthesis', () => {
     expect(server.calls()).toBe(calls);
     await mem.undo({ change_id: item.changeId! });
     expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(frontmatter + body);
+  });
+
+  it('integrates supported knowledge after a quote in the same section', async () => {
+    const sameSection = body.replace('## Details\n\n', '');
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), frontmatter + sameSection);
+    server.qualifiedDraft(sameSection + addition);
+    await mem.index({ structuralOnly: true, verify: true });
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.curated[0]).toMatchObject({
+      action: 'updated',
+      discourse: { editableSections: 0, editableTails: 1 },
+    });
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(
+      frontmatter + sameSection + addition,
+    );
+    const calls = server.calls();
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+    expect(server.calls()).toBe(calls);
+    await mem.undo({ change_id: mem.plan(report.maintenancePlan!.id).items[0]!.changeId! });
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(frontmatter + sameSection);
+  });
+
+  it('allows an independent addition after a quote-only section', async () => {
+    const quoteOnly = '\n# Ada Marlow\n\n> Details are in the linked pages.\n';
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), frontmatter + quoteOnly);
+    server.qualifiedDraft(quoteOnly + addition);
+    await mem.index({ structuralOnly: true, verify: true });
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.curated[0]).toMatchObject({
+      action: 'updated',
+      discourse: { editableSections: 0, editableTails: 1 },
+    });
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(
+      frontmatter + quoteOnly + addition,
+    );
   });
 
   it('rejects changing a protected quotation before verification and caches the rejection', async () => {
@@ -364,7 +399,7 @@ describe('section-preserving synthesis', () => {
       mem.revisePlan(planned.id, item.id, {
         after: (frontmatter + body + addition).replace('> Details', 'Details'),
       }),
-    ).rejects.toThrow(/protected section/);
+    ).rejects.toThrow(/protected range/);
     expect(mem.plan(planned.id).items[0]!.revision).toBe(1);
     mem.decidePlan(planned.id, item.id, 'approve', 'Apply the preserved-section fixture.');
     const applied = await mem.applyPlan(planned.id, { idempotencyKey: 'qualified-fixture-apply' });
@@ -410,7 +445,7 @@ describe('section-preserving synthesis', () => {
   });
 
   it('makes no model call when every section is protected', async () => {
-    const protectedOnly = frontmatter + '\n# Ada Marlow\n\n> An attributed report.\n';
+    const protectedOnly = frontmatter + '\n# Ada Marlow\n\n## Reports\n\nAn attributed report.\n';
     fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), protectedOnly);
     await mem.index({ structuralOnly: true, verify: true });
     const calls = server.calls();
