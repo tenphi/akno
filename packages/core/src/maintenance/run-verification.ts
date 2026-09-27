@@ -130,7 +130,7 @@ export async function verifyDreamRun(
     for (const operation of item.operations) addOperationPaths(paths, operation);
     const laterPaths = superseded.get(item.changeId!) ?? new Set<string>();
     // Immediate verification proved the old bytes; later applied writes now own these paths.
-    if (laterPaths.size === paths.size) continue;
+    if (paths.size > 0 && laterPaths.size === paths.size) continue;
     try {
       if (
         !(await reverifyAppliedMaintenanceItem(
