@@ -604,6 +604,23 @@ describe('declared overview refresh', () => {
     expect(fs.readFileSync(file(), 'utf8')).toBe(fm + body);
   });
 
+  it('corrects a year-qualified heading for an unresolved dated link without rewriting the link or table', async () => {
+    vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
+    const legacyBody =
+      '# Journey index\n\n## Upcoming Trips (2034)\n\n- [[old-target|Blackwater Bay (Apr 3 - Apr 5)]]\n\n## Quick Reference Table\n\n| Journey | State |\n| --- | --- |\n| [[old-target]] | planning |\n';
+    const authored = fm.replace('type: overview', 'type: overview\nyear: 2034') + legacyBody;
+    fs.writeFileSync(file(), authored);
+    await mem.index({ structuralOnly: true, verify: true });
+    const corrected = legacyBody.replace('## Upcoming Trips (2034)', '## Past Trips (2034)');
+    server.qualifiedDraft(corrected);
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+    expect(report.curated[0]).toMatchObject({ action: 'updated', issues: [] });
+    expect(fs.readFileSync(file(), 'utf8')).toBe(authored.replace(legacyBody, corrected));
+    const calls = server.calls();
+    expect((await mem.dream({ phase: 'curate', mode: 'auto' })).curated).toEqual([]);
+    expect(server.calls()).toBe(calls);
+  });
+
   it('adds a newly discovered member, preserves unresolved links, and converges', async () => {
     const original = body + '\n## Reference\n\n[[journeys/legacy-target]]\n';
     fs.writeFileSync(file(), fm + original);
