@@ -14,6 +14,8 @@ export interface QualifiedSynthesisScope {
   /** Body-relative, inclusive protected ranges, including deciding heading/context lines. */
   protectedSections: { bodyLineStart: number; bodyLineEnd: number }[];
   editableSections: number;
+  /** Sections with existing factual lead prose that can change without moving protected lines. */
+  editableLeads: number;
   /** Sections with an eligible factual tail after their last protected block. */
   editableTails: number;
 }
@@ -50,17 +52,19 @@ function inspect(body: string) {
   const qualifications = proseQualifications(body.split('\n'));
   const protectedIndexes = new Set<number>();
   const contentQualified = new Set<number>();
+  const contentStarts = new Map<number, number>();
   const protectedEnds = new Map<number, number>();
   const fullLocked = new Set<number>();
   const blocks = fromMarkdown(body).children;
   const owner = (line: number) => parts.findIndex((part) => line >= part.firstLine && line <= part.lastLine);
+  const rootBlock = (line: number) =>
+    blocks.find((block) => block.position!.start.line <= line && line <= block.position!.end.line);
   const protect = (line: number) => {
     const index = owner(line);
     if (index < 0) return;
     protectedIndexes.add(index);
-    const blockIndex = blocks.findIndex(
-      (block) => block.position!.start.line <= line && line <= block.position!.end.line,
-    );
+    const block = rootBlock(line);
+    const blockIndex = block ? blocks.indexOf(block) : -1;
     if (blockIndex < 0) {
       fullLocked.add(index);
       return;
@@ -77,6 +81,11 @@ function inspect(body: string) {
     const index = owner(line);
     contentQualified.add(index);
     if (qualification.status === 'unresolved') fullLocked.add(index);
+    const blockStart = rootBlock(line)?.position!.start.offset;
+    if (index >= 0 && blockStart !== undefined) {
+      const lineStart = body.lastIndexOf('\n', blockStart - 1) + 1;
+      contentStarts.set(index, Math.min(contentStarts.get(index) ?? lineStart, lineStart));
+    }
     for (const frame of qualification.frame) protect(frame.n);
   }
   // An ancestor heading is a deciding frame, not a content block that can open an
@@ -116,7 +125,36 @@ function inspect(body: string) {
       return [index, part.text.slice(0, end - part.startOffset)] as const;
     }),
   );
-  return { parts, qualifications, protectedIndexes, protectedPrefixes, fullLocked, definitions };
+  const eligibleLeads = new Set(
+    [...protectedIndexes].filter((index) => {
+      const start = contentStarts.get(index);
+      const startLine = start === undefined ? -1 : body.slice(0, start).split('\n').length;
+      return (
+        !fullLocked.has(index) &&
+        start !== undefined &&
+        [...qualifications].some(
+          ([line, q]) => q.answer_eligible && owner(line) === index && line < startLine,
+        )
+      );
+    }),
+  );
+  const protectedMiddles = new Map(
+    [...eligibleLeads].map((index) => [
+      index,
+      body.slice(contentStarts.get(index)!, protectedEnds.get(index) ?? parts[index]!.endOffset),
+    ]),
+  );
+  return {
+    parts,
+    qualifications,
+    protectedIndexes,
+    protectedPrefixes,
+    protectedMiddles,
+    contentStarts,
+    eligibleLeads,
+    fullLocked,
+    definitions,
+  };
 }
 
 function canAppendFactual(body: string, offset: number): boolean {
@@ -131,17 +169,41 @@ function canAppendFactual(body: string, offset: number): boolean {
 /** A bounded alternative to a whole-page hold; no independent factual area means no draft call. */
 export function qualifiedSynthesisScope(body: string): QualifiedSynthesisScope | null {
   if (!hasNonfactualProse(body)) return null;
-  const { parts, protectedIndexes, protectedPrefixes, fullLocked } = inspect(body);
+  const { parts, protectedIndexes, protectedPrefixes, contentStarts, eligibleLeads, fullLocked } =
+    inspect(body);
+  const lineAt = (offset: number) => body.slice(0, offset).split('\n').length;
+  const endLineAt = (offset: number) => lineAt(offset) - (body[offset - 1] === '\n' ? 1 : 0);
   return {
     protectedSections: [...protectedIndexes]
       .sort((a, b) => a - b)
-      .map((i) => ({
-        bodyLineStart: parts[i]!.firstLine,
-        bodyLineEnd:
-          body.slice(0, parts[i]!.startOffset + protectedPrefixes.get(i)!.length).split('\n').length -
-          (protectedPrefixes.get(i)!.endsWith('\n') ? 1 : 0),
-      })),
+      .flatMap((i) => {
+        const part = parts[i]!;
+        if (eligibleLeads.has(i)) {
+          const heading = part.heading
+            ? [
+                {
+                  bodyLineStart: part.firstLine,
+                  bodyLineEnd: endLineAt(part.startOffset + part.heading.length),
+                },
+              ]
+            : [];
+          return [
+            ...heading,
+            {
+              bodyLineStart: lineAt(contentStarts.get(i)!),
+              bodyLineEnd: endLineAt(part.startOffset + protectedPrefixes.get(i)!.length),
+            },
+          ];
+        }
+        return [
+          {
+            bodyLineStart: part.firstLine,
+            bodyLineEnd: endLineAt(part.startOffset + protectedPrefixes.get(i)!.length),
+          },
+        ];
+      }),
     editableSections: parts.filter((part, i) => !protectedIndexes.has(i) && !!part.text.trim()).length,
+    editableLeads: eligibleLeads.size,
     editableTails: parts.filter(
       (part, i) => protectedIndexes.has(i) && !fullLocked.has(i) && canAppendFactual(body, part.endOffset),
     ).length,
@@ -167,10 +229,32 @@ export function qualifiedSynthesisIssue(
   )
     return 'Qualified synthesis must preserve every heading and its section order.';
   for (const i of prior.protectedIndexes) {
+    const middleAtOriginalLine = () => {
+      const part = prior.parts[i]!;
+      const lineIndex =
+        part.text.slice(0, prior.contentStarts.get(i)! - part.startOffset).split('\n').length - 1;
+      const text = next.parts[i]!.text;
+      let offset = 0;
+      for (let n = 0; n < lineIndex; n++) {
+        const newline = text.indexOf('\n', offset);
+        if (newline < 0) return false;
+        offset = newline + 1;
+      }
+      // Keep the same root block kinds and count before the quotation. This permits an in-place
+      // factual rewrite while refusing a new paragraph, list, or container at that boundary.
+      const leadShape = (value: string) => fromMarkdown(value).children.map((node) => node.type);
+      if (
+        JSON.stringify(leadShape(part.text.slice(0, prior.contentStarts.get(i)! - part.startOffset))) !==
+        JSON.stringify(leadShape(text.slice(0, offset)))
+      )
+        return false;
+      return text.slice(offset).startsWith(prior.protectedMiddles.get(i)!);
+    };
     if (
       prior.fullLocked.has(i)
         ? next.parts[i]!.text !== prior.parts[i]!.text
-        : !next.parts[i]!.text.startsWith(prior.protectedPrefixes.get(i)!)
+        : !next.parts[i]!.text.startsWith(prior.protectedPrefixes.get(i)!) &&
+          !(prior.eligibleLeads.has(i) && middleAtOriginalLine())
     )
       return 'Qualified synthesis changed a protected range or its deciding context.';
   }
