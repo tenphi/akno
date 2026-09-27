@@ -392,6 +392,52 @@ describe('section-preserving synthesis', () => {
     expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(frontmatter + before);
   });
 
+  it('updates a supported fact between quotations, converges, and undoes exact bytes', async () => {
+    const before =
+      '\n# Ada Marlow\n\n> The collection might grow.\n\nAda Marlow maintains a brass compass collection.\n\n> Details are in the linked pages.\n';
+    const after = before.replace(
+      'brass compass collection.',
+      'brass compass collection, including a silver compass. [[evidence/collection]]',
+    );
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), frontmatter + before);
+    server.qualifiedDraft(after);
+    await mem.index({ structuralOnly: true, verify: true });
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.curated[0]).toMatchObject({
+      action: 'updated',
+      discourse: { editableSections: 0, editableLeads: 0, editableMiddles: 1 },
+    });
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(frontmatter + after);
+    const calls = server.calls();
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+    expect(server.calls()).toBe(calls);
+    await mem.undo({ change_id: mem.plan(report.maintenancePlan!.id).items[0]!.changeId! });
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(frontmatter + before);
+  });
+
+  it('rejects a reviewed middle edit that changes a protected quotation', async () => {
+    const before =
+      '\n# Ada Marlow\n\n> The collection might grow.\n\nAda Marlow maintains a brass compass collection.\n\n> Details are in the linked pages.\n';
+    const after = before.replace(
+      'brass compass collection.',
+      'brass compass collection, including a silver compass. [[evidence/collection]]',
+    );
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), frontmatter + before);
+    server.qualifiedDraft(after);
+    await mem.index({ structuralOnly: true, verify: true });
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const item = mem.plan(planned.id).items[0]!;
+    await expect(
+      mem.revisePlan(planned.id, item.id, {
+        after: (frontmatter + after).replace('> Details', '> Other details'),
+      }),
+    ).rejects.toThrow(/protected range/);
+    mem.decidePlan(planned.id, item.id, 'approve', 'Apply the preserved-quote fixture.');
+    const applied = await mem.applyPlan(planned.id);
+    expect(applied.plan.items[0]!.status).toBe('applied');
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(frontmatter + after);
+  });
+
   it('rejects a reviewed lead edit that also changes the protected quote', async () => {
     const before =
       '\n# Ada Marlow\n\nAda Marlow maintains a brass compass collection.\n\n> Details are in the linked pages.\n';

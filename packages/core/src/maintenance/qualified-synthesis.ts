@@ -16,6 +16,8 @@ export interface QualifiedSynthesisScope {
   editableSections: number;
   /** Sections with existing factual lead prose that can change without moving protected lines. */
   editableLeads: number;
+  /** Existing factual spans between protected blocks that can change in place. */
+  editableMiddles: number;
   /** Sections with an eligible factual tail after their last protected block. */
   editableTails: number;
 }
@@ -53,6 +55,7 @@ function inspect(body: string) {
   const protectedIndexes = new Set<number>();
   const contentQualified = new Set<number>();
   const contentStarts = new Map<number, number>();
+  const protectedBlocks = new Map<number, Map<number, { start: number; end: number }>>();
   const protectedEnds = new Map<number, number>();
   const fullLocked = new Set<number>();
   const blocks = fromMarkdown(body).children;
@@ -65,7 +68,7 @@ function inspect(body: string) {
     protectedIndexes.add(index);
     const block = rootBlock(line);
     const blockIndex = block ? blocks.indexOf(block) : -1;
-    if (blockIndex < 0) {
+    if (!block || blockIndex < 0) {
       fullLocked.add(index);
       return;
     }
@@ -74,6 +77,17 @@ function inspect(body: string) {
     const next = blocks[blockIndex + 1]?.position!.start.offset ?? parts[index]!.endOffset;
     const end = Math.min(next, parts[index]!.endOffset);
     protectedEnds.set(index, Math.max(protectedEnds.get(index) ?? 0, end));
+    if (block.type !== 'heading') {
+      const start = body.lastIndexOf('\n', block.position!.start.offset! - 1) + 1;
+      const nextStart = blocks[blockIndex + 1]?.position!.start.offset;
+      const blockEnd =
+        nextStart === undefined
+          ? parts[index]!.endOffset
+          : Math.min(body.lastIndexOf('\n', nextStart - 1) + 1, parts[index]!.endOffset);
+      const ranges = protectedBlocks.get(index) ?? new Map();
+      ranges.set(start, { start, end: blockEnd });
+      protectedBlocks.set(index, ranges);
+    }
   };
   for (const [line, qualification] of qualifications) {
     if (qualification.answer_eligible || qualification.reason === 'heading') continue;
@@ -144,12 +158,33 @@ function inspect(body: string) {
       body.slice(contentStarts.get(index)!, protectedEnds.get(index) ?? parts[index]!.endOffset),
     ]),
   );
+  const middleWindows = new Map(
+    [...protectedIndexes].map((index) => {
+      const ranges = [...(protectedBlocks.get(index)?.values() ?? [])].sort((a, b) => a.start - b.start);
+      const windows = ranges.slice(1).flatMap((range, position) => {
+        const start = ranges[position]!.end;
+        const end = range.start;
+        const startLine = body.slice(0, start).split('\n').length;
+        const endLine = body.slice(0, end).split('\n').length;
+        return !fullLocked.has(index) &&
+          end > start &&
+          [...qualifications].some(
+            ([line, q]) => q.answer_eligible && owner(line) === index && line >= startLine && line < endLine,
+          )
+          ? [{ start, end }]
+          : [];
+      });
+      return [index, windows] as const;
+    }),
+  );
   return {
     parts,
     qualifications,
     protectedIndexes,
     protectedPrefixes,
     protectedMiddles,
+    protectedBlocks,
+    middleWindows,
     contentStarts,
     eligibleLeads,
     fullLocked,
@@ -169,8 +204,15 @@ function canAppendFactual(body: string, offset: number): boolean {
 /** A bounded alternative to a whole-page hold; no independent factual area means no draft call. */
 export function qualifiedSynthesisScope(body: string): QualifiedSynthesisScope | null {
   if (!hasNonfactualProse(body)) return null;
-  const { parts, protectedIndexes, protectedPrefixes, contentStarts, eligibleLeads, fullLocked } =
-    inspect(body);
+  const {
+    parts,
+    protectedIndexes,
+    protectedPrefixes,
+    contentStarts,
+    eligibleLeads,
+    middleWindows,
+    fullLocked,
+  } = inspect(body);
   const lineAt = (offset: number) => body.slice(0, offset).split('\n').length;
   const endLineAt = (offset: number) => lineAt(offset) - (body[offset - 1] === '\n' ? 1 : 0);
   return {
@@ -178,32 +220,25 @@ export function qualifiedSynthesisScope(body: string): QualifiedSynthesisScope |
       .sort((a, b) => a - b)
       .flatMap((i) => {
         const part = parts[i]!;
-        if (eligibleLeads.has(i)) {
-          const heading = part.heading
-            ? [
-                {
-                  bodyLineStart: part.firstLine,
-                  bodyLineEnd: endLineAt(part.startOffset + part.heading.length),
-                },
-              ]
-            : [];
-          return [
-            ...heading,
-            {
-              bodyLineStart: lineAt(contentStarts.get(i)!),
-              bodyLineEnd: endLineAt(part.startOffset + protectedPrefixes.get(i)!.length),
-            },
-          ];
-        }
-        return [
-          {
+        const ranges = [];
+        if (eligibleLeads.has(i) && part.heading)
+          ranges.push({
             bodyLineStart: part.firstLine,
-            bodyLineEnd: endLineAt(part.startOffset + protectedPrefixes.get(i)!.length),
-          },
-        ];
+            bodyLineEnd: endLineAt(part.startOffset + part.heading.length),
+          });
+        let cursor = eligibleLeads.has(i) ? contentStarts.get(i)! : part.startOffset;
+        for (const window of middleWindows.get(i) ?? []) {
+          if (window.start > cursor)
+            ranges.push({ bodyLineStart: lineAt(cursor), bodyLineEnd: endLineAt(window.start) });
+          cursor = window.end;
+        }
+        const end = part.startOffset + protectedPrefixes.get(i)!.length;
+        if (end > cursor) ranges.push({ bodyLineStart: lineAt(cursor), bodyLineEnd: endLineAt(end) });
+        return ranges;
       }),
     editableSections: parts.filter((part, i) => !protectedIndexes.has(i) && !!part.text.trim()).length,
     editableLeads: eligibleLeads.size,
+    editableMiddles: [...middleWindows.values()].reduce((sum, windows) => sum + windows.length, 0),
     editableTails: parts.filter(
       (part, i) => protectedIndexes.has(i) && !fullLocked.has(i) && canAppendFactual(body, part.endOffset),
     ).length,
@@ -229,6 +264,47 @@ export function qualifiedSynthesisIssue(
   )
     return 'Qualified synthesis must preserve every heading and its section order.';
   for (const i of prior.protectedIndexes) {
+    const middles = prior.middleWindows.get(i) ?? [];
+    const blocks = [...(prior.protectedBlocks.get(i)?.values() ?? [])].sort((a, b) => a.start - b.start);
+    const middleBlocksAtOriginalLines = () => {
+      const oldPart = prior.parts[i]!;
+      const newText = next.parts[i]!.text;
+      const atLine = (line: number) => {
+        let offset = 0;
+        for (let n = 0; n < line; n++) {
+          const newline = newText.indexOf('\n', offset);
+          if (newline < 0) return -1;
+          offset = newline + 1;
+        }
+        return offset;
+      };
+      const relativeLine = (offset: number) =>
+        before.slice(oldPart.startOffset, offset).split('\n').length - 1;
+      const shape = (value: string) => fromMarkdown(value).children.map((node) => node.type);
+      let gapStart = oldPart.startOffset;
+      for (const [position, block] of blocks.entries()) {
+        const afterGapStart = atLine(relativeLine(gapStart));
+        const afterBlockStart = atLine(relativeLine(block.start));
+        if (afterGapStart < 0 || afterBlockStart < 0) return false;
+        const oldGap = before.slice(gapStart, block.start);
+        const newGap = newText.slice(afterGapStart, afterBlockStart);
+        const editable =
+          (position === 0 && prior.eligibleLeads.has(i)) ||
+          middles.some((window) => window.start === gapStart && window.end === block.start);
+        if (editable ? JSON.stringify(shape(oldGap)) !== JSON.stringify(shape(newGap)) : oldGap !== newGap)
+          return false;
+        const protectedText = before.slice(block.start, block.end);
+        if (!newText.slice(afterBlockStart).startsWith(protectedText)) return false;
+        // A final block without a terminating newline cannot acquire more words on its
+        // protected line merely because its old bytes remain a string prefix.
+        if (block.end === oldPart.endOffset && !protectedText.endsWith('\n')) {
+          const following = newText[afterBlockStart + protectedText.length];
+          if (following !== undefined && following !== '\n') return false;
+        }
+        gapStart = block.end;
+      }
+      return true;
+    };
     const middleAtOriginalLine = () => {
       const part = prior.parts[i]!;
       const lineIndex =
@@ -253,13 +329,17 @@ export function qualifiedSynthesisIssue(
     if (
       prior.fullLocked.has(i)
         ? next.parts[i]!.text !== prior.parts[i]!.text
-        : !next.parts[i]!.text.startsWith(prior.protectedPrefixes.get(i)!) &&
-          !(prior.eligibleLeads.has(i) && middleAtOriginalLine())
+        : middles.length
+          ? !middleBlocksAtOriginalLines()
+          : !next.parts[i]!.text.startsWith(prior.protectedPrefixes.get(i)!) &&
+            !(prior.eligibleLeads.has(i) && middleAtOriginalLine())
     )
       return 'Qualified synthesis changed a protected range or its deciding context.';
   }
   if (next.definitions.length !== prior.definitions.length)
     return 'Qualified synthesis cannot add or remove global reference definitions.';
+  if ([...next.fullLocked].some((i) => prior.protectedIndexes.has(i) && !prior.fullLocked.has(i)))
+    return 'Qualified synthesis introduced owned or unresolved content into an editable section.';
   if ([...next.protectedIndexes].some((i) => !prior.protectedIndexes.has(i)))
     return 'Qualified synthesis introduced protected context or owned content into an independent section.';
   // Reproject the complete result. Keeping literal text alone is insufficient: a new frame
