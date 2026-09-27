@@ -1,5 +1,19 @@
 # @tenphi/akno-core
 
+## 0.15.6
+
+### Patch Changes
+
+- [#113](https://github.com/tenphi/akno/pull/113) [`e3092aa`](https://github.com/tenphi/akno/commit/e3092aab223614f9f3fdb49f97ba73c67cca2b8c) Thanks [@tenphi](https://github.com/tenphi)! - Allow synthesis to use eligible facts and targeted events from mixed-content evidence pages while preserving
+  their full-page qualifications. Report bounded evidence coverage and exclusions, withhold unsafe summaries,
+  filter conflict evidence through the same checks, and revalidate sealed source spans before applying a plan.
+
+- [#115](https://github.com/tenphi/akno/pull/115) [`25f19c7`](https://github.com/tenphi/akno/commit/25f19c7441ae2964672bfba747198f33aeeea1fc) Thanks [@tenphi](https://github.com/tenphi)! - Refresh explicitly scoped synthesis overviews when indexed members change or their schedule boundaries
+  pass. Report bounded membership coverage, accept supported temporal section corrections without inferring
+  completion, and revalidate membership and schedule phases before applying saved plans.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.15.6
+
 ## 0.15.5
 
 ### Patch Changes

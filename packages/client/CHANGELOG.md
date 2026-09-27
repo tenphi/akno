@@ -1,5 +1,12 @@
 # @tenphi/akno-client
 
+## 0.15.6
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.15.6
+
 ## 0.15.5
 
 ### Patch Changes
