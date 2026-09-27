@@ -1,5 +1,19 @@
 # @tenphi/akno-core
 
+## 0.15.8
+
+### Patch Changes
+
+- [#120](https://github.com/tenphi/akno/pull/120) [`b98edbe`](https://github.com/tenphi/akno/commit/b98edbe8196bd02d72d6ddbc466f8ab47b02a672) Thanks [@tenphi](https://github.com/tenphi)! - Reconcile past-dated overview entries across headings and status tables, keep elapsed plans distinct from confirmed completion, and retry rejected scoped overviews after a cooldown.
+
+- [#122](https://github.com/tenphi/akno/pull/122) [`0b07ceb`](https://github.com/tenphi/akno/commit/0b07cebf8daa6e1de905f561c1420305593618c9) Thanks [@tenphi](https://github.com/tenphi)! - Allow in-place, evidence-verified synthesis of an existing factual paragraph before a protected qualified block while preserving its heading, block layout, and discourse context.
+
+- [#121](https://github.com/tenphi/akno/pull/121) [`ce6ad06`](https://github.com/tenphi/akno/commit/ce6ad0665b22d048d4a6dd2b0ae36d9f55c63fd6) Thanks [@tenphi](https://github.com/tenphi)! - Allow synthesis to update an independent factual tail after a protected quotation or plan in the same section, while preserving the qualified block and its deciding context through draft, review, and apply.
+
+- [#118](https://github.com/tenphi/akno/pull/118) [`9f14134`](https://github.com/tenphi/akno/commit/9f14134f9498c3ab2dc514d843c0024f8ec8f401) Thanks [@tenphi](https://github.com/tenphi)! - Verify the last applied writer in journal order for each path in a maintenance run, while retaining checks for surviving paths of earlier managed-item repairs and excluding rolled-back or older plan history.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.15.8
+
 ## 0.15.7
 
 ### Patch Changes
