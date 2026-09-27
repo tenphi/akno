@@ -8,6 +8,7 @@ describe('qualified synthesis sections', () => {
     expect(qualifiedSynthesisScope(body)).toEqual({
       protectedSections: [{ bodyLineStart: 1, bodyLineEnd: 4 }],
       editableSections: 1,
+      editableTails: 1,
     });
     expect(qualifiedSynthesisIssue(body, body + 'The gate opens at noon.\n')).toBeNull();
   });
@@ -98,8 +99,53 @@ describe('qualified synthesis sections', () => {
     ).toBeNull();
   });
 
-  it('holds a page without an independent section', () => {
-    expect(qualifiedSynthesisScope('# Notes\n\n> The gate is red.\n')!.editableSections).toBe(0);
+  it('allows a factual tail after a quotation but holds a heading-scoped report', () => {
+    const quoteOnly = '# Notes\n\n> The gate is red.\n';
+    expect(qualifiedSynthesisScope(quoteOnly)).toMatchObject({ editableSections: 0, editableTails: 1 });
+    expect(qualifiedSynthesisIssue(quoteOnly, quoteOnly + '\nThe path runs west.\n')).toBeNull();
+    expect(qualifiedSynthesisIssue(quoteOnly, quoteOnly + '\nThe gate is red.\n')).toMatch(
+      /copied qualified/,
+    );
+    expect(qualifiedSynthesisIssue(quoteOnly, quoteOnly.replace('> The gate', 'The gate'))).toMatch(
+      /protected range/,
+    );
+    expect(qualifiedSynthesisScope('# Notes\n\n## Reports\n\nThe gate is red.\n')).toMatchObject({
+      editableSections: 0,
+      editableTails: 0,
+    });
+  });
+
+  it('edits a factual tail in the same section while protecting a complete nested list block', () => {
+    const before =
+      '# Notes\n\n- > Maybe visit the north gate.\n  > Keep the option open.\n\nThe path is gravel.\n';
+    expect(qualifiedSynthesisScope(before)).toMatchObject({ editableSections: 0, editableTails: 1 });
+    expect(
+      qualifiedSynthesisIssue(before, before.replace('The path is gravel.', 'The path runs west.')),
+    ).toBeNull();
+    expect(
+      qualifiedSynthesisIssue(before, before.replace('Keep the option open.', 'Take the option.')),
+    ).not.toBeNull();
+    expect(qualifiedSynthesisIssue(before, before.replace('Maybe visit', 'Visited'))).not.toBeNull();
+  });
+
+  it('keeps a correction with its earlier claim while admitting later independent facts', () => {
+    const before =
+      '# Notes\n\nThe gate is blue.\n\nCorrection: that was only a tentative report.\n\nThe path is gravel.\n';
+    expect(qualifiedSynthesisScope(before)).toMatchObject({ editableSections: 0, editableTails: 1 });
+    expect(qualifiedSynthesisIssue(before, before.replace('gravel', 'stone'))).toBeNull();
+    expect(qualifiedSynthesisIssue(before, before.replace('blue', 'red'))).not.toBeNull();
+  });
+
+  it('does not open a tail when the protected qualification has unresolved context', () => {
+    const before = '# Notes\n\n> ' + 'blue '.repeat(500) + '\n';
+    expect(qualifiedSynthesisScope(before)).toMatchObject({ editableSections: 0, editableTails: 0 });
+    expect(qualifiedSynthesisIssue(before, before + '\nThe path runs west.\n')).toMatch(/protected range/);
+  });
+
+  it('preserves CRLF bytes while allowing a factual tail after a quote', () => {
+    const before = '# Notes\r\n\r\n> The gate is red.\r\n';
+    expect(qualifiedSynthesisIssue(before, before + '\r\nThe path runs west.\r\n')).toBeNull();
+    expect(qualifiedSynthesisIssue(before, before.replaceAll('\r\n', '\n'))).toMatch(/protected range/);
   });
 
   it('refuses promoting a heading-scoped report into an independent asserted section', () => {
@@ -107,6 +153,9 @@ describe('qualified synthesis sections', () => {
     expect(qualifiedSynthesisIssue(before, before + '\n- **The gate is red.**\n')).toMatch(
       /copied qualified/,
     );
+    expect(
+      qualifiedSynthesisIssue(before, before.replace('## Reports', 'The path runs west.\n\n## Reports')),
+    ).toMatch(/protected range/);
   });
 
   it('preserves a pre-existing assertion that also appears in a quotation', () => {

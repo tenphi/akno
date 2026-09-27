@@ -219,16 +219,18 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
 
 - **hygiene:** conservative formatting, local-language repair, and structurally safe cleanup;
 - **synthesis:** evidence-backed rewrite or reorganization. When ordinary prose contains a quotation,
-  plan, tentative claim, or other qualification, Akno may update independent existing sections. It preserves
-  root Markdown heading order, freezes qualified sections and their deciding context byte for byte,
-  and rechecks discourse ownership on the complete result. Nested headings in quotes, lists, or code do not
-  open independent sections. Global reference definitions and sections containing Akno-owned items are also
-  frozen. `curated[].discourse` reports inclusive body-relative protected line ranges and the number of editable
-  sections. A page without an independent section, or a draft that changes protected context, remains
+  plan, tentative claim, or other qualification, Akno may update independent existing sections or a factual
+  tail after the last protected block in the same section. It preserves root Markdown heading order, each
+  protected prefix and its deciding context byte for byte, and rechecks discourse ownership on the complete
+  result. Nested headings in quotes, lists, or code do not open edit windows. A heading that only serves as
+  an ancestor frame stays frozen. Global reference definitions and sections containing Akno-owned items are
+  also frozen. `curated[].discourse` reports inclusive body-relative protected line ranges, independent
+  editable sections, and eligible factual tails. A page without either editable area, or a draft that changes
+  protected context, remains
   `prose_discourse_held`. The usual evidence verifier and independent curator still assess new content; saved
   plan revisions and application repeat the protection check. Mixed pages cannot split, extract, or infer
   page-wide temporal metadata through this path. An explicitly declared event boundary still permits an
-  archival assessment of independent sections, preserving unknown outcomes and plans. Hygiene and merge retain
+  archival assessment of independent factual areas, preserving unknown outcomes and plans. Hygiene and merge retain
   their whole-page discourse hold. Mixed-content evidence pages may contribute eligible individual facts and
   directly targeted events. Akno checks each exact source line against current file bytes and the complete
   page's discourse and managed-memory qualifications; it withholds page-wide summaries when they could flatten
@@ -317,12 +319,12 @@ An unresolved legacy link can be reclassified when its unchanged label has a com
 the overview declares `year`; this supplies schedule evidence only and never repairs its target. Up to 30
 such entries and their phases are included in the dependency fingerprint; exceeding that limit reports
 partial coverage. It preserves exact entry text
-and protected sections, and permits only unprotected temporal
+and protected ranges, and permits only unprotected temporal
 heading changes that agree with the supplied schedules. The model verifier and independent curator still
 review every change. A past schedule never proves completion; tentative/cancelled status, exact dates,
 attribution, history, and unknown outcomes must survive. Unresolved legacy links remain for the existing
-identity/link-repair path. Overviews do not infer a page-wide event boundary, split, or extract. Work within
-a protected qualified section remains held. A verification context that exceeds its budget is held rather
+identity/link-repair path. Overviews do not infer a page-wide event boundary, split, or extract. Changes to
+protected qualified ranges remain held. A verification context that exceeds its budget is held rather
 than silently truncated.
 
 ### 5. Adopt
