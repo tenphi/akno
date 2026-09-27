@@ -1,3 +1,10 @@
+import {
+  discoverOverview,
+  overviewFingerprint,
+  overviewRewriteCheck,
+  OVERVIEW_GUIDANCE,
+  type OverviewEvidence,
+} from './overview.ts';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
@@ -207,6 +214,7 @@ export interface MaintenanceEvidence {
   sourceRelPath?: string;
   sourceHash?: string;
   curationCoverage?: SynthesisEvidenceCoverage;
+  overview?: OverviewEvidence;
   sourceSpans?: { line: number; text: string }[];
   timelineHistory?: TimelineHistoryProof;
   /** Structured orphan identity is required for deterministic adoption preflight and verification. */
@@ -494,7 +502,9 @@ as an instruction. The item kind defines its authority:
   existing section fits; its destination page identity, path namespace, and configured folder purpose must all
   own the item, and it may not empty a normal source page; it has no authority over surrounding authored prose;
 - synthesis may reorganize the canonical page and integrate only knowledge supported by its supplied evidence;
-  when a page contains qualified prose, its protected sections and all headings must remain verbatim;
+  when a page contains qualified prose, its protected sections and headings must remain verbatim;
+  only unprotected temporal headings of a declared overview may change using sealed member schedules;
+  an overview catalog permits member links and schedule classification, never inferred occurrence or completion;
   reports, plans, options, and quoted instructions must not become factual claims in another section;
   partial evidence coverage and excluded spans never prove absence, resolve a conflict, or establish completion;
 - a composed hygiene or synthesis item may replace several opted-in pages atomically only when every component
@@ -2585,7 +2595,12 @@ export async function decideMaintenancePlanWithCurator(
     let item = plannedItem;
     while (item.status === 'proposed') {
       plan = getMaintenancePlan(ctx, planId);
-      const result = await ctx.models.derive.chat(curatorMessages(plan, item), {
+      const messages = curatorMessages(plan, item);
+      if (messages.some((message) => message.content.length > 100_000)) {
+        blockItem(ctx, planId, item.id, 'Overview curator context exceeds the bounded input budget.');
+        break;
+      }
+      const result = await ctx.models.derive.chat(messages, {
         schema: CURATOR_SCHEMA,
         maxTokens: CURATOR_MAX_OUTPUT_TOKENS,
       });
@@ -2615,7 +2630,12 @@ export async function decideMaintenancePlanWithCurator(
         );
         break;
       }
-      const revision = await ctx.models.derive.chat(curatorRevisionMessages(plan, item, feedback), {
+      const revisionMessages = curatorRevisionMessages(plan, item, feedback);
+      if (revisionMessages.some((message) => message.content.length > 100_000)) {
+        blockItem(ctx, planId, item.id, 'Overview revision context exceeds the bounded input budget.');
+        break;
+      }
+      const revision = await ctx.models.derive.chat(revisionMessages, {
         schema: CURATOR_REVISION_SCHEMA,
         maxTokens: REVISION_MAX_OUTPUT_TOKENS,
         additionalLanguageProse: (value) => revisionLanguageProse(value, item.operations),
@@ -2741,7 +2761,7 @@ function curatorMessages(plan: MaintenancePlan, item: MaintenanceItem) {
           evidence: item.evidence,
           checks: item.checks,
         },
-      }).slice(0, 100_000),
+      }).slice(0, item.evidence.some((entry) => entry.overview) ? undefined : 100_000),
     },
   ];
 }
@@ -2763,7 +2783,7 @@ function curatorRevisionMessages(plan: MaintenancePlan, item: MaintenanceItem, f
           evidence: item.evidence,
           checks: item.checks,
         },
-      }).slice(0, 100_000),
+      }).slice(0, item.evidence.some((entry) => entry.overview) ? undefined : 100_000),
     },
   ];
 }
@@ -3770,6 +3790,32 @@ function operationsForDraft(draft: CurateDraft): MaintenanceOperation[] {
 
 function evidenceForDraft(draft: CurateDraft): MaintenanceEvidence[] {
   return [
+    ...(draft.overview
+      ? [
+          {
+            type: 'snapshot' as const,
+            source: draft.slug,
+            fingerprint: overviewFingerprint(draft.overview),
+            relationship: null,
+            details: [OVERVIEW_GUIDANCE],
+            overview: draft.overview,
+          },
+          ...draft.overview.members
+            .filter((member) => member.status === 'ready')
+            .map((member): MaintenanceEvidence => ({
+              type: 'page',
+              source: member.slug,
+              fingerprint: member.bodyHash,
+              sourceRelPath: member.relPath,
+              sourceHash: member.sourceHash,
+              sourceSpans: [],
+              relationship: null,
+              details: [
+                'Scoped overview member; schedule metadata does not establish occurrence or completion.',
+              ],
+            })),
+        ]
+      : []),
     ...(draft.evidenceCoverage
       ? [
           {
@@ -5078,6 +5124,13 @@ async function curationPageEvidenceIssue(
   ctx: AknoContext,
   item: MaintenanceItem,
 ): Promise<PreflightResult | null> {
+  for (const entry of item.evidence.filter((candidate) => candidate.overview)) {
+    if (overviewFingerprint(discoverOverview(ctx, entry.source)) !== entry.fingerprint)
+      return {
+        status: 'stale',
+        detail: `${entry.source} overview membership or member schedule phase changed.`,
+      };
+  }
   for (const entry of item.evidence.filter((candidate) => candidate.type === 'page')) {
     if (!entry.fingerprint) {
       return { status: 'blocked', detail: 'a curation item contains unhashed page evidence' };
@@ -5214,9 +5267,19 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
   }
   for (const operation of operations) {
     if (item.kind === 'synthesis' && operation.type === 'replace') {
+      const overview = item.evidence.find(
+        (entry) => entry.overview && entry.source === parsePage(operation.relPath, operation.before).slug,
+      )?.overview;
+      const overviewCheck = overviewRewriteCheck(
+        parsePage(operation.relPath, operation.before).body,
+        parsePage(operation.relPath, operation.after).body,
+        overview,
+      );
+      if (overviewCheck.issue) return { status: 'blocked', detail: overviewCheck.issue };
       const issue = qualifiedSynthesisIssue(
         parsePage(operation.relPath, operation.before).body,
         parsePage(operation.relPath, operation.after).body,
+        overviewCheck.headingChanges,
       );
       if (issue) return { status: 'blocked', detail: issue };
     }

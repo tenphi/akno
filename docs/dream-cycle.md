@@ -220,7 +220,7 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
 - **hygiene:** conservative formatting, local-language repair, and structurally safe cleanup;
 - **synthesis:** evidence-backed rewrite or reorganization. When ordinary prose contains a quotation,
   plan, tentative claim, or other qualification, Akno may update independent existing sections. It preserves
-  every root Markdown heading in order, freezes qualified sections and their deciding context byte for byte,
+  root Markdown heading order, freezes qualified sections and their deciding context byte for byte,
   and rechecks discourse ownership on the complete result. Nested headings in quotes, lists, or code do not
   open independent sections. Global reference definitions and sections containing Akno-owned items are also
   frozen. `curated[].discourse` reports inclusive body-relative protected line ranges and the number of editable
@@ -238,8 +238,8 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
   evidence. Partial coverage never establishes absence or completion. Selection checks at most 30 sources and
   200 fact/event candidates per source, retains at most 50 of each, and fits whole entries into a 36,000-character
   evidence budget. Plans seal the selected source lines and full file hashes; application rechecks their
-  eligibility, including managed IDs that became ambiguous elsewhere. Editing within qualified sections,
-  overview membership discovery, and time-boundary refresh remain separate work;
+  eligibility, including managed IDs that became ambiguous elsewhere. Declared overviews additionally support
+  the bounded membership and temporal refresh below. Editing within qualified sections remains separate work;
 - **split:** keep the canonical page and atomically create bounded child pages for the same subject;
 - **extract:** move one verbatim authored section into an independent reusable subject page, leaving bridges;
 - **merge:** losslessly combine identity-backed duplicates in allowed folders, rewrite eligible inbound links,
@@ -265,6 +265,50 @@ rejected when the second page has a useful separate scope. Semantic verdicts are
 prompt, and threshold fingerprints without retaining page text or model rationale. Merge and contradiction
 items are high-risk and must fit the high-risk budget. Every operation is one exact, collision-checked,
 undoable unit.
+
+#### Overview membership and freshness
+
+An opted-in overview can explicitly name the folder subtree and page type it indexes:
+
+```yaml
+type: overview
+akno:
+  management:
+    dream: synthesize
+  overview:
+    folder: journeys/2034
+    type: trip
+```
+
+Both scope fields are required. The folder is a literal knowledge-base-relative path, without a trailing
+slash or glob. Only indexed knowledge pages with that exact type in the folder subtree are admitted; a
+filename such as `index.md` or mere folder proximity grants no authority. Existing link and `about` evidence
+still works independently. `akno.overview: false` opts out of the catalog. A page with `type: overview` and
+no scope reports `missing_scope`; malformed declarations report `invalid_scope`, and an unindexed edit to
+the declaration reports `unavailable_scope`.
+
+`curated[].overview` and the saved plan expose the scope, up to 30 members, authored status, available
+schedule metadata, and `upcoming`, `current`, `past`, `scheduled` (end known, start unknown), or `undated`
+phase. The catalog authorizes member links and schedule classification; it does not import each member's
+general facts. Dates come from `akno.temporal` or existing conservative event-boundary inference; qualified
+source prose permits only explicitly declared boundaries. Full source hashes bind those metadata claims.
+Unavailable/stale/conflicted sources, overlong metadata, and the member limit report incomplete coverage.
+Completeness refers to this bounded indexed scope, never unindexed files or the whole knowledge base.
+
+Adding, changing, renaming, removing, or changing the authored status of a member invalidates the overview's
+decision. Crossing a member's start/end boundary also invalidates it, using the member timezone and an
+inclusive end date. Other days do not trigger repeated model calls. Saved plans recheck those same
+dependencies before application, including newly admitted members.
+
+A supported move between temporal sections or a heading-only correction is material. The deterministic
+check recognizes `Upcoming`/`Future`, `Current`/`Ongoing`, and `Past`, optionally followed by `trips`, `events`,
+or `schedules`. It preserves exact entry text and protected sections, and permits only unprotected temporal
+heading changes that agree with the supplied schedules. The model verifier and independent curator still
+review every change. A past schedule never proves completion; tentative/cancelled status, exact dates,
+attribution, history, and unknown outcomes must survive. Unresolved legacy links remain for the existing
+identity/link-repair path. Overviews do not infer a page-wide event boundary, split, or extract. Work within
+a protected qualified section remains held. A verification context that exceeds its budget is held rather
+than silently truncated.
 
 ### 5. Adopt
 
