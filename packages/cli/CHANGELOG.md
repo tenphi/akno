@@ -1,5 +1,17 @@
 # @tenphi/akno
 
+## 0.15.4
+
+### Patch Changes
+
+- [#109](https://github.com/tenphi/akno/pull/109) [`5addce4`](https://github.com/tenphi/akno/commit/5addce49b67d0c554d73b91145afe59dedf95c0f) Thanks [@tenphi](https://github.com/tenphi)! - Allow socket hosts to request scheduler-owned health with `plan` command input
+  `{ action: 'status', schedule: true }`. The read-only response includes the same schedule status as
+  `akno dream status`, without running maintenance or changing recovery state.
+- Updated dependencies []:
+  - @tenphi/akno-client@0.15.4
+  - @tenphi/akno-core@0.15.4
+  - @tenphi/akno-protocol@0.15.4
+
 ## 0.15.3
 
 ### Patch Changes
