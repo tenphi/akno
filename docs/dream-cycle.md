@@ -452,6 +452,11 @@ pages prepared, embedding cache hits and inputs, pairs compared, classifier cach
 pairs. They omit page bodies, prompts, paths, excerpts, semantic candidates, model responses, and provider
 errors. `plan diff` is the explicit private-content inspection surface.
 
+Socket hosts can request the same scheduler-owned status with
+`client.command('plan', { action: 'status', schedule: true })`. This adds `schedule` to the ordinary
+maintenance status without running a cycle or changing recovery state. Older services omit that field;
+hosts must report schedule health as unknown rather than infer missed cycles from receipt age.
+
 `plan list --status` accepts one exact status or a comma-separated set, such as
 `awaiting_review,approved`. Superseding keeps the sealed plan and its reason as audit history but removes it
 from the active queue; it neither changes the knowledge base nor deletes a plan. Akno permits it only before

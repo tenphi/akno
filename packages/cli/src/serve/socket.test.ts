@@ -9,6 +9,7 @@ import { AknoError, open, type Akno } from '@tenphi/akno-core';
 import { serveSocket } from './socket.ts';
 import { resolveOps, runMaintenance } from '../ops-handle.ts';
 import { AKNO_VERSION } from '../version.ts';
+import * as dreamSchedule from '../commands/dream-schedule.ts';
 
 /**
  * **The library is the product**: one op registry, three transports over it, so the doors
@@ -65,6 +66,39 @@ afterEach(async () => {
 });
 
 describe('the socket door', () => {
+  it('includes scheduler-owned health only when requested, without running maintenance', async () => {
+    const schedule = dreamSchedule.calculateDreamSchedule(
+      {
+        platform: 'darwin',
+        installed: false,
+        loaded: false,
+        installedAt: null,
+        calendar: null,
+        now: new Date('2031-04-05T12:00:00Z'),
+        timezone: 'UTC',
+      },
+      null,
+    );
+    const inspect = vi.spyOn(dreamSchedule, 'inspectDreamSchedule').mockReturnValue(schedule);
+    const before = mem.maintenanceStatus();
+    const bytes = fs.readFileSync(path.join(root, 'home/lease.md'), 'utf8');
+    const client = await connect({ socket: server.path });
+    try {
+      expect(await client.command('plan', { action: 'status' })).toEqual(before);
+      expect(inspect).not.toHaveBeenCalled();
+      expect(await client.command('plan', { action: 'status', schedule: true })).toEqual({
+        ...before,
+        schedule,
+      });
+      expect(inspect).toHaveBeenCalledExactlyOnceWith(before.latestFullRun);
+      expect(mem.maintenanceStatus()).toEqual(before);
+      expect(fs.readFileSync(path.join(root, 'home/lease.md'), 'utf8')).toBe(bytes);
+    } finally {
+      await client.close();
+      inspect.mockRestore();
+    }
+  });
+
   it('announces what it can do before the first request', async () => {
     const client = await connect({ socket: server.path });
     try {

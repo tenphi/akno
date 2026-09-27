@@ -23,6 +23,7 @@ import {
   type MaintenanceStatusQuery,
 } from '@tenphi/akno-core';
 import { AKNO_VERSION } from '../version.ts';
+import { inspectDreamSchedule } from '../commands/dream-schedule.ts';
 
 export interface SocketServer {
   readonly path: string;
@@ -234,8 +235,13 @@ async function runCommand(akno: Akno, command: CommandName, input: unknown): Pro
         }
         case 'prune':
           return akno.prunePlans({ apply: booleanFrom(input, 'apply', false) });
-        case 'status':
-          return akno.maintenanceStatus(statusQueryFrom(input));
+        case 'status': {
+          const status = akno.maintenanceStatus(statusQueryFrom(input));
+          // Hosts must ask the scheduler owner rather than infer missed cycles from receipt age.
+          return booleanFrom(input, 'schedule', false)
+            ? { ...status, schedule: inspectDreamSchedule(status.latestFullRun) }
+            : status;
+        }
         case 'resume': {
           const scope = stringFrom(input, 'scope');
           if (scope === 'profile') return akno.resumeMaintenance({ profile: true });
