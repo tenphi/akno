@@ -268,7 +268,7 @@ undoable unit.
 
 #### Overview membership and freshness
 
-An opted-in overview can explicitly name the folder subtree and page type it indexes:
+An opted-in overview can explicitly name the folder subtree and page types it indexes:
 
 ```yaml
 type: overview
@@ -277,11 +277,14 @@ akno:
     dream: synthesize
   overview:
     folder: journeys/2034
-    type: trip
+    type: [trip, concept]
+    exclude: [journeys/2034/packing]
 ```
 
 Both scope fields are required. The folder is a literal knowledge-base-relative path, without a trailing
-slash or glob. Only indexed knowledge pages with that exact type in the folder subtree are admitted; a
+slash or glob. `type` accepts one exact type or up to eight distinct types. `exclude` optionally names up
+to 30 literal page slugs within that folder, for example a guide that shares a trip's type. Only indexed
+knowledge pages with those types in the folder subtree, minus exclusions, are admitted; a
 filename such as `index.md` or mere folder proximity grants no authority. Existing link and `about` evidence
 still works independently. `akno.overview: false` opts out of the catalog. A page with `type: overview` and
 no scope reports `missing_scope`; malformed declarations report `invalid_scope`, and an unindexed edit to
@@ -302,7 +305,12 @@ dependencies before application, including newly admitted members.
 
 A supported move between temporal sections or a heading-only correction is material. The deterministic
 check recognizes `Upcoming`/`Future`, `Current`/`Ongoing`, and `Past`, optionally followed by `trips`, `events`,
-or `schedules`. It preserves exact entry text and protected sections, and permits only unprotected temporal
+or `schedules`. A heading may also end in the overview's authored year, such as `Upcoming Trips (2034)`.
+An unresolved legacy link can be reclassified when its unchanged label has a complete month/day range and
+the overview declares `year`; this supplies schedule evidence only and never repairs its target. Up to 30
+such entries and their phases are included in the dependency fingerprint; exceeding that limit reports
+partial coverage. It preserves exact entry text
+and protected sections, and permits only unprotected temporal
 heading changes that agree with the supplied schedules. The model verifier and independent curator still
 review every change. A past schedule never proves completion; tentative/cancelled status, exact dates,
 attribution, history, and unknown outcomes must survive. Unresolved legacy links remain for the existing

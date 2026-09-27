@@ -355,9 +355,9 @@ owned evidence. Exact duplicate lines may be deduplicated.`;
 export const VERIFY_SCHEMA = z.object({ ok: z.boolean(), issues: z.array(z.string()) });
 
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-// 16: declared overviews depend on scoped membership and member schedule phases.
+// 17: mixed-type scopes and dated unresolved entries can alter overview decisions.
 // Decisions from the previous transformation surface must be reconsidered once.
-const CURATE_FINGERPRINT_VERSION = 16;
+const CURATE_FINGERPRINT_VERSION = 17;
 
 export async function curatePages(
   ctx: AknoContext,

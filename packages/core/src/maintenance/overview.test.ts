@@ -44,6 +44,87 @@ function discover(now = '2034-03-01T12:00:00Z') {
 }
 
 describe('declared overview dependencies', () => {
+  it('admits a bounded mix of types while excluding literal non-trip pages', async () => {
+    const index = path.join(mem.config.aknoPath, 'journeys/index.md');
+    fs.writeFileSync(
+      index,
+      `---\ntype: overview\nakno:\n  overview:\n    folder: journeys/2034\n    type: [trip, concept]\n    exclude: [journeys/2034/packing]\n---\n# Journeys\n`,
+    );
+    await member();
+    await member('journeys/2034/silvermarsh');
+    for (const slug of ['silvermarsh', 'packing']) {
+      const file = path.join(mem.config.aknoPath, `journeys/2034/${slug}.md`);
+      if (slug === 'packing')
+        fs.copyFileSync(path.join(mem.config.aknoPath, 'journeys/2034/blackwater-bay.md'), file);
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('type: trip', 'type: concept'));
+    }
+    await mem.index({ structuralOnly: true, verify: true });
+    expect(discover()).toMatchObject({
+      status: 'complete',
+      scope: { type: ['trip', 'concept'], exclude: ['journeys/2034/packing'] },
+    });
+    expect(discover().members.map((entry) => entry.slug)).toEqual([
+      'journeys/2034/blackwater-bay',
+      'journeys/2034/silvermarsh',
+    ]);
+  });
+
+  it('reclassifies only exact authored legacy ranges, never inferred completion or repaired links', async () => {
+    const old = '- [[old-target|Blackwater Bay (Apr 3 - Apr 5)]]';
+    const undated = '- [[unresolved|Silvermarsh (someday)]]';
+    const quoted = '> - [[quoted|Blackwater Bay (Apr 3 - Apr 5)]]';
+    const before = `# Journeys\n\n## Upcoming Trips (2034)\n\n${old}\n\n## Reference\n\n${quoted}\n${undated}\n`;
+    const index = path.join(mem.config.aknoPath, 'journeys/index.md');
+    fs.writeFileSync(index, `---\n${declaration}\nyear: 2034\n---\n${before}`);
+    await mem.index({ structuralOnly: true, verify: true });
+    const evidence = discover('2034-05-01T12:00:00Z');
+    expect(evidence.legacyEntries).toMatchObject([{ slug: 'old-target', phase: 'past' }]);
+    expect(overviewFingerprint(discover('2034-03-01T12:00:00Z'))).not.toBe(overviewFingerprint(evidence));
+    expect(overviewFingerprint(discover('2034-06-01T12:00:00Z'))).toBe(overviewFingerprint(evidence));
+    const after = before.replace('## Upcoming Trips (2034)', '## Past Trips (2034)');
+    expect(overviewRewriteCheck(before, after, evidence)).toEqual({
+      material: true,
+      headingChanges: true,
+      issue: null,
+    });
+    expect(qualifiedSynthesisIssue(before, after, true)).toBeNull();
+    expect(
+      overviewRewriteCheck(before, before.replace(old, old.replace('old-target', 'new-target')), evidence)
+        .issue,
+    ).toBeTruthy();
+    expect(
+      overviewRewriteCheck(before, before.replace('Upcoming', 'Completed'), evidence).issue,
+    ).toBeTruthy();
+    expect(overviewRewriteCheck(before, after, discover('2034-03-01T12:00:00Z')).issue).toBeTruthy();
+  });
+
+  it('does not classify ambiguous legacy dates or a heading for another year', async () => {
+    const before =
+      '# Journeys\n\n## Upcoming Trips (2035)\n\n- [[old-target|Blackwater Bay (Apr 3 - Apr 5)]]\n';
+    const index = path.join(mem.config.aknoPath, 'journeys/index.md');
+    fs.writeFileSync(index, `---\n${declaration}\nyear: 2034\n---\n${before}`);
+    await mem.index({ structuralOnly: true, verify: true });
+    const evidence = discover('2034-05-01T12:00:00Z');
+    expect(overviewRewriteCheck(before, before.replace('Upcoming', 'Past'), evidence).material).toBe(false);
+    fs.writeFileSync(index, fs.readFileSync(index, 'utf8').replace('(Apr 3 - Apr 5)', '(Apr 3)'));
+    await mem.index({ structuralOnly: true, verify: true });
+    expect(discover('2034-05-01T12:00:00Z').legacyEntries).toEqual([]);
+    fs.writeFileSync(index, fs.readFileSync(index, 'utf8').replace('(Apr 3)', '(Aprish 3 - May 5)'));
+    await mem.index({ structuralOnly: true, verify: true });
+    expect(discover('2034-05-01T12:00:00Z').legacyEntries).toEqual([]);
+  });
+
+  it('does not treat a resolved page outside the declared scope as a legacy entry', async () => {
+    const index = path.join(mem.config.aknoPath, 'journeys/index.md');
+    fs.writeFileSync(
+      index,
+      `---\n${declaration}\nyear: 2034\n---\n# Journeys\n\n## Upcoming Trips\n\n- [[old-target|Blackwater Bay (Apr 3 - Apr 5)]]\n`,
+    );
+    fs.writeFileSync(path.join(mem.config.aknoPath, 'old-target.md'), '---\ntype: checklist\n---\n# Index\n');
+    await mem.index({ structuralOnly: true, verify: true });
+    expect(discover('2034-05-01T12:00:00Z').legacyEntries).toEqual([]);
+  });
+
   it('admits only the named type within a literal folder boundary', async () => {
     await member();
     await member('journeys/20340/elsewhere');
@@ -111,6 +192,8 @@ describe('declared overview dependencies', () => {
     '',
     '  overview: { folder: ../journeys, type: trip }\n',
     '  overview: { folder: journeys, type: trip, year: 2034 }\n',
+    '  overview: { folder: journeys, type: [trip, trip] }\n',
+    '  overview: { folder: journeys, type: trip, exclude: [elsewhere/page] }\n',
   ])('exposes missing or ambiguous scope: %s', async (scope) => {
     fs.writeFileSync(
       path.join(mem.config.aknoPath, 'journeys/index.md'),
