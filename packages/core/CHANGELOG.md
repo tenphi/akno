@@ -1,5 +1,15 @@
 # @tenphi/akno-core
 
+## 0.15.3
+
+### Patch Changes
+
+- [#107](https://github.com/tenphi/akno/pull/107) [`e9770ef`](https://github.com/tenphi/akno/commit/e9770ef81dcf981e561a2b6c2a163ef6e4818518) Thanks [@tenphi](https://github.com/tenphi)! - Check adoption destination policy before planning and applying filing pages. Skip source, inference, and
+  ignored destinations without writing or triggering rollback failures, and omit unavailable adoption actions
+  from recall and timeline cards. Recheck approved plans when folder policy changes.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.15.3
+
 ## 0.15.2
 
 ### Patch Changes
