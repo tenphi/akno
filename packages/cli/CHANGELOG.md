@@ -1,5 +1,14 @@
 # @tenphi/akno
 
+## 0.15.3
+
+### Patch Changes
+
+- Updated dependencies [[`e9770ef`](https://github.com/tenphi/akno/commit/e9770ef81dcf981e561a2b6c2a163ef6e4818518)]:
+  - @tenphi/akno-core@0.15.3
+  - @tenphi/akno-client@0.15.3
+  - @tenphi/akno-protocol@0.15.3
+
 ## 0.15.2
 
 ### Patch Changes
