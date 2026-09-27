@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.15.5
+
+### Patch Changes
+
+- [#111](https://github.com/tenphi/akno/pull/111) [`79b3f67`](https://github.com/tenphi/akno/commit/79b3f67d63d7bcd23af39a1233864457dffe8ca0) Thanks [@tenphi](https://github.com/tenphi)! - Allow opted-in synthesis to update independent existing sections of a page containing qualified prose, while preserving protected sections and their context. Recheck these boundaries during plan revision and application, and expose scoped holds in curation reports.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.15.5
+
 ## 0.15.4
 
 ### Patch Changes
