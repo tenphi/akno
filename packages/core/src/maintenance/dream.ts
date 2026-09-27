@@ -958,6 +958,7 @@ async function runPhase(
             mode: item.kind === 'hygiene' ? 'hygiene' : 'synthesize',
             action: 'would-update',
             evidenceCoverage: item.evidence.find((entry) => entry.curationCoverage)?.curationCoverage,
+            overview: item.evidence.find((entry) => entry.overview)?.overview,
             splits:
               item.kind === 'split'
                 ? item.operations

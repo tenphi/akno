@@ -86,13 +86,21 @@ export function qualifiedSynthesisScope(body: string): QualifiedSynthesisScope |
 }
 
 /** Repeated at plan revision/apply, so a later proposal cannot bypass the draft guard. */
-export function qualifiedSynthesisIssue(before: string, after: string): string | null {
+export function qualifiedSynthesisIssue(
+  before: string,
+  after: string,
+  allowTemporalHeadings = false,
+): string | null {
   if (!hasNonfactualProse(before)) return null;
   const prior = inspect(before);
   const next = inspect(after);
   if (
     prior.parts.length !== next.parts.length ||
-    prior.parts.some((part, i) => part.heading !== next.parts[i]!.heading)
+    prior.parts.some(
+      (part, i) =>
+        part.heading !== next.parts[i]!.heading &&
+        (!allowTemporalHeadings || prior.protectedIndexes.has(i) || next.protectedIndexes.has(i)),
+    )
   )
     return 'Qualified synthesis must preserve every heading and its section order.';
   for (const i of prior.protectedIndexes) {

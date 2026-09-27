@@ -5,7 +5,7 @@ import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import Database from 'better-sqlite3';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   open,
   type Akno,
@@ -77,6 +77,7 @@ Ada Marlow lives at 111 Example Street.
 });
 
 afterEach(async () => {
+  vi.useRealTimers();
   await mem?.close();
   await server?.close();
   for (const directory of [root, stateDir]) fs.rmSync(directory, { recursive: true, force: true });
@@ -532,6 +533,127 @@ describe('section-preserving synthesis', () => {
       expect(applied.plan.items[0]!.status).toBe('stale');
       expect(applied.files).toEqual([]);
       expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(frontmatter + body);
+    },
+  );
+});
+
+describe('declared overview refresh', () => {
+  const fm =
+    '---\ntype: overview\nakno:\n  management:\n    dream: synthesize\n  overview:\n    folder: journeys/2034\n    type: trip\n---\n';
+  const body =
+    '# Journey index\n\n> An attributed report stays qualified.\n\n## Upcoming\n\n- [[journeys/2034/blackwater-bay]] — 2034-04-03.\n';
+  const file = () => path.join(root, 'journeys/index.md');
+  async function member(slug: string, status = '') {
+    fs.writeFileSync(
+      path.join(root, `journeys/2034/${slug}.md`),
+      `---\ntype: trip\n${status}akno:\n  temporal:\n    kind: event\n    start: '2034-04-03'\n    until: '2034-04-03'\n    timezone: UTC\n---\n# ${slug}\n`,
+    );
+    await mem.index({ structuralOnly: true, verify: true });
+  }
+  beforeEach(async () => {
+    await mem.close();
+    mem = await openMem(false, undefined, { profile: 'autonomous' });
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2034-03-01T12:00:00Z'));
+    fs.unlinkSync(path.join(root, 'people/ada-marlow.md'));
+    fs.mkdirSync(path.join(root, 'journeys/2034'), { recursive: true });
+    fs.writeFileSync(file(), fm + body);
+    await member('blackwater-bay');
+    server.qualifiedDraft(body);
+  });
+
+  it('wakes for unlinked membership, source changes, and time boundaries, but converges across restart', async () => {
+    await mem.dream({ phase: 'curate' });
+    const firstCalls = server.calls();
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+    expect(server.calls()).toBe(firstCalls);
+    await member('silvermarsh');
+    const added = await mem.dream({ phase: 'curate' });
+    expect(added.curated[0]!.overview!.members.map((entry) => entry.slug)).toContain(
+      'journeys/2034/silvermarsh',
+    );
+    expect(server.calls()).toBe(firstCalls + 1);
+    vi.setSystemTime(new Date('2034-03-20T12:00:00Z'));
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+    vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
+    expect((await mem.dream({ phase: 'curate' })).curated).toHaveLength(1);
+    const afterBoundary = server.calls();
+    await mem.close();
+    mem = await openMem(false, undefined, { profile: 'autonomous' });
+    await mem.index({ structuralOnly: true, verify: true });
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+    expect(server.calls()).toBe(afterBoundary);
+    await member('silvermarsh', 'status: cancelled\n');
+    expect((await mem.dream({ phase: 'curate' })).curated[0]!.overview!.members[1]!.authoredStatus).toBe(
+      'cancelled',
+    );
+  });
+
+  it('applies a heading-only schedule correction, preserves a quote, and supports exact undo', async () => {
+    vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
+    const after = body.replace('## Upcoming', '## Past schedules');
+    server.qualifiedDraft(after);
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+    expect(report.curated[0]).toMatchObject({ action: 'updated', issues: [] });
+    expect(fs.readFileSync(file(), 'utf8')).toBe(fm + after);
+    const calls = server.calls();
+    expect((await mem.dream({ phase: 'curate', mode: 'auto' })).curated).toEqual([]);
+    expect(server.calls()).toBe(calls);
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+    await mem.undo({ change_id: item.changeId! });
+    expect(fs.readFileSync(file(), 'utf8')).toBe(fm + body);
+  });
+
+  it('adds a newly discovered member, preserves unresolved links, and converges', async () => {
+    const original = body + '\n## Reference\n\n[[journeys/legacy-target]]\n';
+    fs.writeFileSync(file(), fm + original);
+    await mem.index({ structuralOnly: true, verify: true });
+    server.qualifiedDraft(original);
+    await mem.dream({ phase: 'curate' });
+    await member('silvermarsh');
+    const after = original.replace(
+      '## Reference',
+      '- [[journeys/2034/silvermarsh]] — 2034-04-03.\n\n## Reference',
+    );
+    server.qualifiedDraft(after);
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+    expect(report.curated[0]).toMatchObject({ action: 'updated', evidenceCoverage: { unresolvedLinks: 1 } });
+    expect(fs.readFileSync(file(), 'utf8')).toBe(fm + after);
+    const calls = server.calls();
+    expect((await mem.dream({ phase: 'curate', mode: 'auto' })).curated).toEqual([]);
+    expect(server.calls()).toBe(calls);
+  });
+
+  it('holds a correction whose complete verification context would be truncated', async () => {
+    vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
+    const large =
+      body + '\n## Details\n\n' + 'A brass compass remains in its wooden case. '.repeat(1300) + '\n';
+    fs.writeFileSync(file(), fm + large);
+    await mem.index({ structuralOnly: true, verify: true });
+    server.qualifiedDraft(large.replace('## Upcoming', '## Past schedules'));
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.curated[0]!.issues).toContain(
+      'Overview verification context exceeds the bounded input budget.',
+    );
+    expect(server.curatorCalls()).toBe(0);
+    expect(fs.readFileSync(file(), 'utf8')).toBe(fm + large);
+  });
+
+  it.each(['membership', 'boundary'])(
+    'makes pending overview plans stale after a %s change',
+    async (change) => {
+      await member('silvermarsh');
+      server.qualifiedDraft(body + '\n- [[journeys/2034/silvermarsh]] — 2034-04-03.\n');
+      const report = await mem.dream({ phase: 'curate', mode: 'review' });
+      const plan = mem.plan(report.maintenancePlan!.id);
+      expect(plan.items[0]!.status).toBe('proposed');
+      if (change === 'membership') await member('third-stop');
+      else vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
+      mem.decidePlan(plan.id, plan.items[0]!.id, 'approve', 'Exercise dependency revalidation.');
+      const applied = await mem.applyPlan(plan.id);
+      expect(applied.plan.items[0]!.status).toBe('stale');
+      expect(applied.files).toEqual([]);
+      expect(fs.readFileSync(file(), 'utf8')).toBe(fm + body);
     },
   );
 });
