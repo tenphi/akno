@@ -229,8 +229,17 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
   plan revisions and application repeat the protection check. Mixed pages cannot split, extract, or infer
   page-wide temporal metadata through this path. An explicitly declared event boundary still permits an
   archival assessment of independent sections, preserving unknown outcomes and plans. Hygiene and merge retain
-  their whole-page discourse hold. Mixed-content evidence pages remain excluded until span-level evidence
-  selection is implemented; overview membership discovery and time-boundary refresh are separate work;
+  their whole-page discourse hold. Mixed-content evidence pages may contribute eligible individual facts and
+  directly targeted events. Akno checks each exact source line against current file bytes and the complete
+  page's discourse and managed-memory qualifications; it withholds page-wide summaries when they could flatten
+  qualified content. Explicit `about` membership permits subject evidence, backlinks require a subject match,
+  and outbound links remain relevance hints. `curated[].evidenceCoverage` and the saved plan record bounded
+  linked/about coverage, selected counts, and typed exclusions for unavailable, stale, qualified, or omitted
+  evidence. Partial coverage never establishes absence or completion. Selection checks at most 30 sources and
+  200 fact/event candidates per source, retains at most 50 of each, and fits whole entries into a 36,000-character
+  evidence budget. Plans seal the selected source lines and full file hashes; application rechecks their
+  eligibility, including managed IDs that became ambiguous elsewhere. Editing within qualified sections,
+  overview membership discovery, and time-boundary refresh remain separate work;
 - **split:** keep the canonical page and atomically create bounded child pages for the same subject;
 - **extract:** move one verbatim authored section into an independent reusable subject page, leaving bridges;
 - **merge:** losslessly combine identity-backed duplicates in allowed folders, rewrite eligible inbound links,

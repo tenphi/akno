@@ -957,6 +957,7 @@ async function runPhase(
             slug: item.subject,
             mode: item.kind === 'hygiene' ? 'hygiene' : 'synthesize',
             action: 'would-update',
+            evidenceCoverage: item.evidence.find((entry) => entry.curationCoverage)?.curationCoverage,
             splits:
               item.kind === 'split'
                 ? item.operations

@@ -1,5 +1,12 @@
-import fs from 'node:fs';
 import { hasNonfactualProse } from '../kb/prose.ts';
+import {
+  selectSynthesisEvidence,
+  renderSynthesisEvidence,
+  filterSynthesisConflicts,
+  type SynthesisConflictCandidate,
+  type SynthesisEvidencePage as EvidencePage,
+  type SynthesisEvidenceCoverage,
+} from './curate-evidence.ts';
 import {
   qualifiedSynthesisIssue,
   qualifiedSynthesisScope,
@@ -45,6 +52,7 @@ export interface CuratedPage {
   action: 'would-update' | 'updated' | 'unchanged' | 'rejected';
   reason_code?: 'prose_discourse_held';
   discourse?: QualifiedSynthesisScope;
+  evidenceCoverage?: SynthesisEvidenceCoverage;
   splits: string[];
   extractions: string[];
   merges: string[];
@@ -88,7 +96,9 @@ export interface CurateDraft {
     identityKind: MergeIdentityKind;
     linkUpdates: { slug: string; relPath: string; before: string; after: string }[];
   } | null;
+  evidenceCoverage?: SynthesisEvidenceCoverage;
   evidence: {
+    spans?: { line: number; text: string }[];
     slug: string;
     relPath: string;
     relationship: 'about' | 'outbound' | 'backlink';
@@ -120,28 +130,6 @@ interface PageRow {
 }
 
 type CurateStatus = 'preview' | 'unchanged' | 'rejected' | 'applied';
-
-interface EvidencePage {
-  id: string;
-  slug: string;
-  rel_path: string;
-  summary: string | null;
-  about: string;
-  role: string;
-  body_hash: string;
-  content_hash: string;
-  facts: EvidenceFact[];
-  events: { date: string; summary: string }[];
-  relationship: 'about' | 'outbound' | 'backlink';
-}
-
-interface EvidenceFact {
-  claim: string;
-  subject: string | null;
-  attribute: string | null;
-  value: string | null;
-  item_id: string | null;
-}
 
 interface ConflictEvidence {
   subject: string;
@@ -231,7 +219,9 @@ related pages in the sections they support instead of repeating whole source pag
 is only a relevance hint: use a linked fact only when it is directly about this canonical subject.
 Do not copy cross-cutting trip, passport, accommodation, booking or itinerary boilerplate into every
 place page. When such a page is genuinely useful, link it once without restating its general details.
-Internal page links must use [[the/exact-supplied-slug]]. Never invent a URL, relative path or slug,
+Evidence coverage is bounded to linked/about pages. Partial coverage, excluded qualified spans, unresolved
+links, and omitted summaries do not prove absence or completion. Use only the supplied eligible claims and
+event source lines; never infer an outcome from an expired plan. Internal page links must use [[the/exact-supplied-slug]]. Never invent a URL, relative path or slug,
 and never alter or remove an existing link target. Reorganize rather
 than summarize: preserve every factual detail already in the canonical body, including dates, times,
 prices, measurements, descriptions, access instructions and practical guidance. Numeric formatting and
@@ -339,7 +329,9 @@ post-event knowledge.`;
 const QUALIFIED_VERIFY = `Qualified sections and their deciding context must remain verbatim.
 Reject copying a quotation, report, hypothesis, option or cancelled plan into factual prose elsewhere,
 including paraphrases that claim the same thing happened. Unchanged qualified text is context to preserve,
-not factual evidence for another section. Check the new independent content against supplied evidence.`;
+not factual evidence for another section. Check the new independent content against supplied evidence.
+Partial evidence coverage is not absence. Do not use excluded spans or missing summaries to resolve a
+conflict, infer completion, or claim there are no relevant facts.`;
 
 const VERIFY_MERGE_SYSTEM = `${VERIFY_SYSTEM}
 
@@ -353,9 +345,9 @@ owned evidence. Exact duplicate lines may be deduplicated.`;
 export const VERIFY_SCHEMA = z.object({ ok: z.boolean(), issues: z.array(z.string()) });
 
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-// 14: independent sections can synthesize while qualified sections and their context remain frozen.
+// 15: synthesis selects current qualified evidence spans and records bounded coverage.
 // Decisions from the previous transformation surface must be reconsidered once.
-const CURATE_FINGERPRINT_VERSION = 14;
+const CURATE_FINGERPRINT_VERSION = 15;
 
 export async function curatePages(
   ctx: AknoContext,
@@ -420,6 +412,7 @@ export async function curatePages(
   const mergeReserved = new Set<string>();
   const mergeOperationPaths = new Set<string>();
   const discourseScopes = new Map<string, QualifiedSynthesisScope>();
+  const evidenceCoverage = new Map<string, SynthesisEvidenceCoverage>();
 
   // Merge is available only through durable plans. The legacy `write` switch cannot represent
   // a separately decided deletion, while audit/review/auto all seal the exact multi-file item.
@@ -564,7 +557,9 @@ export async function curatePages(
     }
     let eventState = temporal ? temporalState(temporal, clock) : null;
     let archival = row.dream_management === 'synthesize' && eventState === 'past';
-    const allEvidence = row.dream_management === 'synthesize' ? evidenceFor(ctx, row) : [];
+    const selection = row.dream_management === 'synthesize' ? selectSynthesisEvidence(ctx, row) : null;
+    const allEvidence = selection?.pages ?? [];
+    if (selection) evidenceCoverage.set(row.slug, selection.coverage);
     let evidence = archival ? archivalEvidence(allEvidence) : allEvidence;
     const conflicts = row.dream_management === 'synthesize' ? conflictsFor(ctx, row.id) : [];
     let inputHash = curateInputHash(
@@ -575,6 +570,7 @@ export async function curatePages(
       eventState,
       extractionPolicyHash,
       incomingLinkFingerprint(ctx, row.id),
+      selection?.coverage,
     );
     if (!curationDue(row, inputHash, options.dryRun, options.includePreviewed ?? false)) continue;
     if (attempted >= settings.maxPages) break;
@@ -618,10 +614,11 @@ export async function curatePages(
             (discourse
               ? `\nProtected section ranges (inclusive, body-relative lines): ${JSON.stringify(discourse.protectedSections)}. Preserve these sections verbatim and all headings in order; edit only independent sections. Splits, extractions and temporal inference are unavailable.`
               : '') +
-            `\n\nCurrent body:\n${body.slice(0, 40_000)}` +
-            (evidence.length
-              ? `\n\nEvidence graph:\n${renderEvidence(evidence).join('\n\n').slice(0, 40_000)}`
+            (selection
+              ? `\n\nEvidence coverage (partial is not absence): ${JSON.stringify(selection.coverage)}`
               : '') +
+            `\n\nCurrent body:\n${body.slice(0, 40_000)}` +
+            (evidence.length ? `\n\nEvidence graph:\n${renderSynthesisEvidence(evidence)}` : '') +
             (conflicts.length ? `\n\nUnresolved conflicts:\n${renderConflicts(conflicts).join('\n')}` : ''),
         },
       ],
@@ -707,6 +704,7 @@ export async function curatePages(
             eventState,
             extractionPolicyHash,
             incomingLinkFingerprint(ctx, row.id),
+            selection?.coverage,
           );
           metadataOnly = true;
         }
@@ -817,6 +815,7 @@ export async function curatePages(
             temporal,
             clock,
             archival,
+            selection?.coverage,
           );
     if (!verified.ok) {
       result.pages.push({
@@ -901,6 +900,8 @@ export async function curatePages(
   for (const page of result.pages) {
     const scope = discourseScopes.get(page.slug);
     if (scope) page.discourse = scope;
+    const coverage = evidenceCoverage.get(page.slug);
+    if (coverage) page.evidenceCoverage = coverage;
   }
 
   result.drafts = [
@@ -915,7 +916,12 @@ export async function curatePages(
       children: stage.children,
       extractions: stage.extractions,
       merge: null,
+      evidenceCoverage: evidenceCoverage.get(stage.row.slug),
       evidence: stage.evidence.map((entry) => ({
+        spans: [
+          ...entry.facts.map((fact) => ({ line: fact.line_start, text: fact.source_text })),
+          ...entry.events.map((event) => ({ line: event.line, text: event.source_text })),
+        ],
         slug: entry.slug,
         relPath: entry.rel_path,
         relationship: entry.relationship,
@@ -990,7 +996,9 @@ export async function curatePages(
       const temporal = temporalForRow(refreshed);
       const eventState = temporal ? temporalState(temporal, clock) : null;
       const archival = refreshed.dream_management === 'synthesize' && eventState === 'past';
-      const allEvidence = refreshed.dream_management === 'synthesize' ? evidenceFor(ctx, refreshed) : [];
+      const selection =
+        refreshed.dream_management === 'synthesize' ? selectSynthesisEvidence(ctx, refreshed) : null;
+      const allEvidence = selection?.pages ?? [];
       const evidence = archival ? archivalEvidence(allEvidence) : allEvidence;
       const conflicts = refreshed.dream_management === 'synthesize' ? conflictsFor(ctx, refreshed.id) : [];
       queueCurateState(
@@ -1004,6 +1012,7 @@ export async function curatePages(
           eventState,
           postExtractionPolicyHash,
           incomingLinkFingerprint(ctx, refreshed.id),
+          selection?.coverage,
         ),
         'applied',
       );
@@ -1814,62 +1823,6 @@ async function verifyMergeDraft(
   };
 }
 
-function evidenceFor(ctx: AknoContext, page: PageRow): EvidencePage[] {
-  const rows = ctx.store.db
-    .prepare(
-      `SELECT DISTINCT p.id, p.slug, p.rel_path, p.summary, p.about, p.role, p.body_hash,
-          indexed_file.sha256 AS content_hash,
-          EXISTS (SELECT 1 FROM links l WHERE l.from_page = ? AND l.to_page = p.id) AS outbound,
-          EXISTS (SELECT 1 FROM links l WHERE l.from_page = p.id AND l.to_page = ?) AS backlink
-        FROM pages p JOIN files indexed_file ON indexed_file.rel_path = p.rel_path
-        WHERE p.id != ? AND p.role != 'ignored' AND (
-          EXISTS (SELECT 1 FROM links l WHERE l.from_page = p.id AND l.to_page = ?)
-          OR EXISTS (SELECT 1 FROM links l WHERE l.from_page = ? AND l.to_page = p.id)
-          OR p.about LIKE ?
-        ) ORDER BY p.slug COLLATE NOCASE LIMIT 30`,
-    )
-    .all(page.id, page.id, page.id, page.id, page.id, `%${JSON.stringify(page.slug).slice(1, -1)}%`) as (Omit<
-    EvidencePage,
-    'facts' | 'relationship'
-  > & { outbound: number; backlink: number })[];
-  const facts = ctx.store.db.prepare(
-    `SELECT f.claim, f.subject, f.attribute, f.value, f.item_id FROM facts f
-      JOIN pages current_page ON current_page.id = f.page_id
-      WHERE f.page_id = ? AND f.valid_to IS NULL
-        AND current_page.derived_hash = current_page.body_hash
-      ORDER BY f.line_start, f.id LIMIT 50`,
-  );
-  const events = ctx.store.db.prepare(
-    `SELECT date, summary FROM events
-      WHERE source_page = ? AND target_slug = ?
-      ORDER BY date DESC, line LIMIT 50`,
-  );
-  return rows
-    .filter((row) => {
-      // A neighboring summary may have been derived before its qualifier was edited.
-      try {
-        return !hasNonfactualProse(fs.readFileSync(path.join(ctx.config.aknoPath, row.rel_path), 'utf8'));
-      } catch {
-        return false;
-      }
-    })
-    .map((row) => {
-      const relationship = pageRelationship(row, page.slug);
-      const allFacts = facts.all(row.id) as EvidenceFact[];
-      return {
-        ...row,
-        relationship,
-        events: events.all(row.id, page.slug) as { date: string; summary: string }[],
-        facts:
-          relationship === 'about'
-            ? allFacts
-            : relationship === 'backlink'
-              ? allFacts.filter((fact) => factMentionsPage(fact, page))
-              : [],
-      };
-    });
-}
-
 /** Ended events wake only for evidence that explicitly contributes to or records the event. */
 function archivalEvidence(evidence: EvidencePage[]): EvidencePage[] {
   return evidence.filter(
@@ -1877,47 +1830,12 @@ function archivalEvidence(evidence: EvidencePage[]): EvidencePage[] {
   );
 }
 
-function pageRelationship(
-  row: { about: string; outbound: number; backlink: number },
-  canonicalSlug: string,
-): EvidencePage['relationship'] {
-  try {
-    const about = JSON.parse(row.about) as unknown;
-    if (
-      Array.isArray(about) &&
-      about.some((entry) => typeof entry === 'string' && normalizeLinkTarget(entry) === canonicalSlug)
-    ) {
-      return 'about';
-    }
-  } catch {
-    // Indexed policy JSON is generated by Akno; an unparseable row degrades to link relevance.
-  }
-  return row.outbound ? 'outbound' : 'backlink';
-}
-
-function factMentionsPage(fact: EvidenceFact, page: PageRow): boolean {
-  const keys = [page.title, page.slug.split('/').at(-1)?.replaceAll('-', ' ') ?? '']
-    .map(searchIdentity)
-    .filter((value) => value.length >= 4);
-  const text = searchIdentity(
-    [fact.subject, fact.attribute, fact.claim, fact.value].filter(Boolean).join(' '),
-  );
-  return keys.some((key) => text.includes(key));
-}
-
-function searchIdentity(value: string): string {
-  return value
-    .normalize('NFKC')
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, ' ')
-    .trim();
-}
-
 function conflictsFor(ctx: AknoContext, pageId: string): ConflictEvidence[] {
   const rows = ctx.store.db
     .prepare(
-      `SELECT f.subject, f.attribute, f.claim, f.value, p.slug FROM facts f
+      `SELECT f.subject, f.attribute, f.claim, f.value, f.item_id, f.line_start, f.line_end, f.source_line_hash, p.id, p.slug, p.about, p.rel_path, p.body_hash, indexed_file.sha256 AS content_hash FROM facts f
         JOIN pages p ON p.id = f.page_id
+        JOIN files indexed_file ON indexed_file.rel_path = p.rel_path
         WHERE f.valid_to IS NULL AND f.subject IS NOT NULL AND f.attribute IS NOT NULL
           AND p.derived_hash = p.body_hash
           AND EXISTS (
@@ -1932,8 +1850,8 @@ function conflictsFor(ctx: AknoContext, pageId: string): ConflictEvidence[] {
         ORDER BY p.slug COLLATE NOCASE, f.subject COLLATE NOCASE, f.attribute COLLATE NOCASE, f.claim
         LIMIT 20`,
     )
-    .all(pageId, pageId) as ConflictEvidence[];
-  return rows;
+    .all(pageId, pageId) as SynthesisConflictCandidate[];
+  return filterSynthesisConflicts(ctx, pageId, rows);
 }
 
 async function verifyDraft(
@@ -1948,6 +1866,7 @@ async function verifyDraft(
   temporal: TemporalMetadata | null,
   clock: TemporalClock,
   archival: boolean,
+  coverage?: SynthesisEvidenceCoverage,
 ): Promise<{ ok: boolean; issues: string[]; cacheable: boolean }> {
   const result = await ctx.models.derive.chat(
     [
@@ -1955,6 +1874,7 @@ async function verifyDraft(
       {
         role: 'user',
         content: JSON.stringify({
+          evidenceCoverage: coverage,
           mode: page.dream_management,
           before,
           after,
@@ -2227,18 +2147,6 @@ export function linkIssuesForTesting(
   return linkIssues(before, after, pageSlug, [], [], known, known);
 }
 
-function renderEvidence(evidence: EvidencePage[]): string[] {
-  return evidence.map((row) => {
-    const summary = row.relationship === 'about' && row.summary ? ` — ${row.summary}` : '';
-    const heading = `[[${row.slug}]] (${row.relationship})${summary}`;
-    const details = [
-      ...row.facts.map((fact) => `- ${fact.claim}`),
-      ...row.events.map((event) => `- ${event.date}: ${event.summary}`),
-    ];
-    return details.length ? `${heading}\n${details.join('\n')}` : heading;
-  });
-}
-
 function renderConflicts(conflicts: ConflictEvidence[]): string[] {
   return conflicts.map((row) => `${row.subject} / ${row.attribute}: ${row.claim} [[${row.slug}]]`);
 }
@@ -2279,10 +2187,16 @@ function curateInputHash(
   eventState: 'active' | 'past' | null,
   extractionPolicyHash: string,
   incomingLinksFingerprint: string,
+  coverage?: SynthesisEvidenceCoverage,
 ): string {
   return sha256(
     JSON.stringify({
       version: CURATE_FINGERPRINT_VERSION,
+      // Readiness changing without any new selected evidence must not re-run a settled rewrite.
+      // Selected bytes, facts and events below already invalidate every usable source change.
+      coverage: coverage
+        ? { sourceLimitReached: coverage.sourceLimitReached, unresolvedLinks: coverage.unresolvedLinks }
+        : null,
       page: {
         slug: page.slug,
         title: page.title,
@@ -2299,6 +2213,7 @@ function curateInputHash(
         about: row.about,
         role: row.role,
         bodyHash: row.body_hash,
+        contentHash: row.content_hash,
         relationship: row.relationship,
         facts: row.facts,
         events: row.events,
@@ -2345,7 +2260,9 @@ export function markCurateApplied(ctx: AknoContext, slugs: Iterable<string>): vo
     const temporal = temporalForRow(refreshed);
     const eventState = temporal ? temporalState(temporal, clock) : null;
     const archival = refreshed.dream_management === 'synthesize' && eventState === 'past';
-    const allEvidence = refreshed.dream_management === 'synthesize' ? evidenceFor(ctx, refreshed) : [];
+    const selection =
+      refreshed.dream_management === 'synthesize' ? selectSynthesisEvidence(ctx, refreshed) : null;
+    const allEvidence = selection?.pages ?? [];
     const evidence = archival ? archivalEvidence(allEvidence) : allEvidence;
     const conflicts = refreshed.dream_management === 'synthesize' ? conflictsFor(ctx, refreshed.id) : [];
     queueCurateState(
@@ -2359,6 +2276,7 @@ export function markCurateApplied(ctx: AknoContext, slugs: Iterable<string>): vo
         eventState,
         extractionPolicyHash,
         incomingLinkFingerprint(ctx, refreshed.id),
+        selection?.coverage,
       ),
       'applied',
     );

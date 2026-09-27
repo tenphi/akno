@@ -453,6 +453,87 @@ describe('section-preserving synthesis', () => {
     expect(report.curated[0]!.temporal).toBeUndefined();
     expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).not.toContain('temporal:');
   });
+
+  it.each(['qualifier', 'identity'])(
+    'seals only eligible mixed-page evidence and makes %s changes stale before apply',
+    async (change) => {
+      const evidencePath = path.join(root, 'evidence/collection.md');
+      const marker =
+        '<!-- akno:item itm_evidence v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->';
+      const original = fs.readFileSync(evidencePath, 'utf8');
+      const text =
+        (change === 'identity'
+          ? original.replace('The collection includes', marker + '\nThe collection includes')
+          : original) + '\n## Reports\n\n> The collection includes a platinum compass.\n';
+      fs.writeFileSync(evidencePath, text);
+      await mem.index({ structuralOnly: true, verify: true });
+      const db = new Database(mem.config.dbPath);
+      try {
+        const page = db.prepare('SELECT id FROM pages WHERE slug = ?').get('evidence/collection') as {
+          id: string;
+        };
+        db.prepare('UPDATE pages SET derived_hash = body_hash, summary = ? WHERE id = ?').run(
+          'The collection includes a platinum compass.',
+          page.id,
+        );
+        const line = text.split('\n').indexOf('The collection includes a silver compass.') + 1;
+        db.prepare(
+          `INSERT INTO facts(id, page_id, claim, subject, attribute, value, line_start, line_end,
+        source_line_hash, confidence, first_seen, last_seen, item_id)
+        VALUES ('fac_mixed_fixture', ?, ?, 'Ada Marlow', 'collection', 'silver compass', ?, ?, ?, 0.9, '2034-01-01', '2034-01-01', ?)`,
+        ).run(
+          page.id,
+          'The collection includes a silver compass.',
+          line,
+          line,
+          createHash('sha256').update('The collection includes a silver compass.').digest('hex'),
+          change === 'identity' ? 'itm_evidence' : null,
+        );
+      } finally {
+        db.close();
+      }
+      const report = await mem.dream({ phase: 'curate', mode: 'review' });
+      expect(report.curated[0]!.evidenceCoverage).toMatchObject({
+        status: 'partial',
+        pages: [{ selectedFacts: 1 }],
+      });
+      const plan = mem.plan(report.maintenancePlan!.id);
+      expect(plan.items[0]!.evidence).toContainEqual(
+        expect.objectContaining({
+          type: 'page',
+          source: 'evidence/collection',
+          details: ['The collection includes a silver compass.'],
+          sourceSpans: [
+            {
+              line: text.split('\n').indexOf('The collection includes a silver compass.') + 1,
+              text: 'The collection includes a silver compass.',
+            },
+          ],
+        }),
+      );
+      expect(plan.items[0]!.evidence).toContainEqual(
+        expect.objectContaining({ curationCoverage: expect.objectContaining({ status: 'partial' }) }),
+      );
+      const repeated = await mem.dream({ phase: 'curate', mode: 'review' });
+      expect(repeated.maintenancePlan!.id).toBe(plan.id);
+      expect(repeated.curated[0]!.evidenceCoverage).toEqual(report.curated[0]!.evidenceCoverage);
+      expect(server.userMessages().join('\n')).not.toContain('platinum');
+      // Even excluded context is part of the sealed source: it could change a deciding frame.
+      if (change === 'qualifier') fs.writeFileSync(evidencePath, text.replace('platinum', 'copper'));
+      else {
+        fs.writeFileSync(
+          path.join(root, 'evidence/duplicate.md'),
+          '# Duplicate\n\n' + marker + '\nThe collection includes a silver compass.\n',
+        );
+        await mem.index({ structuralOnly: true, verify: true });
+      }
+      mem.decidePlan(plan.id, plan.items[0]!.id, 'approve', 'Source context must still match.');
+      const applied = await mem.applyPlan(plan.id);
+      expect(applied.plan.items[0]!.status).toBe('stale');
+      expect(applied.files).toEqual([]);
+      expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(frontmatter + body);
+    },
+  );
 });
 
 describe('plan-backed hygiene', () => {
@@ -1914,7 +1995,7 @@ An invented interview record.
     mem = await openMem(false, 'auto');
     await mem.index({ structuralOnly: true });
     const db = new Database(mem.config.dbPath);
-    db.prepare('UPDATE pages SET summary = ? WHERE slug = ?').run(
+    db.prepare('UPDATE pages SET summary = ?, derived_hash = body_hash WHERE slug = ?').run(
       'Ada Marlow maintains a brass compass collection.',
       'evidence/ada-interview',
     );
