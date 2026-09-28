@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.15.15
+
+### Patch Changes
+
+- [#137](https://github.com/tenphi/akno/pull/137) [`38f2ab9`](https://github.com/tenphi/akno/commit/38f2ab94699ebb6f01e76fabf8f4430e96d80fea) Thanks [@tenphi](https://github.com/tenphi)! - Prevent quoted sentences and unchecked options from being copied into factual synthesis, and guide the curator to use supported factual spans beside protected prose.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.15.15
+
 ## 0.15.14
 
 ### Patch Changes
