@@ -1,4 +1,5 @@
 import { retentionAudit } from './semantic-audit.ts';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
@@ -1764,13 +1765,118 @@ describe('folder-owned timeline retention', () => {
       const retained = await mem.retain({ sources: [source] });
       expect(retained.sources[0]?.candidates[0]?.outcome).toBe('written');
       const text = fs.readFileSync(ledger, 'utf8');
-      expect(text).toContain('2031-04-08 to 2031-04-09 · scheduled / scheduled / event');
+      expect(text).toContain('- **2031-04-08 – 2031-04-09** | *Scheduled* — ');
       expect(text).toContain(`${sentence} [[memory/work/zephyr-inspection]]`);
       expect((await mem.timeline({ timeline: 'memory/work/timeline' })).results).toHaveLength(1);
       fs.rmSync(path.join(root, 'memory/other/timeline.md'));
+      expect((await mem.migrateRetainedTimelines()).changedPaths).toEqual([]);
       fs.writeFileSync(ledger, text.replace(sentence, 'A person edited this reference.'));
       await expect(mem.migrateRetainedTimelines({ apply: true })).rejects.toThrow(/modified managed entry/);
       expect(fs.readFileSync(ledger, 'utf8')).toContain('A person edited this reference.');
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('previews and migrates the old ledger style without changing authored events or counting a duplicate', async () => {
+    fs.mkdirSync(path.join(root, 'memory/work'), { recursive: true });
+    const ledger = path.join(root, 'memory/work/timeline.md');
+    const authored = '- **2031-04-01** | Ada Marlow ordered a Zephyr prototype.\n';
+    fs.writeFileSync(ledger, `# Timeline\n\n${authored}`);
+    const event = 'Ada Marlow scheduled the Zephyr review for 8 April 2031 at 09:30.';
+    const base = upsert('conversation:readable-ledger', '1', event);
+    const source = {
+      ...base,
+      retention: {
+        ...base.retention,
+        candidates: [
+          {
+            ...base.retention.candidates[0]!,
+            candidate_id: 'zephyr-review',
+            kind: 'event' as const,
+            text: event,
+            subject: 'Zephyr review',
+            discourse: { commitment: 'asserted' as const, disposition: 'active' as const },
+            support: [{ quote: event }],
+            discourse_frame: [{ quote: event }],
+            destination: { slug: 'memory/work/zephyr-review' },
+            time: {
+              start: '2031-04-08T09:30:00+02:00',
+              precision: 'instant' as const,
+              relation: 'scheduled' as const,
+              status: 'scheduled' as const,
+              timezone: 'Europe/Amsterdam',
+            },
+          },
+        ],
+      },
+    };
+    const mem = await openMem();
+    try {
+      expect((await mem.retain({ sources: [source] })).sources[0]?.candidates[0]?.outcome).toBe('written');
+      const modern = fs.readFileSync(ledger, 'utf8');
+      expect(modern).toContain('- **2031-04-08, 09:30 UTC+02:00** | *Scheduled* — ');
+      expect(modern).toContain(authored);
+      const id = /akno:timeline-item id=([A-Za-z0-9_-]+)/.exec(modern)?.[1];
+      expect(id).toBeDefined();
+      const oldBase = `- 2031-04-08T09:30:00+02:00 · scheduled / scheduled / event · ${event} [[memory/work/zephyr-review]]`;
+      const hash = createHash('sha256').update(oldBase).digest('hex').slice(0, 12);
+      const oldLine = `${oldBase} <!-- akno:timeline-item id=${id} hash=${hash} -->`;
+      const legacy = modern.replace(/^.*<!-- akno:timeline-item .*$/m, oldLine);
+      fs.writeFileSync(ledger, legacy);
+      await mem.index({ structuralOnly: true });
+      expect((await mem.migrateRetainedTimelines()).changedPaths).toEqual(['memory/work/timeline.md']);
+      expect(fs.readFileSync(ledger, 'utf8')).toBe(legacy);
+      const applied = await mem.migrateRetainedTimelines({ apply: true });
+      expect(applied.applied).toBe(true);
+      const migrated = fs.readFileSync(ledger, 'utf8');
+      expect(migrated).toBe(modern);
+      expect((await mem.migrateRetainedTimelines()).changedPaths).toEqual([]);
+      const timeline = await mem.timeline({ timeline: 'memory/work/timeline' });
+      expect(timeline.results).toHaveLength(2);
+      expect(timeline.results.filter((item) => item.type === 'memory')).toHaveLength(1);
+      await mem.undo({ change_id: applied.changeId! });
+      expect(fs.readFileSync(ledger, 'utf8')).toBe(legacy);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('renders an until-only deadline without losing its planned qualification', async () => {
+    const text = 'Ada Marlow plans to submit the Zephyr review by 8 April 2031.';
+    const base = upsert('conversation:zephyr-deadline', '1', text);
+    const source = {
+      ...base,
+      retention: {
+        ...base.retention,
+        candidates: [
+          {
+            ...base.retention.candidates[0]!,
+            candidate_id: 'zephyr-deadline',
+            kind: 'plan' as const,
+            text,
+            subject: 'Zephyr review',
+            discourse: { commitment: 'asserted' as const, disposition: 'proposed' as const },
+            support: [{ quote: text }],
+            discourse_frame: [{ quote: text }],
+            destination: { slug: 'memory/zephyr-review' },
+            time: {
+              until: '2031-04-08',
+              precision: 'day' as const,
+              relation: 'due' as const,
+              status: 'planned' as const,
+            },
+          },
+        ],
+      },
+    };
+    const mem = await openMem();
+    try {
+      expect((await mem.retain({ sources: [source] })).sources[0]?.candidates[0]?.outcome).toBe('written');
+      const ledger = fs.readFileSync(path.join(root, 'timeline.md'), 'utf8');
+      expect(ledger).toContain('- **Until 2031-04-08** | *Planned · due · plan · proposed* — ');
+      expect((await mem.migrateRetainedTimelines()).changedPaths).toEqual([]);
+      expect((await mem.timeline({})).results.filter((item) => item.type === 'memory')).toHaveLength(1);
     } finally {
       await mem.close();
     }

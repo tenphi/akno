@@ -16,6 +16,7 @@ export function aknoItemId(line: string): string | null {
 }
 /** `- **2026-06-02** | Renewed the apartment lease. [[home/lease]]` */
 const EVENT_LINE = /^\s*[-*]\s+\*\*(\d{4}-\d{2}-\d{2})\*\*\s*\|\s*(.+?)\s*$/;
+const RETAINED_TIMELINE_ITEM = /<!--\s*akno:timeline-item\b[^>]*-->\s*$/i;
 const WIKILINK = /\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]/g;
 const MARKDOWN_LINK = /\[[^\]]*\]\(([^)\s]+\.md)(?:#[^)]*)?\)/g;
 /** `<page-basename>-<8 hex>.<ext>` is read as an attachment of that page. */
@@ -98,7 +99,7 @@ export function parsePage(relPath: string, content: string): ParsedPage {
     }
 
     const event = EVENT_LINE.exec(raw);
-    if (event) {
+    if (event && !RETAINED_TIMELINE_ITEM.test(raw)) {
       const summary = event[2]!;
       events.push({
         date: event[1]!,

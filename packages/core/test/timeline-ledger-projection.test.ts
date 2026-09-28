@@ -4,6 +4,8 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import { afterEach, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
+import { parsePage } from '../src/kb/page.ts';
+import { insertEvent } from '../src/write/ledger.ts';
 
 let mem: Akno | null = null;
 const temporary: string[] = [];
@@ -12,6 +14,23 @@ afterEach(async () => {
   await mem?.close();
   mem = null;
   for (const target of temporary.splice(0)) fs.rmSync(target, { recursive: true, force: true });
+});
+
+it('keeps readable retained rows distinct from authored events with the same date and wording', () => {
+  const retained =
+    '- **2031-04-02** | Ada Marlow delivered the Zephyr prototype. [[work/zephyr]] <!-- akno:timeline-item id=mem_1111 date=2031-04-02 hash=111111111111 -->';
+  const content = `# Timeline\n\n## 2031\n\n${retained}\n`;
+  expect(parsePage('timeline.md', content).events).toEqual([]);
+
+  const inserted = insertEvent(content, {
+    date: '2031-04-02',
+    summary: 'Ada Marlow delivered the Zephyr prototype.',
+    slug: 'work/zephyr',
+  });
+  expect(inserted.content).toContain(
+    '- **2031-04-02** | Ada Marlow delivered the Zephyr prototype. [[work/zephyr]]\n',
+  );
+  expect(parsePage('timeline.md', inserted.content).events).toHaveLength(1);
 });
 
 it('keeps each explicit ledger event even when another list item has uncertain prose', async () => {

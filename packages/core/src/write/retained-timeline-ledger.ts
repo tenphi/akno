@@ -12,7 +12,13 @@ import {
 
 const BEGIN = '<!-- akno:retained-timeline:start -->';
 const END = '<!-- akno:retained-timeline:end -->';
-const ITEM = /^(.*) <!-- akno:timeline-item id=([A-Za-z0-9_-]{4,80}) hash=([a-f0-9]{12}) -->$/;
+// Older entries have no date attribute and hash only their visible text. New entries
+// keep the exact sort boundary in the marker so a readable clock cannot reorder them.
+const ITEM =
+  /^(.*) <!-- akno:timeline-item id=([A-Za-z0-9_-]{4,80}) (?:date=([^\s]+) )?hash=([a-f0-9]{12}) -->$/;
+const LEGACY_DATE = /^- (?:until )?(\d{4}(?:-\d{2})?(?:-\d{2})?(?:T[^ ]+)?)\b(?: to \S+)? ·/;
+const READABLE_DATE = /^- \*\*(?:[Uu]ntil )?\d{4}(?:-\d{2})?(?:-\d{2})?[^*]*\*\* \|/;
+const SORT_DATE = /^\d{4}(?:-\d{2})?(?:-\d{2})?(?:T[^\s]+)?$/;
 
 export interface RetainedPageEdit {
   slug: string;
@@ -148,23 +154,33 @@ function managedEntries(content: string | null, slug: string): { slug: string; e
 function renderEntry(marker: ManagedMemoryMarker, payload: string, slug: string, date: string): Entry {
   const time = marker.time!;
   const qualifications = [
-    time.status,
-    time.relation,
-    marker.kind,
+    ...(time.status === 'actual' ? [] : [time.status]),
+    ...(time.relation === 'occurred' || time.relation === time.status ? [] : [time.relation]),
+    ...(marker.kind === 'event' ? [] : [marker.kind]),
     ...(marker.commitment !== 'asserted' ? [marker.commitment] : []),
     ...(marker.basis === 'source_report' ? ['reported'] : []),
     ...(marker.disposition !== 'active' ? [marker.disposition] : []),
   ];
   const label = time.start
-    ? `${date}${time.until && time.until !== date ? ` to ${time.until}` : ''}`
-    : `until ${date}`;
+    ? `${readableBoundary(date)}${time.until && time.until !== date ? ` – ${readableBoundary(time.until)}` : ''}`
+    : `Until ${readableBoundary(date)}`;
   const clean = payload.replace(/\s+/g, ' ').replaceAll('<!--', '&lt;!--');
-  const base = `- ${label} · ${qualifications.join(' / ')} · ${clean} [[${slug}]]`;
+  const qualifier = [...new Set(qualifications)].join(' · ');
+  const annotation = qualifier ? `*${qualifier[0]!.toUpperCase()}${qualifier.slice(1)}* — ` : '';
+  const base = `- **${label}** | ${annotation}${clean} [[${slug}]]`;
   return {
     id: marker.id,
     date,
-    line: `${base} <!-- akno:timeline-item id=${marker.id} hash=${sha256(base).slice(0, 12)} -->`,
+    line: `${base} <!-- akno:timeline-item id=${marker.id} date=${date} hash=${sha256(`${base}\0${date}`).slice(0, 12)} -->`,
   };
+}
+
+function readableBoundary(value: string): string {
+  const instant = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(?::(\d{2})(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/.exec(value);
+  if (!instant) return value;
+  const [, day, minute, second, fraction, offset] = instant;
+  const clock = `${minute}${second && (second !== '00' || fraction) ? `:${second}${fraction ?? ''}` : ''}`;
+  return `${day}, ${clock} ${offset === 'Z' ? 'UTC' : `UTC${offset}`}`;
 }
 
 function parseSection(content: string | null, slug: string): Map<string, Entry> {
@@ -179,13 +195,14 @@ function parseSection(content: string | null, slug: string): Map<string, Entry> 
   for (const line of lines.slice(begin + 1, end)) {
     if (!line.trim()) continue;
     const match = ITEM.exec(line);
-    if (!match || sha256(match[1]!).slice(0, 12) !== match[3])
+    const sortDate = match?.[3];
+    const hashInput = match && (sortDate ? `${match[1]}\0${sortDate}` : match[1]);
+    if (!match || !hashInput || sha256(hashInput).slice(0, 12) !== match[4])
       throw new AknoError('conflict', `timeline ${slug} has a modified managed entry`);
     const id = match[2]!;
     if (entries.has(id)) throw new AknoError('conflict', `timeline ${slug} repeats managed memory ${id}`);
-    const date = /^- (?:until )?(\d{4}(?:-\d{2})?(?:-\d{2})?(?:T[^ ]+)?)\b(?: to \S+)? ·/.exec(
-      match[1]!,
-    )?.[1];
+    let date = LEGACY_DATE.exec(match[1]!)?.[1] ?? null;
+    if (sortDate) date = READABLE_DATE.test(match[1]!) && SORT_DATE.test(sortDate) ? sortDate : null;
     if (!date) throw new AknoError('conflict', `timeline ${slug} has an invalid managed date`);
     entries.set(id, { id, date, line });
   }
