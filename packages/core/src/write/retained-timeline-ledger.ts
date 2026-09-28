@@ -4,7 +4,11 @@ import { AknoError } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { timelineCatalog, owningTimeline } from '../timeline/boundaries.ts';
 import { sha256 } from '../store/ids.ts';
-import { parseManagedMemoryMarker, type ManagedMemoryMarker } from './managed-memory.ts';
+import {
+  managedMemoryPayloadIssue,
+  parseManagedMemoryMarker,
+  type ManagedMemoryMarker,
+} from './managed-memory.ts';
 
 const BEGIN = '<!-- akno:retained-timeline:start -->';
 const END = '<!-- akno:retained-timeline:end -->';
@@ -128,9 +132,14 @@ function managedEntries(content: string | null, slug: string): { slug: string; e
     if (!marker?.time || marker.time.precision === 'unknown') continue;
     const date = marker.time.start ?? marker.time.until;
     if (!date) continue;
-    if (!/^\s*[-*]\s+/.test(lines[index + 1]!)) continue;
-    const payload = lines[index + 1]!.replace(/^\s*[-*]\s+/, '').trim();
-    if (!payload || payload.startsWith('<!--')) continue;
+    const rawPayload = lines[index + 1]!.trim();
+    if (
+      !rawPayload ||
+      /^(?:<!--|#{1,6}\s)/.test(rawPayload) ||
+      managedMemoryPayloadIssue(marker, rawPayload) !== null
+    )
+      continue;
+    const payload = rawPayload.replace(/^[-*]\s+/, '').trim();
     entries.push({ slug, entry: renderEntry(marker, payload, slug, date) });
   }
   return entries;
