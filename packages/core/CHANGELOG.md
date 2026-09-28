@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.15.10
+
+### Patch Changes
+
+- [#125](https://github.com/tenphi/akno/pull/125) [`6438734`](https://github.com/tenphi/akno/commit/6438734ef147dd292fe0d6c4c1822e9357c2f2d1) Thanks [@tenphi](https://github.com/tenphi)! - Allow supported factual leads and middle spans to add or remove lines and factual paragraphs while protected qualified blocks keep their bytes, order, and discourse ownership.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.15.10
+
 ## 0.15.9
 
 ### Patch Changes
