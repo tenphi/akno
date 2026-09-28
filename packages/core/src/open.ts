@@ -171,7 +171,10 @@ export interface Akno extends AknoOps {
   /** Explicitly move unambiguous legacy observation lines onto admitted subject pages. */
   migrateObservations(options?: ObservationMigrationOptions): Promise<ObservationMigrationReport>;
   /** Preview or explicitly materialize existing retained temporal items in declared ledgers. */
-  migrateRetainedTimelines(options?: { apply?: boolean }): Promise<RetainedTimelineLedgerReport>;
+  migrateRetainedTimelines(options?: {
+    apply?: boolean;
+    timeline?: string;
+  }): Promise<RetainedTimelineLedgerReport>;
   /**
    * The user resolves a gate. Approving **completes the write**, because the
    * pending content was held with the proposal — a caller should not have to
@@ -661,7 +664,7 @@ function ensureReservedPaths(config: AknoConfig): void {
       `---\ntype: timeline\ntitle: Timeline\n---\n\n# Timeline\n\n` +
         `What actually happened, newest first. One line per event; the detail lives on the linked\n` +
         `page, so this stays an index and never a second copy of a fact.\n\n` +
-        `Append-only: never edit or remove a line, correct it with a new one. Each line reads\n` +
+        `Ordinary event writes insert new lines; explicit migrations are journalled and undoable. Each line reads\n` +
         `\`- **YYYY-MM-DD** | what happened. [[page/with/detail]]\` — that exact shape is what\n` +
         `makes a line an event, and prose Akno cannot match is invisible to search.\n\n` +
         `## ${year}\n`,

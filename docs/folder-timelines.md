@@ -73,9 +73,11 @@ whether membership came from an owning page, an authored ledger, or a document p
 Ordinary `remember` and `retain` callers still send the source text. Akno selects each item's canonical
 page using the existing ownership checks, folder purposes, and timeline descriptions. Temporal items
 remain on those pages, appear in the timeline query, and gain a readable reference in the nearest
-declared `timeline.md`. These references live in a delimited Akno-managed section; they link to the
-canonical subject page and preserve actual, scheduled, planned, and deadline qualifications. They are
-not independent authored events, so the timeline query does not count them twice. A mixed conversation can
+declared `timeline.md`. Standalone events from `write` or legacy `remember` and source-backed retained
+references share one newest-first list under year headings. References link to their canonical subject
+page and preserve actual, scheduled, planned, and deadline qualifications. Their trailing hidden marker
+identifies Akno-owned rows so a later correction can update them without touching standalone events.
+They are not independent events, so the timeline query does not count them twice. A mixed conversation can
 therefore produce items in several timelines without labels from the caller. Evergreen facts do not gain
 an invented event date. Duplicate detection and catch-all destinations cannot silently cross boundaries.
 Managed references use the same bold-date-and-separator style as authored event lines. Exact times display
@@ -83,18 +85,22 @@ as a clock and explicit UTC offset instead of a raw ISO timestamp; a compact ann
 reporting, and other qualifications visible. The trailing Akno marker is needed for safe reconciliation,
 but the linked subject page remains the canonical memory.
 Exact retention replay does not append a second reference. Corrections, retractions, explicit forgetting,
-page moves, and undo update the same ledger section while preserving authored lines and prose.
+page moves, and undo update the same dated list while preserving standalone event text and prose.
 
 Existing retained temporal memories can be materialized explicitly. Preview first; applying writes the
 affected ledgers in one journalled change that can be undone. Ordinary indexing never performs this write.
 Reconciliation accepts indexed managed memories with bullet or paragraph payloads.
-It also upgrades older generated ledger lines to the readable format without rewriting authored lines.
+It also moves older generated reference blocks into the same year-by-year list as standalone events.
+For a ledger made only of dated rows and year headings, this explicit, undoable migration sorts those
+rows newest first without changing their text or links. A ledger with interspersed prose keeps its
+existing event order. Ordinary writes never reorder existing standalone events.
 Run the same preview after creating or removing a timeline boundary to align the visible files with
 the query's updated folder membership.
 
 ```sh
 akno migrate --retained-timelines
 akno migrate --retained-timelines --apply
+akno migrate --retained-timelines --timeline timeline --apply  # only the root ledger
 ```
 
 An explicit page-plus-event write uses that page's nearest ledger. A standalone event needs an explicit

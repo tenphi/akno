@@ -1768,6 +1768,9 @@ describe('folder-owned timeline retention', () => {
       expect(text).toContain('- **2031-04-08 – 2031-04-09** | *Scheduled* — ');
       expect(text).toContain(`${sentence} [[memory/work/zephyr-inspection]]`);
       expect((await mem.timeline({ timeline: 'memory/work/timeline' })).results).toHaveLength(1);
+      expect((await mem.migrateRetainedTimelines({ timeline: 'memory/work/timeline' })).changedPaths).toEqual(
+        [],
+      );
       fs.rmSync(path.join(root, 'memory/other/timeline.md'));
       expect((await mem.migrateRetainedTimelines()).changedPaths).toEqual([]);
       fs.writeFileSync(ledger, text.replace(sentence, 'A person edited this reference.'));
@@ -1778,11 +1781,11 @@ describe('folder-owned timeline retention', () => {
     }
   });
 
-  it('previews and migrates the old ledger style without changing authored events or counting a duplicate', async () => {
+  it('previews and migrates the old ledger style without changing standalone events or counting a duplicate', async () => {
     fs.mkdirSync(path.join(root, 'memory/work'), { recursive: true });
     const ledger = path.join(root, 'memory/work/timeline.md');
-    const authored = '- **2031-04-01** | Ada Marlow ordered a Zephyr prototype.\n';
-    fs.writeFileSync(ledger, `# Timeline\n\n${authored}`);
+    const standalone = '- **2031-04-01** | Ada Marlow ordered a Zephyr prototype.\n';
+    fs.writeFileSync(ledger, `# Timeline\n\n${standalone}\n`);
     const event = 'Ada Marlow scheduled the Zephyr review for 8 April 2031 at 09:30.';
     const base = upsert('conversation:readable-ledger', '1', event);
     const source = {
@@ -1815,8 +1818,9 @@ describe('folder-owned timeline retention', () => {
     try {
       expect((await mem.retain({ sources: [source] })).sources[0]?.candidates[0]?.outcome).toBe('written');
       const modern = fs.readFileSync(ledger, 'utf8');
+      expect(modern.endsWith('\n\n')).toBe(true);
       expect(modern).toContain('- **2031-04-08, 09:30 UTC+02:00** | *Scheduled* — ');
-      expect(modern).toContain(authored);
+      expect(modern).toContain(standalone);
       const id = /akno:timeline-item id=([A-Za-z0-9_-]+)/.exec(modern)?.[1];
       expect(id).toBeDefined();
       const oldBase = `- 2031-04-08T09:30:00+02:00 · scheduled / scheduled / event · ${event} [[memory/work/zephyr-review]]`;
@@ -1830,7 +1834,10 @@ describe('folder-owned timeline retention', () => {
       const applied = await mem.migrateRetainedTimelines({ apply: true });
       expect(applied.applied).toBe(true);
       const migrated = fs.readFileSync(ledger, 'utf8');
-      expect(migrated).toBe(modern);
+      expect(migrated).toContain('## 2031\n- **2031-04-08, 09:30 UTC+02:00**');
+      expect(migrated).toContain(standalone.trim());
+      expect(migrated).not.toContain('## Retained memories');
+      expect(migrated.indexOf('2031-04-08')).toBeLessThan(migrated.indexOf('2031-04-01'));
       expect((await mem.migrateRetainedTimelines()).changedPaths).toEqual([]);
       const timeline = await mem.timeline({ timeline: 'memory/work/timeline' });
       expect(timeline.results).toHaveLength(2);

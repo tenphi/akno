@@ -94,6 +94,21 @@ describe('insertEvent', () => {
     const result = insertEvent(ledger, { date: '2026-08-06', summary: 'Booked.' });
     expect(result.content.split('\n')[result.line - 1]).toContain('2026-08-06');
   });
+
+  it('places a standalone event between retained references by their visible dates', () => {
+    const mixed = [
+      '## 2031',
+      '- **2031-05-01, 09:30 UTC+01:00** | *Scheduled* — A review. <!-- akno:timeline-item id=mem_future date=2031-05-01T09:30:00+01:00 hash=aaaaaaaaaaaa -->',
+      '- **Until 2031-04-01** | *Planned* — A deadline. <!-- akno:timeline-item id=mem_deadline date=2031-04-01 hash=bbbbbbbbbbbb -->',
+      '',
+    ].join('\n');
+    const result = insertEvent(mixed, { date: '2031-04-15', summary: 'Ada Marlow inspected the prototype.' });
+    expect(result.content).toContain(
+      '2031-05-01T09:30:00+01:00 hash=aaaaaaaaaaaa -->\n' +
+        '- **2031-04-15** | Ada Marlow inspected the prototype.\n' +
+        '- **Until 2031-04-01**',
+    );
+  });
 });
 
 describe('formatEventLine', () => {

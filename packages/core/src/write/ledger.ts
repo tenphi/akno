@@ -6,10 +6,10 @@
  * rendered file silently discards hand edits, and the whole point of a Markdown
  * knowledge base is that hand edits are legitimate.
  *
- * So Akno maintains it **by appending only** — inserting under the right year
- * heading and never rewriting or reordering what is already there. No edit a human
- * made can be lost, and a hand-written line is indexed exactly like a generated
- * one. Historical maintenance may separately transfer an exact line to its owning
+ * So ordinary Akno writes maintain it **by insertion only** — placing new lines under
+ * the right year without rewriting what is already there. Explicit, journalled
+ * migration may sort dated lines while preserving their text. A hand-written line
+ * is indexed exactly like a generated one. Historical maintenance may separately transfer an exact line to its owning
  * descendant ledger in one reviewed, journalled change; it never regenerates either file.
  *
  * Nothing about this line syntax ever reaches a prompt: there is no
@@ -40,6 +40,9 @@ export interface LedgerInsert {
 
 /** The same shape the indexer matches, used here to read dates already in place. */
 const EVENT_DATE = /^\s*[-*]\s+\*\*(\d{4}-\d{2}-\d{2})\*\*\s*\|/;
+// Retained references carry a clock or an "Until" label inside the bold date.
+// They participate in placement, but never in event deduplication.
+const PLACEMENT_DATE = /^\s*[-*]\s+\*\*(?:Until )?(\d{4}(?:-\d{2})?(?:-\d{2})?)(?:\*\*|\b)/;
 const RETAINED_TIMELINE_ITEM = /<!--\s*akno:timeline-item\b[^>]*-->\s*$/i;
 
 export function formatEventLine(event: LedgerEvent): string {
@@ -116,7 +119,7 @@ export function insertEvent(content: string, event: LedgerEvent): LedgerInsert {
     // Still pure insertion: an unparseable line a human wrote is stepped over,
     // never moved, so "never rewrites or reorders" holds.
     for (let i = at; i < blockEnd; i++) {
-      const existingDate = EVENT_DATE.exec(lines[i]!)?.[1];
+      const existingDate = PLACEMENT_DATE.exec(lines[i]!)?.[1];
       if (existingDate && existingDate < event.date) {
         at = i;
         break;
