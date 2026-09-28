@@ -321,4 +321,21 @@ describe('qualified synthesis sections', () => {
     expect(qualifiedSynthesisIssue(before, before + 'The path runs west.\n')).toBeNull();
     expect(qualifiedSynthesisIssue(before, before + 'Details are in linked pages.\n')).not.toBeNull();
   });
+
+  it.each(['“The gate is red.”', '"The gate is red".', '«The gate is red».'])(
+    'does not promote the quoted sentence %s after removing quotation marks',
+    (quoted) => {
+      const before = `# Notes\n\n> ${quoted}\n\n## Access\n\nThe path is gravel.\n`;
+      expect(qualifiedSynthesisIssue(before, before + 'The gate is red.\n')).toMatch(/copied qualified/);
+      expect(qualifiedSynthesisIssue(before, before + 'The path runs west.\n')).toBeNull();
+      const alreadyAsserted = before + 'The gate is red.\n';
+      expect(qualifiedSynthesisIssue(alreadyAsserted, alreadyAsserted + 'The path runs west.\n')).toBeNull();
+    },
+  );
+
+  it('does not promote an unchecked option into an asserted instruction', () => {
+    const before = '# Notes\n\n- [ ] Visit the north gate.\n\n## Access\n\nThe path is gravel.\n';
+    expect(qualifiedSynthesisIssue(before, before + 'Visit the north gate.\n')).toMatch(/copied qualified/);
+    expect(qualifiedSynthesisIssue(before, before + 'The path runs west.\n')).toBeNull();
+  });
 });
