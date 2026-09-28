@@ -342,7 +342,7 @@ a plan happened merely because its date passed, and reject restructuring with no
 post-event knowledge.`;
 
 const QUALIFIED_VERIFY = `Protected qualified ranges and their deciding context must remain verbatim.
-For an edited factual lead, check that it does not change the meaning or attribution of a later qualified block.
+For an edited factual lead or span between protected blocks, check that it does not change the meaning or attribution of nearby qualified blocks.
 Reject copying a quotation, report, hypothesis, option or cancelled plan into factual prose elsewhere,
 including paraphrases that claim the same thing happened. Unchanged qualified text is context to preserve,
 not factual evidence for another area. Check the new independent content against supplied evidence.
@@ -361,9 +361,9 @@ owned evidence. Exact duplicate lines may be deduplicated.`;
 export const VERIFY_SCHEMA = z.object({ ok: z.boolean(), issues: z.array(z.string()) });
 
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-// 20: admit existing factual leads before protected qualified blocks.
+// 21: admit existing factual spans between protected qualified blocks.
 // Decisions from the previous transformation surface must be reconsidered once.
-const CURATE_FINGERPRINT_VERSION = 20;
+const CURATE_FINGERPRINT_VERSION = 21;
 
 export async function curatePages(
   ctx: AknoContext,
@@ -538,7 +538,11 @@ export async function curatePages(
       discourse &&
       (row.dream_management !== 'synthesize' ||
         !allowedKinds.has('synthesis') ||
-        discourse.editableSections + discourse.editableLeads + discourse.editableTails === 0)
+        discourse.editableSections +
+          discourse.editableLeads +
+          discourse.editableMiddles +
+          discourse.editableTails ===
+          0)
     ) {
       result.pages.push({
         slug: row.slug,
@@ -635,7 +639,7 @@ export async function curatePages(
               ? `\nTemporal boundary candidates explicitly present in this page: ${candidates.join(', ')}`
               : '') +
             (discourse
-              ? `\nProtected ranges (inclusive, body-relative lines): ${JSON.stringify(discourse.protectedSections)}. Preserve these ranges verbatim and section order; edit only independent factual sections, existing same-line-count factual leads before the first protected block, or factual tails after the last protected block. ${overview ? 'Only supported temporal headings outside protected ranges may change.' : 'Preserve all headings.'} Splits, extractions and temporal inference are unavailable.`
+              ? `\nProtected ranges (inclusive, body-relative lines): ${JSON.stringify(discourse.protectedSections)}. Preserve these ranges verbatim and section order; edit only independent factual sections, existing same-line-count factual leads before the first protected block, existing same-line-count factual spans between protected blocks, or factual tails after the last protected block. Keep the same Markdown block layout in each edited lead or middle span. ${overview ? 'Only supported temporal headings outside protected ranges may change.' : 'Preserve all headings.'} Splits, extractions and temporal inference are unavailable.`
               : '') +
             (selection
               ? `\n\nEvidence coverage (partial is not absence): ${JSON.stringify(selection.coverage)}`

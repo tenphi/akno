@@ -9,6 +9,7 @@ describe('qualified synthesis sections', () => {
       protectedSections: [{ bodyLineStart: 1, bodyLineEnd: 4 }],
       editableSections: 1,
       editableLeads: 0,
+      editableMiddles: 0,
       editableTails: 1,
     });
     expect(qualifiedSynthesisIssue(body, body + 'The gate opens at noon.\n')).toBeNull();
@@ -158,6 +159,88 @@ describe('qualified synthesis sections', () => {
     const before = '# Notes\n\nThe gate is blue.\n\nCorrection: that was only a tentative report.\n';
     expect(qualifiedSynthesisScope(before)!.editableLeads).toBe(0);
     expect(qualifiedSynthesisIssue(before, before.replace('blue', 'green'))).not.toBeNull();
+  });
+
+  it('edits existing facts between two protected blocks in place', () => {
+    const before =
+      '# Notes\n\n> The north gate might open.\n\nThe path is gravel.\n\n> The south gate might open.\n';
+    expect(qualifiedSynthesisScope(before)).toMatchObject({
+      editableSections: 0,
+      editableLeads: 0,
+      editableMiddles: 1,
+      protectedSections: [
+        { bodyLineStart: 1, bodyLineEnd: 4 },
+        { bodyLineStart: 7, bodyLineEnd: 7 },
+      ],
+    });
+    expect(qualifiedSynthesisIssue(before, before.replace('gravel', 'stone'))).toBeNull();
+    expect(
+      qualifiedSynthesisIssue(before, before.replace('gravel', 'stone').replace('south', 'east')),
+    ).toMatch(/protected range/);
+    expect(
+      qualifiedSynthesisIssue(before, before.replace('gravel.', 'gravel.\nThe path runs west.')),
+    ).toMatch(/protected range/);
+    expect(
+      qualifiedSynthesisIssue(before, before.replace('The path is gravel.', '- The path is gravel.')),
+    ).toMatch(/protected range/);
+    expect(qualifiedSynthesisIssue(before, before.replace('gravel', 'perhaps stone'))).not.toBeNull();
+    expect(qualifiedSynthesisIssue(before, before.replace('gravel', 'north gate might open'))).not.toBeNull();
+    expect(
+      qualifiedSynthesisIssue(before, before.replace('gravel', 'gravel <!-- akno:item fixture -->')),
+    ).not.toBeNull();
+  });
+
+  it('keeps a preceding fact with a later correction instead of opening a middle span', () => {
+    const before =
+      '# Notes\n\n> The north gate might open.\n\nThe path is gravel.\n\nCorrection: that was only a tentative report.\n\n> The south gate might open.\n';
+    expect(qualifiedSynthesisScope(before)!.editableMiddles).toBe(0);
+    expect(qualifiedSynthesisIssue(before, before.replace('gravel', 'stone'))).not.toBeNull();
+  });
+
+  it('keeps every protected block fixed when two factual middle spans are edited', () => {
+    const before =
+      '# Notes\n\n> Maybe use the north gate.\n\nThe path is gravel.\n\n> Maybe use the east gate.\n\nThe lane is narrow.\n\n> Maybe use the south gate.';
+    expect(qualifiedSynthesisScope(before)!.editableMiddles).toBe(2);
+    const after = before.replace('gravel', 'stone').replace('narrow', 'wide');
+    expect(qualifiedSynthesisIssue(before, after)).toBeNull();
+    expect(qualifiedSynthesisIssue(before, after + ' It is open.')).toMatch(/protected range/);
+    expect(qualifiedSynthesisIssue(before, after.replace('east gate', 'west gate'))).toMatch(
+      /protected range/,
+    );
+  });
+
+  it('edits a lead and middle span together without moving either protected quote', () => {
+    const before =
+      '# Notes\n\nThe lock is brass.\n\n> Maybe use the north gate.\n\nThe path is gravel.\n\n> Maybe use the south gate.\n';
+    expect(qualifiedSynthesisScope(before)).toMatchObject({
+      editableLeads: 1,
+      editableMiddles: 1,
+      protectedSections: [
+        { bodyLineStart: 1, bodyLineEnd: 1 },
+        { bodyLineStart: 5, bodyLineEnd: 6 },
+        { bodyLineStart: 9, bodyLineEnd: 9 },
+      ],
+    });
+    expect(
+      qualifiedSynthesisIssue(before, before.replace('brass', 'steel').replace('gravel', 'stone')),
+    ).toBeNull();
+    expect(qualifiedSynthesisIssue(before, before.replace('brass', 'steel\nThe lock is large'))).toMatch(
+      /protected range/,
+    );
+  });
+
+  it('preserves nested protected blocks and CRLF while editing a middle fact', () => {
+    const before =
+      '# Notes\n\n- > Maybe visit the north gate.\n  > Keep the option open.\n\nThe path is gravel.\n\n> The south gate might open.\n'.replaceAll(
+        '\n',
+        '\r\n',
+      );
+    expect(qualifiedSynthesisScope(before)!.editableMiddles).toBe(1);
+    expect(qualifiedSynthesisIssue(before, before.replace('gravel', 'stone'))).toBeNull();
+    expect(
+      qualifiedSynthesisIssue(before, before.replace('Keep the option open.', 'Close the option.')),
+    ).not.toBeNull();
+    expect(qualifiedSynthesisIssue(before, before.replaceAll('\r\n', '\n'))).not.toBeNull();
   });
 
   it('keeps CRLF protected bytes intact when editing a factual lead', () => {
