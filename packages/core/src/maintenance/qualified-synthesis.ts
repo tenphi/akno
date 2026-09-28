@@ -360,7 +360,15 @@ export function qualifiedSynthesisIssue(
     text
       .replace(/^(?:\s*>)+\s*/, '')
       .replace(/^\s*(?:[-+*]|\d+[.)])\s+/, '')
+      .replace(/^\s*\[\s\]\s+/, '')
       .replace(/[*_`]/g, '')
+      .trim()
+      // Quotation marks and an unchecked task marker are attribution/intent syntax.
+      // Removing them only for comparison catches a verbatim promotion to asserted prose;
+      // the original protected bytes and their qualification remain untouched.
+      .replace(/^["“”«»'‘’]+/, '')
+      .replace(/["“”«»'‘’]+([.!?])$/, '$1')
+      .replace(/["“”«»'‘’]+$/, '')
       .replace(/\s+/g, ' ')
       .trim()
       .toLowerCase();

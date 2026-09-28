@@ -472,6 +472,33 @@ describe('section-preserving synthesis', () => {
     expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(frontmatter + body);
   });
 
+  it.each([
+    {
+      name: 'quoted sentence',
+      before: '\n# Ada Marlow\n\n> “The gate is red.”\n\n## Details\n\nThe path is gravel.\n',
+      copied: 'The gate is red.',
+    },
+    {
+      name: 'unchecked option',
+      before: '\n# Ada Marlow\n\n- [ ] Visit the north gate.\n\n## Details\n\nThe path is gravel.\n',
+      copied: 'Visit the north gate.',
+    },
+  ])('rejects promotion of a $name before semantic verification', async ({ before, copied }) => {
+    const target = path.join(root, 'people/ada-marlow.md');
+    fs.writeFileSync(target, frontmatter + before);
+    server.qualifiedDraft(before + copied + '\n');
+    await mem.index({ structuralOnly: true, verify: true });
+    const calls = server.calls();
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.curated[0]).toMatchObject({
+      action: 'rejected',
+      reason_code: 'prose_discourse_held',
+      issues: ['Qualified synthesis copied qualified text into an asserted section.'],
+    });
+    expect(server.calls()).toBe(calls + 1);
+    expect(fs.readFileSync(target, 'utf8')).toBe(frontmatter + before);
+  });
+
   it('still requires semantic verification of new independent prose', async () => {
     server.refuseVerification(true);
     const report = await mem.dream({ phase: 'curate' });
