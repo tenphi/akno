@@ -1,5 +1,13 @@
 # @tenphi/akno-client
 
+## 0.15.13
+
+### Patch Changes
+
+- [#133](https://github.com/tenphi/akno/pull/133) [`c3d2911`](https://github.com/tenphi/akno/commit/c3d29113faef5428cccf5cd018765e4b7e4d8425) Thanks [@tenphi](https://github.com/tenphi)! - Render retained timeline references in the same date-and-separator style as authored events, with readable clocks and compact qualifications. Explicit reconciliation upgrades existing managed rows without changing authored content.
+- Updated dependencies [[`c3d2911`](https://github.com/tenphi/akno/commit/c3d29113faef5428cccf5cd018765e4b7e4d8425)]:
+  - @tenphi/akno-protocol@0.15.13
+
 ## 0.15.12
 
 ### Patch Changes
