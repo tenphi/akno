@@ -1,5 +1,15 @@
 # @tenphi/akno
 
+## 0.15.11
+
+### Patch Changes
+
+- [#128](https://github.com/tenphi/akno/pull/128) [`fb485c2`](https://github.com/tenphi/akno/commit/fb485c2975eb0b6ce3dd4deff40f98660b49114c) Thanks [@tenphi](https://github.com/tenphi)! - Materialize retained dated memories as source-linked references in their declared timeline ledgers. Keep references aligned through retention, retraction, forgetting, moves, and undo, and provide an explicit preview/apply reconciliation for existing memories.
+- Updated dependencies [[`fb485c2`](https://github.com/tenphi/akno/commit/fb485c2975eb0b6ce3dd4deff40f98660b49114c)]:
+  - @tenphi/akno-protocol@0.15.11
+  - @tenphi/akno-core@0.15.11
+  - @tenphi/akno-client@0.15.11
+
 ## 0.15.10
 
 ### Patch Changes
