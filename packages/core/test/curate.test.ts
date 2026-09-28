@@ -369,12 +369,12 @@ describe('section-preserving synthesis', () => {
     );
   });
 
-  it('updates a supported factual lead before a quote without moving the protected lines', async () => {
+  it('adds a supported factual line before a quote while preserving the protected block', async () => {
     const before =
       '\n# Ada Marlow\n\nAda Marlow maintains a brass compass collection.\n\n> Details are in the linked pages.\n';
     const after = before.replace(
       'brass compass collection.',
-      'brass compass collection, including a silver compass. [[evidence/collection]]',
+      'brass compass collection.\nThe collection includes a silver compass. [[evidence/collection]]',
     );
     fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), frontmatter + before);
     server.qualifiedDraft(after);
@@ -397,7 +397,7 @@ describe('section-preserving synthesis', () => {
       '\n# Ada Marlow\n\n> The collection might grow.\n\nAda Marlow maintains a brass compass collection.\n\n> Details are in the linked pages.\n';
     const after = before.replace(
       'brass compass collection.',
-      'brass compass collection, including a silver compass. [[evidence/collection]]',
+      'brass compass collection.\nThe collection includes a silver compass. [[evidence/collection]]',
     );
     fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), frontmatter + before);
     server.qualifiedDraft(after);
@@ -420,7 +420,7 @@ describe('section-preserving synthesis', () => {
       '\n# Ada Marlow\n\n> The collection might grow.\n\nAda Marlow maintains a brass compass collection.\n\n> Details are in the linked pages.\n';
     const after = before.replace(
       'brass compass collection.',
-      'brass compass collection, including a silver compass. [[evidence/collection]]',
+      'brass compass collection.\nThe collection includes a silver compass. [[evidence/collection]]',
     );
     fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), frontmatter + before);
     server.qualifiedDraft(after);

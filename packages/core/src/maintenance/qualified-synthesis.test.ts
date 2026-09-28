@@ -145,9 +145,7 @@ describe('qualified synthesis sections', () => {
     expect(
       qualifiedSynthesisIssue(before, before.replace('blue', 'green').replace('gravel', 'stone')),
     ).toBeNull();
-    expect(qualifiedSynthesisIssue(before, before.replace('blue.', 'blue.\nThe gate is green.'))).toMatch(
-      /protected range/,
-    );
+    expect(qualifiedSynthesisIssue(before, before.replace('blue.', 'blue.\nThe gate is green.'))).toBeNull();
     expect(
       qualifiedSynthesisIssue(before, before.replace('The gate is blue.', '- The gate is blue.')),
     ).toMatch(/protected range/);
@@ -179,7 +177,7 @@ describe('qualified synthesis sections', () => {
     ).toMatch(/protected range/);
     expect(
       qualifiedSynthesisIssue(before, before.replace('gravel.', 'gravel.\nThe path runs west.')),
-    ).toMatch(/protected range/);
+    ).toBeNull();
     expect(
       qualifiedSynthesisIssue(before, before.replace('The path is gravel.', '- The path is gravel.')),
     ).toMatch(/protected range/);
@@ -224,9 +222,46 @@ describe('qualified synthesis sections', () => {
     expect(
       qualifiedSynthesisIssue(before, before.replace('brass', 'steel').replace('gravel', 'stone')),
     ).toBeNull();
-    expect(qualifiedSynthesisIssue(before, before.replace('brass', 'steel\nThe lock is large'))).toMatch(
-      /protected range/,
-    );
+    expect(qualifiedSynthesisIssue(before, before.replace('brass', 'steel\nThe lock is large'))).toBeNull();
+  });
+
+  it('removes a factual line while keeping the protected block anchors', () => {
+    const before =
+      '# Notes\n\nThe lock is brass.\nThe lock is old.\n\n> Maybe use the north gate.\n\nThe path is gravel.\nThe path runs west.\n\n> Maybe use the south gate.\n';
+    const after = before.replace('The lock is old.\n', '').replace('The path runs west.\n', '');
+    expect(qualifiedSynthesisIssue(before, after)).toBeNull();
+    expect(
+      qualifiedSynthesisIssue(
+        before,
+        before.replace('The path is gravel.', 'The path is gravel.\n\nThe path runs east.'),
+      ),
+    ).toBeNull();
+    expect(
+      qualifiedSynthesisIssue(
+        before,
+        before.replace('The path is gravel.', 'The path is gravel.\n\n> The path runs east.'),
+      ),
+    ).not.toBeNull();
+  });
+
+  it('adds and removes factual paragraphs while preserving surrounding quotes', () => {
+    const before =
+      '# Notes\n\nThe lock is brass.\n\nThe lock is old.\n\n> Maybe use the north gate.\n\nThe path is gravel.\n\nThe path runs west.\n\n> Maybe use the south gate.\n';
+    const after = before
+      .replace('The lock is old.\n\n', '')
+      .replace('The path runs west.', 'The path runs west.\n\nThe lane is narrow.');
+    expect(qualifiedSynthesisIssue(before, after)).toBeNull();
+    expect(
+      qualifiedSynthesisIssue(before, after.replace('The lane is narrow.', '- The lane is narrow.')),
+    ).toMatch(/protected range/);
+  });
+
+  it('preserves CRLF protected bytes when factual spans change line count', () => {
+    const before =
+      '# Notes\r\n\r\nThe lock is brass.\r\n\r\n> Maybe use the north gate.\r\n\r\nThe path is gravel.\r\n\r\n> Maybe use the south gate.\r\n';
+    const after = before.replace('The path is gravel.\r\n', 'The path is gravel.\r\nThe path runs west.\r\n');
+    expect(qualifiedSynthesisIssue(before, after)).toBeNull();
+    expect(qualifiedSynthesisIssue(before, after.replaceAll('\r\n', '\n'))).toMatch(/protected range/);
   });
 
   it('preserves nested protected blocks and CRLF while editing a middle fact', () => {

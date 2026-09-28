@@ -14,9 +14,9 @@ export interface QualifiedSynthesisScope {
   /** Body-relative, inclusive protected ranges, including deciding heading/context lines. */
   protectedSections: { bodyLineStart: number; bodyLineEnd: number }[];
   editableSections: number;
-  /** Sections with existing factual lead prose that can change without moving protected lines. */
+  /** Sections with existing factual lead prose before a protected block. */
   editableLeads: number;
-  /** Existing factual spans between protected blocks that can change in place. */
+  /** Existing factual spans between protected blocks. */
   editableMiddles: number;
   /** Sections with an eligible factual tail after their last protected block. */
   editableTails: number;
@@ -55,7 +55,7 @@ function inspect(body: string) {
   const protectedIndexes = new Set<number>();
   const contentQualified = new Set<number>();
   const contentStarts = new Map<number, number>();
-  const protectedBlocks = new Map<number, Map<number, { start: number; end: number }>>();
+  const protectedBlocks = new Map<number, Map<number, { start: number; end: number; type: string }>>();
   const protectedEnds = new Map<number, number>();
   const fullLocked = new Set<number>();
   const blocks = fromMarkdown(body).children;
@@ -85,7 +85,7 @@ function inspect(body: string) {
           ? parts[index]!.endOffset
           : Math.min(body.lastIndexOf('\n', nextStart - 1) + 1, parts[index]!.endOffset);
       const ranges = protectedBlocks.get(index) ?? new Map();
-      ranges.set(start, { start, end: blockEnd });
+      ranges.set(start, { start, end: blockEnd, type: block.type });
       protectedBlocks.set(index, ranges);
     }
   };
@@ -152,12 +152,6 @@ function inspect(body: string) {
       );
     }),
   );
-  const protectedMiddles = new Map(
-    [...eligibleLeads].map((index) => [
-      index,
-      body.slice(contentStarts.get(index)!, protectedEnds.get(index) ?? parts[index]!.endOffset),
-    ]),
-  );
   const middleWindows = new Map(
     [...protectedIndexes].map((index) => {
       const ranges = [...(protectedBlocks.get(index)?.values() ?? [])].sort((a, b) => a.start - b.start);
@@ -182,7 +176,6 @@ function inspect(body: string) {
     qualifications,
     protectedIndexes,
     protectedPrefixes,
-    protectedMiddles,
     protectedBlocks,
     middleWindows,
     contentStarts,
@@ -266,73 +259,60 @@ export function qualifiedSynthesisIssue(
   for (const i of prior.protectedIndexes) {
     const middles = prior.middleWindows.get(i) ?? [];
     const blocks = [...(prior.protectedBlocks.get(i)?.values() ?? [])].sort((a, b) => a.start - b.start);
-    const middleBlocksAtOriginalLines = () => {
+    const anchoredBlocksAndGaps = () => {
       const oldPart = prior.parts[i]!;
-      const newText = next.parts[i]!.text;
-      const atLine = (line: number) => {
-        let offset = 0;
-        for (let n = 0; n < line; n++) {
-          const newline = newText.indexOf('\n', offset);
-          if (newline < 0) return -1;
-          offset = newline + 1;
-        }
-        return offset;
-      };
-      const relativeLine = (offset: number) =>
-        before.slice(oldPart.startOffset, offset).split('\n').length - 1;
+      const newPart = next.parts[i]!;
+      const newBlocks = [...(next.protectedBlocks.get(i)?.values() ?? [])].sort((a, b) => a.start - b.start);
+      if (blocks.length !== newBlocks.length) return false;
       const shape = (value: string) => fromMarkdown(value).children.map((node) => node.type);
-      let gapStart = oldPart.startOffset;
+      const sameFactualLayout = (oldGap: string, newGap: string, lead: boolean) => {
+        const oldKinds = shape(oldGap);
+        const newKinds = shape(newGap);
+        if (JSON.stringify(oldKinds) === JSON.stringify(newKinds)) return true;
+        // A curator may add or remove whole factual paragraphs. Keep a leading section
+        // heading in its original position, and never let a list, quote, code block or
+        // other container change its ownership at this boundary.
+        const heading = lead && oldKinds[0] === 'heading' ? 1 : 0;
+        return (
+          JSON.stringify(oldKinds.slice(0, heading)) === JSON.stringify(newKinds.slice(0, heading)) &&
+          oldKinds.length > heading &&
+          newKinds.length > heading &&
+          oldKinds.slice(heading).every((kind) => kind === 'paragraph') &&
+          newKinds.slice(heading).every((kind) => kind === 'paragraph')
+        );
+      };
+      let oldGapStart = oldPart.startOffset;
+      let newGapStart = newPart.startOffset;
       for (const [position, block] of blocks.entries()) {
-        const afterGapStart = atLine(relativeLine(gapStart));
-        const afterBlockStart = atLine(relativeLine(block.start));
-        if (afterGapStart < 0 || afterBlockStart < 0) return false;
-        const oldGap = before.slice(gapStart, block.start);
-        const newGap = newText.slice(afterGapStart, afterBlockStart);
+        const newBlock = newBlocks[position]!;
+        if (block.type !== newBlock.type) return false;
+        const oldGap = before.slice(oldGapStart, block.start);
+        const newGap = after.slice(newGapStart, newBlock.start);
         const editable =
           (position === 0 && prior.eligibleLeads.has(i)) ||
-          middles.some((window) => window.start === gapStart && window.end === block.start);
-        if (editable ? JSON.stringify(shape(oldGap)) !== JSON.stringify(shape(newGap)) : oldGap !== newGap)
-          return false;
+          middles.some((window) => window.start === oldGapStart && window.end === block.start);
+        if (editable ? !sameFactualLayout(oldGap, newGap, position === 0) : oldGap !== newGap) return false;
         const protectedText = before.slice(block.start, block.end);
-        if (!newText.slice(afterBlockStart).startsWith(protectedText)) return false;
-        // A final block without a terminating newline cannot acquire more words on its
-        // protected line merely because its old bytes remain a string prefix.
-        if (block.end === oldPart.endOffset && !protectedText.endsWith('\n')) {
-          const following = newText[afterBlockStart + protectedText.length];
-          if (following !== undefined && following !== '\n') return false;
+        const newProtectedText = after.slice(newBlock.start, newBlock.end);
+        if (block.end === oldPart.endOffset) {
+          if (!newProtectedText.startsWith(protectedText)) return false;
+          const separator = newProtectedText.slice(protectedText.length);
+          if (separator.trim() || (separator && !protectedText.endsWith('\n') && !separator.startsWith('\n')))
+            return false;
+        } else if (newProtectedText !== protectedText) {
+          return false;
         }
-        gapStart = block.end;
+        oldGapStart = block.end;
+        newGapStart = newBlock.end;
       }
       return true;
-    };
-    const middleAtOriginalLine = () => {
-      const part = prior.parts[i]!;
-      const lineIndex =
-        part.text.slice(0, prior.contentStarts.get(i)! - part.startOffset).split('\n').length - 1;
-      const text = next.parts[i]!.text;
-      let offset = 0;
-      for (let n = 0; n < lineIndex; n++) {
-        const newline = text.indexOf('\n', offset);
-        if (newline < 0) return false;
-        offset = newline + 1;
-      }
-      // Keep the same root block kinds and count before the quotation. This permits an in-place
-      // factual rewrite while refusing a new paragraph, list, or container at that boundary.
-      const leadShape = (value: string) => fromMarkdown(value).children.map((node) => node.type);
-      if (
-        JSON.stringify(leadShape(part.text.slice(0, prior.contentStarts.get(i)! - part.startOffset))) !==
-        JSON.stringify(leadShape(text.slice(0, offset)))
-      )
-        return false;
-      return text.slice(offset).startsWith(prior.protectedMiddles.get(i)!);
     };
     if (
       prior.fullLocked.has(i)
         ? next.parts[i]!.text !== prior.parts[i]!.text
-        : middles.length
-          ? !middleBlocksAtOriginalLines()
-          : !next.parts[i]!.text.startsWith(prior.protectedPrefixes.get(i)!) &&
-            !(prior.eligibleLeads.has(i) && middleAtOriginalLine())
+        : middles.length || prior.eligibleLeads.has(i)
+          ? !anchoredBlocksAndGaps()
+          : !next.parts[i]!.text.startsWith(prior.protectedPrefixes.get(i)!)
     )
       return 'Qualified synthesis changed a protected range or its deciding context.';
   }
@@ -344,10 +324,25 @@ export function qualifiedSynthesisIssue(
     return 'Qualified synthesis introduced protected context or owned content into an independent section.';
   // Reproject the complete result. Keeping literal text alone is insufficient: a new frame
   // before it could silently change a report into an assertion, or qualify an independent fact.
-  const signature = (inspection: ReturnType<typeof inspect>) => {
+  const signature = (inspection: ReturnType<typeof inspect>, source: string) => {
+    const blockLines = new Map(
+      [...inspection.protectedBlocks].map(([section, ranges]) => [
+        section,
+        [...ranges.values()]
+          .sort((a, b) => a.start - b.start)
+          .map((block) => ({
+            first: source.slice(0, block.start).split('\n').length,
+            last: source.slice(0, block.end).split('\n').length - (source[block.end - 1] === '\n' ? 1 : 0),
+          })),
+      ]),
+    );
     const locate = (line: number) => {
       const i = inspection.parts.findIndex((part) => line >= part.firstLine && line <= part.lastLine);
-      return [i, line - (inspection.parts[i]?.firstLine ?? 0)];
+      const blocks = blockLines.get(i) ?? [];
+      const blockIndex = blocks.findIndex((block) => line >= block.first && line <= block.last);
+      return blockIndex < 0
+        ? [i, 'section', line - (inspection.parts[i]?.firstLine ?? 0)]
+        : [i, 'block', blockIndex, line - blocks[blockIndex]!.first];
     };
     return [...inspection.qualifications]
       .filter(([, q]) => !q.answer_eligible && q.reason !== 'heading')
@@ -359,7 +354,7 @@ export function qualifiedSynthesisIssue(
         frame: q.frame.map((entry) => ({ location: locate(entry.n), text: entry.text })),
       }));
   };
-  if (JSON.stringify(signature(prior)) !== JSON.stringify(signature(next)))
+  if (JSON.stringify(signature(prior, before)) !== JSON.stringify(signature(next, after)))
     return 'Qualified synthesis changed discourse ownership or introduced a new qualified span.';
   const proseKey = (text: string) =>
     text

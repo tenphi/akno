@@ -221,8 +221,9 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
 - **synthesis:** evidence-backed rewrite or reorganization. When ordinary prose contains a quotation,
   plan, tentative claim, or other qualification, Akno may update independent existing sections, an existing
   factual paragraph before the first protected block, an existing factual span between protected blocks,
-  or a factual tail after the last protected block in the same section. Leading and middle edits keep the
-  same line count and Markdown block layout. It preserves root
+  or a factual tail after the last protected block in the same section. Leading and middle edits may add or
+  remove factual lines and paragraphs while preserving other Markdown block types and at least one factual
+  paragraph in each existing gap. It preserves root
   Markdown heading order, each protected range and its deciding context byte for byte, and rechecks discourse ownership on the complete
   result. Nested headings in quotes, lists, or code do not open edit windows. A heading that only serves as
   an ancestor frame stays frozen. Global reference definitions and sections containing Akno-owned items are
@@ -230,8 +231,10 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
   editable sections, eligible factual leads and middle spans, and factual tails. A page without an eligible area, or a draft
   that changes protected context, remains
   `prose_discourse_held`. The usual evidence verifier and independent curator still assess new content; saved
-  plan revisions and application repeat the protection check. Inserting or removing lines before a protected
-  block remains held. Mixed pages cannot split, extract, or infer
+  plan revisions and application repeat the protection check. Protected blocks may shift line numbers only
+  when their surrounding factual spans change; their bytes and structural ownership remain fixed. Adding or
+  removing qualified or non-paragraph blocks before a protected block remains held. Mixed pages cannot split,
+  extract, or infer
   page-wide temporal metadata through this path. An explicitly declared event boundary still permits an
   archival assessment of independent factual areas, preserving unknown outcomes and plans. Hygiene and merge retain
   their whole-page discourse hold. Mixed-content evidence pages may contribute eligible individual facts and

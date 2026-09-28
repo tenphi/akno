@@ -361,9 +361,9 @@ owned evidence. Exact duplicate lines may be deduplicated.`;
 export const VERIFY_SCHEMA = z.object({ ok: z.boolean(), issues: z.array(z.string()) });
 
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-// 21: admit existing factual spans between protected qualified blocks.
+// 22: anchor protected blocks so existing factual spans may change line count.
 // Decisions from the previous transformation surface must be reconsidered once.
-const CURATE_FINGERPRINT_VERSION = 21;
+const CURATE_FINGERPRINT_VERSION = 22;
 
 export async function curatePages(
   ctx: AknoContext,
@@ -639,7 +639,7 @@ export async function curatePages(
               ? `\nTemporal boundary candidates explicitly present in this page: ${candidates.join(', ')}`
               : '') +
             (discourse
-              ? `\nProtected ranges (inclusive, body-relative lines): ${JSON.stringify(discourse.protectedSections)}. Preserve these ranges verbatim and section order; edit only independent factual sections, existing same-line-count factual leads before the first protected block, existing same-line-count factual spans between protected blocks, or factual tails after the last protected block. Keep the same Markdown block layout in each edited lead or middle span. ${overview ? 'Only supported temporal headings outside protected ranges may change.' : 'Preserve all headings.'} Splits, extractions and temporal inference are unavailable.`
+              ? `\nProtected ranges in the current body (inclusive, body-relative lines): ${JSON.stringify(discourse.protectedSections)}. Preserve the protected blocks and deciding context verbatim and in order; their line numbers may shift only when editing an existing factual lead or middle span. Edit only independent factual sections, existing factual leads before the first protected block, existing factual spans between protected blocks, or factual tails after the last protected block. Existing factual paragraphs may gain or lose lines; a factual-only gap may gain or lose whole paragraphs, but keep at least one and preserve other Markdown block types and ownership. ${overview ? 'Only supported temporal headings outside protected ranges may change.' : 'Preserve all headings.'} Splits, extractions and temporal inference are unavailable.`
               : '') +
             (selection
               ? `\n\nEvidence coverage (partial is not absence): ${JSON.stringify(selection.coverage)}`
