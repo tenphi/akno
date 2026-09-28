@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.15.9
+
+### Patch Changes
+
+- [#123](https://github.com/tenphi/akno/pull/123) [`621a5f0`](https://github.com/tenphi/akno/commit/621a5f0499056b0de931d8aa326a6e3d9975aebf) Thanks [@tenphi](https://github.com/tenphi)! - Allow evidence-backed synthesis to update existing factual spans between protected qualified blocks in the same Markdown section while preserving protected context and line positions.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.15.9
+
 ## 0.15.8
 
 ### Patch Changes
