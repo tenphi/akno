@@ -59,7 +59,7 @@ export async function serveSocket(
     const hello: Hello = {
       hello: 'akno',
       protocol: PROTOCOL_VERSION,
-      features: ['folder_timelines'],
+      features: ['folder_timelines', 'scoped_timeline_migration'],
       version: AKNO_VERSION,
       writable: akno.writable,
       akno_path: akno.config.aknoPath,

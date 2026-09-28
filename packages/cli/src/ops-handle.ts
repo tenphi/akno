@@ -173,6 +173,8 @@ export async function runMaintenance<T>(
   inProcess: (akno: Akno) => Promise<T>,
   options: {
     writable?: boolean;
+    /** Refuse an older service that would silently ignore a new command option. */
+    requiredFeature?: string;
     /** Periodic, content-free queue snapshots for long-running operator commands. */
     onWait?: (update: MaintenanceWaitUpdate) => void;
     waitEveryMs?: number;
@@ -197,6 +199,12 @@ export async function runMaintenance<T>(
 
     if (client) {
       try {
+        if (options.requiredFeature && !client.hello.features?.includes(options.requiredFeature)) {
+          throw new AknoError(
+            'unavailable',
+            `the running Akno service does not support ${options.requiredFeature}; update and restart it first`,
+          );
+        }
         if (!values.json) {
           process.stderr.write(style.grey(`via the service on ${socketPath}\n`));
         }

@@ -64,6 +64,7 @@ export async function migrateCommand(argv: string[]): Promise<number> {
         : values.observations
           ? akno.migrateObservations({ dryRun: values['dry-run'] })
           : akno.migrateBrain({ dryRun: values['dry-run'] }),
+    { requiredFeature: values.timeline ? 'scoped_timeline_migration' : undefined },
   );
   if ('applied' in report) {
     if (values.json) {

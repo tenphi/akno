@@ -597,6 +597,7 @@ it('preserves folder timeline discovery, selection, membership, and write receip
   const client = await connect({ socket: server.path });
   try {
     expect(client.hello.features).toContain('folder_timelines');
+    expect(client.hello.features).toContain('scoped_timeline_migration');
     expect((await client.list({ kind: 'timelines' })).timelines?.map((entry) => entry.slug)).toEqual([
       'timeline',
       'work/timeline',
