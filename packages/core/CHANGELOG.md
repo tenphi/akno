@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.15.12
+
+### Patch Changes
+
+- [#131](https://github.com/tenphi/akno/pull/131) [`1fee445`](https://github.com/tenphi/akno/commit/1fee44599c60ccc23213001d560b4e9d934128af) Thanks [@tenphi](https://github.com/tenphi)! - Reconcile valid paragraph-form managed memories into timeline ledgers, matching the existing memory projection rules.
+- Updated dependencies [[`1fee445`](https://github.com/tenphi/akno/commit/1fee44599c60ccc23213001d560b4e9d934128af)]:
+  - @tenphi/akno-protocol@0.15.12
+
 ## 0.15.11
 
 ### Patch Changes
