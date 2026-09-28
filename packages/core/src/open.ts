@@ -84,6 +84,10 @@ import {
   type ObservationMigrationOptions,
   type ObservationMigrationReport,
 } from './maintenance/observation-migration.ts';
+import {
+  migrateRetainedTimelineLedgers,
+  type RetainedTimelineLedgerReport,
+} from './maintenance/retained-timeline-ledgers.ts';
 
 /** Host-facing watch callbacks, including the inbox result the watcher triggers. */
 export interface AknoWatchEvents extends WatcherEvents {
@@ -166,6 +170,8 @@ export interface Akno extends AknoOps {
   migrateBrain(options?: BrainMigrationOptions): Promise<BrainMigrationReport>;
   /** Explicitly move unambiguous legacy observation lines onto admitted subject pages. */
   migrateObservations(options?: ObservationMigrationOptions): Promise<ObservationMigrationReport>;
+  /** Preview or explicitly materialize existing retained temporal items in declared ledgers. */
+  migrateRetainedTimelines(options?: { apply?: boolean }): Promise<RetainedTimelineLedgerReport>;
   /**
    * The user resolves a gate. Approving **completes the write**, because the
    * pending content was held with the proposal — a caller should not have to
@@ -434,6 +440,14 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     doctor: (doctorOptions) => doctor(ctx, doctorOptions ?? {}),
     migrateBrain: (migrationOptions) => migrateBrain(ctx, migrationOptions ?? {}),
     migrateObservations: (migrationOptions) => migrateLegacyObservations(ctx, migrationOptions ?? {}),
+    migrateRetainedTimelines: (migrationOptions) => {
+      if (migrationOptions?.apply && !writable)
+        throw new AknoError(
+          'read_only',
+          `cannot materialize timelines — ${readOnlyExplanation(readOnlyReason, lockHeldBy)}`,
+        );
+      return migrateRetainedTimelineLedgers(ctx, migrationOptions ?? {});
+    },
 
     rules(slug: string) {
       const match = matchRules(slug, config.rules);

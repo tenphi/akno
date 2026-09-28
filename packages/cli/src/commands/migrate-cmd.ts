@@ -1,4 +1,8 @@
-import type { BrainMigrationReport, ObservationMigrationReport } from '@tenphi/akno-core';
+import type {
+  BrainMigrationReport,
+  ObservationMigrationReport,
+  RetainedTimelineLedgerReport,
+} from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, kv, line, style } from '../output.ts';
 import { runMaintenance } from '../ops-handle.ts';
@@ -10,27 +14,63 @@ const MIGRATE_HELP = `akno migrate [options]
 
   --dry-run       Report eligible and held legacy items without writing.
   --observations  Co-locate unambiguous legacy observation lines instead of migrating v1 memory markers.
+  --retained-timelines  Preview missing or stale retained-memory ledger references.
+  --apply         Apply the retained-timeline preview; otherwise it changes no files.
   --json`;
 
 export async function migrateCommand(argv: string[]): Promise<number> {
-  const { values } = parse<{ 'dry-run': boolean; observations: boolean }>(argv, {
+  const { values } = parse<{
+    'dry-run': boolean;
+    observations: boolean;
+    'retained-timelines': boolean;
+    apply: boolean;
+  }>(argv, {
     'dry-run': { type: 'boolean', default: false },
     observations: { type: 'boolean', default: false },
+    'retained-timelines': { type: 'boolean', default: false },
+    apply: { type: 'boolean', default: false },
   });
   if (values.help) {
     line(MIGRATE_HELP);
     return 0;
   }
-  const report = await runMaintenance<BrainMigrationReport | ObservationMigrationReport>(
+  if (values['retained-timelines'] && values.observations)
+    throw new Error('choose either --retained-timelines or --observations');
+  if (values.apply && !values['retained-timelines']) throw new Error('--apply requires --retained-timelines');
+  const report = await runMaintenance<
+    BrainMigrationReport | ObservationMigrationReport | RetainedTimelineLedgerReport
+  >(
     'migrate',
-    { dry_run: values['dry-run'], observations: values.observations },
+    {
+      dry_run: values['dry-run'],
+      observations: values.observations,
+      retained_timelines: values['retained-timelines'],
+      apply: values.apply,
+    },
     values,
     openOptionsFrom(values),
     (akno) =>
-      values.observations
-        ? akno.migrateObservations({ dryRun: values['dry-run'] })
-        : akno.migrateBrain({ dryRun: values['dry-run'] }),
+      values['retained-timelines']
+        ? akno.migrateRetainedTimelines({ apply: values.apply })
+        : values.observations
+          ? akno.migrateObservations({ dryRun: values['dry-run'] })
+          : akno.migrateBrain({ dryRun: values['dry-run'] }),
   );
+  if ('applied' in report) {
+    if (values.json) {
+      json(report);
+      return 0;
+    }
+    heading(`Retained timeline ${report.applied ? 'reconciliation' : 'preview'}`);
+    kv([
+      ['pages scanned', report.scannedPages],
+      ['ledgers to change', report.changedPaths.length],
+      ['changed paths', report.changedPaths.join(', ') || '-'],
+      ['change', report.changeId ?? '-'],
+    ]);
+    if (!report.applied) line(style.grey('  preview — use --apply to write and journal these changes'));
+    return 0;
+  }
   if (values.json) {
     json(report);
     return report.held > 0 ? 2 : 0;

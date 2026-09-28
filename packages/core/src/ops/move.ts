@@ -3,11 +3,12 @@ import path from 'node:path';
 import { AknoError, MoveInput, type MoveOutput } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { ATTACHMENT_NAME } from '../kb/page.ts';
-import { recordOwnWrite, writeFileAtomic } from '../write/atomic.ts';
-import type { ChangeFile } from '../write/journal.ts';
+import { recordOwnWrite, restoreFile, writeFileAtomic } from '../write/atomic.ts';
+import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import { matchesConflictPath, quarantineReasonsForPath } from '../index/page-quarantine.ts';
 import { normalizeSlug } from './write.ts';
 import { beginMutation } from '../write/mutation-receipts.ts';
+import { retainedLedgerStages } from '../write/retained-timeline-ledger.ts';
 
 /**
  * Relocate a page with its documents, rewriting embeds and **reporting**
@@ -103,6 +104,10 @@ export async function move(ctx: AknoContext, rawInput: unknown): Promise<MoveOut
   for (const [oldName, newName] of rewrites) {
     content = content.split(oldName).join(newName);
   }
+  const ledgerStages = await retainedLedgerStages(ctx, [
+    { slug: from, before: original, after: null },
+    { slug: to, before: null, after: content },
+  ]);
 
   beginMutation(ctx);
   for (const document of documents) {
@@ -124,6 +129,31 @@ export async function move(ctx: AknoContext, rawInput: unknown): Promise<MoveOut
   files.push({ relPath: page.rel_path, action: 'moved', before: original, after: null });
   files.push({ relPath: toRelPath, action: 'created', before: null, after: written.after });
   moved.push(toRelPath);
+  let changeId: string;
+  try {
+    for (const ledger of ledgerStages)
+      files.push(fileEntry(await writeFileAtomic(ctx.config.aknoPath, ledger.relPath, ledger.after)));
+    changeId = ctx.journal.record({
+      actor: ctx.actor,
+      op: 'move',
+      summary: `${from} -> ${to}${documents.length > 0 ? ` with ${documents.length} attachment(s)` : ''}`,
+      files,
+      receipt: ctx.mutationReceipt,
+    });
+  } catch (error) {
+    for (const file of [...files].reverse()) {
+      if (file.action === 'moved' && file.movedTo) {
+        await fsp.mkdir(path.dirname(path.join(ctx.config.aknoPath, file.relPath)), { recursive: true });
+        await fsp.rename(
+          path.join(ctx.config.aknoPath, file.movedTo),
+          path.join(ctx.config.aknoPath, file.relPath),
+        );
+      } else {
+        await restoreFile(ctx.config.aknoPath, file.relPath, file.before);
+      }
+    }
+    throw error;
+  }
 
   // ── Inbound links ───────────────────────────────────────────────────────
   const inbound = ctx.store.db
@@ -132,14 +162,6 @@ export async function move(ctx: AknoContext, rawInput: unknown): Promise<MoveOut
         WHERE l.to_slug = ? AND p.id != ?`,
     )
     .all(from, page.id) as { slug: string }[];
-
-  const changeId = ctx.journal.record({
-    actor: ctx.actor,
-    op: 'move',
-    summary: `${from} -> ${to}${documents.length > 0 ? ` with ${documents.length} attachment(s)` : ''}`,
-    files,
-    receipt: ctx.mutationReceipt,
-  });
 
   ctx.store.transaction(() => {
     // Follow the id rather than retiring it — the same rule the watcher uses for a

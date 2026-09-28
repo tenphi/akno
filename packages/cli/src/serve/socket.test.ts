@@ -52,6 +52,7 @@ beforeEach(async () => {
         derive: { id: null },
         expansion: { id: null },
       },
+      folders: { 'memory/**': { role: 'knowledge', remember: 'integrate' } },
     },
   });
   await mem.index({});
@@ -613,6 +614,62 @@ it('preserves folder timeline discovery, selection, membership, and write receip
     const scoped = await client.timeline({ timeline: 'work/timeline', since: '2031-04' });
     expect(scoped.results[0]).toMatchObject({ timeline: 'work/timeline', summary: 'Prototype delivered.' });
     expect((await client.timeline({ timeline: '*' })).total).toBe(1);
+  } finally {
+    await client.close();
+  }
+});
+
+it('materializes retained events and explicitly reconciles ledgers through the service', async () => {
+  const phrase = 'Ada Marlow completed the household repair on 2 April 2031.';
+  fs.writeFileSync(path.join(root, 'timeline.md'), '');
+  const client = await connect({ socket: server.path });
+  try {
+    const retained = await client.retain({
+      sources: [
+        {
+          source_id: 'conversation:repair',
+          revision: '1',
+          mentioned_at: '2031-04-03T10:00:00Z',
+          timezone: 'UTC',
+          input: { text: phrase },
+          retention: {
+            mode: 'provided',
+            placement: 'exact',
+            candidates: [
+              {
+                candidate_id: 'repair',
+                kind: 'event',
+                text: phrase,
+                subject: 'household repair',
+                attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+                discourse: { commitment: 'asserted', disposition: 'active' },
+                epistemic: { basis: 'self_attested' },
+                support: [{ quote: phrase }],
+                discourse_frame: [{ quote: phrase }],
+                destination: { slug: 'memory/household-repair', section: 'Events' },
+                time: { start: '2031-04-02', precision: 'day', relation: 'occurred', status: 'actual' },
+              },
+            ],
+          },
+        },
+      ],
+    });
+    expect(retained.sources[0]?.candidates[0]?.outcome).toBe('written');
+    const ledger = path.join(root, 'timeline.md');
+    expect(fs.readFileSync(ledger, 'utf8')).toContain(`${phrase} [[memory/household-repair]]`);
+    fs.writeFileSync(ledger, '');
+    await mem.index({ structuralOnly: true });
+    const preview = (await client.command('migrate', { retained_timelines: true })) as {
+      applied: boolean;
+      changedPaths: string[];
+    };
+    expect(preview).toMatchObject({ applied: false, changedPaths: ['timeline.md'] });
+    expect(fs.readFileSync(ledger, 'utf8')).toBe('');
+    const applied = (await client.command('migrate', { retained_timelines: true, apply: true })) as {
+      applied: boolean;
+    };
+    expect(applied.applied).toBe(true);
+    expect(fs.readFileSync(ledger, 'utf8')).toContain(`${phrase} [[memory/household-repair]]`);
   } finally {
     await client.close();
   }
