@@ -3,12 +3,14 @@ import path from 'node:path';
 import { AknoError, ForgetInput, type ForgetOutput } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
-import { writeFileAtomic } from '../write/atomic.ts';
+import { restoreFile, writeFileAtomic } from '../write/atomic.ts';
+import { retainedLedgerStages, type RetainedLedgerStage } from '../write/retained-timeline-ledger.ts';
 import { newPrefixedId, sha256 } from '../store/ids.ts';
 import { deleteManagedSourceArchives, managedSourceItemIds } from '../maintenance/managed-item-sources.ts';
 import { forgetRetainSupports } from '../write/retain-supports.ts';
 import { quarantineReasonsForPath } from '../index/page-quarantine.ts';
 import { beginMutation } from '../write/mutation-receipts.ts';
+import { parseManagedMemoryMarker } from '../write/managed-memory.ts';
 
 /**
  * **This is the honest version of forgetting.**
@@ -72,24 +74,39 @@ async function forgetFact(ctx: AknoContext, factId: string): Promise<ForgetOutpu
     );
   }
 
-  lines.splice(fact.line_start - 1, 1);
+  const preceding = lines[fact.line_start - 2];
+  const ownedMarker = preceding ? parseManagedMemoryMarker(preceding) : null;
+  if (fact.item_id && ownedMarker?.id === fact.item_id) lines.splice(fact.line_start - 2, 2);
+  else lines.splice(fact.line_start - 1, 1);
+  const after = lines.join('\n');
+  const ledgers = await retainedLedgerStages(ctx, [{ slug: fact.slug, before: content, after }]);
   beginMutation(ctx);
-  const result = await writeFileAtomic(ctx.config.aknoPath, fact.rel_path, lines.join('\n'));
-
-  const changeId = ctx.journal.record({
-    actor: ctx.actor,
-    op: 'forget',
-    summary: `removed ${fact.slug}:${fact.line_start}`,
-    files: [fileEntry(result)],
-    receipt: ctx.mutationReceipt,
-  });
+  const written: ChangeFile[] = [];
+  let changeId: string;
+  try {
+    written.push(fileEntry(await writeFileAtomic(ctx.config.aknoPath, fact.rel_path, after)));
+    await writeLedgers(ctx, ledgers, written);
+    changeId = ctx.journal.record({
+      actor: ctx.actor,
+      op: 'forget',
+      summary: `removed ${fact.slug}:${fact.line_start}`,
+      files: written,
+      receipt: ctx.mutationReceipt,
+    });
+  } catch (error) {
+    await restoreWritten(ctx, written);
+    throw error;
+  }
   forgetRetainSupports(ctx, fact.item_id ? [fact.item_id] : [], changeId);
   deleteManagedSourceArchives(ctx, fact.item_id ? [fact.item_id] : []);
 
   // The indexer re-derives, and the fact is gone because its source is gone. It
   // records the file itself, so nothing may pre-record the hash — that would make
   // the stat fast path skip the very page whose facts have to be re-derived.
-  await ctx.indexer.runForeground({ only: [fact.rel_path], modelPaths: [] });
+  await ctx.indexer.runForeground({
+    only: [fact.rel_path, ...ledgers.map((ledger) => ledger.relPath)],
+    modelPaths: [],
+  });
   // The sentence is gone from the file, which is what was asked. Re-deriving what the page says now
   // is the deriver's business, not the caller's.
   ctx.derive.schedule([fact.rel_path]);
@@ -157,19 +174,29 @@ async function forgetMemory(ctx: AknoContext, memoryId: string): Promise<ForgetO
   }
 
   lines.splice(memory.marker_line - 1, 2);
+  const after = lines.join('\n');
+  const ledgers = await retainedLedgerStages(ctx, [{ slug: memory.slug, before: content, after }]);
   beginMutation(ctx);
-  const result = await writeFileAtomic(ctx.config.aknoPath, memory.rel_path, lines.join('\n'));
-  const changeId = ctx.journal.record({
-    actor: ctx.actor,
-    op: 'forget',
-    summary: `removed managed memory ${memoryId} from ${memory.slug}:${memory.marker_line}`,
-    files: [fileEntry(result)],
-    receipt: ctx.mutationReceipt,
-  });
+  const written: ChangeFile[] = [];
+  let changeId: string;
+  try {
+    written.push(fileEntry(await writeFileAtomic(ctx.config.aknoPath, memory.rel_path, after)));
+    await writeLedgers(ctx, ledgers, written);
+    changeId = ctx.journal.record({
+      actor: ctx.actor,
+      op: 'forget',
+      summary: `removed managed memory ${memoryId} from ${memory.slug}:${memory.marker_line}`,
+      files: written,
+      receipt: ctx.mutationReceipt,
+    });
+  } catch (error) {
+    await restoreWritten(ctx, written);
+    throw error;
+  }
   forgetRetainSupports(ctx, [memoryId], changeId);
   deleteManagedSourceArchives(ctx, [memoryId]);
   await ctx.indexer.runForeground({
-    only: [memory.rel_path],
+    only: [memory.rel_path, ...ledgers.map((ledger) => ledger.relPath)],
     modelPaths: [],
     reindexUnchanged: true,
   });
@@ -216,12 +243,8 @@ async function forgetPage(ctx: AknoContext, rawSlug: string): Promise<ForgetOutp
       `${slug} is in the index but its file is gone — the index has now been reconciled`,
     );
   }
+  const ledgers = await retainedLedgerStages(ctx, [{ slug, before: content, after: null }]);
   beginMutation(ctx);
-  await ctx.journal.trash(page.rel_path, token);
-  files.push({ relPath: page.rel_path, action: 'deleted', before: content, after: null });
-
-  // A page's attachments go with it. Leaving a PDF behind whose page is gone
-  // produces an orphan that `doctor` reports and nobody can explain.
   const documents = ctx.store.db
     .prepare('SELECT id, rel_path, availability FROM documents WHERE page_id = ?')
     .all(page.id) as {
@@ -229,19 +252,41 @@ async function forgetPage(ctx: AknoContext, rawSlug: string): Promise<ForgetOutp
     rel_path: string;
     availability: 'available' | 'missing';
   }[];
-  for (const document of documents) {
-    if (document.availability === 'missing') continue;
-    const snapshot = await ctx.journal.trash(document.rel_path, token);
-    files.push({ relPath: document.rel_path, action: 'deleted', before: null, after: null, snapshot });
+  let changeId: string;
+  try {
+    await ctx.journal.trash(page.rel_path, token);
+    files.push({ relPath: page.rel_path, action: 'deleted', before: content, after: null });
+    // A page's attachments go with it; the journal snapshots each binary.
+    for (const document of documents) {
+      if (document.availability === 'missing') continue;
+      const snapshot = await ctx.journal.trash(document.rel_path, token);
+      files.push({ relPath: document.rel_path, action: 'deleted', before: null, after: null, snapshot });
+    }
+    await writeLedgers(ctx, ledgers, files);
+    changeId = ctx.journal.record({
+      actor: ctx.actor,
+      op: 'forget',
+      summary: `trashed ${slug}${documents.length > 0 ? ` and ${documents.length} attachment(s)` : ''}`,
+      files,
+      receipt: ctx.mutationReceipt,
+    });
+  } catch (error) {
+    for (const file of [...files].reverse()) {
+      if (file.action !== 'deleted') {
+        await restoreFile(ctx.config.aknoPath, file.relPath, file.before);
+        continue;
+      }
+      const snapshot = path.join(ctx.config.trashDir, file.snapshot ?? `${token}/${file.relPath}`);
+      const target = path.join(ctx.config.aknoPath, file.relPath);
+      await fsp.mkdir(path.dirname(target), { recursive: true });
+      await fsp.rename(snapshot, target).catch(async (restoreError: unknown) => {
+        if ((restoreError as NodeJS.ErrnoException).code !== 'EXDEV') throw restoreError;
+        await fsp.copyFile(snapshot, target);
+        await fsp.rm(snapshot);
+      });
+    }
+    throw error;
   }
-
-  const changeId = ctx.journal.record({
-    actor: ctx.actor,
-    op: 'forget',
-    summary: `trashed ${slug}${documents.length > 0 ? ` and ${documents.length} attachment(s)` : ''}`,
-    files,
-    receipt: ctx.mutationReceipt,
-  });
 
   forgetRetainSupports(ctx, managedSourceItemIds(content), changeId);
 
@@ -270,6 +315,19 @@ async function forgetPage(ctx: AknoContext, rawSlug: string): Promise<ForgetOutp
     trashed: path.join(ctx.config.trashDir, token, page.rel_path),
     removed_from: slug,
   };
+}
+
+async function writeLedgers(
+  ctx: AknoContext,
+  ledgers: readonly RetainedLedgerStage[],
+  files: ChangeFile[],
+): Promise<void> {
+  for (const ledger of ledgers)
+    files.push(fileEntry(await writeFileAtomic(ctx.config.aknoPath, ledger.relPath, ledger.after)));
+}
+
+async function restoreWritten(ctx: AknoContext, files: readonly ChangeFile[]): Promise<void> {
+  for (const file of [...files].reverse()) await restoreFile(ctx.config.aknoPath, file.relPath, file.before);
 }
 
 // ─── A document ─────────────────────────────────────────────────────────────

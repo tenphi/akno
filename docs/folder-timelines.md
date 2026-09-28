@@ -72,9 +72,24 @@ whether membership came from an owning page, an authored ledger, or a document p
 
 Ordinary `remember` and `retain` callers still send the source text. Akno selects each item's canonical
 page using the existing ownership checks, folder purposes, and timeline descriptions. Temporal items
-remain on those pages and appear in the appropriate timeline projection. A mixed conversation can
+remain on those pages, appear in the timeline query, and gain a readable reference in the nearest
+declared `timeline.md`. These references live in a delimited Akno-managed section; they link to the
+canonical subject page and preserve actual, scheduled, planned, and deadline qualifications. They are
+not independent authored events, so the timeline query does not count them twice. A mixed conversation can
 therefore produce items in several timelines without labels from the caller. Evergreen facts do not gain
 an invented event date. Duplicate detection and catch-all destinations cannot silently cross boundaries.
+Exact retention replay does not append a second reference. Corrections, retractions, explicit forgetting,
+page moves, and undo update the same ledger section while preserving authored lines and prose.
+
+Existing retained temporal memories can be materialized explicitly. Preview first; applying writes the
+affected ledgers in one journalled change that can be undone. Ordinary indexing never performs this write.
+Run the same preview after creating or removing a timeline boundary to align the visible files with
+the query's updated folder membership.
+
+```sh
+akno migrate --retained-timelines
+akno migrate --retained-timelines --apply
+```
 
 An explicit page-plus-event write uses that page's nearest ledger. A standalone event needs an explicit
 timeline when more than one timeline exists:
@@ -124,8 +139,8 @@ are held for inspection. Copying their bytes alone could lose context or change 
 
 Extraction uses authored knowledge notes that allow remembering. Plans, tentative statements, reports,
 partial dates, source-role pages, and source renditions cannot become unqualified historical facts.
-Pages containing Akno-managed records are left to their existing temporal projection and maintenance;
-this pass does not copy their qualified memories, alter receipt membership, or change replay semantics.
+Pages containing Akno-managed records are left to their retained-timeline materialization path above;
+this historical pass does not copy their qualified memories, alter receipt membership, or change replay semantics.
 
 The planner examines at most `maintenance.curate.max_pages` uncached notes per cycle. The separate
 `maintenance.curate.max_timeline_events` ceiling (default `20`) bounds additions/transfers and ownership

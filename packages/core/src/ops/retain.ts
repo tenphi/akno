@@ -44,6 +44,7 @@ import { newPrefixedId, sha256 } from '../store/ids.ts';
 import { restoreFile, writeFileAtomic } from '../write/atomic.ts';
 import { detectConflict } from '../write/conflict.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
+import { retainedLedgerStages } from '../write/retained-timeline-ledger.ts';
 import {
   managedMemoryBlock,
   managedMemoryFingerprint,
@@ -648,6 +649,23 @@ async function retainCandidates(
     }
     const duplicateSlug = await globalManagedDuplicateSlug(ctx, stages, marker, payload, slug, timelines);
     if (duplicateSlug) slug = duplicateSlug;
+    if (
+      marker.time &&
+      marker.time.precision !== 'unknown' &&
+      (marker.time.start || marker.time.until) &&
+      !owningTimeline(timelines, slug).writable
+    ) {
+      candidateResults.push({
+        candidate_id: candidate.candidate_id,
+        outcome: 'held',
+        slug,
+        reason_code: 'no_writable_destination',
+        hold_stage: 'placement',
+        reason: 'the owning timeline ledger is read-only',
+        ...timelinePlacement(timelines, slug),
+      });
+      continue;
+    }
     const stage = await pageStage(ctx, stages, slug, candidate.subject);
     if ('issue' in stage) {
       candidateResults.push({
@@ -812,7 +830,6 @@ async function retainCandidates(
       (candidateOrder.get(right.candidate_id) ?? Number.MAX_SAFE_INTEGER),
   );
 
-  const changed = [...stages.values()].filter((stage) => stage.before !== stage.after);
   const placementDegraded = candidateResults.some((result) => result.reason_code === 'placement_degraded');
   const degraded: DegradedReason[] = [
     ...resolvedSource.degraded,
@@ -858,6 +875,13 @@ async function retainCandidates(
       note: 'compound correction was not fully admissible; neither removal nor replacement was written',
     };
   }
+  for (const ledger of await retainedLedgerStages(
+    ctx,
+    [...stages.values()].filter((stage) => stage.managedDestination && stage.before !== stage.after),
+  )) {
+    stages.set(ledger.slug, { ...ledger, managedDestination: false });
+  }
+  const changed = [...stages.values()].filter((stage) => stage.before !== stage.after);
   const preview: RetainSourceResult = {
     knowledge_language: ctx.config.knowledgeLanguage,
     source_id: source.source_id,
@@ -1437,6 +1461,12 @@ async function retractSource(
     };
   }
 
+  for (const ledger of await retainedLedgerStages(
+    ctx,
+    [...stages.values()].filter((stage) => stage.managedDestination && stage.before !== stage.after),
+  )) {
+    stages.set(ledger.slug, { ...ledger, managedDestination: false });
+  }
   const changed = [...stages.values()].filter((stage) => stage.before !== stage.after);
   const preview: RetainSourceResult = {
     knowledge_language: ctx.config.knowledgeLanguage,

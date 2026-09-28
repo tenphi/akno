@@ -57,7 +57,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     dream                Conflicts, observe, reflect, curate, adopt, repair, housekeeping.
     plan                 Inspect, decide and apply durable maintenance plans.
     index                Reconcile the index against the knowledge base.
-    migrate              Upgrade Akno-owned brain markers explicitly and undoably.
+    migrate              Upgrade owned markers or reconcile retained timelines explicitly.
     serve                Hold the index, watcher and models in one process.
     service              Manage the macOS launchd or Linux systemd user service.
     redeploy             Apply local changes: build, restart the service, wait for it.

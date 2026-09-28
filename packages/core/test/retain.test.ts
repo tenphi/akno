@@ -1667,6 +1667,239 @@ describe('automatic retain', () => {
 });
 
 describe('folder-owned timeline retention', () => {
+  it('replaces a corrected date and restores the old ledger on undo', async () => {
+    const sentence = (day: string) => `Ada Marlow completed the household repair on ${day} April 2031.`;
+    const source = (revision: string, day: string) => {
+      const base = upsert('conversation:repair-correction', revision, sentence(day));
+      return {
+        ...base,
+        retention: {
+          ...base.retention,
+          candidates: [
+            {
+              ...base.retention.candidates[0]!,
+              candidate_id: 'repair-completion',
+              kind: 'event' as const,
+              text: sentence(day),
+              subject: 'household repair',
+              discourse: { commitment: 'asserted' as const, disposition: 'active' as const },
+              support: [{ quote: sentence(day) }],
+              discourse_frame: [{ quote: sentence(day) }],
+              destination: { slug: 'memory/household-repair' },
+              time: {
+                start: `2031-04-0${day}`,
+                precision: 'day' as const,
+                relation: 'occurred' as const,
+                status: 'actual' as const,
+              },
+            },
+          ],
+        },
+      };
+    };
+    const mem = await openMem();
+    try {
+      const original = source('1', '2');
+      expect((await mem.retain({ sources: [original] })).sources[0]?.candidates[0]?.outcome).toBe('written');
+      const ledger = path.join(root, 'timeline.md');
+      const before = fs.readFileSync(ledger, 'utf8');
+      const corrected = await mem.retain({
+        sources: [
+          {
+            ...source('2', '3'),
+            retracts: { target_revision: '1', candidate_ids: ['repair-completion'] },
+          },
+        ],
+      });
+      expect(corrected.sources[0]?.candidates[0]?.outcome).toBe('written');
+      const after = fs.readFileSync(ledger, 'utf8');
+      expect(after).toContain(sentence('3'));
+      expect(after).not.toContain(sentence('2'));
+      await mem.undo({ change_id: corrected.sources[0]!.change_id! });
+      expect(fs.readFileSync(ledger, 'utf8')).toBe(before);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('keeps scheduled status visible rather than claiming an event happened', async () => {
+    fs.mkdirSync(path.join(root, 'memory/work'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'memory/other'), { recursive: true });
+    const ledger = path.join(root, 'memory/work/timeline.md');
+    fs.writeFileSync(ledger, '# Timeline\n');
+    fs.writeFileSync(
+      path.join(root, 'memory/other/timeline.md'),
+      '# Timeline\n\n<!-- akno:retained-timeline:start -->\ninvalid\n<!-- akno:retained-timeline:end -->\n',
+    );
+    const sentence = 'Ada Marlow scheduled a Zephyr inspection for 8 April 2031.';
+    const base = upsert('conversation:scheduled-inspection', '1', sentence);
+    const source = {
+      ...base,
+      retention: {
+        ...base.retention,
+        candidates: [
+          {
+            ...base.retention.candidates[0]!,
+            candidate_id: 'scheduled-inspection',
+            kind: 'event' as const,
+            text: sentence,
+            subject: 'Zephyr inspection',
+            discourse: { commitment: 'asserted' as const, disposition: 'active' as const },
+            support: [{ quote: sentence }],
+            discourse_frame: [{ quote: sentence }],
+            destination: { slug: 'memory/work/zephyr-inspection' },
+            time: {
+              start: '2031-04-08',
+              until: '2031-04-09',
+              precision: 'day' as const,
+              relation: 'scheduled' as const,
+              status: 'scheduled' as const,
+            },
+          },
+        ],
+      },
+    };
+    const mem = await openMem();
+    try {
+      const retained = await mem.retain({ sources: [source] });
+      expect(retained.sources[0]?.candidates[0]?.outcome).toBe('written');
+      const text = fs.readFileSync(ledger, 'utf8');
+      expect(text).toContain('2031-04-08 to 2031-04-09 · scheduled / scheduled / event');
+      expect(text).toContain(`${sentence} [[memory/work/zephyr-inspection]]`);
+      expect((await mem.timeline({ timeline: 'memory/work/timeline' })).results).toHaveLength(1);
+      fs.rmSync(path.join(root, 'memory/other/timeline.md'));
+      fs.writeFileSync(ledger, text.replace(sentence, 'A person edited this reference.'));
+      await expect(mem.migrateRetainedTimelines({ apply: true })).rejects.toThrow(/modified managed entry/);
+      expect(fs.readFileSync(ledger, 'utf8')).toContain('A person edited this reference.');
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('explicitly previews and reconciles older retained memories without index writes', async () => {
+    fs.mkdirSync(path.join(root, 'memory/work'), { recursive: true });
+    const ledger = path.join(root, 'memory/work/timeline.md');
+    fs.writeFileSync(ledger, '');
+    const stub = await startAutomaticRetainStub();
+    stub.setRetention({ durability: 'durable', source_scope: 'event', candidate_scope: 'event' });
+    const event = 'Ada Marlow delivered the Zephyr prototype on 2 April 2031.';
+    stub.setCandidate({
+      text: event,
+      subject: 'Zephyr prototype',
+      page: 'memory/work/zephyr-prototype',
+      kind: 'event',
+      evidence: event,
+      frame: event,
+      time: {
+        start: '2031-04-02',
+        precision: 'day',
+        relation: 'occurred',
+        status: 'actual',
+        mentioned_at: '2031-04-03T10:00:00Z',
+        timezone: 'UTC',
+      },
+    });
+    const mem = await openAutomaticMem(stub.url);
+    try {
+      await mem.retain({
+        sources: [
+          {
+            source_id: 'conversation:older-work',
+            revision: '1',
+            mentioned_at: '2031-04-03T10:00:00Z',
+            timezone: 'UTC',
+            input: { text: event },
+            retention: { mode: 'extract' },
+          },
+        ],
+      });
+      fs.writeFileSync(ledger, ''); // Simulate a declaration created before materialization.
+      await mem.index({ structuralOnly: true });
+      expect(fs.readFileSync(ledger, 'utf8')).toBe('');
+      const preview = await mem.migrateRetainedTimelines();
+      expect(preview).toMatchObject({ applied: false, changedPaths: ['memory/work/timeline.md'] });
+      expect(fs.readFileSync(ledger, 'utf8')).toBe('');
+      const applied = await mem.migrateRetainedTimelines({ apply: true });
+      expect(applied.applied).toBe(true);
+      expect(fs.readFileSync(ledger, 'utf8')).toContain(`${event} [[memory/work/zephyr-prototype]]`);
+      expect((await mem.migrateRetainedTimelines()).changedPaths).toEqual([]);
+      await mem.undo({ change_id: applied.changeId! });
+      expect(fs.readFileSync(ledger, 'utf8')).toBe('');
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
+  it('keeps physical entries aligned through forget, move, and undo', async () => {
+    fs.mkdirSync(path.join(root, 'memory/work'), { recursive: true });
+    const ledger = path.join(root, 'memory/work/timeline.md');
+    fs.writeFileSync(ledger, '# Timeline\n\nA person-authored note.\n');
+    const stub = await startAutomaticRetainStub();
+    stub.setRetention({ durability: 'durable', source_scope: 'event', candidate_scope: 'event' });
+    const event = 'Ada Marlow delivered the Zephyr prototype on 2 April 2031.';
+    stub.setCandidate({
+      text: event,
+      subject: 'Zephyr prototype',
+      page: 'memory/work/zephyr-prototype',
+      kind: 'event',
+      evidence: event,
+      frame: event,
+      time: {
+        start: '2031-04-02',
+        precision: 'day',
+        relation: 'occurred',
+        status: 'actual',
+        mentioned_at: '2031-04-03T10:00:00Z',
+        timezone: 'UTC',
+      },
+    });
+    const mem = await openAutomaticMem(stub.url);
+    try {
+      const retained = await mem.retain({
+        sources: [
+          {
+            source_id: 'conversation:work-lifecycle',
+            revision: '1',
+            mentioned_at: '2031-04-03T10:00:00Z',
+            timezone: 'UTC',
+            input: { text: event },
+            retention: { mode: 'extract' },
+          },
+        ],
+      });
+      const memoryId = retained.sources[0]?.candidates[0]?.memory_id;
+      expect(memoryId).toBeDefined();
+      expect(fs.readFileSync(ledger, 'utf8')).toContain(event);
+
+      const forgottenMemory = await mem.forget({ memory: memoryId! });
+      expect(fs.readFileSync(ledger, 'utf8')).not.toContain(event);
+      await mem.undo({ change_id: forgottenMemory.change_id! });
+      expect(fs.readFileSync(ledger, 'utf8')).toContain(event);
+
+      const moved = await mem.move({
+        from: 'memory/work/zephyr-prototype',
+        to: 'memory/zephyr-prototype',
+      });
+      expect(moved.outcome).toBe('ok');
+      expect(fs.readFileSync(ledger, 'utf8')).not.toContain(event);
+      expect(fs.readFileSync(path.join(root, 'timeline.md'), 'utf8')).toContain(
+        `${event} [[memory/zephyr-prototype]]`,
+      );
+      await mem.undo({ change_id: moved.change_id! });
+      expect(fs.readFileSync(ledger, 'utf8')).toContain(`${event} [[memory/work/zephyr-prototype]]`);
+
+      const forgottenPage = await mem.forget({ slug: 'memory/work/zephyr-prototype' });
+      expect(fs.readFileSync(ledger, 'utf8')).not.toContain(event);
+      await mem.undo({ change_id: forgottenPage.change_id! });
+      expect(fs.readFileSync(ledger, 'utf8')).toContain(event);
+      expect(fs.readFileSync(ledger, 'utf8')).toContain('A person-authored note.');
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
   it('routes a mixed conversation per item and preserves placement on exact replay', async () => {
     fs.mkdirSync(path.join(root, 'memory/work'), { recursive: true });
     fs.writeFileSync(
@@ -1736,10 +1969,24 @@ describe('folder-owned timeline retention', () => {
       ]);
       expect((await mem.timeline({})).results).toHaveLength(1);
       expect((await mem.timeline({ timeline: 'memory/work/timeline' })).results).toHaveLength(1);
+      expect((await mem.timeline({ timeline: '*' })).results).toHaveLength(2);
+      const rootLedger = path.join(root, 'timeline.md');
+      const workLedger = path.join(root, 'memory/work/timeline.md');
+      const rootText = fs.readFileSync(rootLedger, 'utf8');
+      const workText = fs.readFileSync(workLedger, 'utf8');
+      expect(rootText).toContain(`${home} [[memory/household-repair]]`);
+      expect(rootText).not.toContain(work);
+      expect(workText).toContain(`${work} [[memory/work/zephyr-prototype]]`);
+      expect(workText).not.toContain(home);
+      expect(workText).toContain('Zephyr prototype development.');
+      expect(rootText.match(/akno:timeline-item/g)).toHaveLength(1);
+      expect(workText.match(/akno:timeline-item/g)).toHaveLength(1);
       const replay = await mem.retain({ sources: [source] });
       expect(replay.sources[0]?.outcome).toBe('replayed');
       expect(replay.sources[0]?.candidates).toEqual(result.sources[0]?.candidates);
       expect(stub.calls().extraction).toBe(1);
+      expect(fs.readFileSync(rootLedger, 'utf8')).toBe(rootText);
+      expect(fs.readFileSync(workLedger, 'utf8')).toBe(workText);
       const retracted = await mem.retain({
         sources: [
           {
@@ -1751,6 +1998,9 @@ describe('folder-owned timeline retention', () => {
       });
       expect(retracted.sources[0]?.candidates.every((item) => item.outcome === 'retracted')).toBe(true);
       expect((await mem.timeline({ timeline: '*' })).results).toEqual([]);
+      expect(fs.readFileSync(rootLedger, 'utf8')).not.toContain(home);
+      expect(fs.readFileSync(workLedger, 'utf8')).not.toContain(work);
+      expect(fs.readFileSync(workLedger, 'utf8')).toContain('Zephyr prototype development.');
     } finally {
       await mem.close();
       await stub.close();
