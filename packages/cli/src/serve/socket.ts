@@ -161,7 +161,10 @@ async function runCommand(akno: Akno, command: CommandName, input: unknown): Pro
       return akno.dream(options);
     case 'migrate':
       return booleanFrom(input, 'retained_timelines', false)
-        ? akno.migrateRetainedTimelines({ apply: booleanFrom(input, 'apply', false) })
+        ? akno.migrateRetainedTimelines({
+            apply: booleanFrom(input, 'apply', false),
+            ...(optionalStringFrom(input, 'timeline') ? { timeline: stringFrom(input, 'timeline') } : {}),
+          })
         : booleanFrom(input, 'observations', false)
           ? akno.migrateObservations({ dryRun: booleanFrom(input, 'dry_run', false) })
           : akno.migrateBrain({ dryRun: booleanFrom(input, 'dry_run', false) });

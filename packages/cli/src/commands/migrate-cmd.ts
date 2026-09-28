@@ -14,7 +14,8 @@ const MIGRATE_HELP = `akno migrate [options]
 
   --dry-run       Report eligible and held legacy items without writing.
   --observations  Co-locate unambiguous legacy observation lines instead of migrating v1 memory markers.
-  --retained-timelines  Preview missing or stale retained-memory ledger references.
+  --retained-timelines  Preview missing, stale, or separately grouped timeline references.
+  --timeline SLUG  Limit retained-timeline reconciliation to one declared ledger.
   --apply         Apply the retained-timeline preview; otherwise it changes no files.
   --json`;
 
@@ -24,11 +25,13 @@ export async function migrateCommand(argv: string[]): Promise<number> {
     observations: boolean;
     'retained-timelines': boolean;
     apply: boolean;
+    timeline: string;
   }>(argv, {
     'dry-run': { type: 'boolean', default: false },
     observations: { type: 'boolean', default: false },
     'retained-timelines': { type: 'boolean', default: false },
     apply: { type: 'boolean', default: false },
+    timeline: { type: 'string' },
   });
   if (values.help) {
     line(MIGRATE_HELP);
@@ -37,6 +40,8 @@ export async function migrateCommand(argv: string[]): Promise<number> {
   if (values['retained-timelines'] && values.observations)
     throw new Error('choose either --retained-timelines or --observations');
   if (values.apply && !values['retained-timelines']) throw new Error('--apply requires --retained-timelines');
+  if (values.timeline && !values['retained-timelines'])
+    throw new Error('--timeline requires --retained-timelines');
   const report = await runMaintenance<
     BrainMigrationReport | ObservationMigrationReport | RetainedTimelineLedgerReport
   >(
@@ -46,12 +51,16 @@ export async function migrateCommand(argv: string[]): Promise<number> {
       observations: values.observations,
       retained_timelines: values['retained-timelines'],
       apply: values.apply,
+      ...(values.timeline ? { timeline: values.timeline } : {}),
     },
     values,
     openOptionsFrom(values),
     (akno) =>
       values['retained-timelines']
-        ? akno.migrateRetainedTimelines({ apply: values.apply })
+        ? akno.migrateRetainedTimelines({
+            apply: values.apply,
+            ...(values.timeline ? { timeline: values.timeline } : {}),
+          })
         : values.observations
           ? akno.migrateObservations({ dryRun: values['dry-run'] })
           : akno.migrateBrain({ dryRun: values['dry-run'] }),
