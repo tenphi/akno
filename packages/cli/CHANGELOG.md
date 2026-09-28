@@ -1,5 +1,15 @@
 # @tenphi/akno
 
+## 0.15.14
+
+### Patch Changes
+
+- [#135](https://github.com/tenphi/akno/pull/135) [`4b9e901`](https://github.com/tenphi/akno/commit/4b9e901aba6deb29329692d8686731cc438a410f) Thanks [@tenphi](https://github.com/tenphi)! - Keep standalone events and source-backed retained references in one chronological timeline ledger. Explicit, journalled reconciliation moves older retained blocks into the dated list and can target a single timeline.
+- Updated dependencies [[`4b9e901`](https://github.com/tenphi/akno/commit/4b9e901aba6deb29329692d8686731cc438a410f)]:
+  - @tenphi/akno-protocol@0.15.14
+  - @tenphi/akno-core@0.15.14
+  - @tenphi/akno-client@0.15.14
+
 ## 0.15.13
 
 ### Patch Changes
