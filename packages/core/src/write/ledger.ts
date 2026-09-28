@@ -40,6 +40,7 @@ export interface LedgerInsert {
 
 /** The same shape the indexer matches, used here to read dates already in place. */
 const EVENT_DATE = /^\s*[-*]\s+\*\*(\d{4}-\d{2}-\d{2})\*\*\s*\|/;
+const RETAINED_TIMELINE_ITEM = /<!--\s*akno:timeline-item\b[^>]*-->\s*$/i;
 
 export function formatEventLine(event: LedgerEvent): string {
   const summary = event.summary.trim().replace(/\s+/g, ' ');
@@ -77,6 +78,9 @@ export function insertEvent(content: string, event: LedgerEvent): LedgerInsert {
   // things that happened. Two similar summaries on *one* day are almost always one thing described
   // twice.
   const sameDay = lines.findIndex((text) => {
+    // References to retained memories share the authored line style, but remain
+    // distinct records and must not suppress a separate authored event.
+    if (RETAINED_TIMELINE_ITEM.test(text)) return false;
     const date = EVENT_DATE.exec(text)?.[1];
     if (date !== event.date) return false;
     // A shared subject, place and date are not enough: scheduling something and later doing it

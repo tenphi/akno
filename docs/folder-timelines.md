@@ -78,12 +78,17 @@ canonical subject page and preserve actual, scheduled, planned, and deadline qua
 not independent authored events, so the timeline query does not count them twice. A mixed conversation can
 therefore produce items in several timelines without labels from the caller. Evergreen facts do not gain
 an invented event date. Duplicate detection and catch-all destinations cannot silently cross boundaries.
+Managed references use the same bold-date-and-separator style as authored event lines. Exact times display
+as a clock and explicit UTC offset instead of a raw ISO timestamp; a compact annotation keeps scheduling,
+reporting, and other qualifications visible. The trailing Akno marker is needed for safe reconciliation,
+but the linked subject page remains the canonical memory.
 Exact retention replay does not append a second reference. Corrections, retractions, explicit forgetting,
 page moves, and undo update the same ledger section while preserving authored lines and prose.
 
 Existing retained temporal memories can be materialized explicitly. Preview first; applying writes the
 affected ledgers in one journalled change that can be undone. Ordinary indexing never performs this write.
 Reconciliation accepts indexed managed memories with bullet or paragraph payloads.
+It also upgrades older generated ledger lines to the readable format without rewriting authored lines.
 Run the same preview after creating or removing a timeline boundary to align the visible files with
 the query's updated folder membership.
 
