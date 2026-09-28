@@ -83,6 +83,7 @@ page moves, and undo update the same ledger section while preserving authored li
 
 Existing retained temporal memories can be materialized explicitly. Preview first; applying writes the
 affected ledgers in one journalled change that can be undone. Ordinary indexing never performs this write.
+Reconciliation accepts indexed managed memories with bullet or paragraph payloads.
 Run the same preview after creating or removing a timeline boundary to align the visible files with
 the query's updated folder membership.
 

@@ -1831,6 +1831,56 @@ describe('folder-owned timeline retention', () => {
     }
   });
 
+  it('materializes an indexed dated memory whose valid payload is a paragraph', async () => {
+    fs.mkdirSync(path.join(root, 'memory/work'), { recursive: true });
+    const ledger = path.join(root, 'memory/work/timeline.md');
+    fs.writeFileSync(ledger, '');
+    const event = 'Ada Marlow delivered the Zephyr prototype on 2 April 2031.';
+    const base = upsert('conversation:paragraph-event', '1', event);
+    const source = {
+      ...base,
+      retention: {
+        ...base.retention,
+        candidates: [
+          {
+            ...base.retention.candidates[0]!,
+            candidate_id: 'prototype-delivery',
+            kind: 'event' as const,
+            text: event,
+            subject: 'Zephyr prototype',
+            discourse: { commitment: 'asserted' as const, disposition: 'active' as const },
+            support: [{ quote: event }],
+            discourse_frame: [{ quote: event }],
+            destination: { slug: 'memory/work/zephyr-prototype' },
+            time: {
+              start: '2031-04-02',
+              precision: 'day' as const,
+              relation: 'occurred' as const,
+              status: 'actual' as const,
+            },
+          },
+        ],
+      },
+    };
+    const mem = await openMem();
+    try {
+      expect((await mem.retain({ sources: [source] })).sources[0]?.candidates[0]?.outcome).toBe('written');
+      const sourcePage = path.join(root, 'memory/work/zephyr-prototype.md');
+      const originalPage = fs.readFileSync(sourcePage, 'utf8');
+      expect(originalPage).toContain(`- ${event}`);
+      fs.writeFileSync(sourcePage, originalPage.replace(`- ${event}`, event));
+      fs.writeFileSync(ledger, '');
+      await mem.index({ structuralOnly: true });
+      expect((await mem.timeline({ timeline: 'memory/work/timeline' })).results).toHaveLength(1);
+      expect((await mem.migrateRetainedTimelines()).changedPaths).toEqual(['memory/work/timeline.md']);
+      await mem.migrateRetainedTimelines({ apply: true });
+      expect(fs.readFileSync(ledger, 'utf8')).toContain(`${event} [[memory/work/zephyr-prototype]]`);
+      expect((await mem.migrateRetainedTimelines()).changedPaths).toEqual([]);
+    } finally {
+      await mem.close();
+    }
+  });
+
   it('keeps physical entries aligned through forget, move, and undo', async () => {
     fs.mkdirSync(path.join(root, 'memory/work'), { recursive: true });
     const ledger = path.join(root, 'memory/work/timeline.md');
