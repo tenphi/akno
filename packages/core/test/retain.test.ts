@@ -1881,9 +1881,127 @@ describe('folder-owned timeline retention', () => {
     try {
       expect((await mem.retain({ sources: [source] })).sources[0]?.candidates[0]?.outcome).toBe('written');
       const ledger = fs.readFileSync(path.join(root, 'timeline.md'), 'utf8');
-      expect(ledger).toContain('- **Until 2031-04-08** | *Planned · due · plan · proposed* — ');
+      expect(ledger).toContain('- **Until 2031-04-08** | *Planned deadline · proposal* — ');
       expect((await mem.migrateRetainedTimelines()).changedPaths).toEqual([]);
       expect((await mem.timeline({})).results.filter((item) => item.type === 'memory')).toHaveLength(1);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('shows a reported schedule once while keeping the canonical report and its provenance', async () => {
+    const text =
+      "Luna's digest reports that Vulpine Mutual scheduled a Zephyr QX-100 inspection for 8 April 2031.";
+    const base = upsert('invented:reported-schedule', '1', text);
+    const source = {
+      ...base,
+      input: { items: [{ item_id: 'report-1111', role: 'assistant' as const, speaker: 'Luna', text }] },
+      retention: {
+        ...base.retention,
+        candidates: [
+          {
+            ...base.retention.candidates[0]!,
+            candidate_id: 'reported-inspection',
+            kind: 'event' as const,
+            text,
+            subject: 'Zephyr QX-100 inspection',
+            attribution: { source_role: 'assistant' as const, source_speaker: 'Luna' },
+            epistemic: { basis: 'source_report' as const },
+            discourse: { commitment: 'asserted' as const, disposition: 'active' as const },
+            support: [{ item_id: 'report-1111', quote: text }],
+            discourse_frame: [{ item_id: 'report-1111', quote: text }],
+            destination: { slug: 'memory/zephyr-inspection' },
+            time: {
+              start: '2031-04-08T09:30:00+02:00',
+              precision: 'instant' as const,
+              relation: 'scheduled' as const,
+              status: 'scheduled' as const,
+              timezone: 'Europe/Amsterdam',
+            },
+          },
+        ],
+      },
+    };
+    const mem = await openMem();
+    try {
+      expect((await mem.retain({ sources: [source] })).sources[0]?.candidates[0]?.outcome).toBe('written');
+      const canonical = fs.readFileSync(path.join(root, 'memory/zephyr-inspection.md'), 'utf8');
+      expect(canonical).toContain(`**Reported by Luna · Scheduled:** ${text}`);
+      const ledger = fs.readFileSync(path.join(root, 'timeline.md'), 'utf8');
+      expect(ledger).toContain(
+        '*Scheduled · reported by Luna* — Vulpine Mutual scheduled a Zephyr QX-100 inspection',
+      );
+      expect(ledger).not.toContain("Luna's digest reports");
+      const memory = (await mem.read({ slug: 'memory/zephyr-inspection' })).page?.lines.find(
+        (line) => line.memory?.status === 'qualified',
+      )?.memory;
+      expect(memory?.answer_eligible).toBe(false);
+      expect((await mem.migrateRetainedTimelines()).changedPaths).toEqual([]);
+
+      // A previously published row can be refreshed explicitly, without rewriting its source page.
+      const date = '2031-04-08T09:30:00+02:00';
+      const id = /akno:timeline-item id=([A-Za-z0-9_-]+)/.exec(ledger)?.[1];
+      const oldBase =
+        `- **2031-04-08, 09:30 UTC+02:00** | *Scheduled · reported* — ` +
+        `**Reported by Luna · Scheduled:** ${text} [[memory/zephyr-inspection]]`;
+      const oldLine = `${oldBase} <!-- akno:timeline-item id=${id} date=${date} hash=${createHash('sha256').update(`${oldBase}\0${date}`).digest('hex').slice(0, 12)} -->`;
+      const oldLedger = ledger.replace(/^.*<!-- akno:timeline-item .*$/m, oldLine);
+      fs.writeFileSync(path.join(root, 'timeline.md'), oldLedger);
+      await mem.index({ structuralOnly: true });
+      expect((await mem.migrateRetainedTimelines({ timeline: 'timeline' })).changedPaths).toEqual([
+        'timeline.md',
+      ]);
+      const refreshed = await mem.migrateRetainedTimelines({ timeline: 'timeline', apply: true });
+      expect(refreshed).toMatchObject({ applied: true, changedPaths: ['timeline.md'] });
+      expect(fs.readFileSync(path.join(root, 'timeline.md'), 'utf8')).toBe(ledger);
+      expect(fs.readFileSync(path.join(root, 'memory/zephyr-inspection.md'), 'utf8')).toBe(canonical);
+      await mem.undo({ change_id: refreshed.changeId! });
+      expect(fs.readFileSync(path.join(root, 'timeline.md'), 'utf8')).toBe(oldLedger);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('keeps a due date beside a reported proposal without a dangling Due label', async () => {
+    const text = "Luna's digest reports Vulpine Mutual proposed a Zephyr QX-100 inspection by 8 April 2031.";
+    const base = upsert('invented:reported-deadline', '1', text);
+    const source = {
+      ...base,
+      input: { items: [{ item_id: 'report-2222', role: 'assistant' as const, speaker: 'Luna', text }] },
+      retention: {
+        ...base.retention,
+        candidates: [
+          {
+            ...base.retention.candidates[0]!,
+            candidate_id: 'reported-deadline',
+            kind: 'plan' as const,
+            text,
+            subject: 'Zephyr QX-100 inspection',
+            attribution: { source_role: 'assistant' as const, source_speaker: 'Luna' },
+            epistemic: { basis: 'source_report' as const },
+            discourse: { commitment: 'asserted' as const, disposition: 'proposed' as const },
+            support: [{ item_id: 'report-2222', quote: text }],
+            discourse_frame: [{ item_id: 'report-2222', quote: text }],
+            destination: { slug: 'memory/zephyr-proposal' },
+            time: {
+              until: '2031-04-08',
+              precision: 'day' as const,
+              relation: 'due' as const,
+              status: 'planned' as const,
+            },
+          },
+        ],
+      },
+    };
+    const mem = await openMem();
+    try {
+      expect((await mem.retain({ sources: [source] })).sources[0]?.candidates[0]?.outcome).toBe('written');
+      const ledger = fs.readFileSync(path.join(root, 'timeline.md'), 'utf8');
+      expect(ledger).toContain(
+        '*Planned deadline · proposal · reported by Luna* — Vulpine Mutual proposed a Zephyr QX-100 inspection',
+      );
+      expect(ledger).not.toContain(' · Due:**');
+      expect(ledger).not.toContain("Luna's digest reports");
     } finally {
       await mem.close();
     }

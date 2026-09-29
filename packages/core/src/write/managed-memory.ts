@@ -401,7 +401,19 @@ export function managedMemoryPayloadIssue(
   return payload.startsWith(`- **${labels.join(' · ')}:** `) ? null : 'missing visible semantic status';
 }
 
-function managedMemoryStatusLabels(
+/** The timeline has its own visible qualifiers, so it uses the body without this canonical label. */
+export function managedMemoryPayloadBody(
+  marker: Parameters<typeof managedMemoryPayloadIssue>[0],
+  payload: string,
+): string | null {
+  const bare = payload.trim().replace(/^[-*]\s+/, '');
+  const labels = managedMemoryStatusLabels(marker);
+  if (labels.length === 0) return bare;
+  const prefix = `**${labels.join(' · ')}:** `;
+  return bare.startsWith(prefix) ? bare.slice(prefix.length) : null;
+}
+
+export function managedMemoryStatusLabels(
   marker: Pick<
     ManagedMemoryMarker,
     'sourceRole' | 'speaker' | 'basis' | 'commitment' | 'disposition' | 'kind' | 'time'
