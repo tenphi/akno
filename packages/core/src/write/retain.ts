@@ -56,8 +56,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v60';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v43';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v61';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v44';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
 const RETRIEVAL_UNIT_CONTRACT = `A retained record is one independently retrievable semantic unit:
@@ -127,6 +127,12 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   Keep commitment, disposition and time.status separate. An explicit proposal is asserted with proposed
   disposition even when its timing is tentative. Lack of acceptance or a source date does not lower
   commitment. Use tentative commitment only when the source actually hedges the proposition itself.
+  A source-reported statement that an actor will act or said it would act is not a proposal merely because
+  the action is future or unverified. If the actor has undertaken that course of action, use kind=plan with
+  accepted disposition (or an active claim about the statement when the action itself is not selected).
+  Reserve proposed for an actual offer, suggestion or proposal awaiting a decision. Do not infer acceptance
+  of an offer from a promised action, and do not infer performance from a promised action. Keep the named
+  actor, source-report provenance, stated deadline and planned/scheduled time status when supplied.
 - A supported conditional premise and its stated consequence belong to the same scoped record. Keep both
   when the source supplies both; never derive additional consequences or discard the condition.
 - Competing unconfirmed hypotheses use tentative or hypothetical commitment, even when the readable
@@ -423,6 +429,15 @@ negated. Do not switch to a subordinate denial merely because it is easier to cl
 establish source bytes, not metadata correctness. Compare this source decision with the supplied polarity
 in qualification_scope and reflect disagreement in the semantic verdict. A mismatching enum independently
 holds the candidate; do not repair, reinterpret or retry that semantic decision.
+For a plan candidate, independently classify source_selected_plan_disposition from the complete source
+and exact deciding frame before reading the candidate's disposition. Proposed requires an actual offer,
+suggestion or proposal that has not been accepted; future tense, a reported statement that an actor will
+act, or a stated deadline alone does not make a proposal. Accepted means the actor undertook the plan;
+it does not mean the action happened or that another person accepted an offer. Distinguish rejected,
+cancelled, completed and superseded actions from both. A reported undertaking can retain source_report
+basis and planned/scheduled time without becoming a completed event. Compare this source-side choice to
+the immutable candidate disposition in qualification_scope. A disagreement independently holds the plan,
+even if prose booleans are all true; never silently relabel or retry that semantic decision.
 Then return three separately assessed booleans:
 - proposition_supported: every proposition in the readable wording follows from the complete original
   source, including identity, quantities, polarity and restrictions. Do not use the proposed translation
@@ -1113,6 +1128,18 @@ async function verifyCandidateBatch(
       comparison: semanticVerdictFields.comparison,
       // Source comparison precedes label selection; field order itself supplies no authority.
       source_selected_polarity: z.enum(['affirmed', 'negated']),
+      ...(candidate.kind === 'plan'
+        ? {
+            source_selected_plan_disposition: z.enum([
+              'proposed',
+              'accepted',
+              'rejected',
+              'cancelled',
+              'completed',
+              'superseded',
+            ]),
+          }
+        : {}),
       ...negativeEvidence.get(candidate.candidate_id)!.fields,
       proposition_supported: semanticVerdictFields.proposition_supported,
       action_arguments_preserved: semanticVerdictFields.action_arguments_preserved,
@@ -1260,6 +1287,10 @@ async function verifyCandidateBatch(
           // positive prose verdicts. Disagreement is a semantic hold, never permission to relabel.
           verdict.source_selected_polarity ===
             candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.polarity &&
+          (!('source_selected_plan_disposition' in verdict) ||
+            verdict.source_selected_plan_disposition ===
+              candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.discourse
+                .disposition) &&
           admissionReason(verdict.retention) === null,
       )
       .map((verdict) => verdict.candidate_id),
@@ -1274,7 +1305,11 @@ async function verifyCandidateBatch(
         !verdict.action_arguments_preserved ||
         !verdict.qualification_scope_preserved ||
         verdict.source_selected_polarity !==
-          candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.polarity;
+          candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.polarity ||
+        ('source_selected_plan_disposition' in verdict &&
+          verdict.source_selected_plan_disposition !==
+            candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.discourse
+              .disposition);
       reasons.set(
         verdict.candidate_id,
         semanticFailure

@@ -39,9 +39,16 @@ export function semanticAudit(proposition = true, action = true, qualification =
   };
 }
 
-/** Invented retention-only verdict fields. Tests choose semantics; witness ownership is explicit. */
+/** Invented retention-only verdict fields. Ordinary fixtures echo submitted plan status;
+ * disposition-mismatch tests override it with a source decision and an exact witness. */
 export function retentionAudit(
-  candidate: { polarity: string; text?: string; discourse_frame?: readonly { quote: string }[] },
+  candidate: {
+    polarity: string;
+    kind?: string;
+    discourse?: { disposition: string };
+    text?: string;
+    discourse_frame?: readonly { quote: string }[];
+  },
   proposition = true,
   action = true,
   qualification = true,
@@ -49,6 +56,12 @@ export function retentionAudit(
 ) {
   const audit = semanticAudit(proposition, action, qualification);
   return {
+    ...(candidate.kind === 'plan'
+      ? {
+          source_selected_plan_disposition: candidate.discourse?.disposition,
+          plan_disposition_evidence: null,
+        }
+      : {}),
     retention: {
       durability: 'durable' as const,
       source_scope: 'entity' as const,

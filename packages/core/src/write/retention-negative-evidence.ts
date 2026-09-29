@@ -82,16 +82,25 @@ export function retentionNegativeEvidence(candidate: RetainCandidate, hasRepairO
   const polarity_evidence = z
     .strictObject({ source, candidate_metadata_id: z.enum(['polarity']) })
     .nullable();
+  const plan_disposition_evidence = z
+    .strictObject({ source, candidate_metadata_id: z.enum(['discourse.disposition']) })
+    .nullable();
   return {
-    fields: { mismatches, polarity_evidence },
+    fields: {
+      mismatches,
+      polarity_evidence,
+      ...(candidate.kind === 'plan' ? { plan_disposition_evidence } : {}),
+    },
     coordinates: {
       frames: frames.map(({ frame_id }, index) => ({ frame_id, discourse_frame_index: index })),
       metadata,
     },
     consistent(verdict: {
       source_selected_polarity: string;
+      source_selected_plan_disposition?: unknown;
       mismatches: z.infer<typeof mismatches>;
       polarity_evidence: z.infer<typeof polarity_evidence>;
+      plan_disposition_evidence?: unknown;
     }): boolean {
       const sourcePresent = (witness: z.infer<typeof source>) =>
         hasContent.test(witness.exact_excerpt) &&
@@ -107,9 +116,16 @@ export function retentionNegativeEvidence(candidate: RetainCandidate, hasRepairO
         )
           return false;
       }
-      return verdict.source_selected_polarity === candidate.polarity
-        ? verdict.polarity_evidence === null
-        : verdict.polarity_evidence !== null && sourcePresent(verdict.polarity_evidence.source);
+      const polarityConsistent =
+        verdict.source_selected_polarity === candidate.polarity
+          ? verdict.polarity_evidence === null
+          : verdict.polarity_evidence !== null && sourcePresent(verdict.polarity_evidence.source);
+      if (!polarityConsistent) return false;
+      if (candidate.kind !== 'plan') return true;
+      if (verdict.source_selected_plan_disposition === candidate.discourse.disposition)
+        return verdict.plan_disposition_evidence === null;
+      const planEvidence = plan_disposition_evidence.safeParse(verdict.plan_disposition_evidence);
+      return planEvidence.success && planEvidence.data !== null && sourcePresent(planEvidence.data.source);
     },
   };
 }
@@ -130,9 +146,14 @@ SOURCE evidence, never the repair-original draft as authority. Keep each excerpt
 80 UTF-16 units, with no transfer between budgets. The previous 240-unit detail allowance is partitioned.
 For source_selected_polarity equal to immutable candidate.polarity, return polarity_evidence:null. For a
 disagreement, give polarity_evidence with the exact governing source predicate and candidate_metadata_id
-polarity. This is independent of the three semantic booleans and never authorizes relabeling. A false
-semantic dimension still requires exactly one mismatch; valid negatives remain final. An invented,
+polarity. This is independent of the three semantic booleans and never authorizes relabeling.
+For a plan, apply the same rule to source_selected_plan_disposition and immutable
+discourse.disposition: equal values need plan_disposition_evidence:null; disagreement needs an exact
+source frame excerpt and candidate_metadata_id discourse.disposition. This finding also holds the
+candidate without relabeling it.
+A false semantic dimension still requires exactly one mismatch; valid negatives remain final. An invented,
 foreign, missing or inconsistent witness invalidates the entire response; it cannot be dropped to accept.
 A word occurring only in your candidate_meaning or other audit prose is not in candidate.text. Inspect
 immutable candidate bytes before claiming an addition. All-positive equal-polarity verdicts need empty
-mismatches and null polarity_evidence; no extra positive evidence record is required.`;
+mismatches and null polarity_evidence; equal-plan-disposition verdicts also need null
+plan_disposition_evidence. No extra positive evidence record is required.`;
