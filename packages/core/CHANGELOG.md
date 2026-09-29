@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.15.16
+
+### Patch Changes
+
+- [#140](https://github.com/tenphi/akno/pull/140) [`03314ca`](https://github.com/tenphi/akno/commit/03314ca359efea6238c7b03815bdd86ecec08b6d) Thanks [@tenphi](https://github.com/tenphi)! - Show report attribution and temporal status once in retained timeline references. Explicit timeline reconciliation refreshes older references without changing their canonical memories or authored events.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.15.16
+
 ## 0.15.15
 
 ### Patch Changes
