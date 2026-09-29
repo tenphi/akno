@@ -151,6 +151,9 @@ When the marker carries typed world time, reads preserve the original precision,
 and recurrence while computing currentness from the caller's clock. This lets a past state remain inspectable
 without being injected as a current fact, and lets an accepted plan answer a future-oriented question without
 becoming a factual claim.
+An actor's reported undertaking to act by a date remains a reported plan with its deadline and planned or
+scheduled time status; it does not become a completed event. An offer awaiting a decision is a proposed plan.
+Akno checks that distinction against the original source before retaining a generated plan.
 
 The marker's other semantics matter at read time too. Akno projects retained claims, reports, plans, decisions,
 questions, and tentative discussion into separate semantic views without moving or duplicating their Markdown.

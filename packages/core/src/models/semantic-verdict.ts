@@ -13,6 +13,14 @@ export function semanticRecordScope(record: {
     scope.push(
       'Plan denotes a recorded course of action, including an offered action. It does not independently assert personal intent, acceptance, an actual booking or performance.',
     );
+  if (record.kind === 'plan' && record.disposition === 'accepted')
+    scope.push(
+      'Accepted denotes an actor-undertaken plan, including an announced commitment reported by another speaker. It does not assert performance or that an audience accepted an offer.',
+    );
+  if (record.kind === 'plan' && record.disposition === 'proposed')
+    scope.push(
+      'Proposed requires a source-established offer or suggestion awaiting decision; future tense or a stated deadline alone is not a proposal.',
+    );
   if (record.commitment === 'hypothetical' || record.commitment === 'counterfactual')
     scope.push(
       'The commitment qualifies the embedded scenario content. Neutral attribution of that content to its source is not itself hypothetical or a separate performed action.',
@@ -109,6 +117,9 @@ export const SEMANTIC_COMPARISON_CONTRACT = `Before deciding the three booleans,
   measurement or inspection, compare the named component separately from the property, method and result;
 - qualification_scope: compare speaker layers, polarity, commitment, disposition, uncertainty and time,
   including the actor, predicate and object/referent of each selected material epistemic limit.
+For a reported future action, distinguish the actor's undertaking (accepted plan) from an offer or
+suggestion awaiting a decision (proposed plan). Source-report provenance and planned time do not turn
+an undertaking into a proposal, and neither status establishes performance.
 For coverage language, compare what is covered and what provides coverage. "Repair is covered by the
 warranty" / "ремонт покрывается гарантией" does not mean "the motor is covered by repair" / "двигатель
 покрывается ремонтом" or "the warranty is covered by repair". Preserve those roles inside unresolved
