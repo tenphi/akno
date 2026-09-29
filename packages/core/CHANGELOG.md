@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.15.17
+
+### Patch Changes
+
+- [#142](https://github.com/tenphi/akno/pull/142) [`15ba34b`](https://github.com/tenphi/akno/commit/15ba34bee2e889f5c5e023aa94a6e956914f98c8) Thanks [@tenphi](https://github.com/tenphi)! - Distinguish reported commitments from proposals during automatic retention and independently verify a generated plan's disposition against its source.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.15.17
+
 ## 0.15.16
 
 ### Patch Changes
