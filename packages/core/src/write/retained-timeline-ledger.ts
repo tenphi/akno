@@ -5,7 +5,9 @@ import type { AknoContext } from '../context.ts';
 import { timelineCatalog, owningTimeline, selectTimelines } from '../timeline/boundaries.ts';
 import { sha256 } from '../store/ids.ts';
 import {
+  managedMemoryPayloadBody,
   managedMemoryPayloadIssue,
+  managedMemoryStatusLabels,
   parseManagedMemoryMarker,
   type ManagedMemoryMarker,
 } from './managed-memory.ts';
@@ -143,26 +145,44 @@ function managedEntries(content: string | null, slug: string): { slug: string; e
       managedMemoryPayloadIssue(marker, rawPayload) !== null
     )
       continue;
-    const payload = rawPayload.replace(/^[-*]\s+/, '').trim();
-    entries.push({ slug, entry: renderEntry(marker, payload, slug, date) });
+    const body = managedMemoryPayloadBody(marker, rawPayload);
+    if (!body?.trim()) continue;
+    entries.push({ slug, entry: renderEntry(marker, body, slug, date) });
   }
   return entries;
 }
 
-function renderEntry(marker: ManagedMemoryMarker, payload: string, slug: string, date: string): Entry {
+function renderEntry(marker: ManagedMemoryMarker, body: string, slug: string, date: string): Entry {
   const time = marker.time!;
+  const sourceLabel = managedMemoryStatusLabels(marker).find((label) => label.startsWith('Reported by '));
+  const reporter = sourceLabel?.slice('Reported by '.length);
+  // The candidate text keeps its outer source for standalone safety. In this derived
+  // ledger the qualifier carries that source, so remove only an exact opening relay.
+  const readableBody = reporter ? stripOpeningReport(body, reporter) : body;
   const qualifications = [
-    ...(time.status === 'actual' ? [] : [time.status]),
-    ...(time.relation === 'occurred' || time.relation === time.status ? [] : [time.relation]),
-    ...(marker.kind === 'event' ? [] : [marker.kind]),
+    ...(time.relation === 'due'
+      ? [`${time.status === 'actual' ? '' : `${time.status} `}deadline`]
+      : [
+          ...(time.status === 'actual' ? [] : [time.status]),
+          ...(time.relation === 'occurred' || time.relation === time.status ? [] : [time.relation]),
+        ]),
+    ...(marker.kind === 'plan'
+      ? [marker.disposition === 'proposed' ? 'proposal' : 'plan']
+      : marker.kind === 'event'
+        ? []
+        : [marker.kind]),
     ...(marker.commitment !== 'asserted' ? [marker.commitment] : []),
-    ...(marker.basis === 'source_report' ? ['reported'] : []),
-    ...(marker.disposition !== 'active' ? [marker.disposition] : []),
+    ...(marker.kind === 'plan' && marker.disposition === 'proposed'
+      ? []
+      : marker.disposition !== 'active'
+        ? [marker.disposition]
+        : []),
+    ...(reporter ? [`reported by ${reporter}`] : []),
   ];
   const label = time.start
     ? `${readableBoundary(date)}${time.until && time.until !== date ? ` – ${readableBoundary(time.until)}` : ''}`
     : `Until ${readableBoundary(date)}`;
-  const clean = payload.replace(/\s+/g, ' ').replaceAll('<!--', '&lt;!--');
+  const clean = readableBody.replace(/\s+/g, ' ').replaceAll('<!--', '&lt;!--');
   const qualifier = [...new Set(qualifications)].join(' · ');
   const annotation = qualifier ? `*${qualifier[0]!.toUpperCase()}${qualifier.slice(1)}* — ` : '';
   const base = `- **${label}** | ${annotation}${clean} [[${slug}]]`;
@@ -171,6 +191,16 @@ function renderEntry(marker: ManagedMemoryMarker, payload: string, slug: string,
     date,
     line: `${base} <!-- akno:timeline-item id=${marker.id} date=${date} hash=${sha256(`${base}\0${date}`).slice(0, 12)} -->`,
   };
+}
+
+function stripOpeningReport(body: string, reporter: string): string {
+  const escaped = reporter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const opening = new RegExp(
+    `^(?:${escaped}(?:[’']s (?:digest|report))? (?:reports|reported|says|said|states|stated)(?: that)? |According to ${escaped}, |Reported by ${escaped}: )`,
+    'iu',
+  );
+  const stripped = body.replace(opening, '');
+  return stripped.trim() ? stripped : body;
 }
 
 function readableBoundary(value: string): string {

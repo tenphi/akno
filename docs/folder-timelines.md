@@ -84,6 +84,10 @@ Managed references use the same bold-date-and-separator style as authored event 
 as a clock and explicit UTC offset instead of a raw ISO timestamp; a compact annotation keeps scheduling,
 reporting, and other qualifications visible. The trailing Akno marker is needed for safe reconciliation,
 but the linked subject page remains the canonical memory.
+The ledger shows a report source once. It omits the canonical page's repeated status heading and, when the
+same named source opens the sentence with a routine reporting phrase, keeps that source in the ledger
+annotation instead. Inner speakers and uncertainty remain in the sentence. A planned due date displays
+as a planned deadline, and a proposed plan as a proposal; neither becomes a completed event.
 Exact retention replay does not append a second reference. Corrections, retractions, explicit forgetting,
 page moves, and undo update the same dated list while preserving standalone event text and prose.
 
@@ -96,6 +100,8 @@ rows newest first without changing their text or links. A ledger with interspers
 existing event order. Ordinary writes never reorder existing standalone events.
 Run the same preview after creating or removing a timeline boundary to align the visible files with
 the query's updated folder membership.
+After a presentation change, preview and apply reconciliation to refresh older Akno-owned references.
+This leaves canonical pages and authored event rows alone, and the journal supports undo.
 
 ```sh
 akno migrate --retained-timelines
