@@ -286,10 +286,10 @@ The new comparison freezes the same sources, procedure, model roles and budgets 
 grades original sources and anonymous public outputs under one fixed rubric.
 
 | Revision | Legacy run 1 | Legacy run 2 | Recent run 1 | Recent run 2 | Useful total | Accepted answer errors |
-| -------- | -----------: | -----------: | -----------: | -----------: | -----------: | ---------------------: |
-| V17      |        68/80 |        71/80 |        24/80 |        30/80 |      193/320 |                     56 |
-| V31      |        64/80 |        53/80 |        48/80 |        51/80 |      216/320 |                     13 |
-| V77      |        63/80 |        59/80 |        36/80 |        53/80 |      211/320 |                     11 |
+| -------- | ------------ | ------------ | ------------ | ------------ | ------------ | ---------------------- |
+| V17      | 68/80        | 71/80        | 24/80        | 30/80        | 193/320      | 56                     |
+| V31      | 64/80        | 53/80        | 48/80        | 51/80        | 216/320      | 13                     |
+| V77      | 63/80        | 59/80        | 36/80        | 53/80        | 211/320      | 11                     |
 
 There is a real original-scenario regression: V17 scores 139/160 against V77's 122/160. Earlier revisions
 also lose more meaning on recent cases. None meets the declared quality gate. V31's five-answer net gain
@@ -301,11 +301,11 @@ record four failed calls for V31 and one for V17.
 The measured integration at `963bf68` scores **249/320 useful answers (77.8%)**, compared with V77's **211/320 (65.9%)** under the same sources, model policy, budgets and rubric. Original-scenario coverage recovers to **142/160 (88.8%)**, against V77's 122/160 (76.3%) and V17's 139/160 (86.9%). Newer-scenario coverage is **107/160 (66.9%)**. The original block's two runs remain visibly different; this is a bounded recovery, not proof of repeatable general reliability.
 
 | Block / run | Useful answers | Complete retained sets | Useful retrievals |
-| ----------- | -------------: | ---------------------: | ----------------: |
-| legacy / 1  |          76/80 |                  10/10 |             40/40 |
-| legacy / 2  |          66/80 |                   9/10 |             36/40 |
-| recent / 1  |          53/80 |                   7/10 |             34/40 |
-| recent / 2  |          54/80 |                   8/10 |             33/40 |
+| ----------- | -------------- | ---------------------- | ----------------- |
+| legacy / 1  | 76/80          | 10/10                  | 40/40             |
+| legacy / 2  | 66/80          | 9/10                   | 36/40             |
+| recent / 1  | 53/80          | 7/10                   | 34/40             |
+| recent / 2  | 54/80          | 8/10                   | 33/40             |
 
 By requested answer language, the integration scores **131/160 English answers** and **118/160 Russian answers**, with 4 and 5 accepted errors respectively. These are descriptive slices; they do not replace the fixed block/run gate.
 
@@ -559,9 +559,9 @@ The v14 corpus ran twice per split at runtime commit `4f893b4`, using GPT-5.6 Lu
 GPT-5.6 Sol review. The unchanged gate failed:
 
 | Split       | Run 1 useful answers | Run 2 useful answers |
-| ----------- | -------------------: | -------------------: |
-| Development |                77/80 |                72/80 |
-| Held-out    |                69/80 |                61/80 |
+| ----------- | -------------------- | -------------------- |
+| Development | 77/80                | 72/80                |
+| Held-out    | 69/80                | 61/80                |
 
 The 279/320 useful answers leave 40 unjustified nulls and one unsupported translation from service
 collection to data collection. Useful retention was 37/40; all 32 read-only abstentions were justified.
@@ -586,11 +586,11 @@ GPT-5.6 Sol input/output review. Every group reached the 90% useful-answer targe
 for five omitted source-relative time qualifications:
 
 | Split/run     | Useful retention | Qualified retrieval | Useful qualified answers |
-| ------------- | ---------------: | ------------------: | -----------------------: |
-| Development 1 |            10/10 |               40/40 |                    79/80 |
-| Development 2 |            10/10 |               40/40 |                    72/80 |
-| Held-out 1    |            10/10 |               40/40 |                    78/80 |
-| Held-out 2    |            10/10 |               40/40 |                    79/80 |
+| ------------- | ---------------- | ------------------- | ------------------------ |
+| Development 1 | 10/10            | 40/40               | 79/80                    |
+| Development 2 | 10/10            | 40/40               | 72/80                    |
+| Held-out 1    | 10/10            | 40/40               | 78/80                    |
+| Held-out 2    | 10/10            | 40/40               | 79/80                    |
 
 The 308/320 useful answers leave seven unjustified nulls and five answers that mention a relative month
 and unknown calendar date without tying that month to the undated original source. All 40 writable
@@ -620,11 +620,11 @@ The v12 corpus ran twice per split at runtime commit `5e0b5d3`, using GPT-5.6 Lu
 GPT-5.6 Sol input/output review. The unchanged 90% answer gate **failed**:
 
 | Split/run     | Useful retention | Qualified retrieval | Useful qualified answers |
-| ------------- | ---------------: | ------------------: | -----------------------: |
-| Development 1 |             7/10 |               28/40 |                    60/80 |
-| Development 2 |             8/10 |               32/40 |                    62/80 |
-| Held-out 1    |             9/10 |               36/40 |                    66/80 |
-| Held-out 2    |             9/10 |               36/40 |                    66/80 |
+| ------------- | ---------------- | ------------------- | ------------------------ |
+| Development 1 | 7/10             | 28/40               | 60/80                    |
+| Development 2 | 8/10             | 32/40               | 62/80                    |
+| Held-out 1    | 9/10             | 36/40               | 66/80                    |
+| Held-out 2    | 9/10             | 36/40               | 66/80                    |
 
 The 254/320 useful answers leave 51 unjustified nulls and 15 source-unfaithful answers. Both repetitions
 changed a reported service provision into an instantiated pickup booking; most answers repeated that
@@ -654,11 +654,11 @@ The v11 corpus ran twice per split at runtime commit `015f122`, using GPT-5.6 Lu
 GPT-5.6 Sol input/output review. The unchanged 90% answer gate **failed**:
 
 | Split/run     | Useful retention | Qualified retrieval | Useful qualified answers |
-| ------------- | ---------------: | ------------------: | -----------------------: |
-| Development 1 |            10/10 |               40/40 |                    72/80 |
-| Development 2 |            10/10 |               40/40 |                    74/80 |
-| Held-out 1    |            10/10 |               40/40 |                    71/80 |
-| Held-out 2    |             9/10 |               36/40 |                    62/80 |
+| ------------- | ---------------- | ------------------- | ------------------------ |
+| Development 1 | 10/10            | 40/40               | 72/80                    |
+| Development 2 | 10/10            | 40/40               | 74/80                    |
+| Held-out 1    | 10/10            | 40/40               | 71/80                    |
+| Held-out 2    | 9/10             | 36/40               | 62/80                    |
 
 The 279/320 useful answers leave 34 unjustified nulls and seven incomplete answers caused by a lost
 retention contrast. The review found no accepted language or factual-promotion errors or source changes;

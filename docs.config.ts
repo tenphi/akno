@@ -84,7 +84,7 @@ export default defineDocsConfig({
   theme: {
     brand: { from: '#6554c0' },
     styles: {
-      StarlightHeader: {
+      Header: {
         // The custom site title includes our mark in the home link.
         Logo: { hide: true },
       },
