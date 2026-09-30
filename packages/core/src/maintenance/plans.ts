@@ -3403,7 +3403,9 @@ async function verifyApplied(
       canonicalPageId = row.id;
     }
     const expectedRole = item.kind === 'reflect' ? 'inference' : 'knowledge';
-    if (row.role !== expectedRole) {
+    // Ledger declarations have their own authority even in a source-only folder. The history
+    // proof above revalidates that authority; indexing must keep the inherited document role.
+    if (item.kind !== 'timeline_history' && row.role !== expectedRole) {
       return `${operation.relPath} is no longer live ${expectedRole}.`;
     }
     if (item.kind === 'observe' && row.observe_management !== 'integrate') {

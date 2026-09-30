@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import Database from 'better-sqlite3';
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { TimelineOutput, ListOutput, WriteOutput } from '@tenphi/akno-protocol';
 import { open, type Akno } from '../src/index.ts';
@@ -161,12 +162,120 @@ it.each(['timeline.md', 'work/timeline.md', 'meta/history.markdown'])(
 );
 
 it.each([
+  { role: 'source', remember: 'deny' },
   { role: 'knowledge', remember: 'deny' },
-  { role: 'source', remember: 'integrate' },
-])('respects folder write policy for an empty ledger (%j)', async (rule) => {
+  { role: 'inference', remember: 'deny' },
+])('a declaration grants ledger authority without changing inherited document policy (%j)', async (rule) => {
   await mem.close();
   put('work/timeline.md', '');
   mem = await start('timeline.md', { 'work/**': rule });
+  const source = read('work/notes.md');
+  const parent = read('timeline.md');
+  await mem.index({ rebuild: true, structuralOnly: true });
+  expect(read('work/timeline.md')).toBe('');
+  expect((await mem.list({ kind: 'timelines' })).timelines).toContainEqual(
+    expect.objectContaining({ slug: 'work/timeline', writable: true }),
+  );
+  const input = {
+    timeline: 'work/timeline',
+    event: { date: '2031-04-03', summary: 'Zephyr prototype inspected.' },
+    idempotency_key: 'source-folder-ledger',
+  };
+  await mem.write({ ...input, idempotency_key: 'preview-source-folder-ledger', dry_run: true });
+  expect(read('work/timeline.md')).toBe('');
+  const result = await mem.write(input);
+  expect(result.outcome).toBe('ok');
+  expect((await mem.timeline({ timeline: 'work/timeline' })).results).toContainEqual(
+    expect.objectContaining({ summary: input.event.summary, source: 'work/timeline' }),
+  );
+  expect((await mem.write(input)).replayed).toBe(true);
+  expect(read('work/notes.md')).toBe(source);
+  expect(read('timeline.md')).toBe(parent);
+  const index = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+  try {
+    expect(
+      index.prepare('SELECT role, remember_management FROM pages WHERE slug = ?').get('work/notes'),
+    ).toEqual({ role: rule.role, remember_management: 'deny' });
+    expect(index.prepare('SELECT role FROM pages WHERE slug = ?').get('work/timeline')).toEqual({
+      role: rule.role,
+    });
+  } finally {
+    index.close();
+  }
+  await mem.undo({ change_id: result.change_id! });
+  expect(read('work/timeline.md')).toBe('');
+});
+
+it.each(['work/timeline', '**/timeline', 'work/time*'])(
+  'an explicit ledger restriction %s wins over inherited folder policy',
+  async (glob) => {
+    await mem.close();
+    put('work/timeline.md', '');
+    mem = await start('timeline.md', {
+      'work/**': { role: 'source', remember: 'deny' },
+      [glob]: { remember: 'deny' },
+    });
+    expect((await mem.list({ kind: 'timelines' })).timelines).toContainEqual(
+      expect.objectContaining({ slug: 'work/timeline', writable: false }),
+    );
+    await expect(
+      mem.write({ timeline: 'work/timeline', event: { date: '2031-04-03', summary: 'Inspection.' } }),
+    ).rejects.toThrow('read-only');
+    expect(read('work/timeline.md')).toBe('');
+  },
+);
+
+it('keeps ignored declarations unavailable and leaves absent virtual defaults under inherited policy', async () => {
+  await mem.close();
+  fs.unlinkSync(path.join(root, 'timeline.md'));
+  mem = await start('timeline.md', {
+    '**': { role: 'source', remember: 'deny' },
+    'work/**': { role: 'ignored' },
+    'cases/example/timeline': { role: 'ignored' },
+  });
+  const discovery = (await mem.list({ kind: 'timelines' })).timelines!;
+  expect(discovery).toContainEqual(
+    expect.objectContaining({ slug: 'timeline', status: 'virtual', writable: false }),
+  );
+  expect(discovery.some((entry) => entry.slug.startsWith('work/'))).toBe(false);
+  expect(discovery).toContainEqual(
+    expect.objectContaining({ slug: 'cases/example/timeline', status: 'unavailable', writable: false }),
+  );
+  expect(read('work/timeline.md')).toContain('Ada Marlow completed an inspection.');
+});
+
+it('keeps a ledger-specific ignore fence when a more specific folder supplies a source role', async () => {
+  await mem.close();
+  mem = await start('timeline.md', {
+    '**/timeline': { role: 'ignored' },
+    'work/**': { role: 'source' },
+  });
+  expect((await mem.list({ kind: 'timelines' })).timelines).toContainEqual(
+    expect.objectContaining({ slug: 'work/timeline', status: 'unavailable', writable: false }),
+  );
+  expect((await mem.timeline({ timeline: 'work/timeline' })).status).toBe('unavailable');
+  expect((await mem.timeline({ timeline: 'work/timeline' })).total).toBe(0);
+});
+
+it.each(['role: source', 'management:\n    remember: deny'])(
+  'respects a restriction on the declaration itself (%s)',
+  async (restriction) => {
+    await mem.close();
+    put('work/timeline.md', `---\ntype: timeline\nakno:\n  ${restriction}\n---\n\n# Timeline\n`);
+    mem = await start('timeline.md', { 'work/**': { role: 'source', remember: 'deny' } });
+    expect((await mem.list({ kind: 'timelines' })).timelines).toContainEqual(
+      expect.objectContaining({ slug: 'work/timeline', writable: false }),
+    );
+  },
+);
+
+it.each([
+  { role: 'knowledge', remember: 'deny' },
+  { role: 'source', remember: 'integrate' },
+])('respects explicit ledger write policy for an empty ledger (%j)', async (rule) => {
+  await mem.close();
+  put('work/timeline.md', '');
+  mem = await start('timeline.md', { 'work/timeline': rule });
   const rootBefore = read('timeline.md');
   expect((await mem.list({ kind: 'timelines' })).timelines).toContainEqual(
     expect.objectContaining({

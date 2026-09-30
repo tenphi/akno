@@ -10,6 +10,7 @@ import { sha256 } from '../store/ids.ts';
 import { owningTimeline, timelineCatalog } from '../timeline/boundaries.ts';
 import { routeLegacyEvent } from '../timeline/route-event.ts';
 import { formatEventLine, insertEvent, newLedger } from '../write/ledger.ts';
+import { retainedTimelineLedgerValid } from '../write/retained-timeline-ledger.ts';
 import { runRetain, type RetainCandidate } from '../write/retain.ts';
 import type { MaintenanceEvidence, MaintenanceOperation, ReplaceOperation } from './plans.ts';
 
@@ -88,6 +89,10 @@ export async function planTimelineHistory(
       hold('source_unavailable');
       return result();
     }
+    if (entry.writable && !retainedTimelineLedgerValid(content)) {
+      hold('source_ineligible');
+      return result();
+    }
     sources.set(entry.path, { relPath: entry.path, content, hash: sha256(content) });
   }
   if ([...sources.keys()].some((file) => options.protectedPaths?.has(file))) {
@@ -105,7 +110,7 @@ export async function planTimelineHistory(
       [...sources.values()].map(({ relPath, hash }) => [relPath, hash]),
       ctx.config.rules,
       ctx.models.derive.endpointFingerprint,
-      'timeline-history-v1',
+      'timeline-history-v2',
     ]),
   );
   let calls = 0;
@@ -379,6 +384,8 @@ export async function timelineHistoryIssue(
     )
       return 'timeline history evidence changed or became unavailable';
     const ledger = catalog.find((entry) => entry.path === source.relPath);
+    if (ledger?.writable && !retainedTimelineLedgerValid(current))
+      return 'timeline history ledger has invalid managed references';
     if (ledger) before.set(source.relPath, op?.before ?? current);
   }
   for (const action of proof.actions) {
@@ -525,8 +532,16 @@ function standaloneEventLine(content: string, line: string): boolean {
     /^- \*\*\d{4}-\d{2}-\d{2}\*\*\s*\|/u.test(line) &&
     // Byte-identical relative addresses can point elsewhere after a folder transfer.
     !/\[\[(?:\.{1,2}\/|#)/u.test(line) &&
-    !/\[|<[a-z!]/iu.test(line.replace(/\[\[[^\]]+\]\]/gu, '')) &&
-    !/<!--\s*akno:|```|~~~/iu.test(content) &&
+    !/\[|<[a-z!]/iu.test(
+      line
+        .replace(/\[\[[^\]]+\]\]/gu, '')
+        // Absolute inline citations keep their target after relocation. Relative links, reference
+        // definitions, and nested/ambiguous Markdown still require human inspection.
+        .replace(/\[[^\][\r\n]+\]\((?:https?:\/\/|\/)[^\s()]+\)/giu, ''),
+    ) &&
+    // An unrelated generated reference does not make a standalone row managed. Other managed
+    // containers remain excluded; the selected row's own marker is rejected by the check above.
+    !/<!--\s*akno:(?!timeline-item\b)|```|~~~/iu.test(content) &&
     !/^\s+\S/u.test(lines[index + 1] ?? '')
   );
 }
