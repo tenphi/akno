@@ -1,5 +1,5 @@
 ---
-title: Akno
+title: Overview
 description: A two-way memory layer for agents over a Markdown knowledge base you own.
 template: splash
 hero:
