@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.16.1
+
+### Patch Changes
+
+- [#149](https://github.com/tenphi/akno/pull/149) [`2443446`](https://github.com/tenphi/akno/commit/2443446c3a38571137bd3fd379c46549cf31cd48) Thanks [@tenphi](https://github.com/tenphi)! - Allow longer source documents to progress through timeline curation by keeping one complete evidence snapshot and hashing duplicate page stages. Automatically shrink oversized source batches without repeating extraction, preserve cached continuation and receipt membership across restart, and report irreducible size holds without marking their facts as consumed.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.16.1
+
 ## 0.16.0
 
 ### Minor Changes
