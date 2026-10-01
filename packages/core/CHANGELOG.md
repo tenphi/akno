@@ -1,5 +1,16 @@
 # @tenphi/akno-core
 
+## 0.15.18
+
+### Patch Changes
+
+- [#144](https://github.com/tenphi/akno/pull/144) [`cb6c406`](https://github.com/tenphi/akno/commit/cb6c40664da181019e666d3a0b195c7ea8fd4fd3) Thanks [@tenphi](https://github.com/tenphi)! - Treat a valid timeline declaration as permission to maintain its ledger, including inside source-only
+  or remember-denied folders. Keep source document policies intact and honor restrictions on the ledger
+  itself. Timeline-history maintenance can now transfer standalone ancestor entries with absolute inline
+  citations alongside unrelated generated references, preserving exact text, replay safety, and undo.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.15.18
+
 ## 0.15.17
 
 ### Patch Changes
