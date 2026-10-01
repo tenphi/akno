@@ -1,5 +1,11 @@
 # @tenphi/akno-protocol
 
+## 0.16.0
+
+### Minor Changes
+
+- [#147](https://github.com/tenphi/akno/pull/147) [`aa1a1ed`](https://github.com/tenphi/akno/commit/aa1a1ed5f708947308c5a1b2b0912d79918a7b31) Thanks [@tenphi](https://github.com/tenphi)! - Curate source-backed temporal assertions into declared timelines through verified retention and a ledger-owned memory companion. Keep source bytes and attribution intact, consolidate equivalent assertions without proof inflation, preserve conflicting dates, and track durable source progress so unchanged completed files skip extraction while unfinished work continues.
+
 ## 0.15.18
 
 ## 0.15.17
