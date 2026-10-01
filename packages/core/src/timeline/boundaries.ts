@@ -114,6 +114,15 @@ export function timelineCatalog(config: AknoConfig, store: Store): TimelineDescr
         };
       }
       const policy = resolvePagePolicy(page, effectiveRule(slug, config.rules), config.paths.observations);
+      // The declaration grants ledger authority, not authority over its source documents. Only rules
+      // naming the ledger (including patterns such as **/timeline) constrain that grant; inherited
+      // folder source/remember policies still govern every ordinary page. Ignore remains a fence.
+      const ledgerRule = effectiveRule(
+        slug,
+        config.rules.filter((rule) => !/^[*?]+$/u.test(path.posix.basename(rule.glob))),
+      );
+      const ledgerRole = page.declaredRole ?? ledgerRule.role ?? 'knowledge';
+      const ledgerIgnored = policy.role === 'ignored' || ledgerRole === 'ignored';
       const introduction = page.body
         .split(/^##\s|^\s*[-*]\s+\*\*\d{4}-/m)[0]!
         .replace(/^#\s+.*$/m, '')
@@ -123,11 +132,12 @@ export function timelineCatalog(config: AknoConfig, store: Store): TimelineDescr
         ...result,
         title: content.trim().length === 0 ? result.title : page.title,
         description: introduction,
-        status: policy.role === 'ignored' ? 'unavailable' : 'ready',
+        status: ledgerIgnored ? 'unavailable' : 'ready',
         writable:
-          policy.role === 'knowledge' &&
-          (page.declaredManagement.remember ?? effectiveRule(slug, config.rules).remember) !== 'deny',
-        ...(policy.role === 'ignored' ? { note: 'timeline is ignored by page policy' } : {}),
+          !ledgerIgnored &&
+          ledgerRole === 'knowledge' &&
+          (page.declaredManagement.remember ?? ledgerRule.remember) !== 'deny',
+        ...(ledgerIgnored ? { note: 'timeline is ignored by page policy' } : {}),
       };
     } catch {
       return { ...result, status: 'unavailable', note: 'timeline cannot be read safely' };

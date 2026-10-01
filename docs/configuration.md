@@ -325,8 +325,11 @@ Malformed or conflicting markers are counted as held findings and leave the page
 `timeline_history` starts from existing writable timeline declarations, including empty `timeline.md`
 files. It can extract actual day-dated events from authored knowledge notes or propose exact transfers
 from an ancestor ledger to its owning descendant. It requires no whole-page dream opt-in: the declaration,
-remembering policy, and maintenance profile supply its bounded authority. The shared retention verifier,
-separate automatic curator, stale-input checks, journal, and apply budgets still govern every write.
+ledger-specific policy, and maintenance profile supply its bounded authority. A valid declaration grants
+ledger authority independently of inherited source-folder or `remember: deny` policies; those policies
+still protect ordinary documents. Explicit rules naming the ledger and its frontmatter can restrict the
+grant. The shared retention verifier, separate automatic curator, stale-input checks, journal, and apply
+budgets still govern every write.
 `maintenance.curate.max_timeline_events` defaults to `20` and bounds events and ownership calls per cycle;
 extraction additionally uses `max_pages`. See [folder timelines](folder-timelines.md#existing-history-and-boundary-changes)
 for source eligibility, review, and undo behavior.

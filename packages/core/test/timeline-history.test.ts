@@ -7,6 +7,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
 import { MAINTENANCE_TRANSFORMS, type ConfigDoc } from '../src/config/schema.ts';
 import { frameAuditFields, retentionAudit } from './semantic-audit.ts';
+import { sha256 } from '../src/store/ids.ts';
 
 let root: string;
 let stateDir: string;
@@ -229,6 +230,70 @@ it('keeps an uncertain cross-linked event in its current ledger and caches the h
   expect(read('timeline.md')).toContain(line);
 });
 
+it.each(['', ' \t\r\n'])(
+  'automatically fills a declared source-folder ledger from a mixed ancestor ledger (%j)',
+  async (blank) => {
+    await mem.close();
+    put('work/timeline.md', blank);
+    const event = line + ' [inspection](/invented/archive/inspection.md)';
+    const base = '- **2031-04-02** | Scheduled inspection. [[home/notes]]';
+    const managed = `${base} <!-- akno:timeline-item id=mem_example date=2031-04-02 hash=${sha256(`${base}\0${'2031-04-02'}`).slice(0, 12)} -->`;
+    const parent = ledger + managed + '\n' + event + '\n';
+    put('timeline.md', parent);
+    const source = read('work/notes.md');
+    mem = await start({
+      folders: {
+        '**': { role: 'knowledge', remember: 'integrate' },
+        'work/**': { role: 'source', remember: 'deny' },
+      },
+    });
+    await mem.index({ rebuild: true, structuralOnly: true });
+    expect(read('work/timeline.md')).toBe(blank);
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.timelineHistory).toMatchObject({ relocations: 1, additions: 0 });
+    expect(report.maintenancePlan?.items[0]?.status).toBe('applied');
+    expect(calls).toMatchObject({ extraction: 0, routing: 1, curator: 1 });
+    expect(read('work/timeline.md')).toContain(event);
+    expect(read('timeline.md')).toBe(parent.replace(event + '\n', ''));
+    expect(read('work/notes.md')).toBe(source);
+    expect((await mem.timeline({ timeline: 'work/timeline' })).results).toContainEqual(
+      expect.objectContaining({ type: 'event', source: 'work/timeline' }),
+    );
+    const count = { ...calls };
+    await mem.close();
+    mem = await start({
+      folders: {
+        '**': { role: 'knowledge', remember: 'integrate' },
+        'work/**': { role: 'source', remember: 'deny' },
+      },
+    });
+    await mem.dream({ phase: 'curate' });
+    expect(calls).toEqual(count);
+    await mem.undo({ change_id: report.maintenancePlan!.items[0]!.changeId! });
+    expect(read('work/timeline.md')).toBe(blank);
+    expect(read('timeline.md')).toBe(parent);
+    expect(read('work/notes.md')).toBe(source);
+  },
+);
+
+it('extracts permitted knowledge while leaving the enclosing source policy intact', async () => {
+  await mem.close();
+  const content = `---\nakno:\n  role: knowledge\n  management:\n    remember: integrate\n---\n\n# Inspection\n\n${note}\n`;
+  put('work/notes.md', content);
+  mem = await start({
+    folders: {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+    },
+  });
+  await mem.index({ rebuild: true, structuralOnly: true });
+  const report = await mem.dream({ phase: 'curate' });
+  expect(report.timelineHistory.additions).toBe(1);
+  expect(report.maintenancePlan?.items[0]?.status).toBe('applied');
+  expect(read('work/timeline.md')).toContain(line);
+  expect(read('work/notes.md')).toBe(content);
+});
+
 it('lets the independent curator reject a proposed move without changing history or repeating it', async () => {
   extraction = () => [];
   curator = 'reject';
@@ -242,7 +307,28 @@ it('lets the independent curator reject a proposed move without changing history
   expect(read('timeline.md')).toContain(line);
 });
 
-it.each(['source', 'boundary', 'purpose', 'destination'])(
+it.each(['timeline.md', 'work/timeline.md'])(
+  'holds a malformed generated reference in %s before transferring history',
+  async (target) => {
+    extraction = () => [];
+    put('timeline.md', ledger + line + '\n');
+    put(
+      target,
+      (read(target).trim() ? read(target) : ledger) + '<!-- akno:timeline-item id=mem_example -->\n',
+    );
+    const parent = read('timeline.md');
+    const child = read('work/timeline.md');
+    await mem.index({ structuralOnly: true });
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.maintenancePlan).toBeNull();
+    expect(report.timelineHistory.held.source_ineligible).toBe(1);
+    expect(calls.routing).toBe(0);
+    expect(read('timeline.md')).toBe(parent);
+    expect(read('work/timeline.md')).toBe(child);
+  },
+);
+
+it.each(['source', 'boundary', 'purpose', 'destination', 'ledger-policy'])(
   'stales a proposal when its %s changes before apply',
   async (change) => {
     const report = await mem.dream({ phase: 'curate', mode: 'review' });
@@ -251,6 +337,11 @@ it.each(['source', 'boundary', 'purpose', 'destination'])(
     if (change === 'boundary') put('work/subfolder/timeline.md', '');
     if (change === 'purpose') put('timeline.md', '# Timeline\n\nA different purpose.\n');
     if (change === 'destination') put('work/timeline.md', '# Timeline\n\nEdited while reviewing.\n');
+    if (change === 'ledger-policy')
+      put(
+        'work/timeline.md',
+        '---\ntype: timeline\nakno:\n  management:\n    remember: deny\n---\n\n# Timeline\n',
+      );
     const before = read('work/timeline.md');
     mem.decidePlan(plan.id, plan.items[0]!.id, 'approve', 'Reviewed earlier source.');
     expect((await mem.applyPlan(plan.id)).plan.items[0]!.status).toBe('stale');

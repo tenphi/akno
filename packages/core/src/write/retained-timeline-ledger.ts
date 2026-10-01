@@ -211,6 +211,16 @@ function readableBoundary(value: string): string {
   return `${day}, ${clock} ${offset === 'Z' ? 'UTC' : `UTC${offset}`}`;
 }
 
+/** Historical transfers must not edit a ledger whose generated references have lost their identity. */
+export function retainedTimelineLedgerValid(content: string): boolean {
+  try {
+    parseSection(content, '');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function parseSection(content: string | null, slug: string): Map<string, Entry> {
   const entries = new Map<string, Entry>();
   if (content === null) return entries;

@@ -25,6 +25,14 @@ enough, including a file containing only whitespace. Akno recognizes it immediat
 Markdown structure on the first admitted event write. Discovery, queries, indexing, rebuilds, and dry
 runs leave the file unchanged. Undo restores its exact original bytes.
 
+The declaration also opts the ledger into event writes and timeline-history maintenance, even inside a
+folder whose ordinary documents have `role: source` or `remember: deny`. No folder-specific exception
+is needed. Those inherited policies continue to protect the documents; the ledger's index role is not
+changed. Rules naming the ledger itself (such as `work/timeline` or `**/timeline`) and its own frontmatter
+can still restrict it. For example, `akno.management.remember: deny` makes the declaration read-only.
+Ignored folders, ignored pages, symlinks, invalid declarations, and conflicts remain fenced off.
+An absent virtual default has no declaration grant and continues to use the ordinary folder policy.
+
 You can also give it a short introduction explaining what belongs there:
 
 ```markdown
@@ -125,7 +133,7 @@ lists every journalled change in apply order. Undo those changes in reverse orde
 
 Ledger formatting remains Akno's responsibility. Generic content/append writes to inner ledgers are
 refused, just as they are for the default ledger. Exact patch/replace corrections remain available.
-Explicit `remember: deny`, source roles, and Markdown quarantine still prevent automatic ledger writes.
+Explicit ledger `remember: deny`, ledger source roles, and Markdown quarantine still prevent automatic writes.
 Creating a ledger does not authorize remembered facts on otherwise read-only subject pages.
 
 ## Existing history and boundary changes
@@ -152,11 +160,15 @@ The planner handles two cases:
 
 Give timelines a short purpose description when folder names alone would be ambiguous. Automatic
 relocation only goes from an ancestor to a descendant; sibling or upward corrections remain explicit.
-Multi-line entries, Markdown or HTML citations, relative wikilinks, and ambiguous Markdown structures
-are held for inspection. Copying their bytes alone could lose context or change link targets.
+Multi-line entries, relative or reference-style Markdown citations, HTML citations, relative wikilinks,
+and ambiguous Markdown structures are held for inspection. Absolute inline Markdown citations can
+transfer unchanged. Unrelated generated reference rows do not block standalone entries in the same
+ledger; managed rows themselves remain owned by retained-timeline reconciliation.
 
 Extraction uses authored knowledge notes that allow remembering. Plans, tentative statements, reports,
 partial dates, source-role pages, and source renditions cannot become unqualified historical facts.
+Declaring a timeline inside a source folder does not opt those documents into factual extraction. An
+existing qualified standalone event can still move into that timeline after ownership assessment.
 Pages containing Akno-managed records are left to their retained-timeline materialization path above;
 this historical pass does not copy their qualified memories, alter receipt membership, or change replay semantics.
 
