@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import http from 'node:http';
 import fsp from 'node:fs/promises';
 import os from 'node:os';
+import Database from 'better-sqlite3';
 import path from 'node:path';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
@@ -17,6 +18,7 @@ let url: string;
 let extraction: (source: string) => unknown[];
 let selection: string;
 let verified: boolean;
+let equivalence: string;
 let curator: 'approve' | 'reject';
 let calls: { extraction: number; verification: number; routing: number; curator: number };
 const summary = 'Ada Marlow completed the Zephyr QX-100 inspection.';
@@ -89,6 +91,7 @@ beforeEach(async () => {
   stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-history-state-'));
   selection = 'timeline_1';
   verified = true;
+  equivalence = 'new';
   curator = 'approve';
   calls = { extraction: 0, verification: 0, routing: 0, curator: 0 };
   extraction = (source) => (source.includes(note) ? [candidate()] : []);
@@ -121,6 +124,8 @@ beforeEach(async () => {
             }),
           ),
         };
+      } else if (system.includes('SAME real-world occurrence')) {
+        content = { selection: equivalence };
       } else if (system.startsWith('Select the one timeline')) {
         calls.routing++;
         content = { selection };
@@ -268,7 +273,11 @@ it.each(['', ' \t\r\n'])(
       },
     });
     await mem.dream({ phase: 'curate' });
-    expect(calls).toEqual(count);
+    expect(calls).toEqual({
+      ...count,
+      extraction: count.extraction + 1,
+      verification: count.verification + 1,
+    });
     await mem.undo({ change_id: report.maintenancePlan!.items[0]!.changeId! });
     expect(read('work/timeline.md')).toBe(blank);
     expect(read('timeline.md')).toBe(parent);
@@ -394,7 +403,7 @@ it.each(['readonly', 'source-role', 'managed', 'document', 'symlink'])(
     const report = await mem.dream({ phase: 'curate' });
     expect(report.maintenancePlan).toBeNull();
     expect(read('work/timeline.md')).toBe(' \t\r\n');
-    expect(calls.extraction).toBe(0);
+    expect(calls.extraction).toBe(kind === 'source-role' ? 1 : 0);
   },
 );
 
@@ -570,4 +579,436 @@ it('continues a bounded source after the first candidate is rejected', async () 
   expect(second.maintenancePlan?.items[0]?.status).toBe('applied');
   expect(read('work/timeline.md')).toContain('Ada Marlow completed the Zephyr QX-100 repair.');
   expect(read('work/timeline.md')).not.toContain(summary);
+});
+
+const notice = 'Vulpine Mutual states that the Zephyr QX-100 inspection is scheduled for 8 April 2031.';
+function sourceCandidate(quote = notice, date = '2031-04-08', speaker = 'Vulpine Mutual') {
+  return {
+    ...candidate(quote),
+    text: `${speaker} states that the Zephyr QX-100 inspection is scheduled for ${date}.`,
+    attribution: { source_role: 'external', source_speaker: speaker, chain: [] },
+    epistemic: { basis: 'source_report' },
+    time: { ...candidate().time, relation: 'scheduled', status: 'scheduled', start: date },
+  };
+}
+async function sourceSetup(config: ConfigDoc = {}) {
+  await mem.close();
+  put('work/notes.md', '# Notice\n\n' + notice + '\n');
+  extraction = (source) => (source.includes(notice) ? [sourceCandidate()] : []);
+  mem = await start({
+    folders: {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+    },
+    ...config,
+  });
+  await mem.index({ structuralOnly: true });
+}
+
+it('curates source evidence into a qualified canonical companion and ledger, with receipts and exact undo', async () => {
+  await sourceSetup();
+  const before = read('work/notes.md');
+  const report = await mem.dream({ phase: 'curate' });
+  expect(report.maintenancePlan?.items[0]).toMatchObject({ kind: 'timeline_history', status: 'applied' });
+  expect(read('work/timeline.md')).toContain('reported by Vulpine Mutual');
+  expect(read('work/timeline.md')).toContain('2031-04-08');
+  expect(read('work/timeline-memories.md')).toContain('Reported by Vulpine Mutual · Scheduled:');
+  expect(read('work/timeline-memories.md')).toContain('[[work/notes]]');
+  expect(read('work/notes.md')).toBe(before);
+  expect((await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).total).toBe(1);
+  expect((await mem.timeline({ source: 'plan' })).total).toBe(0);
+  await mem.undo({ change_id: report.maintenancePlan!.items[0]!.changeId! });
+  expect(read('work/timeline.md')).toBe(' \t\r\n');
+  expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+  expect(read('work/notes.md')).toBe(before);
+});
+
+it('skips successfully curated unchanged sources across repeats, rebuild and restart', async () => {
+  await sourceSetup();
+  await mem.dream({ phase: 'curate' });
+  const original = read('work/timeline.md');
+  const count = { ...calls };
+  await mem.dream({ phase: 'curate' });
+  await mem.index({ rebuild: true, structuralOnly: true });
+  await mem.close();
+  mem = await start({
+    folders: {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+    },
+  });
+  await mem.dream({ phase: 'curate' });
+  expect(calls).toEqual(count);
+  expect(read('work/timeline.md')).toBe(original);
+});
+
+it('consolidates copied assertions with citations without duplicate ledger lines', async () => {
+  await sourceSetup();
+  put('work/copy.md', '# Notice\n\n' + notice + '\n');
+  await mem.index({ structuralOnly: true });
+  await mem.dream({ phase: 'curate' });
+  await mem.dream({ phase: 'curate' });
+  expect(read('work/timeline.md').match(/akno:timeline-item id=/gu) ?? []).toHaveLength(1);
+  const detail = read('work/timeline-memories.md');
+  expect(detail).toContain('[[work/copy]]');
+  expect(detail).toContain('[[work/notes]]');
+  expect(detail.match(/akno:item mem_/gu) ?? []).toHaveLength(1);
+});
+
+it('preserves conflicting date assertions and their distinct speakers', async () => {
+  await sourceSetup();
+  const other = 'Bo Winters states that the Zephyr QX-100 inspection is scheduled for 9 April 2031.';
+  put('work/other.md', '# Notice\n\n' + other + '\n');
+  extraction = (source) =>
+    source.includes(other) ? [sourceCandidate(other, '2031-04-09', 'Bo Winters')] : [sourceCandidate()];
+  await mem.index({ structuralOnly: true });
+  await mem.dream({ phase: 'curate' });
+  await mem.dream({ phase: 'curate' });
+  const timeline = read('work/timeline.md');
+  expect(timeline).toContain('2031-04-08');
+  expect(timeline).toContain('2031-04-09');
+  expect(timeline).toContain('reported by Vulpine Mutual');
+  expect(timeline).toContain('reported by Bo Winters');
+  expect((await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).total).toBe(2);
+});
+
+it('stales a sealed source retention plan when the source changes before apply', async () => {
+  await sourceSetup();
+  const result = await mem.dream({ phase: 'curate', mode: 'review' });
+  const plan = mem.plan(result.maintenancePlan!.id);
+  put('work/notes.md', '# Corrected notice\n\nThe inspection date is unknown.\n');
+  mem.decidePlan(plan.id, plan.items[0]!.id, 'approve', 'Reviewed the earlier invented notice.');
+  expect((await mem.applyPlan(plan.id)).plan.items[0]!.status).toBe('stale');
+  expect(read('work/timeline.md')).toBe(' \t\r\n');
+  expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+});
+
+it('curates readable source documents without altering them or processing their rendition twice', async () => {
+  await sourceSetup();
+  fs.unlinkSync(path.join(root, 'work/notes.md'));
+  put('work/notice.txt', notice);
+  await mem.index();
+  const report = await mem.dream({ phase: 'curate' });
+  expect(report.maintenancePlan?.items[0]?.status).toBe('applied');
+  expect(read('work/notice.txt')).toBe(notice);
+  expect(read('work/timeline-memories.md')).toContain('[Source](notice.txt)');
+  expect(read('work/timeline.md')).toContain('2031-04-08');
+  const count = { ...calls };
+  await mem.dream({ phase: 'curate' });
+  expect(calls).toEqual(count);
+});
+
+it.each(['companion', 'pattern-deny', 'ledger', 'symlink', 'collision'])(
+  'respects the %s fence without source or ledger changes',
+  async (kind) => {
+    const folders: NonNullable<ConfigDoc['folders']> = {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+    };
+    if (kind === 'companion') folders['work/timeline-memories'] = { remember: 'deny' };
+    if (kind === 'pattern-deny') folders['**/timeline-memories'] = { remember: 'deny' };
+    if (kind === 'ledger') folders['work/timeline'] = { remember: 'deny' };
+    if (kind === 'symlink')
+      fs.symlinkSync(path.join(root, 'timeline.md'), path.join(root, 'work/timeline-memories.md'));
+    if (kind === 'collision') put('work/timeline-memories.md', '# My notes\n\nPrivate authored page.\n');
+    await sourceSetup({ folders });
+    const before = read('work/notes.md');
+    expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+    expect(read('work/timeline.md')).toBe(' \t\r\n');
+    expect(read('work/notes.md')).toBe(before);
+  },
+);
+
+it('keeps source dry runs free of progress, receipts and canonical writes', async () => {
+  await sourceSetup();
+  await mem.dream({ phase: 'curate', dryRun: true });
+  const count = calls.extraction;
+  expect(read('work/timeline.md')).toBe(' \t\r\n');
+  expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan?.items[0]?.status).toBe('applied');
+  expect(calls.extraction).toBe(count + 1);
+});
+
+it('continues a bounded cached source without re-extracting already verified candidates', async () => {
+  await sourceSetup({ maintenance: { profile: 'autonomous', curate: { max_timeline_events: 1 } } });
+  const later = 'Vulpine Mutual states that the Zephyr QX-100 repair is scheduled for 9 April 2031.';
+  put('work/notes.md', '# Notices\n\n' + notice + '\n\n' + later + '\n');
+  extraction = () => [
+    sourceCandidate(),
+    {
+      ...sourceCandidate(later, '2031-04-09'),
+      text: 'Vulpine Mutual states that the Zephyr QX-100 repair is scheduled for 2031-04-09.',
+    },
+  ];
+  await mem.index({ structuralOnly: true });
+  await mem.dream({ phase: 'curate' });
+  expect(calls.extraction).toBe(1);
+  await mem.dream({ phase: 'curate' });
+  expect(calls.extraction).toBe(1);
+  expect((await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).total).toBe(2);
+});
+
+it('continues other facts in a source after the curator rejects one bounded batch', async () => {
+  await sourceSetup({ maintenance: { profile: 'autonomous', curate: { max_timeline_events: 1 } } });
+  const later = 'Vulpine Mutual states that the Zephyr QX-100 repair is scheduled for 9 April 2031.';
+  put('work/notes.md', '# Notices\n\n' + notice + '\n\n' + later + '\n');
+  extraction = () => [
+    sourceCandidate(),
+    {
+      ...sourceCandidate(later, '2031-04-09'),
+      text: 'Vulpine Mutual states that the Zephyr QX-100 repair is scheduled for 2031-04-09.',
+    },
+  ];
+  await mem.index({ structuralOnly: true });
+  curator = 'reject';
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan?.items[0]?.status).toBe('rejected');
+  curator = 'approve';
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan?.items[0]?.status).toBe('applied');
+  expect(calls.extraction).toBe(1);
+  expect(read('work/timeline.md')).not.toContain('2031-04-08');
+  expect(read('work/timeline.md')).toContain('2031-04-09');
+});
+
+it('processes a corrected source revision without silently retracting an omitted assertion', async () => {
+  await sourceSetup();
+  await mem.dream({ phase: 'curate' });
+  const corrected = 'Vulpine Mutual states that the Zephyr QX-100 inspection is scheduled for 9 April 2031.';
+  put('work/notes.md', '# Changed notice\n\n' + corrected + '\n');
+  extraction = () => [sourceCandidate(corrected, '2031-04-09')];
+  await mem.index({ structuralOnly: true });
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan?.items[0]?.status).toBe('applied');
+  expect(read('work/timeline.md')).toContain('2031-04-08');
+  expect(read('work/timeline.md')).toContain('2031-04-09');
+});
+
+it('requires equivalence before merging paraphrases and preserves both source citations', async () => {
+  await sourceSetup();
+  await mem.dream({ phase: 'curate' });
+  const relay = 'A forwarded copy of the notice: ' + notice;
+  put('work/relay.md', '# Forward\n\n' + relay + '\n');
+  extraction = (source) =>
+    source.includes(relay)
+      ? [
+          {
+            ...sourceCandidate(notice),
+            text: 'Vulpine Mutual states the Zephyr QX-100 inspection will take place on 2031-04-08.',
+          },
+        ]
+      : [sourceCandidate()];
+  equivalence = 'event_1';
+  await mem.index({ structuralOnly: true });
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan?.items[0]?.status).toBe('applied');
+  expect(read('work/timeline.md').match(/akno:timeline-item id=/gu) ?? []).toHaveLength(1);
+  const detail = read('work/timeline-memories.md');
+  expect(detail).toContain('[[work/relay]]');
+  expect(detail).toContain('[[work/notes]]');
+  const supports = detail.match(/supports=([^ ]+)/u)![1]!.split(',');
+  expect(supports).toHaveLength(2);
+  expect(new Set(supports.map((item) => item.split('@')[2])).size).toBe(1);
+});
+
+it.each(['new', 'uncertain'])(
+  'keeps same-day assertion identity %s separate or held without destructive merging',
+  async (outcome) => {
+    await sourceSetup();
+    await mem.dream({ phase: 'curate' });
+    const other = 'Vulpine Mutual states a second Zephyr QX-100 inspection is scheduled for 8 April 2031.';
+    put('work/other.md', '# Notice\n\n' + other + '\n');
+    extraction = (source) =>
+      source.includes(other)
+        ? [
+            {
+              ...sourceCandidate(other),
+              text: 'Vulpine Mutual states a second Zephyr QX-100 inspection is scheduled for 2031-04-08.',
+            },
+          ]
+        : [sourceCandidate()];
+    equivalence = outcome;
+    await mem.index({ structuralOnly: true });
+    await mem.dream({ phase: 'curate' });
+    expect(read('work/timeline.md').match(/akno:timeline-item id=/gu) ?? []).toHaveLength(
+      outcome === 'new' ? 2 : 1,
+    );
+    if (outcome === 'uncertain') expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+  },
+);
+
+it('makes a partial source hold visible and continues another eligible file', async () => {
+  await sourceSetup({ maintenance: { profile: 'autonomous', curate: { max_pages: 1 } } });
+  put('work/a-held.md', '# Incomplete notice\n\nVulpine Mutual describes an inspection without its date.\n');
+  extraction = (source) =>
+    source.includes(notice)
+      ? [sourceCandidate()]
+      : [{ ...sourceCandidate(source), support: [{ quote: 'An absent quote', item_id: null }] }];
+  await mem.index({ structuralOnly: true });
+  const first = await mem.dream({ phase: 'curate' });
+  expect(first.maintenancePlan).toBeNull();
+  expect(first.timelineHistory.held.unqualified_event).toBeGreaterThan(0);
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan?.items[0]?.status).toBe('applied');
+});
+
+it('does not re-extract successful facts while a partial source waits for retry', async () => {
+  await sourceSetup();
+  extraction = (source) => [
+    sourceCandidate(),
+    {
+      ...sourceCandidate(source),
+      text: 'Vulpine Mutual scheduled a second Zephyr QX-100 inspection for 2031-04-09.',
+      support: [{ quote: 'Absent evidence', item_id: null }],
+    },
+  ];
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan?.items[0]?.status).toBe('applied');
+  const count = { ...calls };
+  const repeat = await mem.dream({ phase: 'curate' });
+  expect(repeat.maintenancePlan).toBeNull();
+  expect(repeat.timelineHistory.held.unqualified_event).toBeGreaterThan(0);
+  expect(calls).toEqual(count);
+  expect(read('work/timeline.md').match(/akno:timeline-item id=/gu) ?? []).toHaveLength(1);
+});
+
+it('respects basename ignore policies on previously indexed source revisions', async () => {
+  await sourceSetup();
+  await mem.dream({ phase: 'curate' });
+  const before = read('work/timeline.md');
+  await mem.close();
+  put('work/notes.md', '# Changed notice\n\n' + notice + '\nAdditional context.\n');
+  mem = await start({
+    ignore: ['notes.md'],
+    folders: {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+    },
+  });
+  const count = { ...calls };
+  const result = await mem.dream({ phase: 'curate' });
+  expect(result.maintenancePlan).toBeNull();
+  expect(calls).toEqual(count);
+  expect(read('work/timeline.md')).toBe(before);
+});
+
+it('keeps an owner-undone source transfer undone on the next curation', async () => {
+  await sourceSetup();
+  const result = await mem.dream({ phase: 'curate' });
+  await mem.undo({ change_id: result.maintenancePlan!.items[0]!.changeId! });
+  const count = { ...calls };
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+  expect(calls).toEqual(count);
+  expect(read('work/timeline.md')).toBe(' \t\r\n');
+});
+
+it('preserves explicit date disagreements across cached source batches', async () => {
+  await sourceSetup({ maintenance: { profile: 'autonomous', curate: { max_timeline_events: 1 } } });
+  const contrary =
+    'Vulpine Mutual also states that the Zephyr QX-100 inspection is scheduled for 9 April 2031, contradicting the earlier date.';
+  put('work/notes.md', '# Notices\n\n' + notice + '\n\n' + contrary + '\n');
+  extraction = () => [
+    sourceCandidate(),
+    {
+      ...sourceCandidate(contrary, '2031-04-09'),
+      relations: [
+        { type: 'contradicts', target_candidate: 0, support: [{ quote: contrary, item_id: null }] },
+      ],
+    },
+  ];
+  await mem.index({ structuralOnly: true });
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan?.items[0]?.status).toBe('applied');
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan?.items[0]?.status).toBe('applied');
+  expect(calls.extraction).toBe(1);
+  expect(read('work/timeline.md')).toContain('2031-04-08');
+  expect(read('work/timeline.md')).toContain('2031-04-09');
+  expect(read('work/timeline-memories.md')).toMatch(/links=contradicts:memory%3Amem_/u);
+});
+
+it('recovers a partial ledger and companion application after restart', async () => {
+  await sourceSetup();
+  const result = await mem.dream({ phase: 'curate', mode: 'review' });
+  const plan = mem.plan(result.maintenancePlan!.id);
+  const item = plan.items[0]!;
+  mem.decidePlan(plan.id, item.id, 'approve', 'Exercise invented source transfer recovery.');
+  const db = new Database(mem.config.dbPath);
+  db.prepare("UPDATE maintenance_items SET status = 'applying', policy = 'auto' WHERE id = ?").run(item.id);
+  db.prepare("UPDATE maintenance_plans SET mode = 'auto' WHERE id = ?").run(plan.id);
+  db.close();
+  const first = item.operations[0]!;
+  if (!('after' in first)) throw new Error('Unexpected source transfer operation');
+  put(first.relPath, first.after);
+  await mem.close();
+  mem = await start({
+    folders: {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+    },
+  });
+  const recovered = await mem.dream({ phase: 'curate' });
+  expect(recovered.maintenancePlan?.items[0]?.status).toBe('applied');
+  expect(calls.extraction).toBe(1);
+  expect((await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).total).toBe(1);
+  const count = { ...calls };
+  await mem.dream({ phase: 'curate' });
+  expect(calls).toEqual(count);
+  await mem.undo({ change_id: recovered.maintenancePlan!.items[0]!.changeId! });
+  expect(read('work/timeline.md')).toBe(' \t\r\n');
+  expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+});
+
+it('adds support to an existing canonical item outside the companion instead of duplicating it', async () => {
+  await sourceSetup();
+  await mem.dream({ phase: 'curate' });
+  put('work/canonical.md', read('work/timeline-memories.md'));
+  fs.unlinkSync(path.join(root, 'work/timeline-memories.md'));
+  put('work/copy.md', '# Forwarded notice\n\n' + notice + '\n');
+  await mem.index({ structuralOnly: true });
+  const result = await mem.dream({ phase: 'curate' });
+  expect(result.maintenancePlan?.items[0]?.status).toBe('applied');
+  expect(result.timelineHistory.additions).toBe(0);
+  expect(read('work/canonical.md')).toContain('[[work/copy]]');
+  expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+  expect((await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).total).toBe(1);
+  expect(read('work/timeline.md').match(/akno:timeline-item id=/gu) ?? []).toHaveLength(1);
+});
+
+it('never places a physical default-ledger companion inside another timeline scope', async () => {
+  put('work/default.md', '# Timeline\n\nGeneral chronology.\n');
+  put('notice.md', '---\nakno:\n  role: source\n---\n\n# Notice\n\n' + notice + '\n');
+  await sourceSetup({ paths: { timeline: 'work/default.md' } });
+  const before = read('work/default.md');
+  const result = await mem.dream({ phase: 'curate' });
+  expect(result.timelineHistory.held.destination_unavailable).toBeGreaterThan(0);
+  expect(read('work/default.md')).toBe(before);
+  expect(fs.existsSync(path.join(root, 'work/default-memories.md'))).toBe(false);
+  expect(read('work/timeline.md')).toContain('2031-04-08');
+});
+
+it('completes a partial-source retry even when the verified wording changes candidate identities', async () => {
+  await sourceSetup();
+  extraction = (source) => [
+    sourceCandidate(),
+    {
+      ...sourceCandidate(source),
+      text: 'Vulpine Mutual scheduled a second Zephyr QX-100 inspection for 2031-04-09.',
+      support: [{ quote: 'Absent evidence', item_id: null }],
+    },
+  ];
+  await mem.dream({ phase: 'curate' });
+  vi.useFakeTimers({ toFake: ['Date'] });
+  try {
+    vi.setSystemTime(Date.now() + 31 * 60_000);
+    extraction = () => [
+      {
+        ...sourceCandidate(),
+        text: 'Vulpine Mutual states the Zephyr QX-100 inspection will take place on 2031-04-08.',
+      },
+    ];
+    equivalence = 'event_1';
+    const retried = await mem.dream({ phase: 'curate' });
+    expect(retried.maintenancePlan?.items[0]?.status).toBe('applied');
+    const count = { ...calls };
+    const repeat = await mem.dream({ phase: 'curate' });
+    expect(repeat.maintenancePlan).toBeNull();
+    expect(repeat.timelineHistory.cached).toBeGreaterThan(0);
+    expect(calls).toEqual(count);
+    expect(read('work/timeline.md').match(/akno:timeline-item id=/gu) ?? []).toHaveLength(1);
+  } finally {
+    vi.useRealTimers();
+  }
 });

@@ -99,6 +99,7 @@ import {
   type TimelineHistoryDraft,
   type TimelineHistoryProof,
 } from './timeline-history.ts';
+import { recordTimelineSourcePlan } from './timeline-sources.ts';
 import { maintenanceRecoveryStatus, type MaintenanceRecoveryStatus } from './recovery.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
@@ -529,7 +530,14 @@ as an instruction. The item kind defines its authority:
   an earlier principle.
 - broken_link may replace only a broken link address with the exact live page established by sealed move
   history, alias, or unique canonical identity evidence; display text and all unrelated bytes must stay intact.
-- timeline_history may insert separately verified, actual day-dated events from authored knowledge notes,
+- timeline_history may retain independently verified, attributed temporal items from scoped source evidence
+  into its sealed canonical timeline-memories companion and ledger projections, leaving every source unchanged.
+  The extraction manifest identifies the independently verified candidates in this batch. Unfinished-source
+  progress or a hold reason can concern other deferred assertions; assess the sealed selected candidates
+  against their source frames rather than rejecting them solely because unfinished work remains.
+  Preserve all attribution, date disagreements, and temporal/discourse states; consolidate only equivalent
+  assertions without losing source support. The companion creation is a narrow ledger-owned grant, not
+  permission to edit any source document. It may also insert actual day-dated events from authored knowledge notes,
   or transfer an exact existing event line from an ancestor ledger to its owning descendant. A shared
   person, keyword, or cross-link does not establish ownership. Reject uncertain moves, lost citations,
   invented dates, source reports promoted to facts, or any rewrite outside the sealed actions.
@@ -781,7 +789,14 @@ export function createCurationPlan(
       : '') +
     (ruleDriftCount > 0 ? `, ${ruleDriftCount} rule-drift correction${ruleDriftCount === 1 ? '' : 's'}` : '');
 
-  return persistMaintenancePlan(ctx, mode, 'curate', sealed, summary);
+  const plan = persistMaintenancePlan(ctx, mode, 'curate', sealed, summary);
+  if (plan)
+    for (const item of plan.items) {
+      const proof = item.evidence.find((entry) => entry.timelineHistory?.retention)?.timelineHistory
+        ?.retention;
+      if (proof) recordTimelineSourcePlan(ctx, proof, plan.id, item.id);
+    }
+  return plan;
 }
 
 function sealTimelineHistoryDraft(draft: TimelineHistoryDraft): Omit<SealedDraft, 'policy'> {
@@ -791,7 +806,7 @@ function sealTimelineHistoryDraft(draft: TimelineHistoryDraft): Omit<SealedDraft
     kind: 'timeline_history',
     risk: draft.proof.actions.some((action) => action.kind === 'relocate') ? 'high' : 'medium',
     rationale:
-      'Populate declared timelines from qualified dated knowledge and transfer exact ancestor entries only when the descendant owns the event.',
+      'Populate declared timelines from qualified dated knowledge or attributed source evidence; transfer exact ancestor entries only when the descendant owns the event.',
     operations: draft.operations,
     evidence: timelineHistoryEvidence(draft.proof),
     checks: [{ name: 'bounded timeline additions and exact line transfers', status: 'passed' }],
@@ -3235,7 +3250,11 @@ async function finishVerification(ctx: AknoContext, item: MaintenanceItem): Prom
       markCurateApplied(ctx, slugs);
     }
     if (item.kind === 'timeline_history')
-      recordTimelineHistoryScans(ctx, item.evidence.find((entry) => entry.timelineHistory)?.timelineHistory);
+      recordTimelineHistoryScans(
+        ctx,
+        item.evidence.find((entry) => entry.timelineHistory)?.timelineHistory,
+        item.changeId ?? undefined,
+      );
     updateItemStatus(ctx, item.id, 'applied', {
       status: 'passed',
       detail: `Exact bytes for ${operations.length} file${operations.length === 1 ? '' : 's'} are on disk and current in the structural index.`,

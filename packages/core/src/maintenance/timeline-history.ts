@@ -13,6 +13,12 @@ import { formatEventLine, insertEvent, newLedger } from '../write/ledger.ts';
 import { retainedTimelineLedgerValid } from '../write/retained-timeline-ledger.ts';
 import { runRetain, type RetainCandidate } from '../write/retain.ts';
 import type { MaintenanceEvidence, MaintenanceOperation, ReplaceOperation } from './plans.ts';
+import {
+  planTimelineSources,
+  timelineSourceIssue,
+  recordTimelineSourceDecision,
+  type TimelineSourceProof,
+} from './timeline-sources.ts';
 
 type HistoryAction =
   | { kind: 'extract'; destination: string; line: string; source: string; candidate: RetainCandidate }
@@ -26,6 +32,7 @@ interface HistorySource {
 }
 
 export interface TimelineHistoryProof {
+  retention?: TimelineSourceProof;
   boundaries: string;
   sources: HistorySource[];
   actions: HistoryAction[];
@@ -36,7 +43,7 @@ export interface TimelineHistoryProof {
 export interface TimelineHistoryDraft {
   slug: string;
   inputHash: string;
-  operations: ReplaceOperation[];
+  operations: MaintenanceOperation[];
   proof: TimelineHistoryProof;
 }
 
@@ -323,7 +330,17 @@ export async function planTimelineHistory(
       else scans.push({ key, fingerprint });
     }
   }
-  if (!actions.length) return result();
+  if (!actions.length) {
+    const retained = await planTimelineSources(ctx, catalog, options);
+    retained.report.inspected += report.inspected;
+    retained.report.cached += report.cached;
+    for (const [reason, count] of Object.entries(report.held)) {
+      const key = reason as keyof TimelineHistoryReport['held'];
+      retained.report.held[key] = (retained.report.held[key] ?? 0) + (count ?? 0);
+    }
+    retained.degraded = [...new Set([...degraded, ...retained.degraded])];
+    return retained;
+  }
   const operations = operationsFor(after);
   const proof = proofFor(actions);
   const inputHash = sha256(
@@ -344,11 +361,27 @@ export async function planTimelineHistory(
 }
 
 /** Only terminal decisions suppress rediscovery; pending work must survive mode changes. */
-export function recordTimelineHistoryScans(ctx: AknoContext, proof: TimelineHistoryProof | undefined): void {
+export function recordTimelineHistoryScans(
+  ctx: AknoContext,
+  proof: TimelineHistoryProof | undefined,
+  changeId?: string,
+): void {
+  if (proof?.retention) recordTimelineSourceDecision(ctx, proof.retention, changeId);
   for (const scan of proof?.scans ?? []) ctx.store.setMeta(scan.key, scan.fingerprint);
 }
 
 export function timelineHistoryEvidence(proof: TimelineHistoryProof): MaintenanceEvidence[] {
+  if (proof.retention)
+    return [
+      {
+        type: 'page',
+        source: proof.retention.source.relPath,
+        fingerprint: proof.retention.snapshot.hash,
+        relationship: 'ownership',
+        timelineHistory: proof,
+        details: ['Exact source and qualified retention stages sealed for timeline curation.'],
+      },
+    ];
   return proof.sources.map((source, index) => ({
     type: 'page',
     source: source.relPath,
@@ -367,6 +400,14 @@ export async function timelineHistoryIssue(
   operations: MaintenanceOperation[],
   stage: 'before' | 'after',
 ): Promise<string | null> {
+  if (proof?.retention)
+    return timelineSourceIssue(
+      ctx,
+      proof.retention,
+      operations,
+      timelineCatalog(ctx.config, ctx.store),
+      stage,
+    );
   if (!proof?.actions.length || !operations.length || operations.some((op) => op.type !== 'replace'))
     return 'timeline history requires sealed existing-ledger replacements';
   const catalog = timelineCatalog(ctx.config, ctx.store);

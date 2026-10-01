@@ -191,7 +191,7 @@ export function explainMaintenancePath(
         policy: effectiveTransformPolicy(ctx.config, 'timeline_history', runMode),
         enabled: ctx.config.maintenance.curate.maxTimelineEvents > 0,
         reason:
-          'timeline history starts from live writable declarations, extracts qualified actual dated events from authored knowledge, and may transfer exact ancestor entries after ownership assessment',
+          'timeline history starts from live writable declarations, retains attributed source temporal items into a ledger-owned memory companion, extracts qualified actual dated knowledge, and may transfer exact ancestor entries after ownership assessment',
       },
       {
         kind: 'observe',
