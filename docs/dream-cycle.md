@@ -58,7 +58,9 @@ rules, protected paths, transformation-specific evidence, merge allowlists, mode
 budgets can only reduce authority.
 
 `timeline_history` uses existing writable timeline declarations. It prepares qualified historical additions
-from authored notes and exact ancestor-to-descendant transfers, preserving source notes and citations.
+from authored notes, evidence-qualified retention from source documents, and exact ancestor-to-descendant
+transfers, preserving source bytes and citations. Source processing uses durable revision/progress caches;
+unchanged completed inputs skip extraction and unfinished batches continue without inventing new evidence.
 It follows the same audit, review, and automatic curator workflow; discovery and indexing remain read-only.
 See [folder timelines](folder-timelines.md#existing-history-and-boundary-changes) for details and limits.
 

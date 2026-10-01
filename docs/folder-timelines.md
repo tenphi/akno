@@ -149,11 +149,18 @@ akno dream status --pending
 akno plan diff <plan_id>
 ```
 
-The planner handles two cases:
+The planner handles three cases:
 
 - **Dated notes:** the shared retention extractor and an independent verifier identify actual events
   with an explicit day-level date. An admitted event is added to the note's nearest declared timeline,
   with a link to the unchanged source note. No event date is inferred from file timestamps or today's date.
+- **Source evidence:** correspondence and readable indexed documents may supply explicitly supported
+  temporal assertions. The shared retention verifier preserves issuer/speaker, attribution, schedules,
+  uncertainty, partial precision, and source dates. Qualified canonical blocks live in the ledger-owned
+  `timeline-memories.md` companion; the timeline contains ordinary maintained references to those blocks.
+  The companion is created only by an admitted plan and has its own explicit memory policy. A pre-existing
+  unrelated file, per-file denial, ignore, quarantine, or symlink holds the operation. The declaration grants
+  no authority to change other source pages or their policies.
 - **Parent-ledger entries:** semantic ownership assessment can propose transferring a standalone event
   line to a descendant timeline. The transfer preserves the complete line and all its citations. A shared
   person, keyword, or cross-link is insufficient; uncertain entries stay where they are.
@@ -165,14 +172,32 @@ and ambiguous Markdown structures are held for inspection. Absolute inline Markd
 transfer unchanged. Unrelated generated reference rows do not block standalone entries in the same
 ledger; managed rows themselves remain owned by retained-timeline reconciliation.
 
-Extraction uses authored knowledge notes that allow remembering. Plans, tentative statements, reports,
-partial dates, source-role pages, and source renditions cannot become unqualified historical facts.
-Declaring a timeline inside a source folder does not opt those documents into factual extraction. An
-existing qualified standalone event can still move into that timeline after ownership assessment.
-Pages containing Akno-managed records are left to their retained-timeline materialization path above;
-this historical pass does not copy their qualified memories, alter receipt membership, or change replay semantics.
+Knowledge-note extraction remains limited to independently verified actual day-dated events. Source
+curation instead keeps reports as reports and plans as plans; it cannot promote a reported statement
+into an unqualified historical fact. File or processing timestamps never establish an event date.
+Existing Akno-managed pages and rendered timeline references are not new source evidence.
 
-The planner examines at most `maintenance.curate.max_pages` uncached notes per cycle. The separate
+A complete duplicate assertion adds source support/citations to one existing canonical item and ledger
+reference. Paraphrases need an explicit equivalence decision; an uncertain match is held. Repeated
+support for the same issuer's assertion does not create independent proof. Different speakers, materially
+different qualifiers, or conflicting event dates remain separate attributed assertions. A new date alone
+never establishes correction, rescheduling, or occurrence. Explicit same-source relations remain qualified
+and preserve prior history. This pass does not adjudicate which disputed date is true.
+
+Private per-source progress records the processed fingerprint, extracted candidates while unfinished,
+accepted/rejected decisions, plan/item links, and eventual change id. Successfully processed unchanged
+sources skip further extraction, including after restart or index rebuild. Changed sources, relevant
+policy/ownership/context changes, or extraction-contract changes invalidate the cached decision. Pending
+or budget-deferred work remains available; partial batches reuse verified candidates and their admitted
+relation targets. Failed/incomplete extraction retries with a bounded delay, and oldest unfinished sources
+receive priority. An owner undo stays undone until the source evidence changes. Processing marks are
+never written into source documents. Missing or newly ineligible recorded sources produce held coverage;
+extraction omission alone does not retract a previous assertion. Source revision receipts and exact evidence
+remain available through existing retention/provenance machinery.
+
+This is transfer into qualified memory. Observation/generalization behavior is unchanged.
+
+Each extraction pass examines at most `maintenance.curate.max_pages` uncached inputs per cycle. Source curation follows a cycle with no legacy history actions and seals one bounded source batch per plan; later cycles continue other sources. The separate
 `maintenance.curate.max_timeline_events` ceiling (default `20`) bounds additions/transfers and ownership
 calls; zero disables history planning. Full evidence must fit the bounded curator context. The normal
 shared maintenance budgets still apply. `maintenance.policies.timeline_history: "off"` disables this

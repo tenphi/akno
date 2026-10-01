@@ -1133,9 +1133,23 @@ async function runPhase(
             ? item.evidence.flatMap((entry) => entry.timelineHistory?.actions ?? [])
             : [],
         );
-        report.timelineHistory.additions = historyActions.filter(
-          (action) => action.kind === 'extract',
-        ).length;
+        report.timelineHistory.additions =
+          historyActions.filter((action) => action.kind === 'extract').length +
+          plan.items
+            .filter((item) => item.kind === 'timeline_history')
+            .reduce(
+              (count, item) =>
+                count +
+                item.evidence.reduce(
+                  (sum, entry) =>
+                    sum +
+                    (entry.timelineHistory?.retention?.prepared.receipt.result.candidates.filter(
+                      (candidate) => candidate.outcome === 'written',
+                    ).length ?? 0),
+                  0,
+                ),
+              0,
+            );
         report.timelineHistory.relocations = historyActions.filter(
           (action) => action.kind === 'relocate',
         ).length;
