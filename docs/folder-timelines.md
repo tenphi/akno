@@ -203,6 +203,13 @@ calls; zero disables history planning. Full evidence must fit the bounded curato
 shared maintenance budgets still apply. `maintenance.policies.timeline_history: "off"` disables this
 transformation independently of other curation.
 
+Source plans keep one complete evidence snapshot and seal their exact page operations with hashes.
+An oversized batch is reduced to a dependency-ordered prefix without repeating extraction; later cycles
+continue the cached unfinished assertions. A source or even a single-item write that cannot fit remains
+held under `timelineHistory.held.limit`, with its size reason in private source progress. It is not
+recorded as successfully processed or as having no dated facts. These size holds use the normal retry
+delay; a changed source/context or changed page-size limit allows reconsideration sooner.
+
 Changes to evidence, timeline declarations, purposes, or write policies invalidate a pending plan.
 Transfers remove the parent entry and insert the descendant entry in one journalled item; failed writes
 roll back, and undo restores every affected file, including the exact bytes of an empty declaration.
