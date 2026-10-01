@@ -20,6 +20,7 @@ let selection: string;
 let verified: boolean;
 let equivalence: string;
 let curator: 'approve' | 'reject';
+let curatorInputs: string[];
 let calls: { extraction: number; verification: number; routing: number; curator: number };
 const summary = 'Ada Marlow completed the Zephyr QX-100 inspection.';
 const note = `On 2031-04-01, ${summary}`;
@@ -93,6 +94,7 @@ beforeEach(async () => {
   verified = true;
   equivalence = 'new';
   curator = 'approve';
+  curatorInputs = [];
   calls = { extraction: 0, verification: 0, routing: 0, curator: 0 };
   extraction = (source) => (source.includes(note) ? [candidate()] : []);
   server = http.createServer((request, response) => {
@@ -131,6 +133,7 @@ beforeEach(async () => {
         content = { selection };
       } else if (system.includes('independent curator for an autonomous memory system')) {
         calls.curator++;
+        curatorInputs.push(user);
         content = { outcome: curator, reason: 'Checked the invented source and exact proposed scope.' };
       }
       response.writeHead(200, { 'content-type': 'application/json' });
@@ -696,6 +699,246 @@ it('curates readable source documents without altering them or processing their 
   const count = { ...calls };
   await mem.dream({ phase: 'curate' });
   expect(calls).toEqual(count);
+});
+
+it.each(['md', 'txt'])(
+  'retains a longer %s source with complete curator evidence and exact undo',
+  async (extension) => {
+    await sourceSetup();
+    const source =
+      '# Notice\n\n' +
+      notice +
+      '\n\n' +
+      'Invented background context. '.repeat(1800) +
+      '\nEnd of invented evidence.\n';
+    fs.unlinkSync(path.join(root, 'work/notes.md'));
+    put(`work/notice.${extension}`, source);
+    await mem.index({ structuralOnly: extension === 'md' });
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.maintenancePlan?.items[0]).toMatchObject({
+      status: 'applied',
+      verification: { status: 'passed' },
+    });
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+    const proof = item.evidence[0]!.timelineHistory!.retention!;
+    expect(proof.snapshot.text).toContain('End of invented evidence.');
+    expect(JSON.stringify(proof.prepared.receipt.source.input)).not.toContain('Invented background context.');
+    expect(JSON.parse(curatorInputs[0]!).item.evidence[0].timelineHistory.retention.snapshot.text).toBe(
+      proof.snapshot.text,
+    );
+    expect((await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).total).toBe(1);
+    expect(read(`work/notice.${extension}`)).toBe(source);
+    const count = { ...calls };
+    await mem.dream({ phase: 'curate' });
+    expect(calls).toEqual(count);
+    await mem.undo({ change_id: item.changeId! });
+    expect(read('work/timeline.md')).toBe(' \t\r\n');
+    expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+    expect(read(`work/notice.${extension}`)).toBe(source);
+  },
+);
+
+it('shrinks sealed batches and finishes cached assertions across rebuild and restart', async () => {
+  await sourceSetup();
+  const quotes = Array.from(
+    { length: 10 },
+    (_, index) =>
+      `Vulpine Mutual states that the Zephyr QX-100 inspection is scheduled for ${index + 1} May 2031${[2, 9].includes(index) ? ', contradicting the earlier date' : ''}. ` +
+      'Invented contextual explanation. '.repeat(25),
+  );
+  const source =
+    '# Inspection notices\n\n' + quotes.join('\n\n') + '\n' + 'Invented background. '.repeat(1000);
+  put('work/notes.md', source);
+  extraction = () =>
+    quotes.map((quote, index) => ({
+      ...sourceCandidate(quote, `2031-05-${String(index + 1).padStart(2, '0')}`),
+      relations: [2, 9].includes(index)
+        ? [{ type: 'contradicts', target_candidate: 0, support: [{ quote, item_id: null }] }]
+        : [],
+    }));
+  await mem.index({ structuralOnly: true });
+  const first = await mem.dream({ phase: 'curate' });
+  expect(first.maintenancePlan?.items[0]?.status).toBe('applied');
+  expect(first.timelineHistory.additions).toBeGreaterThan(0);
+  expect(first.timelineHistory.additions).toBeLessThan(quotes.length);
+  const verificationCalls = calls.verification;
+  await mem.index({ rebuild: true, structuralOnly: true });
+  await mem.close();
+  mem = await start({
+    folders: {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+    },
+  });
+  for (
+    let cycle = 0;
+    cycle < 10 && (await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).total < quotes.length;
+    cycle++
+  ) {
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.maintenancePlan?.items[0]?.status).toBe('applied');
+  }
+  const query = await mem.timeline({ timeline: 'work/timeline', source: 'plan' });
+  expect(query.total).toBe(quotes.length);
+  expect(new Set(query.results.map((item) => item.id)).size).toBe(quotes.length);
+  expect(read('work/timeline.md').match(/akno:timeline-item id=/gu)).toHaveLength(quotes.length);
+  expect(calls.extraction).toBe(1);
+  expect(calls.verification).toBe(verificationCalls);
+  expect(read('work/timeline-memories.md').match(/links=contradicts:memory%3Amem_/gu)).toHaveLength(2);
+  expect(read('work/notes.md')).toBe(source);
+  for (const input of curatorInputs) expect(JSON.parse(input).item.kind).toBe('timeline_history');
+  const counts = { ...calls };
+  await mem.dream({ phase: 'curate' });
+  expect(calls).toEqual(counts);
+});
+
+it('reports an irreducible page size hold, preserves candidates and retries when limits change', async () => {
+  await sourceSetup({ max_page_bytes: 500 });
+  const report = await mem.dream({ phase: 'curate' });
+  expect(report.maintenancePlan).toBeNull();
+  expect(report.timelineHistory.held.limit).toBeGreaterThan(0);
+  const db = new Database(mem.config.dbPath, { readonly: true });
+  try {
+    const row = db.prepare("SELECT value FROM meta WHERE key LIKE 'timeline-source:v1:%'").get() as {
+      value: string;
+    };
+    const state = JSON.parse(row.value);
+    expect(state).toMatchObject({
+      status: 'held',
+      accepted: [],
+      sizeHold: { reason: expect.stringContaining('page limit') },
+    });
+    expect(state.candidates).toHaveLength(1);
+  } finally {
+    db.close();
+  }
+  const count = { ...calls };
+  const repeat = await mem.dream({ phase: 'curate' });
+  expect(repeat.timelineHistory.held.limit).toBeGreaterThan(0);
+  expect(repeat.timelineHistory.held.unqualified_event ?? 0).toBe(0);
+  expect(calls).toEqual(count);
+  expect(read('work/timeline.md')).toBe(' \t\r\n');
+  mem.config.maxPageBytes = 10_000;
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan?.items[0]?.status).toBe('applied');
+  expect(calls.extraction).toBe(count.extraction);
+  expect(read('work/notes.md')).toBe('# Notice\n\n' + notice + '\n');
+});
+
+it('keeps an irreducible sealed-context hold distinct from no facts and caches the extraction', async () => {
+  await sourceSetup();
+  // Raw source admission and serialized curator size are different bounds: escaping expands JSON.
+  const source = '# Inspection evidence\n\n' + notice + '\n\n```text\n' + '\\"'.repeat(24_000) + '\n```\n';
+  put('work/notes.md', source);
+  extraction = () => [sourceCandidate()];
+  await mem.index({ structuralOnly: true });
+  const report = await mem.dream({ phase: 'curate' });
+  expect(report.maintenancePlan).toBeNull();
+  const db = new Database(mem.config.dbPath, { readonly: true });
+  try {
+    const row = db.prepare("SELECT value FROM meta WHERE key LIKE 'timeline-source:v1:%'").get() as {
+      value: string;
+    };
+    expect(JSON.parse(row.value)).toMatchObject({
+      status: 'held',
+      accepted: [],
+      sizeHold: { reason: expect.stringContaining('sealed evidence limit') },
+    });
+  } finally {
+    db.close();
+  }
+  expect(report.timelineHistory.held.limit).toBeGreaterThan(0);
+  expect(calls.extraction).toBe(1);
+  const count = { ...calls };
+  expect((await mem.dream({ phase: 'curate' })).timelineHistory.held.limit).toBeGreaterThan(0);
+  expect(calls).toEqual(count);
+  expect(read('work/notes.md')).toBe(source);
+  expect(read('work/timeline.md')).toBe(' \t\r\n');
+});
+
+it('records a source text limit without model calls and allows another source to progress', async () => {
+  await sourceSetup();
+  const source = 'Invented background. '.repeat(4000);
+  put('work/a-long-source.md', source);
+  await mem.index({ structuralOnly: true });
+  const report = await mem.dream({ phase: 'curate' });
+  expect(report.timelineHistory.held.limit).toBeGreaterThan(0);
+  expect(report.maintenancePlan?.items[0]?.status).toBe('applied');
+  expect(calls.extraction).toBe(1);
+  const db = new Database(mem.config.dbPath, { readonly: true });
+  try {
+    const state = db
+      .prepare("SELECT value FROM meta WHERE key LIKE 'timeline-source:v1:%'")
+      .all()
+      .map((row) => JSON.parse((row as { value: string }).value))
+      .find((row) => row.source.relPath === 'work/a-long-source.md');
+    expect(state).toMatchObject({
+      status: 'held',
+      sizeHold: { reason: expect.stringContaining('source evidence exceeds') },
+    });
+  } finally {
+    db.close();
+  }
+  const count = { ...calls };
+  expect((await mem.dream({ phase: 'curate' })).timelineHistory.held.limit).toBeGreaterThan(0);
+  expect(calls).toEqual(count);
+  expect(read('work/a-long-source.md')).toBe(source);
+});
+
+it('continues a pending plan sealed with the earlier full-stage representation after restart', async () => {
+  await sourceSetup();
+  const report = await mem.dream({ phase: 'curate', mode: 'review' });
+  const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+  const evidence = item.evidence;
+  const proof = evidence[0]!.timelineHistory!.retention!;
+  proof.prepared.stages = proof.prepared.stages.map((stage) => {
+    const operation = item.operations.find((op) => op.relPath === stage.relPath)!;
+    if (!('after' in operation)) throw new Error('Unexpected test operation');
+    return {
+      slug: stage.slug,
+      relPath: stage.relPath,
+      before: operation.type === 'create' ? null : operation.before,
+      after: operation.after,
+      managedDestination: true,
+    };
+  });
+  proof.prepared.receipt.source.input = { text: proof.snapshot.text };
+  const db = new Database(mem.config.dbPath);
+  db.prepare('UPDATE maintenance_items SET evidence = ? WHERE id = ?').run(JSON.stringify(evidence), item.id);
+  db.close();
+  const count = { ...calls };
+  await mem.close();
+  mem = await start({
+    folders: {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+    },
+  });
+  mem.decidePlan(item.planId, item.id, 'approve', 'Approve the invented pre-upgrade evidence.');
+  expect((await mem.applyPlan(item.planId)).plan.items[0]?.status).toBe('applied');
+  expect((await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).total).toBe(1);
+  expect(calls.extraction).toBe(count.extraction);
+  await mem.undo({ change_id: mem.plan(item.planId).items[0]!.changeId! });
+  expect(read('work/timeline.md')).toBe(' \t\r\n');
+});
+
+it('refuses altered operation bytes even when their operation hash is recomputed', async () => {
+  await sourceSetup();
+  const report = await mem.dream({ phase: 'curate', mode: 'review' });
+  const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+  const operation = item.operations.find((op) => op.relPath === 'work/timeline-memories.md')!;
+  if (!('after' in operation)) throw new Error('Unexpected test operation');
+  operation.after += '\nUnsupported invented assertion.\n';
+  operation.afterHash = sha256(operation.after);
+  const db = new Database(mem.config.dbPath);
+  db.prepare('UPDATE maintenance_items SET operations = ? WHERE id = ?').run(
+    JSON.stringify(item.operations),
+    item.id,
+  );
+  db.close();
+  mem.decidePlan(item.planId, item.id, 'approve', 'Exercise the independently sealed byte check.');
+  expect((await mem.applyPlan(item.planId)).plan.items[0]?.status).toBe('stale');
+  expect(read('work/timeline.md')).toBe(' \t\r\n');
+  expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
 });
 
 it.each(['companion', 'pattern-deny', 'ledger', 'symlink', 'collision'])(

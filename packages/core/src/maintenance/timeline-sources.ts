@@ -56,14 +56,29 @@ interface SourceProgress {
   reason?: string;
   planId?: string;
   itemId?: string;
+  sizeHold?: { reason: string; limits: string };
 }
+
+const SOURCE_TEXT_LIMIT = 60_000;
+const SEALED_SOURCE_LIMIT = 80_000;
 
 export interface TimelineSourceProof {
   source: SourceReference;
   snapshot: SourceSnapshot;
   owner: string;
   destination: string;
-  prepared: PreparedTimelineRetention;
+  prepared: Pick<PreparedTimelineRetention, 'receipt'> & {
+    // Earlier releases sealed full stages here; retain validation of those pending plans.
+    stages: (
+      | PreparedTimelineRetention['stages'][number]
+      | {
+          slug: string;
+          relPath: string;
+          beforeHash: string | null;
+          afterHash: string;
+        }
+    )[];
+  };
   extraction: { verifierVersion: string; verifiedCandidateIds: string[]; unfinishedSource: boolean };
   progressKey: string;
   progress: SourceProgress;
@@ -264,7 +279,7 @@ export async function planTimelineSources(
       (progress(ctx, progressKey(a))?.attemptedAt ?? 0) - (progress(ctx, progressKey(b))?.attemptedAt ?? 0) ||
       a.relPath.localeCompare(b.relPath),
   );
-  for (const source of sources) {
+  sourceLoop: for (const source of sources) {
     const owner = owningTimeline(catalog, source.slug);
     const destination = `${owner.slug}-memories`;
     if (owner.status !== 'ready' || !owner.writable) {
@@ -296,6 +311,9 @@ export async function planTimelineSources(
       continue;
     }
     const fingerprint = sourceFingerprint(ctx, current, source, owner);
+    const sizeLimits = sha256(
+      JSON.stringify([SOURCE_TEXT_LIMIT, SEALED_SOURCE_LIMIT, ctx.config.maxPageBytes]),
+    );
     const key = progressKey(source);
     let state = progress(ctx, key);
     if (
@@ -318,8 +336,12 @@ export async function planTimelineSources(
       report.cached++;
       continue;
     }
-    if (state?.status === 'held' && Date.now() - state.attemptedAt < 30 * 60_000) {
-      hold('unqualified_event');
+    if (
+      state?.status === 'held' &&
+      Date.now() - state.attemptedAt < 30 * 60_000 &&
+      (!state.sizeHold || state.sizeHold.limits === sizeLimits)
+    ) {
+      hold(state.sizeHold ? 'limit' : 'unqualified_event');
       continue;
     }
     if (!(await destinationAllowed(ctx, owner))) {
@@ -331,7 +353,21 @@ export async function planTimelineSources(
       degraded.add('no_derive_model');
       continue;
     }
-    if (current.text.length > 60_000) {
+    if (current.text.length > SOURCE_TEXT_LIMIT) {
+      record(
+        ctx,
+        key,
+        {
+          ...state,
+          source,
+          sourceHash: current.hash,
+          fingerprint,
+          status: 'held',
+          attemptedAt: Date.now(),
+          sizeHold: { reason: `source evidence exceeds ${SOURCE_TEXT_LIMIT} characters`, limits: sizeLimits },
+        },
+        options.recordState ?? false,
+      );
       hold('limit');
       continue;
     }
@@ -399,7 +435,7 @@ export async function planTimelineSources(
           return memoryId ? { ...relation, target: { memory_id: memoryId } } : relation;
         }),
       }));
-    const candidates = dependencyOrder(remaining).candidates.slice(
+    let candidates = dependencyOrder(remaining).candidates.slice(
       0,
       Math.min(50, ctx.config.maintenance.curate.maxTimelineEvents),
     );
@@ -407,124 +443,173 @@ export async function planTimelineSources(
       hold('unqualified_event');
       continue;
     }
-    const revision = sha256(JSON.stringify([fingerprint, candidates]));
-    const prior = ctx.store.db
-      .prepare('SELECT source_group FROM retain_receipts WHERE source_id = ? LIMIT 1')
-      .get(`akno:timeline:${sha256(source.documentId ?? source.relPath)}`) as
-      { source_group: string } | undefined;
-    const input: RetainUpsertSource = {
-      source_id: `akno:timeline:${sha256(source.documentId ?? source.relPath)}`,
-      revision,
-      source_group: prior?.source_group ?? `timeline-evidence:${sha256(current.text)}`,
-      source_kind: 'document',
-      input: source.documentId ? { document_id: source.documentId } : { page_slug: source.slug },
-      retention: {
-        mode: 'provided',
-        placement: 'exact',
-        knowledge_language: ctx.config.knowledgeLanguage ?? undefined,
-        candidates: candidates.map((item) => ({
-          ...item,
-          destination: { slug: destination, section: 'Temporal memories' },
-        })),
-      },
-    };
-    const result = await prepareTimelineRetention(
-      ctx,
-      input,
-      input.retention.mode === 'provided' ? input.retention.candidates : [],
-      destination,
-      current.text,
-    );
-    const prepared = result.prepared;
-    for (const reason of result.result.degraded ?? []) degraded.add(reason);
-    if (prepared && state.modelUsage)
-      prepared.receipt.result.model_usage = { ...state.modelUsage, placement: [] };
-    const successful = result.result.candidates
-      .filter((item) => ['written', 'support_added', 'duplicate'].includes(item.outcome))
-      .map((item) => item.candidate_id);
-    if (
-      !prepared ||
-      !prepared.stages.length ||
-      !successful.length ||
-      prepared.stages.some((stage) => stage.before === stage.after)
-    ) {
-      record(
+    // Dependency-ordered prefixes can be shortened without dropping a selected item's target.
+    // Preparing a smaller batch is side-effect-free and reuses the verified extraction.
+    while (candidates.length) {
+      const revision = sha256(JSON.stringify([fingerprint, candidates]));
+      const prior = ctx.store.db
+        .prepare('SELECT source_group FROM retain_receipts WHERE source_id = ? LIMIT 1')
+        .get(`akno:timeline:${sha256(source.documentId ?? source.relPath)}`) as
+        { source_group: string } | undefined;
+      const input: RetainUpsertSource = {
+        source_id: `akno:timeline:${sha256(source.documentId ?? source.relPath)}`,
+        revision,
+        source_group: prior?.source_group ?? `timeline-evidence:${sha256(current.text)}`,
+        source_kind: 'document',
+        input: source.documentId ? { document_id: source.documentId } : { page_slug: source.slug },
+        retention: {
+          mode: 'provided',
+          placement: 'exact',
+          knowledge_language: ctx.config.knowledgeLanguage ?? undefined,
+          candidates: candidates.map((item) => ({
+            ...item,
+            destination: { slug: destination, section: 'Temporal memories' },
+          })),
+        },
+      };
+      const result = await prepareTimelineRetention(
         ctx,
-        key,
-        { ...state, status: 'held', attemptedAt: Date.now(), reason: result.result.note ?? 'retention held' },
-        options.recordState ?? false,
+        input,
+        input.retention.mode === 'provided' ? input.retention.candidates : [],
+        destination,
+        current.text,
       );
-      hold('unqualified_event');
-      continue;
-    }
-    if (prepared.stages.some((stage) => options.protectedPaths?.has(stage.relPath))) {
-      hold('limit');
-      continue;
-    }
-    const nextAccepted = [...new Set([...(state.accepted ?? []), ...successful])];
-    const allHandled = state.candidates!.every(
-      (item) =>
-        nextAccepted.includes(item.candidate_id) || (state.rejected ?? []).includes(item.candidate_id),
-    );
-    const complete = !state.incomplete && allHandled;
-    const next: SourceProgress = {
-      ...state,
-      accepted: nextAccepted,
-      memories: {
-        ...state.memories,
-        ...Object.fromEntries(
-          result.result.candidates
-            .filter((item) => item.memory_id && successful.includes(item.candidate_id))
-            .map((item) => [item.candidate_id, item.memory_id!]),
-        ),
-      },
-      status: complete ? 'complete' : state.incomplete && allHandled ? 'held' : 'extracted',
-      attemptedAt: Date.now(),
-      ...(complete ? { candidates: undefined } : {}),
-    };
-    const proof: TimelineSourceProof = {
-      source,
-      snapshot: current,
-      owner: owner.slug,
-      destination,
-      prepared,
-      extraction: {
-        verifierVersion: RETAIN_VERIFIER_VERSION,
-        verifiedCandidateIds: candidates.map((item) => item.candidate_id),
-        unfinishedSource: Boolean(state.incomplete),
-      },
-      progressKey: key,
-      progress: next,
-    };
-    const operations: MaintenanceOperation[] = prepared.stages.map((stage) =>
-      stage.before === null
-        ? { type: 'create', relPath: stage.relPath, after: stage.after, afterHash: sha256(stage.after) }
-        : {
-            type: 'replace',
-            relPath: stage.relPath,
-            before: stage.before,
-            after: stage.after,
-            beforeHash: sha256(stage.before),
-            afterHash: sha256(stage.after),
+      const prepared = result.prepared;
+      for (const reason of result.result.degraded ?? []) degraded.add(reason);
+      if (prepared && state.modelUsage)
+        prepared.receipt.result.model_usage = { ...state.modelUsage, placement: [] };
+      const successful = result.result.candidates
+        .filter((item) => ['written', 'support_added', 'duplicate'].includes(item.outcome))
+        .map((item) => item.candidate_id);
+      if (
+        !prepared ||
+        !prepared.stages.length ||
+        !successful.length ||
+        prepared.stages.some((stage) => stage.before === stage.after)
+      ) {
+        record(
+          ctx,
+          key,
+          {
+            ...state,
+            sizeHold: undefined,
+            status: 'held',
+            attemptedAt: Date.now(),
+            reason: result.result.note ?? 'retention held',
           },
-    );
-    if (
-      operations.some((op) => 'after' in op && Buffer.byteLength(op.after) > ctx.config.maxPageBytes) ||
-      JSON.stringify({ proof, operations }).length > 80_000
-    ) {
-      hold('limit');
-      continue;
+          options.recordState ?? false,
+        );
+        hold('unqualified_event');
+        continue sourceLoop;
+      }
+      if (prepared.stages.some((stage) => options.protectedPaths?.has(stage.relPath))) {
+        hold('limit');
+        continue sourceLoop;
+      }
+      const nextAccepted = [...new Set([...(state.accepted ?? []), ...successful])];
+      const allHandled = state.candidates!.every(
+        (item) =>
+          nextAccepted.includes(item.candidate_id) || (state.rejected ?? []).includes(item.candidate_id),
+      );
+      const complete = !state.incomplete && allHandled;
+      const next: SourceProgress = {
+        ...state,
+        sizeHold: undefined,
+        accepted: nextAccepted,
+        memories: {
+          ...state.memories,
+          ...Object.fromEntries(
+            result.result.candidates
+              .filter((item) => item.memory_id && successful.includes(item.candidate_id))
+              .map((item) => [item.candidate_id, item.memory_id!]),
+          ),
+        },
+        status: complete ? 'complete' : state.incomplete && allHandled ? 'held' : 'extracted',
+        attemptedAt: Date.now(),
+        // Receipts retain completed assertions; the continuation cursor only needs unfinished ones.
+        candidates: complete
+          ? undefined
+          : state.candidates!.filter(
+              (item) =>
+                !nextAccepted.includes(item.candidate_id) &&
+                !(state.rejected ?? []).includes(item.candidate_id),
+            ),
+      };
+      const proof: TimelineSourceProof = {
+        source,
+        snapshot: current,
+        owner: owner.slug,
+        destination,
+        prepared: {
+          receipt: prepared.receipt,
+          // The exact before/after bytes already live in operations. Seal their identity once.
+          stages: prepared.stages.map((stage) => ({
+            slug: stage.slug,
+            relPath: stage.relPath,
+            beforeHash: stage.before === null ? null : sha256(stage.before),
+            afterHash: sha256(stage.after),
+          })),
+        },
+        extraction: {
+          verifierVersion: RETAIN_VERIFIER_VERSION,
+          verifiedCandidateIds: candidates.map((item) => item.candidate_id),
+          unfinishedSource: Boolean(state.incomplete),
+        },
+        progressKey: key,
+        progress: next,
+      };
+      const operations: MaintenanceOperation[] = prepared.stages.map((stage) =>
+        stage.before === null
+          ? { type: 'create', relPath: stage.relPath, after: stage.after, afterHash: sha256(stage.after) }
+          : {
+              type: 'replace',
+              relPath: stage.relPath,
+              before: stage.before,
+              after: stage.after,
+              beforeHash: sha256(stage.before),
+              afterHash: sha256(stage.after),
+            },
+      );
+      const pageTooLarge = operations.some(
+        (op) => 'after' in op && Buffer.byteLength(op.after) > ctx.config.maxPageBytes,
+      );
+      const historyProof = { boundaries: '', catalog, sources: [], scans: [], actions: [], retention: proof };
+      const sealedTooLarge = JSON.stringify({ proof: historyProof, operations }).length > SEALED_SOURCE_LIMIT;
+      if (pageTooLarge || sealedTooLarge) {
+        if (candidates.length > 1) {
+          candidates = candidates.slice(0, Math.max(1, Math.floor(candidates.length / 2)));
+          continue;
+        }
+        record(
+          ctx,
+          key,
+          {
+            ...state,
+            status: 'held',
+            attemptedAt: Date.now(),
+            sizeHold: {
+              reason: pageTooLarge
+                ? `single-candidate retention exceeds the ${ctx.config.maxPageBytes}-byte page limit`
+                : `single-candidate retention exceeds the ${SEALED_SOURCE_LIMIT}-character sealed evidence limit`,
+              limits: sizeLimits,
+            },
+          },
+          options.recordState ?? false,
+        );
+        hold('limit');
+        continue sourceLoop;
+      }
+      operations.sort((a, b) => Number(a.type === 'create') - Number(b.type === 'create'));
+      report.additions += result.result.candidates.filter((item) => item.outcome === 'written').length;
+      return done([
+        {
+          slug: parsePage(operations[0]!.relPath, 'after' in operations[0]! ? operations[0]!.after : '').slug,
+          inputHash: revision,
+          operations,
+          proof: historyProof,
+        },
+      ]);
     }
-    operations.sort((a, b) => Number(a.type === 'create') - Number(b.type === 'create'));
-    report.additions += result.result.candidates.filter((item) => item.outcome === 'written').length;
-    return done([
-      {
-        slug: parsePage(operations[0]!.relPath, 'after' in operations[0]! ? operations[0]!.after : '').slug,
-        inputHash: revision,
-        operations,
-        proof: { boundaries: '', catalog, sources: [], scans: [], actions: [], retention: proof },
-      },
-    ]);
   }
   return done();
 }
@@ -570,10 +655,15 @@ export async function timelineSourceIssue(
           (op) =>
             op.relPath === stage.relPath &&
             'after' in op &&
-            op.after === stage.after &&
-            (op.type === 'create'
-              ? stage.before === null
-              : op.type === 'replace' && op.before === stage.before),
+            ('after' in stage
+              ? op.after === stage.after &&
+                (op.type === 'create'
+                  ? stage.before === null
+                  : op.type === 'replace' && op.before === stage.before)
+              : sha256(op.after) === stage.afterHash &&
+                (op.type === 'create'
+                  ? stage.beforeHash === null
+                  : op.type === 'replace' && sha256(op.before) === stage.beforeHash)),
         ),
     )
   )

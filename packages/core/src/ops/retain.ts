@@ -238,6 +238,11 @@ export async function prepareTimelineRetention(
     },
   });
   const created = prepared?.stages.find((stage) => stage.slug === destination && stage.before === null);
+  if (prepared) {
+    // The maintenance proof seals the complete evidence separately. Finalization needs the
+    // original source reference and request, not a second copy of its resolved text.
+    prepared.receipt.source = source;
+  }
   if (created) {
     const body = parsePage(created.relPath, created.after).body;
     const heading = body.indexOf('\n## ');
@@ -249,7 +254,7 @@ export async function prepareTimelineRetention(
 /** Idempotent finalization also serves interrupted maintenance verification recovery. */
 export function commitTimelineRetention(
   ctx: AknoContext,
-  prepared: PreparedTimelineRetention,
+  prepared: Pick<PreparedTimelineRetention, 'receipt'>,
   changeId: string,
 ): void {
   const existing = ctx.store.db
