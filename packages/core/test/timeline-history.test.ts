@@ -19,6 +19,8 @@ let extraction: (source: string) => unknown[];
 let selection: string;
 let verified: boolean;
 let equivalence: string;
+let equivalenceInputs: { incoming: { text: string }; existing: { id: string; text: string }[] }[];
+let onEquivalence: (() => void) | null;
 let curator: 'approve' | 'reject' | 'revise';
 let curatorDecision: ((input: string, system: string) => typeof curator) | null;
 let reviseOnce: boolean;
@@ -96,6 +98,8 @@ beforeEach(async () => {
   selection = 'timeline_1';
   verified = true;
   equivalence = 'new';
+  equivalenceInputs = [];
+  onEquivalence = null;
   curator = 'approve';
   curatorDecision = null;
   reviseOnce = false;
@@ -141,6 +145,8 @@ beforeEach(async () => {
           ),
         };
       } else if (system.includes('SAME real-world occurrence')) {
+        equivalenceInputs.push(JSON.parse(user));
+        onEquivalence?.();
         content = { selection: equivalence };
       } else if (system.startsWith('Select the one timeline')) {
         calls.routing++;
@@ -1228,6 +1234,322 @@ it('adds support to an existing canonical item outside the companion instead of 
   expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
   expect((await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).total).toBe(1);
   expect(read('work/timeline.md').match(/akno:timeline-item id=/gu) ?? []).toHaveLength(1);
+});
+
+async function canonicalSourceSetup() {
+  put('devices/zephyr-qx-100.md', '# Zephyr QX-100\n');
+  await sourceSetup();
+  await mem.dream({ phase: 'curate' });
+  put('work/canonical.md', read('work/timeline-memories.md'));
+  fs.unlinkSync(path.join(root, 'work/timeline-memories.md'));
+  put('work/copy.md', '# Forwarded notice\n\n' + notice + '\n');
+  extraction = () => [
+    {
+      ...sourceCandidate(),
+      text: 'Vulpine Mutual states the Zephyr QX-100 inspection will take place on 2031-04-08.',
+    },
+  ];
+  await mem.index({ structuralOnly: true });
+}
+
+it('consolidates a cross-page paraphrase with one canonical identity and correlated source support', async () => {
+  await canonicalSourceSetup();
+  const canonicalBefore = read('work/canonical.md');
+  const sourcesBefore = [read('work/notes.md'), read('work/copy.md')];
+  const queryBefore = await mem.timeline({ timeline: 'work/timeline', source: 'plan' });
+  equivalence = 'event_1';
+  const result = await mem.dream({ phase: 'curate' });
+  const item = result.maintenancePlan!.items[0]!;
+  expect(item.status).toBe('applied');
+  expect(result.timelineHistory.additions).toBe(0);
+  expect(equivalenceInputs).toHaveLength(1);
+  expect(equivalenceInputs[0]!.existing).toHaveLength(1);
+  expect(read('work/canonical.md')).toContain('[[work/copy]]');
+  expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+  const query = await mem.timeline({ timeline: 'work/timeline', source: 'plan' });
+  expect(query.total).toBe(1);
+  expect(query.results[0]!.id).toBe(queryBefore.results[0]!.id);
+  expect(read('work/timeline.md').match(/akno:timeline-item id=/gu) ?? []).toHaveLength(1);
+  const db = new Database(mem.config.dbPath);
+  const support = db
+    .prepare(
+      'SELECT DISTINCT proof_group FROM retain_supports WHERE memory_id = ? AND retracted_by IS NULL AND forgotten_by IS NULL',
+    )
+    .all(query.results[0]!.id);
+  db.close();
+  expect(support).toHaveLength(1);
+  const count = { ...calls };
+  const comparisons = equivalenceInputs.length;
+  await mem.index({ rebuild: true, structuralOnly: true });
+  await mem.close();
+  mem = await start({
+    folders: {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+    },
+  });
+  await mem.dream({ phase: 'curate' });
+  expect(calls).toEqual(count);
+  expect(equivalenceInputs).toHaveLength(comparisons);
+  await mem.undo({ change_id: item.changeId! });
+  expect(read('work/canonical.md')).toBe(canonicalBefore);
+  expect([read('work/notes.md'), read('work/copy.md')]).toEqual(sourcesBefore);
+});
+
+it.each(['uncertain', 'malformed'])(
+  'holds an %s cross-page comparison without creating another identity',
+  async (choice) => {
+    await canonicalSourceSetup();
+    equivalence = choice;
+    const canonicalBefore = read('work/canonical.md');
+    const ledgerBefore = read('work/timeline.md');
+    const result = await mem.dream({ phase: 'curate' });
+    expect(result.maintenancePlan).toBeNull();
+    expect(result.timelineHistory.held.unqualified_event).toBeGreaterThan(0);
+    expect(read('work/canonical.md')).toBe(canonicalBefore);
+    expect(read('work/timeline.md')).toBe(ledgerBefore);
+    expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+    const count = { ...calls };
+    await mem.dream({ phase: 'curate' });
+    expect(calls).toEqual(count);
+    expect(equivalenceInputs).toHaveLength(1);
+    const db = new Database(mem.config.dbPath);
+    const progress = (
+      db.prepare("SELECT value FROM meta WHERE key LIKE 'timeline-source:v1:%'").all() as { value: string }[]
+    )
+      .map((row) => JSON.parse(row.value))
+      .find((row) => row.source?.slug === 'work/copy');
+    db.close();
+    expect(progress.reason).toContain('temporal assertion equivalence');
+  },
+);
+
+it('asks once over the complete cross-page cluster, including the companion', async () => {
+  await canonicalSourceSetup();
+  // A separate same-day assertion is not evidence that the new paraphrase is distinct.
+  put(
+    'work/timeline-memories.md',
+    read('work/canonical.md')
+      .replace(/mem_[\da-f]+/gu, 'mem_abcdef12')
+      .replace(/inspection/gu, 'repair'),
+  );
+  await mem.index({ structuralOnly: true });
+  equivalence = 'event_1';
+  const result = await mem.dream({ phase: 'curate' });
+  expect(result.maintenancePlan?.items[0]?.status).toBe('applied');
+  expect(equivalenceInputs).toHaveLength(1);
+  expect(equivalenceInputs[0]!.existing).toHaveLength(2);
+  expect(equivalenceInputs[0]!.existing[0]!.text).toContain('inspection');
+  expect(read('work/canonical.md')).toContain('[[work/copy]]');
+  expect(read('work/timeline-memories.md')).not.toContain('[[work/copy]]');
+});
+
+it.each(['speaker', 'date', 'state', 'subject'])(
+  'preserves a different %s instead of merging cross-page assertions',
+  async (field) => {
+    await canonicalSourceSetup();
+    const incoming = sourceCandidate();
+    if (field === 'speaker') {
+      incoming.attribution.source_speaker = 'Bo Winters';
+      incoming.text = incoming.text.replace('Vulpine Mutual', 'Bo Winters');
+    } else if (field === 'date') {
+      incoming.time.start = '2031-04-09';
+      incoming.text = incoming.text.replace('2031-04-08', '2031-04-09');
+    } else if (field === 'state') {
+      incoming.kind = 'plan';
+      incoming.discourse.disposition = 'proposed';
+      incoming.time.status = 'tentative';
+      incoming.text = 'Vulpine Mutual proposes scheduling the Zephyr QX-100 inspection for 2031-04-08.';
+    } else incoming.subject = 'Vulpine Mutual';
+    put('people/ada-marlow.md', '# Ada Marlow\n');
+    put('people/bo-winters.md', '# Bo Winters\n');
+    if (field === 'subject') {
+      put('companies/vulpine-mutual.md', '# Vulpine Mutual\n');
+    }
+    incoming.support = [{ quote: incoming.text, item_id: null }];
+    incoming.discourse_frame = [{ quote: incoming.text, item_id: null }];
+    put('work/copy.md', '# New notice\n\n' + incoming.text + '\n');
+    extraction = () => [incoming];
+    equivalence = 'event_1';
+    await mem.index({ structuralOnly: true });
+    const result = await mem.dream({ phase: 'curate' });
+    expect(result.maintenancePlan?.items[0]?.status).toBe('applied');
+    expect(result.timelineHistory.additions).toBe(1);
+    expect(equivalenceInputs).toHaveLength(0);
+    expect((await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).total).toBe(2);
+  },
+);
+
+it('keeps canonical assertions in a nested ledger out of the comparison context', async () => {
+  await canonicalSourceSetup();
+  put('work/nested/timeline.md', '# Timeline\n\nNested chronology.\n');
+  put('work/nested/canonical.md', read('work/canonical.md'));
+  fs.unlinkSync(path.join(root, 'work/canonical.md'));
+  equivalence = 'event_1';
+  await mem.index({ structuralOnly: true });
+  const result = await mem.dream({ phase: 'curate' });
+  expect(result.maintenancePlan?.items[0]?.status).toBe('applied');
+  expect(result.timelineHistory.additions).toBe(1);
+  expect(equivalenceInputs).toHaveLength(0);
+  expect(read('work/nested/canonical.md')).not.toContain('[[work/copy]]');
+});
+
+it('holds an overfull cross-page cluster instead of comparing a clipped subset', async () => {
+  await canonicalSourceSetup();
+  const original = read('work/canonical.md');
+  for (let index = 0; index < 9; index++)
+    put(
+      `work/canonical-${index}.md`,
+      original
+        .replace(/mem_[\da-f]+/gu, `mem_abcdef${index}1`)
+        .replace(/inspection/gu, `inspection ${index}`),
+    );
+  equivalence = 'event_1';
+  await mem.index({ structuralOnly: true });
+  const before = read('work/timeline.md');
+  const result = await mem.dream({ phase: 'curate' });
+  expect(result.maintenancePlan).toBeNull();
+  expect(equivalenceInputs).toHaveLength(0);
+  expect(read('work/timeline.md')).toBe(before);
+  expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+});
+
+it('keeps a distinct same-day assertion when the cross-page identity decision says new', async () => {
+  await canonicalSourceSetup();
+  const before = read('work/canonical.md');
+  const text = 'Vulpine Mutual states that the Zephyr QX-100 delivery is scheduled for 2031-04-08.';
+  put('work/copy.md', '# Delivery\n\n' + text + '\n');
+  extraction = () => [{ ...sourceCandidate(text), text }];
+  equivalence = 'new';
+  await mem.index({ structuralOnly: true });
+  const result = await mem.dream({ phase: 'curate' });
+  expect(result.maintenancePlan?.items[0]?.status).toBe('applied');
+  expect(result.timelineHistory.additions).toBe(1);
+  expect(equivalenceInputs).toHaveLength(1);
+  expect(read('work/canonical.md')).toBe(before);
+  expect((await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).total).toBe(2);
+});
+
+it.each(['claim', 'plan'])(
+  'consolidates complete cross-page %s paraphrases without strengthening their state',
+  async (kind) => {
+    await sourceSetup();
+    const quote =
+      kind === 'claim'
+        ? 'Vulpine Mutual states the Zephyr QX-100 warranty is valid from 1 April to 8 April 2031.'
+        : 'Vulpine Mutual proposes scheduling the Zephyr QX-100 inspection for 8 April 2031.';
+    const first = {
+      ...sourceCandidate(quote),
+      kind,
+      text: quote,
+      discourse: { commitment: 'asserted', disposition: kind === 'plan' ? 'proposed' : 'active' },
+      time: {
+        ...sourceCandidate().time,
+        start: kind === 'claim' ? '2031-04-01' : '2031-04-08',
+        until: kind === 'claim' ? '2031-04-08' : null,
+        relation: kind === 'claim' ? 'valid' : 'scheduled',
+        status: kind === 'claim' ? 'actual' : 'tentative',
+      },
+    };
+    extraction = () => [first];
+    put('work/notes.md', '# Notice\n\n' + quote + '\n');
+    await mem.index({ structuralOnly: true });
+    expect((await mem.dream({ phase: 'curate' })).maintenancePlan?.items[0]?.status).toBe('applied');
+    put('work/canonical.md', read('work/timeline-memories.md'));
+    fs.unlinkSync(path.join(root, 'work/timeline-memories.md'));
+    put('work/copy.md', '# Notice copy\n\n' + quote + '\n');
+    extraction = () => [
+      {
+        ...first,
+        text:
+          kind === 'claim'
+            ? 'According to Vulpine Mutual, the Zephyr QX-100 warranty has a validity period of 2031-04-01 through 2031-04-08.'
+            : 'Vulpine Mutual proposes a Zephyr QX-100 inspection on 2031-04-08.',
+      },
+    ];
+    equivalence = 'event_1';
+    await mem.index({ structuralOnly: true });
+    const result = await mem.dream({ phase: 'curate' });
+    expect(result.maintenancePlan?.items[0]?.status).toBe('applied');
+    expect(result.timelineHistory.additions).toBe(0);
+    expect(equivalenceInputs).toHaveLength(1);
+    const query = await mem.timeline({
+      timeline: 'work/timeline',
+      source: kind === 'claim' ? 'state' : 'plan',
+    });
+    expect(query.total).toBe(1);
+    expect(query.results[0]).toMatchObject({
+      kind,
+      relation: first.time.relation,
+      temporal_status: first.time.status,
+    });
+    expect(read('work/canonical.md')).toContain('[[work/copy]]');
+    expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+  },
+);
+
+it.each(['missing', 'symlink'])(
+  'holds a %s canonical nominee without consuming external content',
+  async (condition) => {
+    await canonicalSourceSetup();
+    const original = extraction;
+    const target = path.join(stateDir, 'external.md');
+    fs.writeFileSync(target, 'Unrelated external content.\n');
+    extraction = (source) => {
+      fs.unlinkSync(path.join(root, 'work/canonical.md'));
+      if (condition === 'symlink') fs.symlinkSync(target, path.join(root, 'work/canonical.md'));
+      return original(source);
+    };
+    const before = read('work/timeline.md');
+    const result = await mem.dream({ phase: 'curate' });
+    expect(result.maintenancePlan).toBeNull();
+    expect(equivalenceInputs).toHaveLength(0);
+    expect(read('work/timeline.md')).toBe(before);
+    expect(fs.readFileSync(target, 'utf8')).toBe('Unrelated external content.\n');
+    expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+  },
+);
+
+it('holds existing identical assertions with different canonical identities', async () => {
+  await canonicalSourceSetup();
+  put('work/another.md', read('work/canonical.md').replace(/mem_[\da-f]+/gu, 'mem_abcdef12'));
+  extraction = () => [sourceCandidate()];
+  await mem.index({ structuralOnly: true });
+  const before = read('work/timeline.md');
+  const result = await mem.dream({ phase: 'curate' });
+  expect(result.maintenancePlan).toBeNull();
+  expect(equivalenceInputs).toHaveLength(0);
+  expect(read('work/timeline.md')).toBe(before);
+  expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+});
+
+it('refuses a canonical page that changes while its new source is being analyzed', async () => {
+  await canonicalSourceSetup();
+  const changed = read('work/canonical.md') + '\nNew unindexed context.\n';
+  const original = extraction;
+  extraction = (source) => {
+    put('work/canonical.md', changed);
+    return original(source);
+  };
+  const before = read('work/timeline.md');
+  const result = await mem.dream({ phase: 'curate' });
+  expect(result.maintenancePlan).toBeNull();
+  expect(equivalenceInputs).toHaveLength(0);
+  expect(read('work/timeline.md')).toBe(before);
+  expect(read('work/canonical.md')).toBe(changed);
+  expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+});
+
+it('refuses a selected canonical assertion that disappears during the equivalence decision', async () => {
+  await canonicalSourceSetup();
+  onEquivalence = () =>
+    put('work/canonical.md', '# Changed canonical page\n\nNo matching assertion remains.\n');
+  equivalence = 'event_1';
+  const result = await mem.dream({ phase: 'curate' });
+  expect(result.maintenancePlan).toBeNull();
+  expect(equivalenceInputs).toHaveLength(1);
+  expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+  expect(read('work/canonical.md')).not.toContain('[[work/copy]]');
 });
 
 it('never places a physical default-ledger companion inside another timeline scope', async () => {
