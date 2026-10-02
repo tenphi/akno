@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.16.3
+
+### Patch Changes
+
+- [#154](https://github.com/tenphi/akno/pull/154) [`edf073a`](https://github.com/tenphi/akno/commit/edf073a283875a6696f1055aa031204e4accef14) Thanks [@tenphi](https://github.com/tenphi)! - Scope source-timeline curator decisions to the selected ledger's purpose and distinguish qualified temporal memory from authored event formatting. Reconsider negative decisions once when the decision contract changes, preserving successful source progress and owner undo.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.16.3
+
 ## 0.16.2
 
 ### Patch Changes
