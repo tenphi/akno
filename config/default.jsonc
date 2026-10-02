@@ -182,12 +182,12 @@
       "provider": "local",
       "id": null,
       // A ceiling on this role, and the *lower* of it and what a task asks for is what gets sent.
-      // 2400 because that is what a full page derivation needs to answer in JSON — a summary,
-      // keywords, and every durable claim on the page. Lower it and long pages start returning
-      // truncated JSON, which costs their facts (the summary is recovered on its own). Every
-      // cheaper caller already asks for less and is unaffected: 700 for an observation, 500 to name
-      // an arrival, 200 for a conflict verdict.
-      "max_output_tokens": 2400,
+      // Retention returns evidence-bearing records and complete repair/verification transactions.
+      // A brief page-summary ceiling can truncate these multi-record responses. This permits
+      // their bounded 16384-token requests; raising it can increase output cost for larger tasks.
+      // Cheaper callers still request less: 700 for an observation, 500 to name an arrival,
+      // 200 for a conflict verdict. Explicit lower ceilings remain honored and report truncation.
+      "max_output_tokens": 16384,
       // null uses the provider default. Hosted reasoning models can set one of
       // "none", "low", "medium", "high", "xhigh", or "max" per role.
       "reasoning_effort": null,
