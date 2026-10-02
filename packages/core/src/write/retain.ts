@@ -1,3 +1,9 @@
+import {
+  hasExplicitReporter,
+  hasReporterName,
+  retentionAttributionAudit,
+  RETENTION_ATTRIBUTION_CONTRACT,
+} from './retention-attribution.ts';
 import { hasReportUncertainty } from '../memory/report-uncertainty.ts';
 import { retentionReportLimits, RETENTION_REPORT_LIMITS_CONTRACT } from './retention-report-limits.ts';
 import { fictionalCaseSubjectIdentifier, subjectIdentifiers } from './fictional-case-identity.ts';
@@ -57,7 +63,7 @@ import {
  * the two public operations from gradually learning different meanings for the same source.
  */
 export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v61';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v44';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v45';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
 const RETRIEVAL_UNIT_CONTRACT = `A retained record is one independently retrievable semantic unit:
@@ -1175,6 +1181,9 @@ async function verifyCandidateBatch(
   const frameAudits = new Map(
     candidates.map((candidate) => [candidate.candidate_id, retentionFrameAudit(candidate.discourse_frame)]),
   );
+  const attributionAudits = new Map(
+    candidates.map((candidate) => [candidate.candidate_id, retentionAttributionAudit(candidate)]),
+  );
   const negativeEvidence = new Map(
     candidates.map((candidate) => [
       candidate.candidate_id,
@@ -1195,6 +1204,9 @@ async function verifyCandidateBatch(
     return z.strictObject({
       candidate_id: z.enum([candidate.candidate_id]),
       ...(audit ? { span_audit: audit.schema } : {}),
+      ...(attributionAudits.get(candidate.candidate_id)
+        ? { attribution_audit: attributionAudits.get(candidate.candidate_id)!.schema }
+        : {}),
       ...(reportLimits.has(candidate.candidate_id)
         ? { report_limit_alignment: reportLimits.get(candidate.candidate_id)!.schema }
         : {}),
@@ -1235,7 +1247,10 @@ async function verifyCandidateBatch(
     [
       {
         role: 'system',
-        content: VERIFY_SYSTEM + (reportLimits.size ? '\n\n' + RETENTION_REPORT_LIMITS_CONTRACT : ''),
+        content:
+          VERIFY_SYSTEM +
+          (reportLimits.size ? '\n\n' + RETENTION_REPORT_LIMITS_CONTRACT : '') +
+          ([...attributionAudits.values()].some(Boolean) ? '\n\n' + RETENTION_ATTRIBUTION_CONTRACT : ''),
       },
       {
         role: 'user',
@@ -1260,6 +1275,9 @@ async function verifyCandidateBatch(
             ({ page: _page, origin: _origin, evidence: _evidence, ...candidate }) => ({
               ...candidate,
               negative_evidence_coordinates: negativeEvidence.get(candidate.candidate_id)!.coordinates,
+              ...(attributionAudits.get(candidate.candidate_id)
+                ? { attribution_concern: attributionAudits.get(candidate.candidate_id)!.coordinates }
+                : {}),
               ...(reportLimits.has(candidate.candidate_id)
                 ? { report_limit_concern: reportLimits.get(candidate.candidate_id)!.coordinates }
                 : {}),
@@ -1279,6 +1297,10 @@ async function verifyCandidateBatch(
       maxTokens:
         1_024 +
         candidates.length * 1_200 +
+        [...attributionAudits.values()].reduce(
+          (sum, audit) => sum + (audit?.coordinates.reporters.length ?? 0) * 400,
+          0,
+        ) +
         [...frameAudits.values()].reduce((sum, audit) => sum + (audit?.spans.length ?? 0) * 160, 0),
     },
   );
@@ -1306,6 +1328,10 @@ async function verifyCandidateBatch(
       (verdict) =>
         semanticVerdictConsistent(verdict) &&
         negativeEvidence.get(verdict.candidate_id)!.consistent(verdict) &&
+        (!attributionAudits.get(verdict.candidate_id) ||
+          attributionAudits
+            .get(verdict.candidate_id)!
+            .consistent('attribution_audit' in verdict ? verdict.attribution_audit : undefined)) &&
         (!reportLimits.has(verdict.candidate_id) ||
           reportLimits
             .get(verdict.candidate_id)!
@@ -1352,6 +1378,10 @@ async function verifyCandidateBatch(
           verdict.proposition_supported &&
           verdict.action_arguments_preserved &&
           verdict.qualification_scope_preserved &&
+          (!attributionAudits.get(verdict.candidate_id) ||
+            attributionAudits
+              .get(verdict.candidate_id)!
+              .preserved('attribution_audit' in verdict ? verdict.attribution_audit : undefined)) &&
           (!reportLimits.has(verdict.candidate_id) ||
             reportLimits
               .get(verdict.candidate_id)!
@@ -1377,6 +1407,10 @@ async function verifyCandidateBatch(
         !verdict.proposition_supported ||
         !verdict.action_arguments_preserved ||
         !verdict.qualification_scope_preserved ||
+        (Boolean(attributionAudits.get(verdict.candidate_id)) &&
+          !attributionAudits
+            .get(verdict.candidate_id)!
+            .preserved('attribution_audit' in verdict ? verdict.attribution_audit : undefined)) ||
         verdict.source_selected_polarity !==
           candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.polarity ||
         ('source_selected_plan_disposition' in verdict &&
@@ -1745,10 +1779,21 @@ function cleanCandidateBatchWithPositions(
       });
       continue;
     }
-    const attribution = cleanAttribution(record, spans.support, sourceEvidence(spans.frame), options);
+    const semanticAttribution = Boolean(options.generated && semanticReportVerification);
+    const attribution = cleanAttribution(
+      record,
+      spans.support,
+      sourceEvidence(spans.frame),
+      options,
+      semanticAttribution,
+    );
     if (
       !attribution ||
-      attribution.chain?.some(({ speaker }) => !hasExplicitReporter(speaker, sourceEvidence(spans.frame)))
+      attribution.chain?.some(
+        ({ speaker }) =>
+          !hasExplicitReporter(speaker, sourceEvidence(spans.frame)) &&
+          !(semanticAttribution && hasReporterName(speaker, sourceEvidence(spans.frame))),
+      )
     ) {
       held.push({
         candidate_id: provisionalId,
@@ -2320,23 +2365,12 @@ function exactSpanIssue(
   return null;
 }
 
-function hasExplicitReporter(speaker: string, frame: string, allowColon = true): boolean {
-  const name = speaker.normalize('NFKC').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  // A name alone may be a fictional participant. This bounded structural check precedes the
-  // semantic verifier, which must still establish quotation scope and entailment of the claim.
-  const reporting =
-    '(?:said|says|wrote|writes|reported|reports|stated|states|told|asked|asks|claimed|claims|described|describes|noted|notes|suggested|suggests|confirmed|confirms|emailed|emails|notified|notifies|сообщил[аи]?|сказал[аи]?|написал[аи]?|отметил[аи]?|утвержда(?:ет|ют|л[аи]?)|рассказал[аи]?|спросил[аи]?|предложил[аи]?|подтвердил[аи]?|подтвержда(?:ет|ют))';
-  return new RegExp(
-    `(?<![\\p{L}\\p{N}])(?:${name}\\s*(?:${allowColon ? ':|' : ''}(?:[\\p{L}]+\\s+){0,2}${reporting}(?![\\p{L}]))|${allowColon ? `${reporting}\\s+${name}(?![\\p{L}\\p{N}])|` : ''}(?:according to|по словам|со слов)\\s+${name}(?![\\p{L}\\p{N}]))`,
-    'iu',
-  ).test(frame.normalize('NFKC'));
-}
-
 function cleanAttribution(
   record: Record<string, unknown>,
   support: readonly RetainSourceSpan[],
   frame: string,
   options: CandidateCleaningOptions,
+  semanticAttribution = false,
 ): RetainCandidate['attribution'] | null {
   const raw =
     record.attribution && typeof record.attribution === 'object'
@@ -2377,7 +2411,11 @@ function cleanAttribution(
     // into the chain preserves that provenance instead of erasing it when correcting the outer.
     chain = chain.filter((reporter) => identity(reporter.speaker) !== outer);
     if (rawSpeaker && identity(rawSpeaker) !== outer) {
-      if (!hasExplicitReporter(rawSpeaker, frame, false)) return null;
+      if (
+        !hasExplicitReporter(rawSpeaker, frame, false) &&
+        !(semanticAttribution && hasReporterName(rawSpeaker, frame))
+      )
+        return null;
       const existing = chain.filter((reporter) => identity(reporter.speaker) === identity(rawSpeaker));
       if (
         rawRole !== 'unknown' &&

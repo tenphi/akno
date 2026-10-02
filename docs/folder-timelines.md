@@ -205,6 +205,14 @@ never written into source documents. Missing or newly ineligible recorded source
 extraction omission alone does not retract a previous assertion. Source revision receipts and exact evidence
 remain available through existing retention/provenance machinery.
 
+An unfamiliar documentary reporting phrase does not automatically disqualify a named inner source.
+During automatic retention, the independent verifier can assess that reporting relationship from the
+complete source and an exact quotation in the candidate's deciding frame. Each uncertain chain position
+requires its own source-bound decision. A participant or recipient is not thereby a reporter; uncertain,
+negative, missing or malformed decisions remain held. Structured outer recorders and conflicting-role,
+source-clock and semantic checks still apply. This verification contract change makes cached source
+decisions eligible for reassessment; unchanged successfully processed sources resume skipping afterwards.
+
 This is transfer into qualified memory. Observation/generalization behavior is unchanged.
 
 Each extraction pass examines at most `maintenance.curate.max_pages` uncached inputs per cycle. Source curation follows a cycle with no legacy history actions and seals one bounded source batch per plan; later cycles continue other sources. The separate
