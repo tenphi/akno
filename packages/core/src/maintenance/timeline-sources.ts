@@ -59,6 +59,8 @@ interface SourceProgress {
   changeId?: string;
   modelUsage?: RetainResult['modelUsage'];
   rejected?: string[];
+  curatorContract?: string;
+  ownerRejected?: string[];
   reason?: string;
   planId?: string;
   itemId?: string;
@@ -68,6 +70,7 @@ interface SourceProgress {
 
 const SOURCE_TEXT_LIMIT = 60_000;
 const SEALED_SOURCE_LIMIT = 80_000;
+export const SOURCE_TIMELINE_CURATOR_CONTRACT = 'scoped-source-temporal-items-v1';
 
 export interface TimelineSourceProof {
   source: SourceReference;
@@ -125,6 +128,45 @@ function progress(ctx: AknoContext, key: string): SourceProgress | null {
 }
 function record(ctx: AknoContext, key: string, value: SourceProgress, enabled: boolean): void {
   if (enabled && ctx.writable) ctx.store.setMeta(key, JSON.stringify(value));
+}
+
+function sourceDecisionChanged(state: SourceProgress | null): boolean {
+  return Boolean(
+    state &&
+    (state.status === 'rejected' || state.rejected?.length) &&
+    state.curatorContract !== SOURCE_TIMELINE_CURATOR_CONTRACT,
+  );
+}
+
+/** Old rejection cursors omitted their item ID; sealed receipts still identify each decision. */
+function legacyOwnerRejections(ctx: AknoContext, key: string, state: SourceProgress): string[] {
+  const actors = new Map<string, Set<string>>();
+  const rows = ctx.store.db
+    .prepare(
+      `
+    SELECT item.decision_actor, evidence.value AS proof
+    FROM maintenance_items AS item, json_each(item.evidence) AS evidence
+    WHERE item.decision_outcome = 'reject'
+      AND json_extract(evidence.value, '$.timelineHistory.retention.progressKey') = ?
+      AND json_extract(evidence.value, '$.timelineHistory.retention.progress.fingerprint') = ?
+  `,
+    )
+    .all(key, state.fingerprint) as { decision_actor: string | null; proof: string }[];
+  for (const row of rows) {
+    const proof = JSON.parse(row.proof).timelineHistory.retention as TimelineSourceProof;
+    for (const candidate of proof.prepared.receipt.result.candidates) {
+      if (!['written', 'support_added', 'duplicate'].includes(candidate.outcome)) continue;
+      const known = actors.get(candidate.candidate_id) ?? new Set<string>();
+      known.add(row.decision_actor ?? 'unknown');
+      actors.set(candidate.candidate_id, known);
+    }
+  }
+  // Only positively identified curator rejections may be retried. Any human or unknown
+  // decision stays closed, including mixed batches and missing historical metadata.
+  return (state.rejected ?? []).filter((id) => {
+    const known = actors.get(id);
+    return !known || known.has('human') || known.has('unknown') || !known.has('curator');
+  });
 }
 
 /** This is the ledger's narrow canonical companion, not a grant over other source pages. */
@@ -280,12 +322,18 @@ export async function planTimelineSources(
       /* Corrupt private progress does not nominate new source paths. */
     }
   }
-  // Oldest unprocessed attempts go first, so one held file cannot consume every cycle's budget.
-  sources.sort(
-    (a, b) =>
-      (progress(ctx, progressKey(a))?.attemptedAt ?? 0) - (progress(ctx, progressKey(b))?.attemptedAt ?? 0) ||
-      a.relPath.localeCompare(b.relPath),
-  );
+  // Give changed decision contracts one pass before the unprocessed backlog. Once marked
+  // current, ordinary oldest-attempt ordering resumes; negative caches cannot hog the budget.
+  const states = new Map(sources.map((source) => [progressKey(source), progress(ctx, progressKey(source))]));
+  sources.sort((a, b) => {
+    const left = states.get(progressKey(a)) ?? null;
+    const right = states.get(progressKey(b)) ?? null;
+    return (
+      Number(sourceDecisionChanged(right)) - Number(sourceDecisionChanged(left)) ||
+      (left?.attemptedAt ?? 0) - (right?.attemptedAt ?? 0) ||
+      a.relPath.localeCompare(b.relPath)
+    );
+  });
   sourceLoop: for (const source of sources) {
     const owner = owningTimeline(catalog, source.slug);
     const destination = `${owner.slug}-memories`;
@@ -339,6 +387,28 @@ export async function planTimelineSources(
       continue;
     }
     if (state?.fingerprint !== fingerprint) state = null;
+    if (state && sourceDecisionChanged(state)) {
+      // Reconsider old negative decisions under a changed decision contract. Completed sources
+      // keep their extraction cache; earlier releases discarded rejected frames and need one read.
+      const ownerRejected = state.ownerRejected ?? legacyOwnerRejections(ctx, key, state);
+      const reconsider = (state.rejected ?? []).filter((id) => !ownerRejected.includes(id));
+      state = { ...state, ownerRejected, curatorContract: SOURCE_TIMELINE_CURATOR_CONTRACT };
+      if (reconsider.length) {
+        const cachedIds = new Set(state.candidates?.map((item) => item.candidate_id));
+        const framesAvailable = reconsider.every((id) => cachedIds.has(id));
+        state = {
+          ...state,
+          candidates: framesAvailable ? state.candidates : undefined,
+          rejected: ownerRejected,
+          ownerRejected,
+          status: 'extracted',
+          reason: undefined,
+          revisionHold: undefined,
+          curatorContract: SOURCE_TIMELINE_CURATOR_CONTRACT,
+        };
+      }
+      record(ctx, key, state, options.recordState ?? false);
+    }
     if (state?.revisionHold) {
       if (state.revisionHold.context === (await revisionContext(ctx, state.fingerprint, owner))) {
         hold('unqualified_event');
@@ -421,6 +491,8 @@ export async function planTimelineSources(
         status: retained.error || retained.sourceHold ? 'held' : 'extracted',
         candidates,
         accepted: state?.accepted ?? [],
+        curatorContract: state?.curatorContract,
+        ownerRejected: state?.ownerRejected,
         rejected: state?.rejected ?? [],
         memories: state?.memories ?? {},
         incomplete: Boolean(retained.error || retained.sourceHold || retained.held.length || unqualified),
@@ -704,6 +776,7 @@ export function recordTimelineSourceDecision(
   ctx: AknoContext,
   proof: TimelineSourceProof,
   changeId?: string,
+  actor?: 'human' | 'curator',
 ): void {
   if (changeId) {
     // Receipt/support membership and the successful source cursor must advance together.
@@ -723,17 +796,20 @@ export function recordTimelineSourceDecision(
     })();
   } else {
     const prior = progress(ctx, proof.progressKey);
-    const rejected = [
-      ...new Set([
-        ...(prior?.rejected ?? []),
-        ...proof.prepared.receipt.result.candidates.map((item) => item.candidate_id),
-      ]),
-    ];
+    const selected = proof.prepared.receipt.result.candidates
+      .filter((item) => ['written', 'support_added', 'duplicate'].includes(item.outcome))
+      .map((item) => item.candidate_id);
+    const rejected = [...new Set([...(prior?.rejected ?? []), ...selected])];
     const state = {
       ...proof.progress,
+      planId: prior?.planId,
+      itemId: prior?.itemId,
+      candidates: prior?.candidates ?? proof.progress.candidates,
       accepted: prior?.accepted ?? [],
       memories: prior?.memories ?? {},
       rejected,
+      curatorContract: SOURCE_TIMELINE_CURATOR_CONTRACT,
+      ownerRejected: [...new Set([...(prior?.ownerRejected ?? []), ...(actor === 'human' ? selected : [])])],
       status: 'rejected' as SourceProgress['status'],
       attemptedAt: Date.now(),
       reason: 'curator rejected sealed source retention',
@@ -769,6 +845,7 @@ async function revisionContext(
   return sha256(
     JSON.stringify([
       SOURCE_REVISION_CONTRACT,
+      SOURCE_TIMELINE_CURATOR_CONTRACT,
       fingerprint,
       await safeBytes(ctx, owner.path),
       await safeBytes(ctx, `${owner.slug}-memories.md`),

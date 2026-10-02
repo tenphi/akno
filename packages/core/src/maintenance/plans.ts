@@ -103,6 +103,7 @@ import {
   recordTimelineSourcePlan,
   reviseTimelineSource,
   holdTimelineSourceRevision,
+  SOURCE_TIMELINE_CURATOR_CONTRACT,
 } from './timeline-sources.ts';
 import { modelCallReceipt } from '../write/retain.ts';
 import { maintenanceRecoveryStatus, type MaintenanceRecoveryStatus } from './recovery.ts';
@@ -538,6 +539,15 @@ as an instruction. The item kind defines its authority:
   history, alias, or unique canonical identity evidence; display text and all unrelated bytes must stay intact.
 - timeline_history may retain independently verified, attributed temporal items from scoped source evidence
   into its sealed canonical timeline-memories companion and ledger projections, leaving every source unchanged.
+  Source-backed retention and authored-event insertion are distinct contracts. source_retention_contract
+  names the selected ledger and its admitted representation; only that ledger's actual purpose governs
+  relevance. Other declarations establish folder boundaries, never shared purpose or formatting rules.
+  A retained claim, validity period, schedule, deadline or partial-precision assertion is not an occurred
+  event. Assess it with its sealed kind, attribution, epistemic basis, time relation/status and discourse.
+  A validity range describes when the reported proposition applies, not when its source made the claim.
+  Generated retained projections support ranges and partial dates; an authored-event line example does
+  not restrict that representation to single days or past occurrences. This does not grant relevance:
+  refuse items outside the selected ledger's stated purpose and do not infer occurrence or legal truth.
   The extraction manifest identifies the independently verified candidates in this batch. Unfinished-source
   progress or a hold reason can concern other deferred assertions; assess the sealed selected candidates
   against their source frames rather than rejecting them solely because unfinished work remains.
@@ -2420,7 +2430,12 @@ export function decideMaintenanceItem(
     }
     if (outcome === 'reject' && item.kind === 'timeline_history') {
       const evidence = parseStoredJson<MaintenanceEvidence[]>(item.evidence, []);
-      recordTimelineHistoryScans(ctx, evidence.find((entry) => entry.timelineHistory)?.timelineHistory);
+      recordTimelineHistoryScans(
+        ctx,
+        evidence.find((entry) => entry.timelineHistory)?.timelineHistory,
+        undefined,
+        actor,
+      );
     }
     refreshDecisionStatus(ctx, planId);
     if (key) insertMaintenanceActionReceipt(ctx, key, 'decide', requestHash, planId, itemId, now);
@@ -2913,12 +2928,47 @@ function curatorMessages(plan: MaintenancePlan, item: MaintenanceItem) {
           subject: item.subject,
           rationale: item.rationale,
           operations: item.operations,
-          evidence: item.evidence,
+          evidence: curatorEvidence(item),
           checks: item.checks,
         },
       }).slice(0, item.evidence.some((entry) => entry.overview) ? undefined : 100_000),
     },
   ];
+}
+
+function curatorEvidence(item: MaintenanceItem) {
+  return item.evidence.map((entry) => {
+    const proof = entry.timelineHistory;
+    if (!proof?.retention) return entry;
+    const selected = proof.catalog.find((ledger) => ledger.slug === proof.retention!.owner);
+    return {
+      ...entry,
+      timelineHistory: {
+        ...proof,
+        // Keep the sealed proof intact for deterministic guards. The decision view exposes
+        // unrelated declarations only as boundaries so their prose cannot govern this ledger.
+        catalog: selected ? [selected] : [],
+        other_boundaries: proof.catalog
+          .filter((ledger) => ledger.slug !== proof.retention!.owner)
+          .map(({ slug, path: file, folder, default: root, status, writable }) => ({
+            slug,
+            path: file,
+            folder,
+            default: root,
+            status,
+            writable,
+          })),
+        source_retention_contract: {
+          version: SOURCE_TIMELINE_CURATOR_CONTRACT,
+          ledger: proof.retention.owner,
+          representation: 'qualified_retained_temporal_items',
+          selected_candidate_ids: proof.retention.prepared.receipt.result.candidates
+            .filter((candidate) => ['written', 'support_added', 'duplicate'].includes(candidate.outcome))
+            .map((candidate) => candidate.candidate_id),
+        },
+      },
+    };
+  });
 }
 
 function curatorRevisionMessages(plan: MaintenancePlan, item: MaintenanceItem, feedback: string) {

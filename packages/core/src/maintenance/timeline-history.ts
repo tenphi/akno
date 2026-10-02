@@ -365,8 +365,9 @@ export function recordTimelineHistoryScans(
   ctx: AknoContext,
   proof: TimelineHistoryProof | undefined,
   changeId?: string,
+  actor?: 'human' | 'curator',
 ): void {
-  if (proof?.retention) recordTimelineSourceDecision(ctx, proof.retention, changeId);
+  if (proof?.retention) recordTimelineSourceDecision(ctx, proof.retention, changeId, actor);
   for (const scan of proof?.scans ?? []) ctx.store.setMeta(scan.key, scan.fingerprint);
 }
 
