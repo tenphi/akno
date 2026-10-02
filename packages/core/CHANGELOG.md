@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.16.2
+
+### Patch Changes
+
+- [#152](https://github.com/tenphi/akno/pull/152) [`a4b1d29`](https://github.com/tenphi/akno/commit/a4b1d29347e0043f36ba815b5f78791305793947) Thanks [@tenphi](https://github.com/tenphi)! - Reseal independently verified source-timeline prose corrections with their retention receipts and projections. Preserve actionable feedback and unfinished source progress for unsupported corrections, without repeating unchanged model work.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.16.2
+
 ## 0.16.1
 
 ### Patch Changes
