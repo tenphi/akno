@@ -230,10 +230,16 @@ occurrence or establish additional timeline restrictions. The selected ledger's 
 determines relevance, and the curator may refuse unsupported or unrelated assertions.
 
 Negative source decisions carry the curator contract version. A changed decision contract reconsiders
-those candidates once ahead of the unprocessed-source backlog, reusing cached source frames when available. Earlier negative records that lack
-those frames need one new extraction. Successfully processed sources keep their cache, admitted membership
-is preserved, and explicit human rejections and owner-undone transfers remain effective. Legacy decisions
-whose actor can no longer be established remain closed. Unchanged negative decisions do not loop.
+those candidates once ahead of the unprocessed-source backlog, reusing cached source frames when available.
+Earlier negative records recover their original verified frames from sealed provided-source receipts when
+source snapshot, source identity, timeline owner, verifier version, admitted membership and the original
+frame payload hash still match. Source grounding survives a changed placement context; fresh preparation
+and the curator still assess the current ledger purpose and write policies before admission. Private
+progress links each recovered candidate to its original maintenance item. Records without eligible
+verified frames need a new extraction. Successfully processed sources keep their cache, admitted
+membership is preserved, and explicit human rejections and owner-undone transfers remain effective.
+Legacy decisions whose actor can no longer be established remain closed. Unchanged negative decisions
+do not loop.
 
 Changes to evidence, timeline declarations, purposes, or write policies invalidate a pending plan.
 Transfers remove the parent entry and insert the descendant entry in one journalled item; failed writes

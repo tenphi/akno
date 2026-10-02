@@ -1,5 +1,6 @@
 import fsp from 'node:fs/promises';
 import path from 'node:path';
+import { ProvidedRetainCandidate as ProvidedRetainCandidateSchema } from '@tenphi/akno-protocol';
 import type {
   DegradedReason,
   RetainModelCallReceipt,
@@ -61,6 +62,7 @@ interface SourceProgress {
   rejected?: string[];
   curatorContract?: string;
   ownerRejected?: string[];
+  recoveredFrames?: { itemId: string; candidateIds: string[] }[];
   reason?: string;
   planId?: string;
   itemId?: string;
@@ -70,7 +72,7 @@ interface SourceProgress {
 
 const SOURCE_TEXT_LIMIT = 60_000;
 const SEALED_SOURCE_LIMIT = 80_000;
-export const SOURCE_TIMELINE_CURATOR_CONTRACT = 'scoped-source-temporal-items-v1';
+export const SOURCE_TIMELINE_CURATOR_CONTRACT = 'scoped-source-temporal-items-v2';
 
 export interface TimelineSourceProof {
   source: SourceReference;
@@ -133,7 +135,9 @@ function record(ctx: AknoContext, key: string, value: SourceProgress, enabled: b
 function sourceDecisionChanged(state: SourceProgress | null): boolean {
   return Boolean(
     state &&
-    (state.status === 'rejected' || state.rejected?.length) &&
+    (state.status === 'rejected' ||
+      state.rejected?.length ||
+      (state.curatorContract && ['held', 'complete'].includes(state.status) && !state.candidates?.length)) &&
     state.curatorContract !== SOURCE_TIMELINE_CURATOR_CONTRACT,
   );
 }
@@ -167,6 +171,111 @@ function legacyOwnerRejections(ctx: AknoContext, key: string, state: SourceProgr
     const known = actors.get(id);
     return !known || known.has('human') || known.has('unknown') || !known.has('curator');
   });
+}
+
+/** Reuse only the exact frames already verified against this unchanged source revision. */
+function verifiedRejectedFrames(
+  ctx: AknoContext,
+  key: string,
+  state: SourceProgress,
+  current: SourceSnapshot,
+  owner: TimelineDescriptor,
+) {
+  const rows = ctx.store.db
+    .prepare(
+      `
+    SELECT item.id, item.decision_actor, evidence.value AS proof
+    FROM maintenance_items AS item, json_each(CASE WHEN json_valid(item.evidence) THEN item.evidence ELSE '[]' END) AS evidence
+    WHERE item.kind = 'timeline_history' AND item.decision_outcome = 'reject'
+      AND json_extract(CASE WHEN evidence.type = 'object' THEN evidence.value ELSE '{}' END, '$.timelineHistory.retention.progressKey') = ?
+      AND json_extract(CASE WHEN evidence.type = 'object' THEN evidence.value ELSE '{}' END, '$.timelineHistory.retention.snapshot.hash') = ?
+    ORDER BY item.rowid DESC
+  `,
+    )
+    .all(key, current.hash) as { id: string; decision_actor: string | null; proof: string }[];
+  const blocked = new Set([...(state.ownerRejected ?? []), ...(state.accepted ?? [])]);
+  const ownerRejected = new Set(state.ownerRejected ?? []);
+  const frames = new Map<string, { candidate: RetainCandidate; itemId: string }>();
+  let modelUsage: RetainResult['modelUsage'] | undefined;
+  for (const row of rows) {
+    const proof = JSON.parse(row.proof).timelineHistory.retention as TimelineSourceProof;
+    if (proof.owner !== owner.slug || proof.snapshot.text !== current.text) continue;
+    if (!Array.isArray(proof.prepared?.receipt?.result?.candidates)) continue;
+    const admitted = proof.prepared.receipt.result.candidates
+      .filter((item) => ['written', 'support_added', 'duplicate'].includes(item.outcome))
+      .map((item) => item.candidate_id);
+    if (
+      row.decision_actor !== 'curator' ||
+      (proof.progress?.curatorContract === SOURCE_TIMELINE_CURATOR_CONTRACT &&
+        proof.progress.fingerprint === state.fingerprint)
+    ) {
+      for (const id of admitted) {
+        blocked.add(id);
+        if (row.decision_actor !== 'curator') ownerRejected.add(id);
+      }
+      continue;
+    }
+    const source = proof.prepared.receipt.source;
+    if (
+      proof.snapshot.hash !== current.hash ||
+      proof.snapshot.text !== current.text ||
+      proof.extraction?.verifierVersion !== RETAIN_VERIFIER_VERSION ||
+      !source ||
+      !('input' in source) ||
+      source.retention?.mode !== 'provided' ||
+      !Array.isArray(source.retention.candidates) ||
+      !Array.isArray(proof.extraction?.verifiedCandidateIds) ||
+      typeof proof.progress?.fingerprint !== 'string'
+    )
+      continue;
+    const sealed = source.retention.candidates;
+    // Initial preparation adds exact placement after hashing; prose revisions hash those
+    // destinations too. In either format the unchanged revision must seal every frame field.
+    const revision = (sealedFrames: typeof sealed) =>
+      sha256(JSON.stringify([proof.progress.fingerprint, sealedFrames]));
+    if (
+      source.revision !== revision(sealed) &&
+      source.revision !== revision(sealed.map((frame) => ({ ...frame, destination: undefined })))
+    )
+      continue;
+    const verified = new Set(proof.extraction.verifiedCandidateIds);
+    for (const value of source.retention.candidates) {
+      const parsed = ProvidedRetainCandidateSchema.safeParse(value);
+      if (
+        !parsed.success ||
+        !admitted.includes(parsed.data.candidate_id) ||
+        !verified.has(parsed.data.candidate_id) ||
+        !parsed.data.time ||
+        parsed.data.time.precision === 'unknown' ||
+        !(parsed.data.time.start || parsed.data.time.until) ||
+        /[\r\n]|<!--|\[\[/u.test(parsed.data.text) ||
+        parsed.data.epistemic.basis !== 'source_report'
+      )
+        continue;
+      const id = parsed.data.candidate_id;
+      if (!frames.has(id)) frames.set(id, { candidate: { ...value, ...parsed.data }, itemId: row.id });
+      modelUsage ??= {
+        extraction: proof.prepared.receipt.result.model_usage?.extraction ?? null,
+        verification: proof.prepared.receipt.result.model_usage?.verification ?? null,
+      };
+    }
+  }
+  const candidates: RetainCandidate[] = [];
+  const provenance = new Map<string, string[]>();
+  for (const [id, frame] of frames) {
+    if (blocked.has(id)) continue;
+    candidates.push(frame.candidate);
+    const ids = provenance.get(frame.itemId) ?? [];
+    ids.push(id);
+    provenance.set(frame.itemId, ids);
+  }
+  return {
+    candidates,
+    closed: [...blocked],
+    ownerRejected: [...ownerRejected],
+    modelUsage,
+    provenance: [...provenance].map(([itemId, candidateIds]) => ({ itemId, candidateIds })),
+  };
 }
 
 /** This is the ledger's narrow canonical companion, not a grant over other source pages. */
@@ -387,18 +496,60 @@ export async function planTimelineSources(
       continue;
     }
     if (state?.fingerprint !== fingerprint) state = null;
+    if (!state) {
+      const fresh: SourceProgress = {
+        fingerprint,
+        source,
+        sourceHash: current.hash,
+        status: 'extracted',
+        attemptedAt: Date.now(),
+        accepted: [],
+        rejected: [],
+        memories: {},
+      };
+      const recovered = verifiedRejectedFrames(ctx, key, fresh, current, owner);
+      if (recovered.candidates.length || recovered.closed.length) {
+        // Grounding belongs to the source/verifier revision. Fresh placement and curator
+        // decisions still evaluate the current purpose and write policy before any admission.
+        state = {
+          ...fresh,
+          candidates: recovered.candidates.length ? recovered.candidates : undefined,
+          rejected: recovered.closed,
+          ownerRejected: recovered.ownerRejected,
+          recoveredFrames: recovered.provenance,
+          modelUsage: recovered.modelUsage,
+          incomplete: recovered.candidates.length > 0,
+          curatorContract: SOURCE_TIMELINE_CURATOR_CONTRACT,
+        };
+        record(ctx, key, state, options.recordState ?? false);
+      }
+    }
     if (state && sourceDecisionChanged(state)) {
       // Reconsider old negative decisions under a changed decision contract. Completed sources
-      // keep their extraction cache; earlier releases discarded rejected frames and need one read.
-      const ownerRejected = state.ownerRejected ?? legacyOwnerRejections(ctx, key, state);
+      // keep their extraction cache; older dropped frames can be recovered from sealed receipts.
+      const recovered = verifiedRejectedFrames(ctx, key, state, current, owner);
+      const ownerRejected = [
+        ...new Set([
+          ...(state.ownerRejected ?? legacyOwnerRejections(ctx, key, state)),
+          ...recovered.ownerRejected,
+        ]),
+      ];
       const reconsider = (state.rejected ?? []).filter((id) => !ownerRejected.includes(id));
+      const wanted = new Set([...reconsider, ...recovered.candidates.map((item) => item.candidate_id)]);
       state = { ...state, ownerRejected, curatorContract: SOURCE_TIMELINE_CURATOR_CONTRACT };
-      if (reconsider.length) {
-        const cachedIds = new Set(state.candidates?.map((item) => item.candidate_id));
-        const framesAvailable = reconsider.every((id) => cachedIds.has(id));
+      if (wanted.size) {
+        const frames = new Map((state.candidates ?? []).map((item) => [item.candidate_id, item]));
+        for (const candidate of recovered.candidates)
+          if (!frames.has(candidate.candidate_id)) frames.set(candidate.candidate_id, candidate);
+        const missing = [...wanted].some((id) => !frames.has(id));
         state = {
           ...state,
-          candidates: framesAvailable ? state.candidates : undefined,
+          modelUsage: state.candidates?.length
+            ? state.modelUsage
+            : (recovered.modelUsage ?? state.modelUsage),
+          candidates: frames.size ? [...frames.values()] : undefined,
+          incomplete: state.incomplete || (frames.size > 0 && missing),
+          recoveredFrames: [...(state.recoveredFrames ?? []), ...recovered.provenance],
           rejected: ownerRejected,
           ownerRejected,
           status: 'extracted',
@@ -491,7 +642,7 @@ export async function planTimelineSources(
         status: retained.error || retained.sourceHold ? 'held' : 'extracted',
         candidates,
         accepted: state?.accepted ?? [],
-        curatorContract: state?.curatorContract,
+        curatorContract: SOURCE_TIMELINE_CURATOR_CONTRACT,
         ownerRejected: state?.ownerRejected,
         rejected: state?.rejected ?? [],
         memories: state?.memories ?? {},
@@ -504,7 +655,15 @@ export async function planTimelineSources(
         modelUsage: retained.modelUsage,
       };
       if (!candidates.length) state.status = state.incomplete ? 'held' : 'complete';
+      else if (
+        !state.incomplete &&
+        candidates.every((candidate) =>
+          [...(state!.accepted ?? []), ...(state!.rejected ?? [])].includes(candidate.candidate_id),
+        )
+      )
+        state.status = 'complete';
       record(ctx, key, state, options.recordState ?? false);
+      if (state.status === 'complete') continue;
       if (!candidates.length) {
         if (state.incomplete) hold('unqualified_event');
         continue;
