@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.16.6
+
+### Patch Changes
+
+- [#161](https://github.com/tenphi/akno/pull/161) [`8275645`](https://github.com/tenphi/akno/commit/82756451be5e82d878b77dc87411be4e061470d8) Thanks [@tenphi](https://github.com/tenphi)! - Raise the default derive ceiling to 16,384 tokens so complete retention requests are no longer capped at a brief page-summary allowance. Smaller caller requests and explicit lower ceilings remain honored. Give multi-record retention repairs a bounded output allowance proportional to their failed records, while preserving configured model ceilings. Require complete repair transactions so unfinished JSON cannot replace original candidates; independent verification and admitted siblings remain intact.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.16.6
+
 ## 0.16.5
 
 ### Patch Changes
