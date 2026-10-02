@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.16.5
+
+### Patch Changes
+
+- [#158](https://github.com/tenphi/akno/pull/158) [`f4dc3c6`](https://github.com/tenphi/akno/commit/f4dc3c6bcab3f378baa03150fba8162f0a8dcaa4) Thanks [@tenphi](https://github.com/tenphi)! - Compare complete source-backed temporal assertions across writable canonical pages within their owning timeline before creating another memory. Preserve qualifications and existing identity, hold ambiguous or incomplete comparison sets, and keep correlated copy support consistent between Markdown and durable receipts.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.16.5
+
 ## 0.16.4
 
 ### Patch Changes
