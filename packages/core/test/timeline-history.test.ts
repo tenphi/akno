@@ -20,6 +20,7 @@ let selection: string;
 let verified: boolean;
 let equivalence: string;
 let curator: 'approve' | 'reject' | 'revise';
+let curatorDecision: ((input: string, system: string) => typeof curator) | null;
 let reviseOnce: boolean;
 let sourceRevision: (value: { candidates: { candidate_id: string; text: string }[] }) => unknown;
 let curatorInputs: string[];
@@ -96,6 +97,7 @@ beforeEach(async () => {
   verified = true;
   equivalence = 'new';
   curator = 'approve';
+  curatorDecision = null;
   reviseOnce = false;
   sourceRevision = (value) => ({
     replacements: [
@@ -147,7 +149,7 @@ beforeEach(async () => {
         calls.curator++;
         curatorInputs.push(user);
         content = {
-          outcome: reviseOnce ? 'revise' : curator,
+          outcome: reviseOnce ? 'revise' : (curatorDecision?.(user, system) ?? curator),
           reason: 'Preserve the scheduled inspection while correcting its readable prose.',
         };
         reviseOnce = false;
@@ -1638,4 +1640,347 @@ it('revises only admitted candidates while preserving placement-held assertions 
   expect(state.status).toBe('extracted');
   db.close();
   expect((await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).total).toBe(1);
+});
+
+const validityNotice =
+  'Vulpine Mutual states the Zephyr QX-100 service agreement applies from 2031-04-01 through 2033-03-31.';
+const occurrencePurpose = 'Household occurrences only. Past events use a single date.';
+const validityPurpose = 'Reported service terms and correspondence. Preserve attributed validity periods.';
+
+async function validitySetup() {
+  await sourceSetup();
+  put('timeline.md', `# Timeline\n\n${occurrencePurpose}\n`);
+  put('work/timeline.md', `# Timeline\n\n${validityPurpose}\n`);
+  put('work/notes.md', `# Service terms\n\n${validityNotice}\n`);
+  extraction = () => [
+    {
+      ...sourceCandidate(validityNotice),
+      kind: 'claim',
+      text: validityNotice,
+      time: {
+        ...candidate().time,
+        relation: 'valid',
+        start: '2031-04-01',
+        until: '2033-03-31',
+      },
+    },
+  ];
+  await mem.index({ structuralOnly: true });
+}
+
+it('scopes source curator authority to its ledger and retains an attributed validity range without an occurrence', async () => {
+  await validitySetup();
+  const before = read('work/notes.md');
+  curatorDecision = (input, system) => {
+    const proof = JSON.parse(input).item.evidence[0].timelineHistory;
+    return !input.includes(occurrencePurpose) &&
+      proof.source_retention_contract?.representation === 'qualified_retained_temporal_items' &&
+      system.includes('not an occurred')
+      ? 'approve'
+      : 'reject';
+  };
+  const report = await mem.dream({ phase: 'curate' });
+  expect(report.maintenancePlan!.items[0]!.status).toBe('applied');
+  const decision = JSON.parse(curatorInputs[0]!).item.evidence[0].timelineHistory;
+  expect(decision.catalog.map((t: { slug: string }) => t.slug)).toEqual(['work/timeline']);
+  expect(decision.catalog[0].description).toBe(validityPurpose);
+  expect(decision.other_boundaries).toEqual([
+    expect.objectContaining({ slug: 'timeline', folder: '', default: true, writable: true }),
+  ]);
+  expect(decision.other_boundaries[0]).not.toHaveProperty('description');
+  expect(decision.other_boundaries[0]).not.toHaveProperty('title');
+  const sealed = mem.plan(report.maintenancePlan!.id).items[0]!.evidence[0]!.timelineHistory!;
+  expect(sealed.catalog.find((t) => t.slug === 'timeline')!.description).toBe(occurrencePurpose);
+  expect(decision.source_retention_contract.selected_candidate_ids).toEqual(
+    sealed.retention!.prepared.receipt.result.candidates.map((c) => c.candidate_id),
+  );
+  expect(read('work/timeline.md')).toContain(
+    '**2031-04-01 – 2033-03-31** | *Valid · claim · reported by Vulpine Mutual*',
+  );
+  const query = await mem.timeline({ timeline: 'work/timeline', source: 'state' });
+  expect(query.results).toEqual([
+    expect.objectContaining({
+      origin: 'retained',
+      kind: 'claim',
+      source_kind: 'state',
+      relation: 'valid',
+      start: '2031-04-01',
+      until: '2033-03-31',
+      temporal_status: 'actual',
+    }),
+  ]);
+  expect((await mem.timeline({ timeline: 'work/timeline', source: 'event' })).total).toBe(0);
+  expect(read('work/notes.md')).toBe(before);
+  expect(read('timeline.md')).toBe(`# Timeline\n\n${occurrencePurpose}\n`);
+  const count = { ...calls };
+  await mem.close();
+  mem = await start({
+    folders: {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+    },
+  });
+  await mem.index({ rebuild: true, structuralOnly: true });
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+  expect(calls).toEqual(count);
+  await mem.undo({ change_id: report.maintenancePlan!.items[0]!.changeId! });
+  expect(read('work/timeline.md')).toBe(`# Timeline\n\n${validityPurpose}\n`);
+  expect(read('work/notes.md')).toBe(before);
+});
+
+it('preserves the selected ledger purpose and lets the curator refuse an out-of-scope validity assertion', async () => {
+  await validitySetup();
+  put('work/timeline.md', `# Timeline\n\n${occurrencePurpose}\n`);
+  await mem.index({ structuralOnly: true });
+  curatorDecision = (input) =>
+    JSON.parse(input).item.evidence[0].timelineHistory.catalog[0].description === occurrencePurpose
+      ? 'reject'
+      : 'approve';
+  const before = read('work/timeline.md');
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan!.items[0]!.status).toBe('rejected');
+  expect(read('work/timeline.md')).toBe(before);
+  const count = { ...calls };
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+  expect(calls).toEqual(count);
+});
+
+it('keeps authored history decisions on their original event-transfer contract', async () => {
+  const report = await mem.dream({ phase: 'curate' });
+  expect(report.maintenancePlan!.items[0]!.status).toBe('applied');
+  const proof = JSON.parse(curatorInputs[0]!).item.evidence[0].timelineHistory;
+  expect(proof.catalog).toHaveLength(2);
+  expect(proof).not.toHaveProperty('source_retention_contract');
+  expect(proof).not.toHaveProperty('other_boundaries');
+});
+
+it.each(['cached', 'legacy'])(
+  'reconsiders %s negative source decisions once after a curator contract change',
+  async (kind) => {
+    await validitySetup();
+    curator = 'reject';
+    const first = await mem.dream({ phase: 'curate' });
+    expect(first.maintenancePlan!.items[0]!.status).toBe('rejected');
+    const db = new Database(mem.config.dbPath);
+    const row = db.prepare("SELECT key,value FROM meta WHERE key LIKE 'timeline-source:v1:%'").get() as {
+      key: string;
+      value: string;
+    };
+    const state = JSON.parse(row.value);
+    expect(state.candidates).toHaveLength(1);
+    state.curatorContract = 'prior-invented-contract';
+    if (kind === 'legacy') {
+      delete state.candidates;
+      delete state.curatorContract;
+      delete state.ownerRejected;
+      delete state.itemId;
+    }
+    db.prepare('UPDATE meta SET value = ? WHERE key = ?').run(JSON.stringify(state), row.key);
+    db.close();
+    const count = { ...calls };
+    curator = 'approve';
+    const next = await mem.dream({ phase: 'curate' });
+    expect(next.maintenancePlan!.items[0]!.status).toBe('applied');
+    expect(calls.extraction).toBe(count.extraction + (kind === 'legacy' ? 1 : 0));
+    expect(calls.curator).toBe(count.curator + 1);
+    expect((await mem.timeline({ timeline: 'work/timeline', source: 'state' })).total).toBe(1);
+    const after = { ...calls };
+    expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+    expect(calls).toEqual(after);
+  },
+);
+
+it('gives a changed negative decision one bounded pass before the unprocessed source backlog', async () => {
+  await validitySetup();
+  curator = 'reject';
+  await mem.dream({ phase: 'curate' });
+  const db = new Database(mem.config.dbPath);
+  const row = db.prepare("SELECT key,value FROM meta WHERE key LIKE 'timeline-source:v1:%'").get() as {
+    key: string;
+    value: string;
+  };
+  const state = JSON.parse(row.value);
+  state.curatorContract = 'prior-invented-contract';
+  db.prepare('UPDATE meta SET value = ? WHERE key = ?').run(JSON.stringify(state), row.key);
+  db.close();
+  put('work/aaa-unprocessed.md', '# Background\n\nNo temporal assertion.\n');
+  await mem.index({ structuralOnly: true });
+  mem.config.maintenance.curate.maxPages = 1;
+  const count = { ...calls };
+  curator = 'approve';
+  const retry = await mem.dream({ phase: 'curate' });
+  expect(retry.maintenancePlan!.items[0]!.status).toBe('applied');
+  expect(calls.extraction).toBe(count.extraction);
+  expect(calls.curator).toBe(count.curator + 1);
+  extraction = () => [];
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+  expect(calls.extraction).toBe(count.extraction + 1);
+});
+
+it('a new source decision contract cannot revive an owner-undone successful transfer', async () => {
+  await validitySetup();
+  const report = await mem.dream({ phase: 'curate' });
+  await mem.undo({ change_id: report.maintenancePlan!.items[0]!.changeId! });
+  const db = new Database(mem.config.dbPath);
+  const row = db.prepare("SELECT key,value FROM meta WHERE key LIKE 'timeline-source:v1:%'").get() as {
+    key: string;
+    value: string;
+  };
+  const state = JSON.parse(row.value);
+  state.curatorContract = 'prior-invented-contract';
+  state.rejected = ['invented-rejected-id'];
+  db.prepare('UPDATE meta SET value = ? WHERE key = ?').run(JSON.stringify(state), row.key);
+  db.close();
+  const count = { ...calls };
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+  expect(calls).toEqual(count);
+  expect(read('work/timeline.md')).toBe(`# Timeline\n\n${validityPurpose}\n`);
+});
+
+it.each(['tracked', 'legacy'])(
+  'preserves %s human source rejections when the curator contract changes',
+  async (kind) => {
+    await validitySetup();
+    const report = await mem.dream({ phase: 'curate', mode: 'review' });
+    const plan = mem.plan(report.maintenancePlan!.id);
+    mem.decidePlan(plan.id, plan.items[0]!.id, 'reject', 'This assertion does not belong in my timeline.');
+    const db = new Database(mem.config.dbPath);
+    const row = db.prepare("SELECT key,value FROM meta WHERE key LIKE 'timeline-source:v1:%'").get() as {
+      key: string;
+      value: string;
+    };
+    const state = JSON.parse(row.value);
+    expect(state.ownerRejected).toHaveLength(1);
+    state.curatorContract = 'prior-invented-contract';
+    if (kind === 'legacy') {
+      delete state.ownerRejected;
+      delete state.curatorContract;
+      delete state.itemId;
+    }
+    db.prepare('UPDATE meta SET value = ? WHERE key = ?').run(JSON.stringify(state), row.key);
+    db.close();
+    const count = { ...calls };
+    expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+    expect(calls).toEqual(count);
+    expect(read('work/timeline.md')).toBe(`# Timeline\n\n${validityPurpose}\n`);
+  },
+);
+
+it('source rejection consumes only admitted candidates and preserves placement-held assertions', async () => {
+  await sourceSetup();
+  const other = 'Vulpine Mutual states that a second Zephyr QX-100 inspection is scheduled for 8 April 2031.';
+  put('work/notes.md', `# Notices\n\n${notice}\n\n${other}\n`);
+  extraction = () => [
+    sourceCandidate(),
+    {
+      ...sourceCandidate(other),
+      text: 'Vulpine Mutual states a second Zephyr QX-100 inspection is scheduled for 2031-04-08.',
+    },
+  ];
+  equivalence = 'uncertain';
+  curator = 'reject';
+  await mem.index({ structuralOnly: true });
+  const report = await mem.dream({ phase: 'curate' });
+  expect(report.maintenancePlan!.items[0]!.status).toBe('rejected');
+  const db = new Database(mem.config.dbPath);
+  const state = JSON.parse(
+    (db.prepare("SELECT value FROM meta WHERE key LIKE 'timeline-source:v1:%'").get() as { value: string })
+      .value,
+  );
+  db.close();
+  expect(state.rejected).toHaveLength(1);
+  expect(state.accepted).toEqual([]);
+  expect(state.candidates).toHaveLength(2);
+  expect(state.status).toBe('extracted');
+  const count = { ...calls };
+  curator = 'approve';
+  const next = await mem.dream({ phase: 'curate' });
+  expect(next.maintenancePlan!.items[0]!.status).toBe('applied');
+  expect(calls.extraction).toBe(count.extraction);
+  expect(read('work/timeline.md')).toContain('second');
+  expect((await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).total).toBe(1);
+});
+
+it('reconsidering a legacy partial source preserves its already admitted memory identities', async () => {
+  await sourceSetup({
+    maintenance: {
+      profile: 'autonomous',
+      policies: Object.fromEntries(
+        MAINTENANCE_TRANSFORMS.map((k) => [k, k === 'timeline_history' ? 'auto' : 'off']),
+      ),
+      curate: { max_timeline_events: 1 },
+    },
+  });
+  const other = 'Vulpine Mutual states that the Zephyr QX-100 repair is scheduled for 9 April 2031.';
+  put('work/notes.md', `# Notices\n\n${notice}\n\n${other}\n`);
+  extraction = () => [
+    sourceCandidate(),
+    {
+      ...sourceCandidate(other, '2031-04-09'),
+      text: 'Vulpine Mutual states the Zephyr QX-100 repair is scheduled for 2031-04-09.',
+    },
+  ];
+  await mem.index({ structuralOnly: true });
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan!.items[0]!.status).toBe('applied');
+  const original = (await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).results[0]!.id;
+  curator = 'reject';
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan!.items[0]!.status).toBe('rejected');
+  const db = new Database(mem.config.dbPath);
+  const row = db.prepare("SELECT key,value FROM meta WHERE key LIKE 'timeline-source:v1:%'").get() as {
+    key: string;
+    value: string;
+  };
+  const state = JSON.parse(row.value);
+  expect(state.accepted).toHaveLength(1);
+  delete state.candidates;
+  delete state.curatorContract;
+  delete state.ownerRejected;
+  db.prepare('UPDATE meta SET value = ? WHERE key = ?').run(JSON.stringify(state), row.key);
+  db.close();
+  curator = 'approve';
+  const count = { ...calls };
+  const retry = await mem.dream({ phase: 'curate' });
+  expect(retry.maintenancePlan).not.toBeNull();
+  expect(retry.maintenancePlan!.items[0]!.status).toBe('applied');
+  expect(calls.extraction).toBe(count.extraction + 1);
+  const ids = (await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).results.map((r) => r.id);
+  expect(ids).toHaveLength(2);
+  expect(new Set(ids).size).toBe(2);
+  expect(ids).toContain(original);
+  const after = { ...calls };
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+  expect(calls).toEqual(after);
+});
+
+it('does not reopen a legacy source rejection when its original decision actor is unavailable', async () => {
+  await validitySetup();
+  curator = 'reject';
+  await mem.dream({ phase: 'curate' });
+  const db = new Database(mem.config.dbPath);
+  const row = db.prepare("SELECT key,value FROM meta WHERE key LIKE 'timeline-source:v1:%'").get() as {
+    key: string;
+    value: string;
+  };
+  const state = JSON.parse(row.value);
+  delete state.itemId;
+  delete state.curatorContract;
+  delete state.ownerRejected;
+  db.prepare('UPDATE meta SET value = ? WHERE key = ?').run(JSON.stringify(state), row.key);
+  db.prepare("UPDATE maintenance_items SET decision_actor = NULL WHERE decision_outcome = 'reject'").run();
+  db.close();
+  const count = { ...calls };
+  curator = 'approve';
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+  expect(calls).toEqual(count);
+});
+
+it('refuses a sealed source plan when the selected ledger purpose changes before apply', async () => {
+  await validitySetup();
+  const report = await mem.dream({ phase: 'curate', mode: 'review' });
+  const plan = mem.plan(report.maintenancePlan!.id);
+  put('work/timeline.md', `# Timeline\n\n${occurrencePurpose}\n`);
+  await mem.index({ structuralOnly: true });
+  mem.decidePlan(plan.id, plan.items[0]!.id, 'approve', 'Reviewed earlier service terms.');
+  expect((await mem.applyPlan(plan.id)).plan.items[0]!.status).toBe('stale');
+  expect(read('work/timeline.md')).toBe(`# Timeline\n\n${occurrencePurpose}\n`);
+  expect(read('work/notes.md')).toBe(`# Service terms\n\n${validityNotice}\n`);
 });
