@@ -178,7 +178,13 @@ into an unqualified historical fact. File or processing timestamps never establi
 Existing Akno-managed pages and rendered timeline references are not new source evidence.
 
 A complete duplicate assertion adds source support/citations to one existing canonical item and ledger
-reference. Paraphrases need an explicit equivalence decision; an uncertain match is held. Repeated
+reference. Paraphrases need an explicit equivalence decision across writable canonical pages in the
+same owning timeline, including its companion. The comparison preserves the complete speaker,
+discourse, epistemic and temporal envelope; an uncertain match is held. The bounded comparison does
+not select from a clipped cluster, consume nested timelines, or use stale/unreadable canonical pages.
+Multiple existing identical identities are held for reconciliation rather than arbitrarily selecting
+one. A successful match adds support to the existing canonical identity and refreshes its ledger
+reference, with a sealed decision receipt and exact undo. Repeated
 support for the same issuer's assertion does not create independent proof. Different speakers, materially
 different qualifiers, or conflicting event dates remain separate attributed assertions. A new date alone
 never establishes correction, rescheduling, or occurrence. Explicit same-source relations remain qualified

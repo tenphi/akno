@@ -743,7 +743,10 @@ export async function planTimelineSources(
             sizeHold: undefined,
             status: 'held',
             attemptedAt: Date.now(),
-            reason: result.result.note ?? 'retention held',
+            reason:
+              result.result.candidates.find((item) => item.outcome === 'held')?.reason ??
+              result.result.note ??
+              'retention held',
           },
           options.recordState ?? false,
         );
