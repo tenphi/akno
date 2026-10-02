@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.16.4
+
+### Patch Changes
+
+- [#156](https://github.com/tenphi/akno/pull/156) [`3d510de`](https://github.com/tenphi/akno/commit/3d510de4f268943ddbc1bb4e4fd0a1f5d9e27104) Thanks [@tenphi](https://github.com/tenphi)! - Recover unchanged, independently verified timeline candidates from sealed source receipts when older negative caches dropped their frames. Preserve candidate qualification and provenance across contract upgrades, including a held re-extraction, while rejecting stale or mismatched proofs and honoring human decisions and undo.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.16.4
+
 ## 0.16.3
 
 ### Patch Changes
