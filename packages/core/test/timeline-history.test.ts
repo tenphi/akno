@@ -1753,6 +1753,25 @@ it('keeps authored history decisions on their original event-transfer contract',
   expect(proof).not.toHaveProperty('other_boundaries');
 });
 
+function priorCuratorContract(db: Database.Database) {
+  const rows = db
+    .prepare("SELECT id,evidence FROM maintenance_items WHERE decision_outcome = 'reject'")
+    .all() as {
+    id: string;
+    evidence: string;
+  }[];
+  for (const row of rows) {
+    const evidence = JSON.parse(row.evidence);
+    for (const entry of evidence)
+      if (entry.timelineHistory?.retention)
+        entry.timelineHistory.retention.progress.curatorContract = 'scoped-source-temporal-items-v1';
+    db.prepare('UPDATE maintenance_items SET evidence = ? WHERE id = ?').run(
+      JSON.stringify(evidence),
+      row.id,
+    );
+  }
+}
+
 it.each(['cached', 'legacy'])(
   'reconsiders %s negative source decisions once after a curator contract change',
   async (kind) => {
@@ -1765,6 +1784,7 @@ it.each(['cached', 'legacy'])(
       key: string;
       value: string;
     };
+    priorCuratorContract(db);
     const state = JSON.parse(row.value);
     expect(state.candidates).toHaveLength(1);
     state.curatorContract = 'prior-invented-contract';
@@ -1780,7 +1800,7 @@ it.each(['cached', 'legacy'])(
     curator = 'approve';
     const next = await mem.dream({ phase: 'curate' });
     expect(next.maintenancePlan!.items[0]!.status).toBe('applied');
-    expect(calls.extraction).toBe(count.extraction + (kind === 'legacy' ? 1 : 0));
+    expect(calls.extraction).toBe(count.extraction);
     expect(calls.curator).toBe(count.curator + 1);
     expect((await mem.timeline({ timeline: 'work/timeline', source: 'state' })).total).toBe(1);
     const after = { ...calls };
@@ -1929,6 +1949,7 @@ it('reconsidering a legacy partial source preserves its already admitted memory 
     key: string;
     value: string;
   };
+  priorCuratorContract(db);
   const state = JSON.parse(row.value);
   expect(state.accepted).toHaveLength(1);
   delete state.candidates;
@@ -1941,7 +1962,7 @@ it('reconsidering a legacy partial source preserves its already admitted memory 
   const retry = await mem.dream({ phase: 'curate' });
   expect(retry.maintenancePlan).not.toBeNull();
   expect(retry.maintenancePlan!.items[0]!.status).toBe('applied');
-  expect(calls.extraction).toBe(count.extraction + 1);
+  expect(calls.extraction).toBe(count.extraction);
   const ids = (await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).results.map((r) => r.id);
   expect(ids).toHaveLength(2);
   expect(new Set(ids).size).toBe(2);
@@ -1949,6 +1970,185 @@ it('reconsidering a legacy partial source preserves its already admitted memory 
   const after = { ...calls };
   expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
   expect(calls).toEqual(after);
+});
+
+it('recovers a verified legacy frame after an upgrade re-extraction was held without overriding verification', async () => {
+  await validitySetup();
+  curator = 'reject';
+  const first = await mem.dream({ phase: 'curate' });
+  const db = new Database(mem.config.dbPath);
+  priorCuratorContract(db);
+  const row = db.prepare("SELECT key,value FROM meta WHERE key LIKE 'timeline-source:v1:%'").get() as {
+    key: string;
+    value: string;
+  };
+  const state = JSON.parse(row.value);
+  state.curatorContract = 'scoped-source-temporal-items-v1';
+  state.status = 'held';
+  state.candidates = [];
+  state.rejected = [];
+  state.incomplete = true;
+  db.prepare('UPDATE meta SET value = ? WHERE key = ?').run(JSON.stringify(state), row.key);
+  db.close();
+  const count = { ...calls };
+  verified = false;
+  extraction = () => [];
+  curator = 'approve';
+  const retry = await mem.dream({ phase: 'curate' });
+  expect(retry.maintenancePlan!.items[0]!.status).toBe('applied');
+  expect(calls.extraction).toBe(count.extraction);
+  expect(calls.verification).toBe(count.verification);
+  expect(calls.curator).toBe(count.curator + 1);
+  const proof = mem.plan(retry.maintenancePlan!.id).items[0]!.evidence[0]!.timelineHistory!.retention!;
+  expect(proof.progress.recoveredFrames).toEqual([
+    { itemId: first.maintenancePlan!.items[0]!.id, candidateIds: proof.extraction.verifiedCandidateIds },
+  ]);
+  expect((await mem.timeline({ timeline: 'work/timeline', source: 'state' })).results[0]).toMatchObject({
+    kind: 'claim',
+    relation: 'valid',
+    start: '2031-04-01',
+    until: '2033-03-31',
+  });
+  const after = { ...calls };
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+  expect(calls).toEqual(after);
+  expect(read('work/notes.md')).toBe(`# Service terms\n\n${validityNotice}\n`);
+});
+
+it.each(['verifier', 'membership', 'snapshot', 'payload', 'missing', 'shape'])(
+  'does not recover legacy frames with mismatched %s proof',
+  async (reason) => {
+    await validitySetup();
+    curator = 'reject';
+    await mem.dream({ phase: 'curate' });
+    const db = new Database(mem.config.dbPath);
+    priorCuratorContract(db);
+    const row = db.prepare("SELECT key,value FROM meta WHERE key LIKE 'timeline-source:v1:%'").get() as {
+      key: string;
+      value: string;
+    };
+    const state = JSON.parse(row.value);
+    state.curatorContract = 'scoped-source-temporal-items-v1';
+    delete state.candidates;
+    db.prepare('UPDATE meta SET value = ? WHERE key = ?').run(JSON.stringify(state), row.key);
+    const item = db
+      .prepare("SELECT id,evidence FROM maintenance_items WHERE decision_outcome = 'reject'")
+      .get() as {
+      id: string;
+      evidence: string;
+    };
+    const evidence = JSON.parse(item.evidence);
+    const proof = evidence[0].timelineHistory.retention;
+    if (reason === 'verifier') proof.extraction.verifierVersion = 'invented-obsolete-verifier';
+    if (reason === 'membership') proof.extraction.verifiedCandidateIds = [];
+    if (reason === 'snapshot') proof.snapshot.text += 'Invented extra text.';
+    if (reason === 'payload')
+      proof.prepared.receipt.source.retention.candidates[0].text += ' An invented stronger claim.';
+    if (reason === 'missing') proof.prepared.receipt.source.retention.candidates = [];
+    if (reason === 'shape') proof.prepared.receipt.source.retention.candidates = { invalid: true };
+    db.prepare('UPDATE maintenance_items SET evidence = ? WHERE id = ?').run(
+      JSON.stringify(evidence),
+      item.id,
+    );
+    db.close();
+    const count = { ...calls };
+    extraction = () => [];
+    curator = 'approve';
+    expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+    expect(calls.extraction).toBe(count.extraction + 1);
+    expect(calls.curator).toBe(count.curator);
+    expect((await mem.timeline({ timeline: 'work/timeline', source: 'state' })).total).toBe(0);
+  },
+);
+
+it('reuses source grounding while rechecking a changed ledger purpose with the current curator', async () => {
+  await validitySetup();
+  put('work/timeline.md', `# Timeline\n\n${occurrencePurpose}\n`);
+  await mem.index({ structuralOnly: true });
+  curator = 'reject';
+  const first = await mem.dream({ phase: 'curate' });
+  put('work/timeline.md', `# Timeline\n\n${validityPurpose}\n`);
+  await mem.index({ structuralOnly: true });
+  const count = { ...calls };
+  extraction = () => [];
+  verified = false;
+  curatorDecision = (user) =>
+    JSON.parse(user).item.evidence[0].timelineHistory.catalog[0].description === validityPurpose
+      ? 'approve'
+      : 'reject';
+  const next = await mem.dream({ phase: 'curate' });
+  expect(next.maintenancePlan!.items[0]!.status).toBe('applied');
+  expect(calls.extraction).toBe(count.extraction);
+  expect(calls.verification).toBe(count.verification);
+  expect(calls.curator).toBe(count.curator + 1);
+  const progress = mem.plan(next.maintenancePlan!.id).items[0]!.evidence[0]!.timelineHistory!.retention!
+    .progress;
+  expect(progress.recoveredFrames![0]!.itemId).toBe(first.maintenancePlan!.items[0]!.id);
+});
+
+it.each(['human', 'unknown'])(
+  'keeps %s rejections closed across a changed placement context',
+  async (actor) => {
+    await validitySetup();
+    const first = await mem.dream({ phase: 'curate', mode: 'review' });
+    const plan = mem.plan(first.maintenancePlan!.id);
+    mem.decidePlan(plan.id, plan.items[0]!.id, 'reject', 'Exclude this assertion.');
+    if (actor === 'unknown') {
+      const db = new Database(mem.config.dbPath);
+      db.prepare('UPDATE maintenance_items SET decision_actor = NULL WHERE id = ?').run(plan.items[0]!.id);
+      db.close();
+    }
+    put('work/timeline.md', `# Timeline\n\n${validityPurpose} Only clearly supported assertions.\n`);
+    await mem.index({ structuralOnly: true });
+    const count = { ...calls };
+    expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+    expect(calls.curator).toBe(count.curator);
+    expect((await mem.timeline({ timeline: 'work/timeline', source: 'state' })).total).toBe(0);
+    const after = { ...calls };
+    expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+    expect(calls).toEqual(after);
+  },
+);
+
+it('cannot carry an old folder frame into a different timeline owner', async () => {
+  await validitySetup();
+  curator = 'reject';
+  await mem.dream({ phase: 'curate' });
+  fs.unlinkSync(path.join(root, 'work/timeline.md'));
+  await mem.index({ structuralOnly: true });
+  const count = { ...calls };
+  extraction = () => [];
+  curator = 'approve';
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+  expect(calls.extraction).toBe(count.extraction + 1);
+  expect(calls.curator).toBe(count.curator);
+  expect((await mem.timeline({ source: 'state' })).total).toBe(0);
+});
+
+it('does not revive historical verified frames after the source revision changes', async () => {
+  await validitySetup();
+  curator = 'reject';
+  await mem.dream({ phase: 'curate' });
+  const db = new Database(mem.config.dbPath);
+  priorCuratorContract(db);
+  const row = db.prepare("SELECT key,value FROM meta WHERE key LIKE 'timeline-source:v1:%'").get() as {
+    key: string;
+    value: string;
+  };
+  const state = JSON.parse(row.value);
+  state.curatorContract = 'scoped-source-temporal-items-v1';
+  delete state.candidates;
+  db.prepare('UPDATE meta SET value = ? WHERE key = ?').run(JSON.stringify(state), row.key);
+  db.close();
+  put('work/notes.md', '# Service terms\n\nThe earlier notice was withdrawn.\n');
+  await mem.index({ structuralOnly: true });
+  const count = { ...calls };
+  extraction = () => [];
+  curator = 'approve';
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+  expect(calls.extraction).toBe(count.extraction + 1);
+  expect(calls.curator).toBe(count.curator);
+  expect((await mem.timeline({ timeline: 'work/timeline', source: 'state' })).total).toBe(0);
 });
 
 it('does not reopen a legacy source rejection when its original decision actor is unavailable', async () => {
