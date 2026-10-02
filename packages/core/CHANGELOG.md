@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.16.7
+
+### Patch Changes
+
+- [#163](https://github.com/tenphi/akno/pull/163) [`8e332b4`](https://github.com/tenphi/akno/commit/8e332b4eeddad7c5c2d67fe6e0dbc2847546e2cf) Thanks [@tenphi](https://github.com/tenphi)! - Verify unfamiliar documentary reporting relationships from exact source context during automatic retention. Preserve nested attribution and hold uncertain, unsupported or malformed decisions instead of requiring a fixed reporting-verb vocabulary.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.16.7
+
 ## 0.16.6
 
 ### Patch Changes
