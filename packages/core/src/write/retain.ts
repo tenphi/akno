@@ -807,7 +807,13 @@ export async function runRetain(
       ],
       {
         schema: repairSchema,
-        maxTokens: 3_200,
+        // Full repairs repeat evidence and metadata for every failed record. A single-record
+        // allowance can truncate a multi-record transaction even when extraction completed.
+        // Compact clock deltas cost less; the role ceiling remains enforced by ModelClient.
+        maxTokens: Math.min(
+          16_384,
+          Math.max(3_200, fullPositions.length * 3_200 + clockPositions.length * 800),
+        ),
         languageReferences,
         ...(hasTextRepairs
           ? {
@@ -843,14 +849,14 @@ export async function runRetain(
     // envelope here; a provider's constrained-decoding declaration is not trusted validation.
     let repairValue: unknown = null;
     if (repair.ok && repair.value) {
-      if (hasTextRepairs) {
-        // A text delta is atomic; never salvage a truncated or trailing transaction into a write.
-        try {
-          repairValue = normalizeClockRepairTransaction(JSON.parse(repair.value));
-        } catch {
-          /* held below */
-        }
-      } else repairValue = parseJsonLoose<unknown>(repair.value);
+      // Repair decisions are atomic, including full records. Completing missing delimiters
+      // would turn an unfinished transaction into permission to replace original positions.
+      try {
+        const value: unknown = JSON.parse(repair.value);
+        repairValue = hasTextRepairs ? normalizeClockRepairTransaction(value) : value;
+      } catch {
+        /* held below */
+      }
     }
     const transaction = transactionSchema.safeParse(repairValue) as
       | { success: false }

@@ -196,7 +196,11 @@ sources skip further extraction, including after restart or index rebuild. Chang
 policy/ownership/context changes, or extraction-contract changes invalidate the cached decision. Pending
 or budget-deferred work remains available; partial batches reuse verified candidates and their admitted
 relation targets. Failed/incomplete extraction retries with a bounded delay, and oldest unfinished sources
-receive priority. An owner undo stays undone until the source evidence changes. Processing marks are
+receive priority. A one-shot structural repair receives an output allowance scaled to its failed records,
+up to a fixed ceiling. The default derive ceiling permits these 16,384-token retention requests;
+smaller task requests and explicit lower model-role caps still apply. An incomplete repair transaction stays
+held, and repaired records still require independent semantic verification. An owner undo stays undone
+until the source evidence changes. Processing marks are
 never written into source documents. Missing or newly ineligible recorded sources produce held coverage;
 extraction omission alone does not retract a previous assertion. Source revision receipts and exact evidence
 remain available through existing retention/provenance machinery.
