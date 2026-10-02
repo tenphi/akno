@@ -13,7 +13,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 43;
+export const SCHEMA_VERSION = 44;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -1274,6 +1274,8 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX observation_scope_verdicts_model
     ON observation_scope_verdicts(classifier_endpoint, prompt_version, created_at);`,
+  // Source revisions reseal receipts/evidence as well as Markdown; keep the superseded proof private.
+  `ALTER TABLE maintenance_item_revisions ADD COLUMN evidence TEXT;`,
 ];
 
 /**

@@ -1033,7 +1033,8 @@ async function retainCandidates(
             ? 'empty'
             : 'ok',
     ...(degraded.length > 0 ? { degraded } : {}),
-    ...(options.placement === 'automatic' ? { model_usage: options.modelUsage } : {}),
+    // Source maintenance also needs any equivalence calls in its sealed private receipt.
+    ...(options.placement === 'automatic' || options.prepare ? { model_usage: options.modelUsage } : {}),
     ...(options.sourceHold ? { note: options.sourceHold.reason } : {}),
     ...(options.dryRun
       ? {

@@ -1,6 +1,11 @@
 import fsp from 'node:fs/promises';
 import path from 'node:path';
-import type { DegradedReason, RetainUpsertSource, TimelineDescriptor } from '@tenphi/akno-protocol';
+import type {
+  DegradedReason,
+  RetainModelCallReceipt,
+  RetainUpsertSource,
+  TimelineDescriptor,
+} from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { indexScanIgnore } from '../config/load.ts';
 import {
@@ -21,6 +26,7 @@ import { sha256 } from '../store/ids.ts';
 import { owningTimeline, timelineCatalog } from '../timeline/boundaries.ts';
 import {
   runRetain,
+  verifyRetainTextRevision,
   RETAIN_PROMPT_VERSION,
   RETAIN_VERIFIER_VERSION,
   type RetainCandidate,
@@ -57,6 +63,7 @@ interface SourceProgress {
   planId?: string;
   itemId?: string;
   sizeHold?: { reason: string; limits: string };
+  revisionHold?: { feedback: string; reason: string; context: string };
 }
 
 const SOURCE_TEXT_LIMIT = 60_000;
@@ -332,6 +339,13 @@ export async function planTimelineSources(
       continue;
     }
     if (state?.fingerprint !== fingerprint) state = null;
+    if (state?.revisionHold) {
+      if (state.revisionHold.context === (await revisionContext(ctx, state.fingerprint, owner))) {
+        hold('unqualified_event');
+        continue;
+      }
+      state = { ...state, status: 'extracted', revisionHold: undefined };
+    }
     if (state?.status === 'complete' || state?.status === 'rejected' || state?.status === 'undone') {
       report.cached++;
       continue;
@@ -477,7 +491,10 @@ export async function planTimelineSources(
       const prepared = result.prepared;
       for (const reason of result.result.degraded ?? []) degraded.add(reason);
       if (prepared && state.modelUsage)
-        prepared.receipt.result.model_usage = { ...state.modelUsage, placement: [] };
+        prepared.receipt.result.model_usage = {
+          ...state.modelUsage,
+          placement: prepared.receipt.result.model_usage?.placement ?? [],
+        };
       const successful = result.result.candidates
         .filter((item) => ['written', 'support_added', 'duplicate'].includes(item.outcome))
         .map((item) => item.candidate_id);
@@ -741,4 +758,182 @@ export function recordTimelineSourcePlan(
   const current = progress(ctx, proof.progressKey);
   if (current?.fingerprint === proof.progress.fingerprint)
     record(ctx, proof.progressKey, { ...current, status: 'pending', planId, itemId }, true);
+}
+
+const SOURCE_REVISION_CONTRACT = 'source-text-revision-v1';
+async function revisionContext(
+  ctx: AknoContext,
+  fingerprint: string,
+  owner: TimelineDescriptor,
+): Promise<string> {
+  return sha256(
+    JSON.stringify([
+      SOURCE_REVISION_CONTRACT,
+      fingerprint,
+      await safeBytes(ctx, owner.path),
+      await safeBytes(ctx, `${owner.slug}-memories.md`),
+    ]),
+  );
+}
+
+/** A refused correction is unfinished work, not a rejection or an applied source cursor. */
+export async function holdTimelineSourceRevision(
+  ctx: AknoContext,
+  proof: TimelineSourceProof,
+  feedback: string,
+  reason: string,
+): Promise<void> {
+  const current = progress(ctx, proof.progressKey);
+  const owner = timelineCatalog(ctx.config, ctx.store).find((entry) => entry.slug === proof.owner);
+  if (!current || current.fingerprint !== proof.progress.fingerprint || !owner) return;
+  record(
+    ctx,
+    proof.progressKey,
+    {
+      ...current,
+      status: 'held',
+      attemptedAt: Date.now(),
+      reason: 'source curator revision requires a supported correction',
+      revisionHold: { feedback, reason, context: await revisionContext(ctx, current.fingerprint, owner) },
+    },
+    true,
+  );
+}
+
+/** Rebuild the receipt and both projections from independently reverified statements. */
+export async function reviseTimelineSource(
+  ctx: AknoContext,
+  proof: TimelineSourceProof,
+  operations: MaintenanceOperation[],
+  replacements: readonly { candidate_id: string; text: string }[],
+  correctionReceipt: RetainModelCallReceipt,
+): Promise<{ proof: TimelineSourceProof; operations: MaintenanceOperation[] }> {
+  const catalog = timelineCatalog(ctx.config, ctx.store);
+  const issue = await timelineSourceIssue(ctx, proof, operations, catalog, 'before');
+  if (issue) throw new Error(issue);
+  const originalSource = proof.prepared.receipt.source;
+  if (!('input' in originalSource) || originalSource.retention.mode !== 'provided')
+    throw new Error('source revision lacks provided candidates');
+  const admitted = new Set(
+    proof.prepared.receipt.result.candidates
+      .filter((item) => ['written', 'support_added', 'duplicate'].includes(item.outcome))
+      .map((item) => item.candidate_id),
+  );
+  const originals = originalSource.retention.candidates.filter((item) => admitted.has(item.candidate_id));
+  const verified = await verifyRetainTextRevision(
+    proof.snapshot.text,
+    ctx.models.derive,
+    originals,
+    replacements,
+  );
+  const originalResults = new Map(
+    proof.prepared.receipt.result.candidates.map((item) => [item.candidate_id, item]),
+  );
+  const candidates = verified.candidates.map((item) => {
+    const result = originalResults.get(item.candidate_id);
+    // An existing duplicate may live outside the companion. Keep its admitted exact path so a
+    // rephrasing cannot create a new companion item instead of strengthening that same memory.
+    return result?.slug && ['support_added', 'duplicate'].includes(result.outcome)
+      ? { ...item, destination: { ...item.destination!, slug: result.slug } }
+      : item;
+  });
+  const source: RetainUpsertSource = {
+    ...originalSource,
+    revision: sha256(JSON.stringify([proof.progress.fingerprint, candidates])),
+    retention: { ...originalSource.retention, candidates },
+  };
+  const result = await prepareTimelineRetention(
+    ctx,
+    source,
+    candidates,
+    proof.destination,
+    proof.snapshot.text,
+  );
+  const prepared = result.prepared;
+  const successful = result.result.candidates.filter((item) =>
+    ['written', 'support_added', 'duplicate'].includes(item.outcome),
+  );
+  if (!prepared?.stages.length || successful.length !== candidates.length)
+    throw new Error('revised source retention did not admit the complete selected batch');
+  if (
+    successful.some((item) => {
+      const original = originalResults.get(item.candidate_id);
+      return (
+        original &&
+        ['support_added', 'duplicate'].includes(original.outcome) &&
+        original.memory_id !== item.memory_id
+      );
+    })
+  )
+    throw new Error('source revision changed an existing canonical identity');
+  const revisedOperations: MaintenanceOperation[] = prepared.stages.map((stage) =>
+    stage.before === null
+      ? { type: 'create', relPath: stage.relPath, after: stage.after, afterHash: sha256(stage.after) }
+      : {
+          type: 'replace',
+          relPath: stage.relPath,
+          before: stage.before,
+          after: stage.after,
+          beforeHash: sha256(stage.before),
+          afterHash: sha256(stage.after),
+        },
+  );
+  if (
+    revisedOperations.length !== operations.length ||
+    revisedOperations.some(
+      (op) =>
+        !operations.some(
+          (old) =>
+            op.type === old.type &&
+            op.relPath === old.relPath &&
+            (op.type === 'create' ||
+              (op.type === 'replace' && old.type === 'replace' && op.before === old.before)),
+        ),
+    )
+  )
+    throw new Error('source revision changed the sealed path set or before-states');
+  prepared.receipt.result.model_usage = {
+    extraction: proof.prepared.receipt.result.model_usage?.extraction ?? null,
+    repair: correctionReceipt,
+    verification: verified.verification,
+    placement: prepared.receipt.result.model_usage?.placement ?? [],
+  };
+  const revisedProof: TimelineSourceProof = {
+    ...proof,
+    prepared: {
+      receipt: prepared.receipt,
+      stages: prepared.stages.map((stage) => ({
+        slug: stage.slug,
+        relPath: stage.relPath,
+        beforeHash: stage.before === null ? null : sha256(stage.before),
+        afterHash: sha256(stage.after),
+      })),
+    },
+    progress: {
+      ...proof.progress,
+      revisionHold: undefined,
+      memories: {
+        ...proof.progress.memories,
+        ...Object.fromEntries(successful.map((item) => [item.candidate_id, item.memory_id!])),
+      },
+    },
+  };
+  if (
+    revisedOperations.some((op) => 'after' in op && Buffer.byteLength(op.after) > ctx.config.maxPageBytes) ||
+    JSON.stringify({
+      proof: { boundaries: '', catalog, sources: [], scans: [], actions: [], retention: revisedProof },
+      operations: revisedOperations,
+    }).length > SEALED_SOURCE_LIMIT
+  )
+    throw new Error('source revision exceeds bounded sealed retention');
+  // Detect evidence/policy drift across verification and receipt preparation too.
+  const revisedIssue = await timelineSourceIssue(
+    ctx,
+    revisedProof,
+    revisedOperations,
+    timelineCatalog(ctx.config, ctx.store),
+    'before',
+  );
+  if (revisedIssue) throw new Error(revisedIssue);
+  return { proof: revisedProof, operations: revisedOperations };
 }

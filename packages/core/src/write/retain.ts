@@ -995,6 +995,73 @@ export async function runRetain(
   };
 }
 
+/** Source curation can correct prose, never reinterpret an admitted envelope or its evidence. */
+export async function verifyRetainTextRevision(
+  text: string,
+  model: ModelClient,
+  originals: readonly RetainCandidate[],
+  replacements: readonly { candidate_id: string; text: string }[],
+): Promise<{ candidates: RetainCandidate[]; verification: RetainModelCallReceipt }> {
+  const selected = new Map(originals.map((item) => [item.candidate_id, item]));
+  const changes = new Map<string, string>();
+  const seen = new Set<string>();
+  const reportLimits = new Set<string>();
+  for (const replacement of replacements) {
+    if (!selected.has(replacement.candidate_id) || seen.has(replacement.candidate_id))
+      throw new Error('source revision repeated or introduced a candidate');
+    seen.add(replacement.candidate_id);
+    const prose = replacement.text.trim().replace(/\s+/g, ' ');
+    if (/[\r\n]|<!--|\[\[/u.test(replacement.text))
+      throw new Error('source revision must contain only one retained statement');
+    const original = selected.get(replacement.candidate_id)!;
+    const cleaned = cleanCandidateBatchWithPositions(
+      [{ ...original, text: prose, relations: [], page: null }],
+      { sourceText: text, generated: true },
+      true,
+    );
+    const revised = cleaned.candidates[0];
+    const envelope = (candidate: RetainCandidate) => ({
+      kind: candidate.kind,
+      subject: candidate.subject,
+      attribution: candidate.attribution,
+      discourse: candidate.discourse,
+      epistemic: candidate.epistemic,
+      polarity: candidate.polarity,
+      support: candidate.support,
+      discourse_frame: candidate.discourse_frame,
+      time: candidate.time,
+    });
+    if (cleaned.held.length || !revised || !isDeepStrictEqual(envelope(original), envelope(revised)))
+      throw new Error('source revision failed retained statement validation or changed qualification');
+    if (cleaned.reportLimitConcerns.size) reportLimits.add(original.candidate_id);
+    if (prose !== original.text) changes.set(original.candidate_id, prose);
+  }
+  if (!changes.size) throw new Error('source revision returned no changed statements');
+  const revised = originals.map((item) => ({ ...item, text: changes.get(item.candidate_id) ?? item.text }));
+  const verified = await verifyCandidates(
+    model,
+    { kind: 'text', text },
+    null,
+    revised,
+    originals
+      .filter((item) => changes.has(item.candidate_id))
+      .map((original) => ({
+        candidate_id: original.candidate_id,
+        original,
+      })),
+    reportLimits,
+  );
+  if (verified.error || revised.some((item) => !verified.accepted.has(item.candidate_id)))
+    throw new Error(verified.error ?? 'independent verification refused the source revision');
+  return {
+    candidates: revised.map((item) => ({
+      ...item,
+      retention_scope: verified.scopes.get(item.candidate_id)!,
+    })),
+    verification: verified.receipt,
+  };
+}
+
 function emptyResult(): RetainResult {
   return {
     candidates: [],

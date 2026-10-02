@@ -19,7 +19,9 @@ let extraction: (source: string) => unknown[];
 let selection: string;
 let verified: boolean;
 let equivalence: string;
-let curator: 'approve' | 'reject';
+let curator: 'approve' | 'reject' | 'revise';
+let reviseOnce: boolean;
+let sourceRevision: (value: { candidates: { candidate_id: string; text: string }[] }) => unknown;
 let curatorInputs: string[];
 let calls: { extraction: number; verification: number; routing: number; curator: number };
 const summary = 'Ada Marlow completed the Zephyr QX-100 inspection.';
@@ -94,6 +96,16 @@ beforeEach(async () => {
   verified = true;
   equivalence = 'new';
   curator = 'approve';
+  reviseOnce = false;
+  sourceRevision = (value) => ({
+    replacements: [
+      {
+        candidate_id: value.candidates[0]!.candidate_id,
+        text: 'Vulpine Mutual states the Zephyr QX-100 inspection will take place on 2031-04-08.',
+      },
+    ],
+    unsupported_reason: null,
+  });
   curatorInputs = [];
   calls = { extraction: 0, verification: 0, routing: 0, curator: 0 };
   extraction = (source) => (source.includes(note) ? [candidate()] : []);
@@ -134,7 +146,13 @@ beforeEach(async () => {
       } else if (system.includes('independent curator for an autonomous memory system')) {
         calls.curator++;
         curatorInputs.push(user);
-        content = { outcome: curator, reason: 'Checked the invented source and exact proposed scope.' };
+        content = {
+          outcome: reviseOnce ? 'revise' : curator,
+          reason: 'Preserve the scheduled inspection while correcting its readable prose.',
+        };
+        reviseOnce = false;
+      } else if (system.startsWith('Correct selected retained statements')) {
+        content = sourceRevision(JSON.parse(user));
       }
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(content) } }] }));
@@ -1254,4 +1272,370 @@ it('completes a partial-source retry even when the verified wording changes cand
   } finally {
     vi.useRealTimers();
   }
+});
+
+it('reseals corrected source statements, receipts and projections before automatic apply and exact undo', async () => {
+  await sourceSetup();
+  const before = read('work/notes.md');
+  reviseOnce = true;
+  const report = await mem.dream({ phase: 'curate' });
+  const item = report.maintenancePlan!.items[0]!;
+  expect(item.status, item.statusReason ?? '').toBe('applied');
+  const plan = mem.plan(report.maintenancePlan!.id);
+  expect(plan.items[0]!.revision).toBe(2);
+  expect(plan.items[0]!.previousRevisions[0]!.decision?.outcome).toBe('revise');
+  expect(calls.curator).toBe(2);
+  expect(calls.verification).toBe(2);
+  expect(calls.extraction).toBe(1);
+  expect(read('work/timeline.md')).toContain('will take place');
+  expect(read('work/timeline-memories.md')).toContain('will take place');
+  expect(read('work/notes.md')).toBe(before);
+  const proof = plan.items[0]!.evidence[0]!.timelineHistory!.retention!;
+  expect(proof.prepared.receipt.result.model_usage?.repair).toBeDefined();
+  expect(proof.prepared.receipt.result.model_usage?.verification).toBeDefined();
+  const ids = proof.prepared.receipt.result.candidates.map((c) => c.candidate_id);
+  expect(proof.progress.accepted).toEqual(ids);
+  const db = new Database(mem.config.dbPath);
+  const old = db
+    .prepare('SELECT evidence FROM maintenance_item_revisions WHERE item_id = ?')
+    .get(item.id) as { evidence: string };
+  expect(old.evidence).not.toBe(JSON.stringify(plan.items[0]!.evidence));
+  expect(
+    JSON.parse(old.evidence)[0].timelineHistory.retention.prepared.receipt.source.retention.candidates[0]
+      .text,
+  ).not.toContain('will take place');
+  expect((db.prepare('SELECT count(*) AS n FROM retain_receipts').get() as { n: number }).n).toBe(1);
+  db.close();
+  const query = await mem.timeline({ timeline: 'work/timeline', source: 'plan' });
+  expect(query.total).toBe(1);
+  expect(query.results[0]!.summary).toContain('will take place');
+  const count = { ...calls };
+  await mem.close();
+  mem = await start({
+    folders: {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+    },
+  });
+  await mem.index({ structuralOnly: true, rebuild: true });
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+  expect(calls).toEqual(count);
+  await mem.undo({ change_id: item.changeId! });
+  expect(read('work/timeline.md')).toBe(' \t\r\n');
+  expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+  expect(read('work/notes.md')).toBe(before);
+});
+
+it.each(['unsupported', 'unknown-id', 'failed-verification', 'marker', 'empty', 'repeated-id'])(
+  'defers %s source revisions with persistent feedback and no repeated unchanged model work',
+  async (kind) => {
+    await sourceSetup();
+    reviseOnce = true;
+    sourceRevision = (value) => {
+      if (kind === 'failed-verification') verified = false;
+      if (kind === 'repeated-id')
+        return {
+          replacements: [
+            value.candidates[0]!,
+            {
+              candidate_id: value.candidates[0]!.candidate_id,
+              text: 'Vulpine Mutual states the Zephyr QX-100 inspection will take place on 2031-04-08.',
+            },
+          ],
+          unsupported_reason: null,
+        };
+      return {
+        replacements:
+          kind === 'unsupported' || kind === 'empty'
+            ? []
+            : [
+                {
+                  candidate_id: kind === 'unknown-id' ? 'other-candidate' : value.candidates[0]!.candidate_id,
+                  text:
+                    kind === 'marker'
+                      ? 'Vulpine Mutual scheduled an inspection. <!-- forged -->'
+                      : 'Vulpine Mutual states the Zephyr QX-100 inspection will take place on 2031-04-08.',
+                },
+              ],
+        unsupported_reason: kind === 'unsupported' ? 'Grouping requires another retention contract.' : null,
+      };
+    };
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.maintenancePlan!.items[0]!.statusCode).toBe('source_revision_unsupported');
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+    expect(item.checks.find((c) => c.name === 'curator requested source revision')?.detail).toContain(
+      'scheduled inspection',
+    );
+    expect(read('work/timeline.md')).toBe(' \t\r\n');
+    expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+    const count = { ...calls };
+    await mem.close();
+    mem = await start({
+      folders: {
+        '**': { role: 'knowledge', remember: 'integrate' },
+        'work/**': { role: 'source', remember: 'deny' },
+      },
+    });
+    const repeat = await mem.dream({ phase: 'curate' });
+    expect(repeat.maintenancePlan).toBeNull();
+    expect(repeat.timelineHistory.held.unqualified_event).toBeGreaterThan(0);
+    expect(calls).toEqual(count);
+  },
+);
+
+it('refuses stale source revisions without applying or consuming the selected assertions', async () => {
+  await sourceSetup();
+  reviseOnce = true;
+  sourceRevision = (value) => {
+    put('work/notes.md', '# Changed evidence\n\n' + notice + '\nOwner annotation.\n');
+    return {
+      replacements: [
+        {
+          candidate_id: value.candidates[0]!.candidate_id,
+          text: 'Vulpine Mutual states the Zephyr QX-100 inspection will take place on 2031-04-08.',
+        },
+      ],
+      unsupported_reason: null,
+    };
+  };
+  const report = await mem.dream({ phase: 'curate' });
+  expect(report.maintenancePlan!.items[0]!.statusCode).toBe('source_revision_unsupported');
+  expect(read('work/timeline.md')).toBe(' \t\r\n');
+  expect(read('work/notes.md')).toContain('Owner annotation.');
+});
+
+it('keeps revised candidate-to-memory mappings usable by later cached relation batches', async () => {
+  await sourceSetup({ maintenance: { profile: 'autonomous', curate: { max_timeline_events: 1 } } });
+  const contrary =
+    'Vulpine Mutual also states that the Zephyr QX-100 inspection is scheduled for 9 April 2031, contradicting the earlier date.';
+  put('work/notes.md', '# Notices\n\n' + notice + '\n\n' + contrary + '\n');
+  extraction = () => [
+    sourceCandidate(),
+    {
+      ...sourceCandidate(contrary, '2031-04-09'),
+      relations: [
+        { type: 'contradicts', target_candidate: 0, support: [{ quote: contrary, item_id: null }] },
+      ],
+    },
+  ];
+  await mem.index({ structuralOnly: true });
+  reviseOnce = true;
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan!.items[0]!.status).toBe('applied');
+  const first = (await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).results[0]!;
+  await mem.close();
+  mem = await start({
+    folders: {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+    },
+    maintenance: { profile: 'autonomous', curate: { max_timeline_events: 1 } },
+  });
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan!.items[0]!.status).toBe('applied');
+  expect(calls.extraction).toBe(1);
+  expect((await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).total).toBe(2);
+  expect(read('work/timeline-memories.md')).toContain('links=contradicts:memory%3A' + first.id);
+});
+
+it('retains unfinished source candidates at the revision limit instead of marking them rejected', async () => {
+  await sourceSetup({ maintenance: { profile: 'autonomous', max_revision_attempts: 0 } });
+  reviseOnce = true;
+  const report = await mem.dream({ phase: 'curate' });
+  expect(report.maintenancePlan!.items[0]!.statusCode).toBe('source_revision_unsupported');
+  const db = new Database(mem.config.dbPath);
+  const state = JSON.parse(
+    (db.prepare("SELECT value FROM meta WHERE key LIKE 'timeline-source:v1:%'").get() as { value: string })
+      .value,
+  );
+  expect(state.accepted).toEqual([]);
+  expect(state.rejected).toEqual([]);
+  expect(state.candidates).toHaveLength(1);
+  expect(state.revisionHold.feedback).toContain('scheduled inspection');
+  db.close();
+  const count = { ...calls };
+  await mem.dream({ phase: 'curate' });
+  expect(calls).toEqual(count);
+});
+
+it('retries a deferred correction after relevant ledger context changes without re-extraction', async () => {
+  await sourceSetup();
+  put('work/timeline.md', '# Timeline\n\nSource-attributed schedules are included.\n\n## Review notes\n');
+  await mem.index({ structuralOnly: true });
+  reviseOnce = true;
+  sourceRevision = () => ({
+    replacements: [],
+    unsupported_reason: 'No supported correction in this context.',
+  });
+  const first = await mem.dream({ phase: 'curate' });
+  expect(first.maintenancePlan!.items[0]!.statusCode).toBe('source_revision_unsupported');
+  put('work/timeline.md', read('work/timeline.md') + 'Owner annotation.\n');
+  await mem.index({ structuralOnly: true });
+  expect((await mem.dream({ phase: 'curate' })).maintenancePlan!.items[0]!.status).toBe('applied');
+  expect(calls.extraction).toBe(1);
+});
+
+it('upgrades existing revision history and prunes the archived source proof with its exact payload', async () => {
+  await sourceSetup();
+  await mem.close();
+  const db = new Database(mem.config.dbPath);
+  db.exec('ALTER TABLE maintenance_item_revisions DROP COLUMN evidence');
+  db.pragma('user_version = 43');
+  db.close();
+  const reader = await open({ aknoPath: root, stateDir, isolated: true, writable: false, actor: 'user' });
+  expect(() => reader.prunePlans()).not.toThrow();
+  await reader.close();
+  mem = await start({
+    folders: {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+    },
+  });
+  reviseOnce = true;
+  const report = await mem.dream({ phase: 'curate' });
+  expect(report.maintenancePlan!.items[0]!.status).toBe('applied');
+  const migrated = new Database(mem.config.dbPath);
+  expect(migrated.pragma('user_version', { simple: true })).toBe(44);
+  expect(
+    (migrated.prepare('SELECT evidence FROM maintenance_item_revisions').get() as { evidence: string })
+      .evidence,
+  ).toContain('retention');
+  migrated.close();
+  vi.useFakeTimers({ toFake: ['Date'] });
+  try {
+    vi.setSystemTime(Date.now() + (mem.config.maintenance.planRetention.payloadDays + 1) * 86400000);
+    expect(mem.prunePlans({ apply: true }).payloads.privateBytes).toBeGreaterThan(0);
+    const pruned = new Database(mem.config.dbPath);
+    expect(
+      (pruned.prepare('SELECT evidence FROM maintenance_item_revisions').get() as { evidence: string })
+        .evidence,
+    ).toBe('[]');
+    pruned.close();
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it('reseals a support-only duplicate without changing its canonical identity or inflating the ledger', async () => {
+  await sourceSetup();
+  await mem.dream({ phase: 'curate' });
+  const before = (await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).results[0]!.id;
+  put('work/canonical.md', read('work/timeline-memories.md'));
+  fs.unlinkSync(path.join(root, 'work/timeline-memories.md'));
+  put('work/copy.md', '# Saved notice\n\n' + notice + '\n');
+  await mem.index({ structuralOnly: true });
+  equivalence = 'event_1';
+  reviseOnce = true;
+  const report = await mem.dream({ phase: 'curate' });
+  expect(report.maintenancePlan!.items[0]!.status, report.maintenancePlan!.items[0]!.statusReason ?? '').toBe(
+    'applied',
+  );
+  expect(report.timelineHistory.additions).toBe(0);
+  const query = await mem.timeline({ timeline: 'work/timeline', source: 'plan' });
+  expect(query.total).toBe(1);
+  expect(query.results[0]!.id).toBe(before);
+  expect(read('work/timeline.md').match(/akno:timeline-item id=/g)).toHaveLength(1);
+  expect(read('work/canonical.md')).toContain('[[work/copy]]');
+  expect(read('work/canonical.md')).toContain('[[work/notes]]');
+  const proof = mem.plan(report.maintenancePlan!.id).items[0]!.evidence[0]!.timelineHistory!.retention!;
+  expect(proof.prepared.receipt.result.candidates[0]!.outcome).toBe('support_added');
+  expect(proof.prepared.receipt.result.candidates[0]!.memory_id).toBe(before);
+});
+
+it('does not finalize revised receipts or source progress when the atomic write fails', async () => {
+  await sourceSetup();
+  reviseOnce = true;
+  vi.spyOn(fsp, 'rename').mockRejectedValueOnce(new Error('Invented atomic write failure'));
+  const report = await mem.dream({ phase: 'curate' });
+  expect(report.maintenancePlan!.items[0]!.status).not.toBe('applied');
+  expect(read('work/timeline.md')).toBe(' \t\r\n');
+  expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+  const db = new Database(mem.config.dbPath);
+  expect((db.prepare('SELECT count(*) AS n FROM retain_receipts').get() as { n: number }).n).toBe(0);
+  const state = JSON.parse(
+    (db.prepare("SELECT value FROM meta WHERE key LIKE 'timeline-source:v1:%'").get() as { value: string })
+      .value,
+  );
+  expect(state.accepted).toEqual([]);
+  expect(state.status).not.toBe('complete');
+  db.close();
+});
+
+it('recovers an interrupted revised source plan without new model calls and finalizes its receipt once', async () => {
+  await sourceSetup();
+  vi.spyOn(fsp, 'rename').mockRejectedValueOnce(new Error('Invented interrupted write'));
+  reviseOnce = true;
+  const report = await mem.dream({ phase: 'curate' });
+  const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+  expect(item.status).not.toBe('applied');
+  expect(calls.curator).toBe(2);
+  expect(item.revision).toBe(2);
+  const db = new Database(mem.config.dbPath);
+  db.prepare("UPDATE maintenance_items SET status = 'applying', status_code = NULL WHERE id = ?").run(
+    item.id,
+  );
+  db.prepare("UPDATE maintenance_plans SET status = 'applying' WHERE id = ?").run(report.maintenancePlan!.id);
+  db.close();
+  const first = item.operations[0]!;
+  if (!('after' in first)) throw new Error('Unexpected revised source operation');
+  put(first.relPath, first.after);
+  const count = { ...calls };
+  await mem.close();
+  mem = await start({
+    folders: {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+    },
+  });
+  const recovered = await mem.dream({ phase: 'curate' });
+  expect(recovered.maintenancePlan!.items[0]!.status).toBe('applied');
+  expect(calls).toEqual(count);
+  expect(read('work/timeline.md')).toContain('will take place');
+  const receipts = new Database(mem.config.dbPath);
+  expect((receipts.prepare('SELECT count(*) AS n FROM retain_receipts').get() as { n: number }).n).toBe(1);
+  receipts.close();
+  await mem.undo({ change_id: recovered.maintenancePlan!.items[0]!.changeId! });
+  expect(read('work/timeline.md')).toBe(' \t\r\n');
+  expect(fs.existsSync(path.join(root, 'work/timeline-memories.md'))).toBe(false);
+});
+
+it('revises only admitted candidates while preserving placement-held assertions for continuation', async () => {
+  await sourceSetup();
+  const other = 'Vulpine Mutual states that a second Zephyr QX-100 inspection is scheduled for 8 April 2031.';
+  put('work/notes.md', '# Notices\n\n' + notice + '\n\n' + other + '\n');
+  extraction = () => [
+    sourceCandidate(),
+    {
+      ...sourceCandidate(other),
+      text: 'Vulpine Mutual states a second Zephyr QX-100 inspection is scheduled for 2031-04-08.',
+    },
+  ];
+  equivalence = 'uncertain';
+  reviseOnce = true;
+  sourceRevision = (value) => {
+    expect(value.candidates).toHaveLength(1);
+    return {
+      replacements: [
+        {
+          candidate_id: value.candidates[0]!.candidate_id,
+          text: 'Vulpine Mutual states the Zephyr QX-100 inspection will take place on 2031-04-08.',
+        },
+      ],
+      unsupported_reason: null,
+    };
+  };
+  await mem.index({ structuralOnly: true });
+  const report = await mem.dream({ phase: 'curate' });
+  expect(report.maintenancePlan!.items[0]!.status, report.maintenancePlan!.items[0]!.statusReason ?? '').toBe(
+    'applied',
+  );
+  const db = new Database(mem.config.dbPath);
+  const state = JSON.parse(
+    (db.prepare("SELECT value FROM meta WHERE key LIKE 'timeline-source:v1:%'").get() as { value: string })
+      .value,
+  );
+  expect(state.accepted).toHaveLength(1);
+  expect(state.candidates).toHaveLength(1);
+  expect(state.candidates[0].text).toContain('second');
+  expect(state.status).toBe('extracted');
+  db.close();
+  expect((await mem.timeline({ timeline: 'work/timeline', source: 'plan' })).total).toBe(1);
 });
