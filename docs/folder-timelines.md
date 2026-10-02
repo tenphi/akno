@@ -210,6 +210,18 @@ held under `timelineHistory.held.limit`, with its size reason in private source 
 recorded as successfully processed or as having no dated facts. These size holds use the normal retry
 delay; a changed source/context or changed page-size limit allows reconsideration sooner.
 
+For source-backed plans, curator corrections operate on selected retained statements, not on generated
+Markdown. A supported prose correction preserves the candidate's attribution, polarity, temporal/discourse
+envelope and exact support, passes independent source verification, and regenerates the receipt, canonical
+companion and ledger together. The corrected proposal receives a fresh curator decision. Generic page
+revisions cannot change receipt IDs, supports, projection hashes or source-progress membership.
+
+Corrections that need different qualification, event grouping, another proposition or new evidence remain
+unfinished under `source_revision_unsupported`. Private item checks retain both the requested correction
+and the refusal reason. Unchanged deferred sources do not repeat model work after a restart; changed
+source/policy/processing contract or relevant ledger/companion context permits another attempt. This is
+partial coverage, never proof that no dated facts exist. Source files remain unchanged, including on undo.
+
 Changes to evidence, timeline declarations, purposes, or write policies invalidate a pending plan.
 Transfers remove the parent entry and insert the descendant entry in one journalled item; failed writes
 roll back, and undo restores every affected file, including the exact bytes of an empty declaration.

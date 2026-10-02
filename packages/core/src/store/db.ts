@@ -252,6 +252,9 @@ function migrate(db: Database.Database): void {
       if (!columnExists(db, 'maintenance_item_revisions', 'revision_actor')) {
         db.exec(MIGRATIONS[MAINTENANCE_REVISION_ACTOR_MIGRATION_INDEX]!);
       }
+      if (!columnExists(db, 'maintenance_item_revisions', 'evidence')) {
+        db.exec('ALTER TABLE maintenance_item_revisions ADD COLUMN evidence TEXT');
+      }
       if (!tableExists(db, 'maintenance_action_receipts')) {
         db.exec(MIGRATIONS[MAINTENANCE_ACTION_RECEIPTS_MIGRATION_INDEX]!);
       }
