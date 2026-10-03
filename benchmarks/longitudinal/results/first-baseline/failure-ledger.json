@@ -1,0 +1,2375 @@
+{
+  "version": "longitudinal-failure-ledger-v1",
+  "reviewer": "Codex",
+  "independent": false,
+  "interpretation": "missing coverage is not proven false verifier rejection; ambiguity is not counted as a proven semantic false acceptance",
+  "rows": [
+    {
+      "key": "development-retention/extract-only/1/initial",
+      "stage": "memory",
+      "missingIds": [
+        "ada-initial"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/extract-only/1/initial",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-initial"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/extract-only/1/initial",
+      "stage": "recall",
+      "missingIds": [
+        "ada-initial"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/extract-only/1/initial",
+      "stage": "context",
+      "missingIds": [
+        "ada-initial"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/extract-only/1/initial",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "no_eligible_evidence"
+    },
+    {
+      "key": "development-retention/extract-only/1/unchanged-reordered",
+      "stage": "memory",
+      "missingIds": [
+        "ada-initial"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/extract-only/1/unchanged-reordered",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-initial"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/extract-only/1/unchanged-reordered",
+      "stage": "recall",
+      "missingIds": [
+        "ada-initial"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/extract-only/1/unchanged-reordered",
+      "stage": "context",
+      "missingIds": [
+        "ada-initial"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/extract-only/1/alternative",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "typed_unavailable"
+      ],
+      "typedAnswerReason": "verification_unavailable"
+    },
+    {
+      "key": "development-retention/extract-only/1/source-correction",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated",
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "draft_rejected"
+    },
+    {
+      "key": "development-retention/extract-only/1/seeded-contamination",
+      "stage": "memory",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/extract-only/1/seeded-contamination",
+      "stage": "recall",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/extract-only/1/seeded-contamination",
+      "stage": "context",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/extract-only/1/seeded-contamination",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "draft_rejected"
+    },
+    {
+      "key": "development-retention/extract-only/1/recovery-restart-clock",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "answered"
+    },
+    {
+      "key": "development-retention/maintained/1/initial",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "verification_rejected"
+    },
+    {
+      "key": "development-retention/maintained/1/source-correction",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated",
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "typed_unavailable"
+      ],
+      "typedAnswerReason": "verification_unavailable"
+    },
+    {
+      "key": "development-retention/maintained/1/seeded-contamination",
+      "stage": "memory",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/maintained/1/seeded-contamination",
+      "stage": "answer",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": "answered"
+    },
+    {
+      "key": "development-retention/maintained/1/recovery-restart-clock",
+      "stage": "recall",
+      "missingIds": [
+        "warranty-corrected"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "retrieval_omission"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/maintained/1/recovery-restart-clock",
+      "stage": "context",
+      "missingIds": [
+        "warranty-corrected"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "retrieval_omission"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/maintained/1/recovery-restart-clock",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "answered"
+    },
+    {
+      "key": "development-retention/extract-only/2/alternative",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "draft_rejected"
+    },
+    {
+      "key": "development-retention/extract-only/2/source-correction",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated",
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "draft_rejected"
+    },
+    {
+      "key": "development-retention/extract-only/2/seeded-contamination",
+      "stage": "memory",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/extract-only/2/seeded-contamination",
+      "stage": "recall",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/extract-only/2/seeded-contamination",
+      "stage": "context",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/extract-only/2/seeded-contamination",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "draft_rejected"
+    },
+    {
+      "key": "development-retention/extract-only/2/recovery-restart-clock",
+      "stage": "recall",
+      "missingIds": [
+        "warranty-corrected"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "retrieval_omission"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/extract-only/2/recovery-restart-clock",
+      "stage": "context",
+      "missingIds": [
+        "warranty-corrected"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "retrieval_omission"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/extract-only/2/recovery-restart-clock",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated",
+        "warranty-corrected"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "draft_rejected"
+    },
+    {
+      "key": "development-retention/maintained/2/source-correction",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "answered"
+    },
+    {
+      "key": "development-retention/maintained/2/seeded-contamination",
+      "stage": "memory",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/maintained/2/seeded-contamination",
+      "stage": "recall",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/maintained/2/seeded-contamination",
+      "stage": "context",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/maintained/2/seeded-contamination",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "draft_rejected"
+    },
+    {
+      "key": "development-retention/maintained/2/recovery-restart-clock",
+      "stage": "recall",
+      "missingIds": [
+        "warranty-corrected"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "retrieval_omission"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/maintained/2/recovery-restart-clock",
+      "stage": "context",
+      "missingIds": [
+        "warranty-corrected"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "retrieval_omission"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-retention/maintained/2/recovery-restart-clock",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated",
+        "warranty-corrected"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "draft_rejected"
+    },
+    {
+      "key": "development-folder/extract-only/1/copies-and-alternative",
+      "stage": "memory",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/extract-only/1/copies-and-alternative",
+      "stage": "timeline",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/extract-only/1/copies-and-alternative",
+      "stage": "recall",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/extract-only/1/copies-and-alternative",
+      "stage": "context",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/extract-only/1/explicit-rescheduling",
+      "stage": "memory",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/extract-only/1/explicit-rescheduling",
+      "stage": "timeline",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/extract-only/1/explicit-rescheduling",
+      "stage": "recall",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/extract-only/1/explicit-rescheduling",
+      "stage": "context",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/extract-only/1/explicit-rescheduling",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "bo-alternative",
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "typed_unavailable"
+      ],
+      "typedAnswerReason": "verification_unavailable"
+    },
+    {
+      "key": "development-folder/extract-only/1/unchanged",
+      "stage": "memory",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/extract-only/1/unchanged",
+      "stage": "timeline",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/extract-only/1/unchanged",
+      "stage": "recall",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/extract-only/1/unchanged",
+      "stage": "context",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/extract-only/1/restart-clock",
+      "stage": "memory",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/extract-only/1/restart-clock",
+      "stage": "timeline",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/extract-only/1/restart-clock",
+      "stage": "recall",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/extract-only/1/restart-clock",
+      "stage": "context",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/extract-only/1/restart-clock",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "bo-alternative",
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "typed_unavailable"
+      ],
+      "typedAnswerReason": "verification_unavailable"
+    },
+    {
+      "key": "development-folder/maintained/1/restart-clock",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "answered"
+    },
+    {
+      "key": "development-folder/extract-only/2/explicit-rescheduling",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "bo-alternative",
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "typed_unavailable"
+      ],
+      "typedAnswerReason": "verification_unavailable"
+    },
+    {
+      "key": "development-folder/extract-only/2/restart-clock",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "bo-alternative",
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "typed_unavailable"
+      ],
+      "typedAnswerReason": "verification_unavailable"
+    },
+    {
+      "key": "development-folder/maintained/2/copies-and-alternative",
+      "stage": "memory",
+      "missingIds": [
+        "distinct-appointment"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/maintained/2/copies-and-alternative",
+      "stage": "timeline",
+      "missingIds": [
+        "distinct-appointment"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/maintained/2/copies-and-alternative",
+      "stage": "context",
+      "missingIds": [
+        "distinct-appointment"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "development-folder/maintained/2/explicit-rescheduling",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "answered"
+    },
+    {
+      "key": "held-out-retention/extract-only/1/alternative",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "draft_rejected"
+    },
+    {
+      "key": "held-out-retention/extract-only/1/source-correction",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/1/source-correction",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/1/source-correction",
+      "stage": "recall",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/1/source-correction",
+      "stage": "context",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/1/source-correction",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "answered"
+    },
+    {
+      "key": "held-out-retention/extract-only/1/last-support-retracted",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/1/last-support-retracted",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/1/last-support-retracted",
+      "stage": "recall",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/1/last-support-retracted",
+      "stage": "context",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/1/seeded-contamination",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "required_retention_missing_cause_unknown",
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/1/seeded-contamination",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/1/seeded-contamination",
+      "stage": "recall",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "required_context_missing",
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/1/seeded-contamination",
+      "stage": "context",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "required_context_missing",
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/1/seeded-contamination",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "unsupported_promotion",
+        "stale_use"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown",
+        "caller_trusted_wrong_duration",
+        "answer_uses_unrevised_schedule"
+      ],
+      "typedAnswerReason": "answered"
+    },
+    {
+      "key": "held-out-retention/extract-only/1/recovery-restart-clock",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/1/recovery-restart-clock",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/1/recovery-restart-clock",
+      "stage": "recall",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/1/recovery-restart-clock",
+      "stage": "context",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/1/recovery-restart-clock",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "stale_use"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown",
+        "answer_uses_unrevised_schedule"
+      ],
+      "typedAnswerReason": "answered"
+    },
+    {
+      "key": "held-out-retention/maintained/1/alternative",
+      "stage": "answer",
+      "missingIds": [
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "answered"
+    },
+    {
+      "key": "held-out-retention/maintained/1/source-correction",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "qualification_loss"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "named_reporter_removed"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/1/source-correction",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "qualification_loss"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "named_reporter_removed"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/1/source-correction",
+      "stage": "recall",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "qualification_loss"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "named_reporter_removed"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/1/source-correction",
+      "stage": "context",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "qualification_loss"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "named_reporter_removed"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/1/last-support-retracted",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "qualification_loss"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "named_reporter_removed"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/1/last-support-retracted",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "qualification_loss"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "named_reporter_removed"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/1/last-support-retracted",
+      "stage": "recall",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "qualification_loss"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "named_reporter_removed"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/1/last-support-retracted",
+      "stage": "context",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "qualification_loss"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "named_reporter_removed"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/1/seeded-contamination",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "unsupported_promotion",
+        "qualification_loss"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "named_reporter_removed",
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/1/seeded-contamination",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "qualification_loss"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "named_reporter_removed"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/1/seeded-contamination",
+      "stage": "recall",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "unsupported_promotion",
+        "qualification_loss"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "named_reporter_removed",
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/1/seeded-contamination",
+      "stage": "context",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "unsupported_promotion",
+        "qualification_loss"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "named_reporter_removed",
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/1/seeded-contamination",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "typed_unavailable"
+      ],
+      "typedAnswerReason": "verification_unavailable"
+    },
+    {
+      "key": "held-out-retention/maintained/1/recovery-restart-clock",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "qualification_loss"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "named_reporter_removed"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/1/recovery-restart-clock",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "qualification_loss"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "named_reporter_removed"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/1/recovery-restart-clock",
+      "stage": "recall",
+      "missingIds": [
+        "ada-updated",
+        "warranty-corrected"
+      ],
+      "reviewedCodes": [
+        "qualification_loss"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "named_reporter_removed"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/1/recovery-restart-clock",
+      "stage": "context",
+      "missingIds": [
+        "ada-updated",
+        "warranty-corrected"
+      ],
+      "reviewedCodes": [
+        "qualification_loss"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "named_reporter_removed"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/1/recovery-restart-clock",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated",
+        "warranty-corrected"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "verification_rejected"
+    },
+    {
+      "key": "held-out-retention/extract-only/2/source-correction",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated",
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "typed_unavailable"
+      ],
+      "typedAnswerReason": "verification_unavailable"
+    },
+    {
+      "key": "held-out-retention/extract-only/2/seeded-contamination",
+      "stage": "memory",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/2/seeded-contamination",
+      "stage": "recall",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/2/seeded-contamination",
+      "stage": "context",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/2/seeded-contamination",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown",
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": "answered"
+    },
+    {
+      "key": "held-out-retention/extract-only/2/recovery-restart-clock",
+      "stage": "recall",
+      "missingIds": [
+        "warranty-corrected"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "retrieval_omission"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/2/recovery-restart-clock",
+      "stage": "context",
+      "missingIds": [
+        "warranty-corrected"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "retrieval_omission"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/extract-only/2/recovery-restart-clock",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "answered"
+    },
+    {
+      "key": "held-out-retention/maintained/2/alternative",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "bo-alternative"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "draft_rejected"
+    },
+    {
+      "key": "held-out-retention/maintained/2/source-correction",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "answered"
+    },
+    {
+      "key": "held-out-retention/maintained/2/seeded-contamination",
+      "stage": "memory",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/2/seeded-contamination",
+      "stage": "recall",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/2/seeded-contamination",
+      "stage": "context",
+      "missingIds": [],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/2/seeded-contamination",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "unsupported_promotion"
+      ],
+      "seededCodes": [
+        "unsupported_promotion"
+      ],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown",
+        "caller_trusted_wrong_duration"
+      ],
+      "typedAnswerReason": "answered"
+    },
+    {
+      "key": "held-out-retention/maintained/2/recovery-restart-clock",
+      "stage": "recall",
+      "missingIds": [
+        "warranty-corrected"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "retrieval_omission"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/2/recovery-restart-clock",
+      "stage": "context",
+      "missingIds": [
+        "warranty-corrected"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "retrieval_omission"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-retention/maintained/2/recovery-restart-clock",
+      "stage": "answer",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "answered"
+    },
+    {
+      "key": "held-out-folder/extract-only/1/explicit-rescheduling",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "bo-alternative",
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "draft_rejected"
+    },
+    {
+      "key": "held-out-folder/extract-only/1/restart-clock",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "bo-alternative",
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "typed_unavailable"
+      ],
+      "typedAnswerReason": "verification_unavailable"
+    },
+    {
+      "key": "held-out-folder/maintained/1/copies-and-alternative",
+      "stage": "memory",
+      "missingIds": [
+        "distinct-appointment"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/1/copies-and-alternative",
+      "stage": "timeline",
+      "missingIds": [
+        "distinct-appointment"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/1/explicit-rescheduling",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated",
+        "distinct-appointment"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/1/explicit-rescheduling",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated",
+        "distinct-appointment"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/1/explicit-rescheduling",
+      "stage": "context",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/1/explicit-rescheduling",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "bo-alternative",
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "draft_rejected"
+    },
+    {
+      "key": "held-out-folder/maintained/1/unchanged",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated",
+        "distinct-appointment"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/1/unchanged",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated",
+        "distinct-appointment"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/1/unchanged",
+      "stage": "context",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/1/restart-clock",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated",
+        "distinct-appointment"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/1/restart-clock",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated",
+        "distinct-appointment"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/1/restart-clock",
+      "stage": "context",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_context_missing"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/1/restart-clock",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "bo-alternative",
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "draft_rejected"
+    },
+    {
+      "key": "held-out-folder/extract-only/2/explicit-rescheduling",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/extract-only/2/explicit-rescheduling",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/extract-only/2/explicit-rescheduling",
+      "stage": "recall",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/extract-only/2/explicit-rescheduling",
+      "stage": "context",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/extract-only/2/explicit-rescheduling",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "bo-alternative",
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "typed_unavailable"
+      ],
+      "typedAnswerReason": "verification_unavailable"
+    },
+    {
+      "key": "held-out-folder/extract-only/2/unchanged",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/extract-only/2/unchanged",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/extract-only/2/unchanged",
+      "stage": "recall",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/extract-only/2/unchanged",
+      "stage": "context",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/extract-only/2/restart-clock",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/extract-only/2/restart-clock",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/extract-only/2/restart-clock",
+      "stage": "recall",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/extract-only/2/restart-clock",
+      "stage": "context",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/extract-only/2/restart-clock",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "bo-alternative",
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "draft_rejected"
+    },
+    {
+      "key": "held-out-folder/maintained/2/empty-declaration",
+      "stage": "memory",
+      "missingIds": [
+        "ada-initial"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/2/empty-declaration",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-initial"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "required_retention_missing_cause_unknown"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/2/copies-and-alternative",
+      "stage": "memory",
+      "missingIds": [
+        "ada-initial"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/2/copies-and-alternative",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-initial"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/2/copies-and-alternative",
+      "stage": "context",
+      "missingIds": [
+        "ada-initial"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/2/explicit-rescheduling",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/2/explicit-rescheduling",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/2/explicit-rescheduling",
+      "stage": "context",
+      "missingIds": [
+        "ada-initial",
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/2/explicit-rescheduling",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "bo-alternative",
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "draft_rejected"
+    },
+    {
+      "key": "held-out-folder/maintained/2/unchanged",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/2/unchanged",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/2/unchanged",
+      "stage": "context",
+      "missingIds": [
+        "ada-initial",
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/2/restart-clock",
+      "stage": "memory",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/2/restart-clock",
+      "stage": "timeline",
+      "missingIds": [
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/2/restart-clock",
+      "stage": "context",
+      "missingIds": [
+        "ada-initial",
+        "ada-updated"
+      ],
+      "reviewedCodes": [
+        "representation"
+      ],
+      "seededCodes": [],
+      "reasons": [
+        "date_reporter_ambiguous"
+      ],
+      "typedAnswerReason": null
+    },
+    {
+      "key": "held-out-folder/maintained/2/restart-clock",
+      "stage": "answer",
+      "missingIds": [
+        "ada-initial",
+        "bo-alternative",
+        "ada-updated"
+      ],
+      "reviewedCodes": [],
+      "seededCodes": [],
+      "reasons": [
+        "source_supported_answer_omission_cause_unknown"
+      ],
+      "typedAnswerReason": "draft_rejected"
+    }
+  ]
+}

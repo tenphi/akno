@@ -21,7 +21,7 @@
     "docs:doctor": "cookbook doctor",
     "docs:build": "astro build",
     "docs:preview": "astro preview",
-    "smoke": "node scripts/smoke.mjs && node scripts/smoke-demo.mjs",
+    "smoke": "node scripts/smoke.mjs && node scripts/smoke-demo.mjs && node scripts/smoke-longitudinal.mjs",
     "smoke:packages": "pnpm build && node scripts/smoke-packages.mjs",
     "check:repository": "node scripts/check-repository-safety.mjs",
     "changeset": "changeset",
@@ -33,7 +33,8 @@
     "format:check": "prettier --check \"packages/**/*.ts\" \"packages/*/README.md\" \"*.{json,md,ts}\" \"docs/*.md\" \"examples/*.md\" \"config/*.jsonc\" \"scripts/*.mjs\" \".changeset\" \".github/**/*.yml\"",
     "bench": "node packages/cli/src/bin.ts bench",
     "knip": "knip",
-    "bench:language": "node scripts/bench-language.mjs"
+    "bench:language": "node scripts/bench-language.mjs",
+    "bench:longitudinal": "pnpm build && node scripts/bench-longitudinal.mjs"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^1.0.0",

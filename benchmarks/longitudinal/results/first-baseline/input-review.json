@@ -1,0 +1,28 @@
+{
+  "version": "longitudinal-input-review-v1",
+  "corpusFingerprint": "139f35c0db7ece0580426afa730d3dc0160255d585c43b915a8d0e88c8fde795",
+  "reviewer": {
+    "kind": "agent",
+    "id": "Codex",
+    "independent": false,
+    "sourceBased": true,
+    "reviewedWithoutOutputs": true
+  },
+  "gates": {
+    "acceptedSemanticErrors": 0,
+    "sourceMutations": 0,
+    "duplicateGrowthOnReplay": 0,
+    "usefulMemoryCoverage": 0.9,
+    "usefulRecallCoverage": 0.9,
+    "usefulContextCoverage": 0.8,
+    "usefulAnswerCoverage": 0.8
+  },
+  "measurement": "socket-scoped-drained-index-v2",
+  "limitations": [
+    "corpus_author_review_is_not_independent",
+    "timeline_slice_not_full_issue_66",
+    "no_model_substitution",
+    "no_observation_reflection_positive_control",
+    "one_episode_per_track_per_split"
+  ]
+}
