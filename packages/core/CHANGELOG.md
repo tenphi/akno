@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.16.8
+
+### Patch Changes
+
+- [#165](https://github.com/tenphi/akno/pull/165) [`835f7b7`](https://github.com/tenphi/akno/commit/835f7b763d7202eca52a40aaf5137c6fc53ae3a8) Thanks [@tenphi](https://github.com/tenphi)! - Reconcile retained folder timeline assertions with independently verified same-event and explicit update links. Preserve speakers, date alternatives, source support and original lifecycle; expose the links consistently in ledger Markdown and timeline queries. Preserve successful source caches across unrelated folder-policy changes, migrate exact legacy cache keys without extraction, cache unchanged relationship decisions and refuse stale evidence, unsupported updates and edits beyond owned relationship markers.
+- Updated dependencies [[`835f7b7`](https://github.com/tenphi/akno/commit/835f7b763d7202eca52a40aaf5137c6fc53ae3a8)]:
+  - @tenphi/akno-protocol@0.16.8
+
 ## 0.16.7
 
 ### Patch Changes
