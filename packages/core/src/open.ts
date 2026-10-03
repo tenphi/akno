@@ -21,7 +21,7 @@ import { doctor, type DoctorOptions, type DoctorReport } from './doctor.ts';
 import { effectiveRule, matchRules } from './rules/compile.ts';
 import { looksLikeLedger } from './reserved.ts';
 import type { AknoContext } from './context.ts';
-import { Journal, type ChangeSummary } from './write/journal.ts';
+import { Journal, type ChangeSummary, type ChangeDetails } from './write/journal.ts';
 import {
   executeReplaySafeMutation,
   isReplaySafeOperation,
@@ -138,6 +138,8 @@ export interface Akno extends AknoOps {
   maintenancePolicy(slug: string, mode?: MaintenanceMode): MaintenancePathPolicy;
   /** Recent changes, newest first. What `undo` takes an id from. */
   changes(limit?: number): ChangeSummary[];
+  /** Exact committed text for one journal change, independent of current file contents. */
+  change(changeId: string): ChangeDetails;
   /** Gated proposals waiting on the user. */
   proposals(): ProposalRow[];
   /** Durable maintenance plans, newest first. */
@@ -463,6 +465,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     maintenancePolicy: (slug, mode) => explainMaintenancePath(ctx, slug, mode),
 
     changes: (limit) => ctx.journal.list(limit),
+    change: (changeId) => ctx.journal.detail(changeId),
 
     proposals: () => ctx.gate.pending(),
 

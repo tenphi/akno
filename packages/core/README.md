@@ -24,6 +24,12 @@ const result = await akno.call('recall', {
 Exactly one process may hold the write handle. A second `open` on the same state directory returns a
 read-only handle and says so, rather than racing a live watcher.
 
+`akno.changes(limit)` lists recent journal entries without page contents. `akno.change(changeId)`
+returns one entry with its original committed `before` / `after` text and file actions, even after
+a later write or undo. Binary snapshots stay private to the journal. Trusted socket hosts can use
+`client.command('changes', { change_id: changeId })` when the handshake advertises `change_details`;
+the ordinary list form of that command is unchanged. This operator surface is not an agent MCP tool.
+
 The index boundary quarantines complete Markdown merge blocks, configured sync-conflict paths, and duplicate
 stable page identities before they can reach chunks, facts, graph state, maintenance, or automatic writes.
 Classification is derived from current files and owner configuration; Akno never rewrites a conflicting file.

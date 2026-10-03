@@ -59,7 +59,7 @@ export async function serveSocket(
     const hello: Hello = {
       hello: 'akno',
       protocol: PROTOCOL_VERSION,
-      features: ['folder_timelines', 'scoped_timeline_migration'],
+      features: ['folder_timelines', 'scoped_timeline_migration', 'change_details'],
       version: AKNO_VERSION,
       writable: akno.writable,
       akno_path: akno.config.aknoPath,
@@ -178,7 +178,9 @@ async function runCommand(akno: Akno, command: CommandName, input: unknown): Pro
     case 'decline':
       return akno.decline(idFrom(input, 'proposal_id'));
     case 'changes':
-      return akno.changes(limitFrom(input));
+      return input != null && Object.prototype.hasOwnProperty.call(input, 'change_id')
+        ? akno.change(idFrom(input, 'change_id'))
+        : akno.changes(limitFrom(input));
     case 'proposals':
       return akno.proposals();
     case 'plan': {

@@ -46,6 +46,17 @@ export interface ChangeSummary {
   files: { relPath: string; action: FileAction }[];
 }
 
+/** Original committed snapshots, even if a later write or undo changed the live file. */
+export interface ChangeDetails extends Omit<ChangeSummary, 'files'> {
+  files: {
+    relPath: string;
+    action: FileAction;
+    before: string | null;
+    after: string | null;
+    movedTo?: string;
+  }[];
+}
+
 interface ChangeFileRow {
   rel_path: string;
   action: FileAction;
@@ -343,6 +354,28 @@ export class Journal {
         reason: 'undo_rollback_failed',
       });
     }
+  }
+
+  detail(changeId: string): ChangeDetails {
+    const row = this.#store.db
+      .prepare('SELECT id, at, actor, op, summary, status FROM changes WHERE id = ?')
+      .get(changeId) as Omit<ChangeSummary, 'files'> | undefined;
+    if (!row) throw new AknoError('not_found', `no journal change ${changeId}`);
+    const files = this.#store.db
+      .prepare(
+        'SELECT rel_path, action, before, after, moved_to FROM change_files WHERE change_id = ? ORDER BY ord',
+      )
+      .all(changeId) as ChangeFileRow[];
+    return {
+      ...row,
+      files: files.map((file) => ({
+        relPath: file.rel_path,
+        action: file.action,
+        before: file.before,
+        after: file.after,
+        ...(file.moved_to ? { movedTo: file.moved_to } : {}),
+      })),
+    };
   }
 
   list(limit = 20): ChangeSummary[] {
