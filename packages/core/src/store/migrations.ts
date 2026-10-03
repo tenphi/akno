@@ -13,7 +13,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 44;
+export const SCHEMA_VERSION = 45;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -50,6 +50,8 @@ export const PAGE_SOURCE_INTEGRITY_MIGRATION_INDEX = 33;
 
 export const PROSE_PROJECTION_MIGRATION_INDEX = 34;
 export const MUTATION_RECEIPTS_MIGRATION_INDEX = 35;
+
+export const EVENT_IDENTITY_RELATION_MIGRATION_INDEX = 38;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -1276,6 +1278,23 @@ export const MIGRATIONS: string[] = [
     ON observation_scope_verdicts(classifier_endpoint, prompt_version, created_at);`,
   // Source revisions reseal receipts/evidence as well as Markdown; keep the superseded proof private.
   `ALTER TABLE maintenance_item_revisions ADD COLUMN evidence TEXT;`,
+  // Assertion identity does not adjudicate dates or promote reported schedules to occurrences.
+  `ALTER TABLE managed_memory_relations RENAME TO memory_relations_before_event_identity;
+  DROP INDEX managed_memory_relations_target;
+  CREATE TABLE managed_memory_relations (
+    entry_key TEXT NOT NULL REFERENCES managed_memory_entries(entry_key) ON DELETE CASCADE,
+    ordinal INTEGER NOT NULL,
+    relation TEXT NOT NULL,
+    target_kind TEXT NOT NULL,
+    target_id TEXT NOT NULL,
+    support TEXT NOT NULL,
+    PRIMARY KEY(entry_key, ordinal),
+    CHECK (relation IN ('same_event', 'corrects', 'supersedes', 'contradicts', 'fulfills', 'answers', 'caused_by')),
+    CHECK (target_kind IN ('memory', 'fact'))
+  );
+  INSERT INTO managed_memory_relations SELECT * FROM memory_relations_before_event_identity;
+  DROP TABLE memory_relations_before_event_identity;
+  CREATE INDEX managed_memory_relations_target ON managed_memory_relations(target_kind, target_id, relation);`,
 ];
 
 /**

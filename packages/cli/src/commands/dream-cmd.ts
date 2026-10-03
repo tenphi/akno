@@ -826,6 +826,9 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
       ['unchanged inputs', history.cached],
       ['planned additions', history.additions],
       ['planned transfers', history.relocations],
+      ...(history.relationships
+        ? [['planned assertion links', history.relationships] as [string, number]]
+        : []),
       ...Object.entries(history.held).map(([code, count]): [string, number] => [`held: ${code}`, count]),
     ]);
   }

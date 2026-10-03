@@ -5,6 +5,7 @@ import {
   TimelineMigrationEntry,
 } from '../timelines.ts';
 import { z } from 'zod';
+import { RetainedRelation } from './retain.ts';
 import {
   ClockRelation,
   DatePrefix,
@@ -124,6 +125,16 @@ export const TimelineMemory = z
     kind: z.enum(['claim', 'decision', 'preference', 'plan', 'event', 'question']),
     subject: z.string(),
     evidence: z.array(z.string()),
+    /** Assertion links preserve alternatives; they do not establish occurrence or legal effect. */
+    assertion_links: z
+      .array(
+        z.object({
+          type: RetainedRelation.shape.type,
+          target_memory_id: z.string(),
+          target_available: z.boolean(),
+        }),
+      )
+      .optional(),
     ...TimelineFields,
     relation: TemporalRelation,
     temporal_status: TemporalStatus,

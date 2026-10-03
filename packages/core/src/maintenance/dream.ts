@@ -1153,6 +1153,12 @@ async function runPhase(
         report.timelineHistory.relocations = historyActions.filter(
           (action) => action.kind === 'relocate',
         ).length;
+        const relationshipItems = plan.items.filter(
+          (item) =>
+            item.kind === 'timeline_history' &&
+            item.evidence.some((entry) => entry.timelineHistory?.assertion),
+        );
+        if (relationshipItems.length) report.timelineHistory.relationships = relationshipItems.length;
         report.curated = curationReportFromPlan(report.curated, plan);
         report.repaired = repairResultFromPlan(plan, report.repaired?.declined ?? []);
         recordMaintenancePlan(report, plan);

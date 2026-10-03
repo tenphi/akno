@@ -155,7 +155,7 @@ interface MemoryRow {
 
 interface MemoryRelationRow {
   entry_key: string;
-  relation: 'corrects' | 'supersedes' | 'contradicts' | 'fulfills' | 'answers' | 'caused_by';
+  relation: 'same_event' | 'corrects' | 'supersedes' | 'contradicts' | 'fulfills' | 'answers' | 'caused_by';
   target_kind: 'memory' | 'fact';
   target_id: string;
   support: string;

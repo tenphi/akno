@@ -8,6 +8,9 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
 import { MAINTENANCE_TRANSFORMS, type ConfigDoc } from '../src/config/schema.ts';
 import { frameAuditFields, retentionAudit } from './semantic-audit.ts';
+import { ModelClient } from '../src/models/client.ts';
+import { RETAIN_PROMPT_VERSION, RETAIN_VERIFIER_VERSION } from '../src/write/retain.ts';
+import { SCHEMA_VERSION } from '../src/store/migrations.ts';
 import { sha256 } from '../src/store/ids.ts';
 
 let root: string;
@@ -19,6 +22,12 @@ let extraction: (source: string) => unknown[];
 let selection: string;
 let verified: boolean;
 let equivalence: string;
+let relationship: 'none' | 'uncertain' | 'same_event' | 'supersedes';
+let relationshipAudit: boolean;
+let relationshipCalls: number;
+let relationshipFrom: 'A' | 'B';
+let relationshipQuote: string | null;
+let relationshipUpdateExplicit: boolean;
 let equivalenceInputs: { incoming: { text: string }; existing: { id: string; text: string }[] }[];
 let onEquivalence: (() => void) | null;
 let curator: 'approve' | 'reject' | 'revise';
@@ -98,6 +107,12 @@ beforeEach(async () => {
   selection = 'timeline_1';
   verified = true;
   equivalence = 'new';
+  relationship = 'none';
+  relationshipAudit = true;
+  relationshipCalls = 0;
+  relationshipFrom = 'B';
+  relationshipQuote = null;
+  relationshipUpdateExplicit = true;
   equivalenceInputs = [];
   onEquivalence = null;
   curator = 'approve';
@@ -143,6 +158,32 @@ beforeEach(async () => {
               reason_code: verified ? null : 'discourse_uncertain',
             }),
           ),
+        };
+      } else if (system.includes('Reconcile two independently retained temporal assertions')) {
+        relationshipCalls++;
+        const input = JSON.parse(user);
+        const positive =
+          ['same_event', 'supersedes'].includes(relationship) &&
+          (!system.startsWith('Independently verify') || relationshipAudit);
+        content = {
+          relation: positive ? relationship : 'none',
+          from: positive
+            ? relationship === 'supersedes' &&
+              input.A.source_frames.some((frame: string) => frame.includes('explicitly reschedules'))
+              ? 'A'
+              : relationshipFrom
+            : null,
+          a_quote: positive ? (relationshipQuote ?? input.A.source_frames[0]) : null,
+          b_quote: positive ? input.B.source_frames[0] : null,
+          ...(system.startsWith('Independently verify')
+            ? {
+                a_assertion_supported: relationshipAudit,
+                b_assertion_supported: relationshipAudit,
+                identity_established: relationshipAudit,
+                update_explicit:
+                  relationshipAudit && relationship === 'supersedes' && relationshipUpdateExplicit,
+              }
+            : {}),
         };
       } else if (system.includes('SAME real-world occurrence')) {
         equivalenceInputs.push(JSON.parse(user));
@@ -1421,6 +1462,12 @@ it('keeps a distinct same-day assertion when the cross-page identity decision sa
   put('work/copy.md', '# Delivery\n\n' + text + '\n');
   extraction = () => [{ ...sourceCandidate(text), text }];
   equivalence = 'new';
+  relationship = 'none';
+  relationshipAudit = true;
+  relationshipCalls = 0;
+  relationshipFrom = 'B';
+  relationshipQuote = null;
+  relationshipUpdateExplicit = true;
   await mem.index({ structuralOnly: true });
   const result = await mem.dream({ phase: 'curate' });
   expect(result.maintenancePlan?.items[0]?.status).toBe('applied');
@@ -1817,7 +1864,7 @@ it('upgrades existing revision history and prunes the archived source proof with
   const report = await mem.dream({ phase: 'curate' });
   expect(report.maintenancePlan!.items[0]!.status).toBe('applied');
   const migrated = new Database(mem.config.dbPath);
-  expect(migrated.pragma('user_version', { simple: true })).toBe(44);
+  expect(migrated.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
   expect(
     (migrated.prepare('SELECT evidence FROM maintenance_item_revisions').get() as { evidence: string })
       .evidence,
@@ -2505,4 +2552,255 @@ it('refuses a sealed source plan when the selected ledger purpose changes before
   expect((await mem.applyPlan(plan.id)).plan.items[0]!.status).toBe('stale');
   expect(read('work/timeline.md')).toBe(`# Timeline\n\n${occurrencePurpose}\n`);
   expect(read('work/notes.md')).toBe(`# Service terms\n\n${validityNotice}\n`);
+});
+
+async function retainAlternative() {
+  await sourceSetup();
+  const other = 'Bo Winters states that the Zephyr QX-100 inspection is scheduled for 9 April 2031.';
+  put('work/other.md', '# Notice\n\n' + other + '\n');
+  extraction = (source) =>
+    source.includes(other) ? [sourceCandidate(other, '2031-04-09', 'Bo Winters')] : [sourceCandidate()];
+  await mem.index({ structuralOnly: true });
+  await mem.dream({ phase: 'curate' });
+  await mem.dream({ phase: 'curate' });
+  return other;
+}
+it('links established same-event date alternatives without merging speakers, dates, or lifecycle', async () => {
+  const other = await retainAlternative();
+  const sourceBefore = read('work/notes.md');
+  const original = read('work/timeline.md');
+  relationship = 'same_event';
+  const linked = await mem.dream({ phase: 'curate' });
+  expect(linked.maintenancePlan?.items[0]?.status).toBe('applied');
+  expect(relationshipCalls).toBe(2);
+  expect(read('work/timeline.md')).toContain('[same event](#akno-mem_');
+  expect(read('work/timeline.md').match(/akno:timeline-item id=/gu)).toHaveLength(2);
+  expect(read('work/notes.md')).toBe(sourceBefore);
+  expect(read('work/other.md')).toContain(other);
+  const query = await mem.timeline({ timeline: 'work/timeline', source: 'plan' });
+  expect(query.results).toHaveLength(2);
+  expect(query.results.map((item) => item.start).sort()).toEqual(['2031-04-08', '2031-04-09']);
+  expect(query.results.find((item) => item.type === 'memory' && item.assertion_links?.length)).toMatchObject({
+    temporal_status: 'scheduled',
+    disposition: 'active',
+    assertion_links: [{ type: 'same_event', target_available: true }],
+  });
+  const count = { ...calls };
+  const bytes = read('work/timeline.md');
+  await mem.dream({ phase: 'curate' });
+  await mem.index({ rebuild: true, structuralOnly: true });
+  await mem.close();
+  mem = await start({
+    folders: {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+    },
+  });
+  await mem.dream({ phase: 'curate' });
+  expect(calls).toEqual(count);
+  expect(relationshipCalls).toBe(2);
+  expect(read('work/timeline.md')).toBe(bytes);
+  await mem.undo({ change_id: linked.maintenancePlan!.items[0]!.changeId! });
+  expect(read('work/timeline.md')).toBe(original);
+  await mem.dream({ phase: 'curate' });
+  expect(read('work/timeline.md')).toBe(original);
+  expect(relationshipCalls).toBe(2);
+});
+it('requires independent relationship agreement and exact owned source witnesses', async () => {
+  await retainAlternative();
+  relationship = 'same_event';
+  relationshipAudit = false;
+  const before = read('work/timeline.md');
+  await mem.dream({ phase: 'curate' });
+  expect(read('work/timeline.md')).toBe(before);
+  expect(relationshipCalls).toBe(2);
+  await mem.dream({ phase: 'curate' });
+  expect(relationshipCalls).toBe(2);
+});
+it('holds relationship quotations outside the source even if the selected relation is positive', async () => {
+  await retainAlternative();
+  relationship = 'same_event';
+  relationshipQuote = 'Invented unrelated source witness.';
+  const before = read('work/timeline.md');
+  await mem.dream({ phase: 'curate' });
+  expect(read('work/timeline.md')).toBe(before);
+  expect(relationshipCalls).toBe(1);
+});
+it('stales a relationship plan if either source changes before apply', async () => {
+  await retainAlternative();
+  relationship = 'same_event';
+  const before = read('work/timeline.md');
+  const report = await mem.dream({ phase: 'curate', mode: 'review' });
+  const plan = mem.plan(report.maintenancePlan!.id);
+  put('work/other.md', '# Retracted notice\n\nThe inspection date is unknown.\n');
+  mem.decidePlan(plan.id, plan.items[0]!.id, 'approve', 'Reviewed invented date alternatives.');
+  expect((await mem.applyPlan(plan.id)).plan.items[0]!.status).toBe('stale');
+  expect(read('work/timeline.md')).toBe(before);
+});
+it('preserves an explicit rescheduling history without silently cancelling the earlier report', async () => {
+  await sourceSetup();
+  await mem.dream({ phase: 'curate' });
+  const update =
+    'Vulpine Mutual explicitly reschedules the Zephyr QX-100 inspection from 8 April 2031 to 9 April 2031.';
+  put('work/update.md', '# Update\n\n' + update + '\n');
+  extraction = (source) =>
+    source.includes(update) ? [sourceCandidate(update, '2031-04-09')] : [sourceCandidate()];
+  await mem.index({ structuralOnly: true });
+  await mem.dream({ phase: 'curate' });
+  relationship = 'supersedes';
+  const report = await mem.dream({ phase: 'curate' });
+  expect(report.maintenancePlan?.items[0]?.status).toBe('applied');
+  const query = await mem.timeline({ timeline: 'work/timeline', source: 'plan' });
+  expect(query.results).toHaveLength(2);
+  expect(
+    query.results.every((item) => item.temporal_status === 'scheduled' && item.disposition === 'active'),
+  ).toBe(true);
+  expect(query.results.find((item) => item.type === 'memory' && item.assertion_links?.length)).toMatchObject({
+    start: '2031-04-09',
+    assertion_links: [{ type: 'supersedes', target_available: true }],
+  });
+  expect(read('work/timeline.md')).toContain('[explicit update of](#akno-mem_');
+});
+it('caches distinct same-day occurrences and refuses to link them by shared date alone', async () => {
+  await sourceSetup();
+  await mem.dream({ phase: 'curate' });
+  const other = 'Bo Winters states that a separate Zephyr QX-100 inspection is scheduled for 8 April 2031.';
+  put('work/other.md', '# Separate visit\n\n' + other + '\n');
+  extraction = (source) =>
+    source.includes(other) ? [sourceCandidate(other, '2031-04-08', 'Bo Winters')] : [sourceCandidate()];
+  await mem.index({ structuralOnly: true });
+  await mem.dream({ phase: 'curate' });
+  await mem.dream({ phase: 'curate' });
+  expect(relationshipCalls).toBe(1);
+  const bytes = read('work/timeline.md');
+  const count = { ...calls };
+  await mem.dream({ phase: 'curate' });
+  expect(relationshipCalls).toBe(1);
+  expect(calls).toEqual(count);
+  expect(read('work/timeline.md')).toBe(bytes);
+});
+
+it('adds copied support to a linked assertion without another canonical identity or ledger row', async () => {
+  await retainAlternative();
+  relationship = 'same_event';
+  await mem.dream({ phase: 'curate' });
+  put('work/copy.md', read('work/notes.md'));
+  await mem.index({ structuralOnly: true });
+  await mem.dream({ phase: 'curate' });
+  expect(read('work/timeline.md').match(/akno:timeline-item id=/gu)).toHaveLength(2);
+  expect(read('work/timeline-memories.md').match(/akno:item mem_/gu)).toHaveLength(2);
+  expect(read('work/timeline-memories.md')).toContain('[[work/copy]]');
+  expect(read('work/timeline.md')).toContain('[same event](#akno-mem_');
+});
+it('refuses relationship curation when the canonical companion becomes a symlink', async () => {
+  await retainAlternative();
+  relationship = 'same_event';
+  const content = read('work/timeline-memories.md');
+  const other = path.join(stateDir, 'external-companion.md');
+  fs.writeFileSync(other, content);
+  fs.unlinkSync(path.join(root, 'work/timeline-memories.md'));
+  fs.symlinkSync(other, path.join(root, 'work/timeline-memories.md'));
+  const before = read('work/timeline.md');
+  await mem.dream({ phase: 'curate' });
+  expect(relationshipCalls).toBe(0);
+  expect(fs.readFileSync(other, 'utf8')).toBe(content);
+  expect(read('work/timeline.md')).toBe(before);
+});
+
+it('keeps unavailable related assertions explicit in query and ledger projection', async () => {
+  await retainAlternative();
+  relationship = 'same_event';
+  await mem.dream({ phase: 'curate' });
+  const query = await mem.timeline({ timeline: 'work/timeline', source: 'plan' });
+  const from = query.results.find((item) => item.type === 'memory' && item.assertion_links?.length)!;
+  if (from.type !== 'memory') throw new Error('missing invented relationship');
+  const target = from.assertion_links![0]!.target_memory_id;
+  await mem.forget({ memory: target });
+  const next = await mem.timeline({ timeline: 'work/timeline', source: 'plan' });
+  expect(
+    next.results.find((item) => item.type === 'memory' && item.memory_id === from.memory_id),
+  ).toMatchObject({ assertion_links: [{ target_available: false }] });
+  expect(read('work/timeline.md')).toContain('(assertion unavailable)');
+});
+
+it('refuses supersession when the independent auditor finds no explicit update', async () => {
+  await retainAlternative();
+  relationship = 'supersedes';
+  relationshipUpdateExplicit = false;
+  const before = read('work/timeline.md');
+  await mem.dream({ phase: 'curate' });
+  expect(relationshipCalls).toBe(2);
+  expect(read('work/timeline.md')).toBe(before);
+});
+
+it('keeps successful source and relationship decisions cached after unrelated folder policies change', async () => {
+  await retainAlternative();
+  await mem.dream({ phase: 'curate' });
+  const count = { ...calls },
+    relationCount = relationshipCalls,
+    bytes = read('work/timeline.md');
+  await mem.close();
+  mem = await start({
+    folders: {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+      'elsewhere/**': {
+        role: 'source',
+        remember: 'deny',
+        description: 'Separate invented project evidence.',
+      },
+    },
+  });
+  await mem.index({ structuralOnly: true });
+  await mem.dream({ phase: 'curate' });
+  expect(calls).toEqual(count);
+  expect(relationshipCalls).toBe(relationCount);
+  expect(read('work/timeline.md')).toBe(bytes);
+});
+
+it('migrates an exact legacy source dependency cache without another extraction', async () => {
+  await sourceSetup();
+  await mem.dream({ phase: 'curate' });
+  const count = { ...calls };
+  const config = mem.config;
+  const owner = (await mem.timeline({ timeline: 'work/timeline' })).timelines![0]!;
+  await mem.close();
+  const db = new Database(config.dbPath);
+  const row = db.prepare("SELECT key,value FROM meta WHERE key LIKE 'timeline-source:v1:%'").get() as {
+    key: string;
+    value: string;
+  };
+  const value = JSON.parse(row.value);
+  value.fingerprint = sha256(
+    JSON.stringify([
+      value.sourceHash,
+      value.source,
+      owner,
+      config.rules,
+      config.ignore,
+      config.index.conflictPathPatterns,
+      new ModelClient(config.models.derive).endpointFingerprint,
+      RETAIN_PROMPT_VERSION,
+      RETAIN_VERIFIER_VERSION,
+      'source-timeline-v2',
+    ]),
+  );
+  const legacy = value.fingerprint;
+  db.prepare('UPDATE meta SET value = ? WHERE key = ?').run(JSON.stringify(value), row.key);
+  db.close();
+  mem = await start({
+    folders: {
+      '**': { role: 'knowledge', remember: 'integrate' },
+      'work/**': { role: 'source', remember: 'deny' },
+    },
+  });
+  await mem.dream({ phase: 'curate' });
+  expect(calls).toEqual(count);
+  const after = new Database(config.dbPath, { readonly: true });
+  expect(
+    JSON.parse(
+      (after.prepare('SELECT value FROM meta WHERE key = ?').get(row.key) as { value: string }).value,
+    ).fingerprint,
+  ).not.toBe(legacy);
+  after.close();
 });

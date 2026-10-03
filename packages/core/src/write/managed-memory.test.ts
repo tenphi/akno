@@ -166,4 +166,30 @@ describe('managed memory v2 marker', () => {
     expect(sameManagedMemorySemantics(unresolved, resolved)).toBe(true);
     expect(sameManagedMemorySemantics(resolved, { ...resolved, subject: 'ent_bbbb' })).toBe(false);
   });
+  it('round-trips derived identity annotations without making them a new source assertion', () => {
+    const original = markerFromProvidedCandidate('mem_1111', candidate, {
+      receipt: 'aaaaaaaaaaaa',
+      candidate: 'bbbbbbbbbbbb',
+      proofGroup: 'cccccccccccc',
+      selection: 'provided',
+    });
+    const linked = {
+      ...original,
+      links: [
+        {
+          type: 'supersedes' as const,
+          target: 'memory:mem_2222',
+          support: 'dddddddddddd',
+          assessment: 'eeeeeeeeeeee',
+        },
+      ],
+    };
+    expect(parseManagedMemoryMarker(renderManagedMemoryMarker(linked))).toEqual(linked);
+    expect(sameManagedMemorySemantics(original, linked)).toBe(true);
+    const authoredRelation = {
+      ...linked,
+      links: linked.links.map(({ assessment: _assessment, ...link }) => link),
+    };
+    expect(sameManagedMemorySemantics(original, authoredRelation)).toBe(false);
+  });
 });
