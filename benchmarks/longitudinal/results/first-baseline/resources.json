@@ -1,0 +1,1832 @@
+{
+  "version": "longitudinal-resources-v1",
+  "usage": "logical_calls_reported_fields_only",
+  "cost": null,
+  "pipelineWallTime": null,
+  "rows": [
+    {
+      "split": "development",
+      "arm": "extract-only",
+      "track": "retention",
+      "checkpoints": 16,
+      "logicalCalls": 152,
+      "returnedModelFailures": 1,
+      "backgroundLogicalCalls": 20,
+      "callsWithoutUsage": 87,
+      "inputTokens": null,
+      "outputTokens": null,
+      "totalTokens": null,
+      "summedOperationLatencyMs": 377585.8137540001,
+      "summedModelLatencyMs": 375404.2119880004,
+      "cachedMaintenanceLogicalCalls": [
+        {
+          "key": "development-retention/extract-only/1/unchanged-reordered",
+          "calls": 0
+        },
+        {
+          "key": "development-retention/extract-only/2/unchanged-reordered",
+          "calls": 0
+        }
+      ],
+      "observations": 0,
+      "phasesAttempted": [],
+      "operations": {
+        "answer": {
+          "operations": 10,
+          "logicalCalls": 25,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 52.88104200000089,
+            "median": 7791.073999999993,
+            "max": 20643.57254199998
+          }
+        },
+        "context": {
+          "operations": 16,
+          "logicalCalls": 16,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 12.161916000011843,
+            "median": 18.919354500016198,
+            "max": 28.647499999999127
+          }
+        },
+        "drain-and-reopen": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 8.108834000013303,
+            "median": 199.7360625000074,
+            "max": 453.2117909999797
+          }
+        },
+        "index-ready": {
+          "operations": 16,
+          "logicalCalls": 1,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 2.812791999996989,
+            "median": 3.615812999996706,
+            "max": 84.6220420000027
+          }
+        },
+        "index-setup": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 6.618040999979712,
+            "median": 16.33804099998983,
+            "max": 26.058040999999946
+          }
+        },
+        "provided-seeded-contamination": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 16.03079199999047,
+            "median": 17.048250000014377,
+            "max": 18.065708000038285
+          }
+        },
+        "read": {
+          "operations": 64,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 0.40379099996061996,
+            "median": 0.8906665000031353,
+            "max": 8.184832999999344
+          }
+        },
+        "rebuild": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 308.2878750000091,
+            "median": 344.9761045000487,
+            "max": 381.6643340000883
+          }
+        },
+        "recall": {
+          "operations": 16,
+          "logicalCalls": 16,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 16.693332999988343,
+            "median": 25.275020499975653,
+            "max": 61.553249999997206
+          }
+        },
+        "replay-reordered": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 1.0431669999961741,
+            "median": 1.0739790000006906,
+            "max": 1.104791000005207
+          }
+        },
+        "restart": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 238.55179200001294,
+            "median": 264.96054200004437,
+            "max": 291.3692920000758
+          }
+        },
+        "retain:alternative": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 13158.921250000014,
+            "median": 13868.383437500008,
+            "max": 14577.845625000002
+          }
+        },
+        "retain:assistant-summary": {
+          "operations": 2,
+          "logicalCalls": 9,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 12875.547625000007,
+            "median": 23414.398645999987,
+            "max": 33953.24966699997
+          }
+        },
+        "retain:copy": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 14700.205999999998,
+            "median": 16004.356812499984,
+            "max": 17308.50762499997
+          }
+        },
+        "retain:notice": {
+          "operations": 4,
+          "logicalCalls": 23,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 12536.010458999954,
+            "median": 14282.10035400001,
+            "max": 30641.08925
+          }
+        },
+        "retain:seed": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 19815.32362500002,
+            "median": 21300.46783350002,
+            "max": 22785.612042000022
+          }
+        },
+        "retain:speculation": {
+          "operations": 2,
+          "logicalCalls": 9,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 9150.787374999996,
+            "median": 29390.987479000025,
+            "max": 49631.18758300005
+          }
+        },
+        "retract:alternative": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 41.694874999986496,
+            "median": 52.85906249999243,
+            "max": 64.02324999999837
+          }
+        },
+        "retract:assistant-summary": {
+          "operations": 2,
+          "logicalCalls": 1,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 0.600291000038851,
+            "median": 124.89035400002467,
+            "max": 249.1804170000105
+          }
+        },
+        "retract:copy": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 391.1968329999945,
+            "median": 395.6668539999955,
+            "max": 400.1368749999965
+          }
+        },
+        "retract:seed": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 20.046375000005355,
+            "median": 20.631270500001847,
+            "max": 21.21616599999834
+          }
+        },
+        "timeline": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 1.2855419999687,
+            "median": 2.2494999999762513,
+            "max": 3.260207999999693
+          }
+        }
+      }
+    },
+    {
+      "split": "development",
+      "arm": "extract-only",
+      "track": "folder",
+      "checkpoints": 10,
+      "logicalCalls": 111,
+      "returnedModelFailures": 4,
+      "backgroundLogicalCalls": 9,
+      "callsWithoutUsage": 61,
+      "inputTokens": null,
+      "outputTokens": null,
+      "totalTokens": null,
+      "summedOperationLatencyMs": 227970.508123999,
+      "summedModelLatencyMs": 226247.96124899876,
+      "cachedMaintenanceLogicalCalls": [
+        {
+          "key": "development-folder/extract-only/1/unchanged",
+          "calls": 0
+        },
+        {
+          "key": "development-folder/extract-only/1/restart-clock",
+          "calls": 0
+        },
+        {
+          "key": "development-folder/extract-only/2/unchanged",
+          "calls": 0
+        },
+        {
+          "key": "development-folder/extract-only/2/restart-clock",
+          "calls": 0
+        }
+      ],
+      "observations": 0,
+      "phasesAttempted": [],
+      "operations": {
+        "answer": {
+          "operations": 6,
+          "logicalCalls": 18,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 8479.74687500007,
+            "median": 11436.023999999976,
+            "max": 12606.4859999998
+          }
+        },
+        "context": {
+          "operations": 10,
+          "logicalCalls": 10,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 12.946666999952868,
+            "median": 19.74991700000828,
+            "max": 25.805333000025712
+          }
+        },
+        "drain-and-reopen": {
+          "operations": 10,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 6.1086669999640435,
+            "median": 220.6819999999716,
+            "max": 570.1431670000311
+          }
+        },
+        "index-ready": {
+          "operations": 10,
+          "logicalCalls": 6,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 2.697042000014335,
+            "median": 30.836937499931082,
+            "max": 93.69566600001417
+          }
+        },
+        "index-setup": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 5.817082999972627,
+            "median": 7.379041499982122,
+            "max": 8.940999999991618
+          }
+        },
+        "index-source": {
+          "operations": 10,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 2.67554199998267,
+            "median": 5.5788544999668375,
+            "max": 378.78933300008066
+          }
+        },
+        "read": {
+          "operations": 40,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 0.41758399992249906,
+            "median": 0.9578955000615679,
+            "max": 2.122250000014901
+          }
+        },
+        "rebuild": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 624.7480000000214,
+            "median": 655.657645499974,
+            "max": 686.5672909999266
+          }
+        },
+        "recall": {
+          "operations": 10,
+          "logicalCalls": 10,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 21.031041999929585,
+            "median": 31.674541999935172,
+            "max": 54.086125000030734
+          }
+        },
+        "restart": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 6.031124999979511,
+            "median": 6.157958499970846,
+            "max": 6.284791999962181
+          }
+        },
+        "retain:alternative": {
+          "operations": 2,
+          "logicalCalls": 9,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 13751.606374999974,
+            "median": 13913.625604,
+            "max": 14075.644833000028
+          }
+        },
+        "retain:copy": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 15409.790874999948,
+            "median": 16911.844916499977,
+            "max": 18413.898958000005
+          }
+        },
+        "retain:distinct": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 16290.069082999951,
+            "median": 17957.283583499957,
+            "max": 19624.498083999963
+          }
+        },
+        "retain:notice": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 12638.26649999991,
+            "median": 13601.811916499923,
+            "max": 14565.357332999934
+          }
+        },
+        "retain:update": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 14462.478000000003,
+            "median": 15312.038937500038,
+            "max": 16161.599875000073
+          }
+        },
+        "timeline": {
+          "operations": 10,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 1.5065000000176951,
+            "median": 2.91972900001565,
+            "max": 3.924542000051588
+          }
+        }
+      }
+    },
+    {
+      "split": "development",
+      "arm": "maintained",
+      "track": "retention",
+      "checkpoints": 16,
+      "logicalCalls": 157,
+      "returnedModelFailures": 1,
+      "backgroundLogicalCalls": 20,
+      "callsWithoutUsage": 86,
+      "inputTokens": null,
+      "outputTokens": null,
+      "totalTokens": null,
+      "summedOperationLatencyMs": 311033.8807100004,
+      "summedModelLatencyMs": 308604.40483,
+      "cachedMaintenanceLogicalCalls": [
+        {
+          "key": "development-retention/maintained/1/unchanged-reordered",
+          "calls": 0
+        },
+        {
+          "key": "development-retention/maintained/2/unchanged-reordered",
+          "calls": 0
+        }
+      ],
+      "observations": 0,
+      "phasesAttempted": [
+        "curate",
+        "housekeeping",
+        "observe",
+        "reflect"
+      ],
+      "operations": {
+        "answer": {
+          "operations": 10,
+          "logicalCalls": 31,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 4405.373375000083,
+            "median": 10287.150832999992,
+            "max": 14410.148417000077
+          }
+        },
+        "context": {
+          "operations": 16,
+          "logicalCalls": 16,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 12.405167000018992,
+            "median": 16.574520999987726,
+            "max": 26.522040999960154
+          }
+        },
+        "drain-and-reopen": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 4.720165999955498,
+            "median": 7.067604500043672,
+            "max": 8.799041999998735
+          }
+        },
+        "dream:1": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 8.59537499997532,
+            "median": 177.1915624999674,
+            "max": 491.9783339999849
+          }
+        },
+        "dream:2": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 7.635917000006884,
+            "median": 8.958646000013687,
+            "max": 12.839957999996841
+          }
+        },
+        "dream:3": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 5.988917000009678,
+            "median": 7.397833000009996,
+            "max": 10.122917000000598
+          }
+        },
+        "index-ready": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 2.077792000025511,
+            "median": 2.7514165000320645,
+            "max": 3.671875
+          }
+        },
+        "index-setup": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 6.435417000087909,
+            "median": 7.004604500049027,
+            "max": 7.573792000010144
+          }
+        },
+        "provided-seeded-contamination": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 15.00166700000409,
+            "median": 17.005917000002228,
+            "max": 19.010167000000365
+          }
+        },
+        "read": {
+          "operations": 64,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 0.33512500001234,
+            "median": 0.6107494999596383,
+            "max": 1.599375000107102
+          }
+        },
+        "rebuild": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 308.5787090000231,
+            "median": 311.16754200001014,
+            "max": 313.7563749999972
+          }
+        },
+        "recall": {
+          "operations": 16,
+          "logicalCalls": 16,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 19.24970799998846,
+            "median": 25.641354000021238,
+            "max": 65.47420900000725
+          }
+        },
+        "replay-reordered": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 1.3108749999664724,
+            "median": 1.6974999999802094,
+            "max": 2.0841249999939464
+          }
+        },
+        "restart": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 227.38595899997745,
+            "median": 232.5538125000021,
+            "max": 237.72166600002674
+          }
+        },
+        "retain:alternative": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 12228.813958000042,
+            "median": 13444.591666500026,
+            "max": 14660.36937500001
+          }
+        },
+        "retain:assistant-summary": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 11536.821166999987,
+            "median": 12014.196937999994,
+            "max": 12491.572709
+          }
+        },
+        "retain:copy": {
+          "operations": 2,
+          "logicalCalls": 9,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 14814.831250000017,
+            "median": 18378.37643749999,
+            "max": 21941.92162499996
+          }
+        },
+        "retain:notice": {
+          "operations": 4,
+          "logicalCalls": 28,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 12247.427833000023,
+            "median": 13014.940437500016,
+            "max": 15196.874249999993
+          }
+        },
+        "retain:seed": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 11321.995709000039,
+            "median": 13849.11500000002,
+            "max": 16376.234291
+          }
+        },
+        "retain:speculation": {
+          "operations": 2,
+          "logicalCalls": 4,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 10579.755082999938,
+            "median": 15951.498832999976,
+            "max": 21323.242583000014
+          }
+        },
+        "retract:alternative": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 53.27629200008232,
+            "median": 54.23462500004098,
+            "max": 55.192957999999635
+          }
+        },
+        "retract:assistant-summary": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 273.33795800001826,
+            "median": 281.95054150000215,
+            "max": 290.56312499998603
+          }
+        },
+        "retract:copy": {
+          "operations": 2,
+          "logicalCalls": 1,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 0.6169579999987036,
+            "median": 209.70441650002613,
+            "max": 418.79187500005355
+          }
+        },
+        "retract:seed": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 19.045166999916546,
+            "median": 19.09683349993429,
+            "max": 19.148499999952037
+          }
+        },
+        "timeline": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 1.1153329999942798,
+            "median": 1.5604789999924833,
+            "max": 2.209374999976717
+          }
+        }
+      }
+    },
+    {
+      "split": "development",
+      "arm": "maintained",
+      "track": "folder",
+      "checkpoints": 10,
+      "logicalCalls": 110,
+      "returnedModelFailures": 0,
+      "backgroundLogicalCalls": 0,
+      "callsWithoutUsage": 36,
+      "inputTokens": null,
+      "outputTokens": null,
+      "totalTokens": null,
+      "summedOperationLatencyMs": 350115.24283899914,
+      "summedModelLatencyMs": 347203.50613000046,
+      "cachedMaintenanceLogicalCalls": [
+        {
+          "key": "development-folder/maintained/1/unchanged",
+          "calls": 6
+        },
+        {
+          "key": "development-folder/maintained/1/restart-clock",
+          "calls": 0
+        },
+        {
+          "key": "development-folder/maintained/2/unchanged",
+          "calls": 7
+        },
+        {
+          "key": "development-folder/maintained/2/restart-clock",
+          "calls": 0
+        }
+      ],
+      "observations": 0,
+      "phasesAttempted": [
+        "curate",
+        "housekeeping",
+        "observe",
+        "reflect"
+      ],
+      "operations": {
+        "answer": {
+          "operations": 6,
+          "logicalCalls": 19,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 8624.573791999952,
+            "median": 10559.86404149991,
+            "max": 15618.587000000058
+          }
+        },
+        "context": {
+          "operations": 10,
+          "logicalCalls": 10,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 14.473417000030167,
+            "median": 19.39127100002952,
+            "max": 26.406541999895126
+          }
+        },
+        "drain-and-reopen": {
+          "operations": 10,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 4.88958299998194,
+            "median": 6.519333500065841,
+            "max": 9.245958000072278
+          }
+        },
+        "dream:1": {
+          "operations": 10,
+          "logicalCalls": 25,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 12.568834000034258,
+            "median": 12618.431312500034,
+            "max": 37289.55929200002
+          }
+        },
+        "dream:2": {
+          "operations": 10,
+          "logicalCalls": 21,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 8.06195799994748,
+            "median": 7963.571562499914,
+            "max": 26403.3330000001
+          }
+        },
+        "dream:3": {
+          "operations": 10,
+          "logicalCalls": 15,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 6.974625000031665,
+            "median": 15.444708000053652,
+            "max": 19053.956375000067
+          }
+        },
+        "index-ready": {
+          "operations": 10,
+          "logicalCalls": 8,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 2.745833999942988,
+            "median": 441.57014549989253,
+            "max": 565.9649170000339
+          }
+        },
+        "index-setup": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 7.170334000024013,
+            "median": 7.855833500099834,
+            "max": 8.541333000175655
+          }
+        },
+        "index-source": {
+          "operations": 10,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 3.3614169999491423,
+            "median": 4.795208499999717,
+            "max": 6.663959000026807
+          }
+        },
+        "read": {
+          "operations": 50,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 0.3328749998472631,
+            "median": 1.0433335000416264,
+            "max": 3.0347500001080334
+          }
+        },
+        "rebuild": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 698.7577089999104,
+            "median": 701.606396499963,
+            "max": 704.4550840000156
+          }
+        },
+        "recall": {
+          "operations": 10,
+          "logicalCalls": 10,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 22.37183299998287,
+            "median": 27.713978999992833,
+            "max": 32.18933299998753
+          }
+        },
+        "restart": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 7.4445409999461845,
+            "median": 7.653541499923449,
+            "max": 7.862541999900714
+          }
+        },
+        "timeline": {
+          "operations": 10,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 1.0520000000251457,
+            "median": 4.156020500115119,
+            "max": 8.128166000009514
+          }
+        }
+      }
+    },
+    {
+      "split": "held-out",
+      "arm": "extract-only",
+      "track": "retention",
+      "checkpoints": 16,
+      "logicalCalls": 148,
+      "returnedModelFailures": 1,
+      "backgroundLogicalCalls": 17,
+      "callsWithoutUsage": 79,
+      "inputTokens": null,
+      "outputTokens": null,
+      "totalTokens": null,
+      "summedOperationLatencyMs": 413659.0795449993,
+      "summedModelLatencyMs": 411583.10245999973,
+      "cachedMaintenanceLogicalCalls": [
+        {
+          "key": "held-out-retention/extract-only/1/unchanged-reordered",
+          "calls": 0
+        },
+        {
+          "key": "held-out-retention/extract-only/2/unchanged-reordered",
+          "calls": 0
+        }
+      ],
+      "observations": 0,
+      "phasesAttempted": [],
+      "operations": {
+        "answer": {
+          "operations": 10,
+          "logicalCalls": 32,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 4689.670125000004,
+            "median": 11780.032250000018,
+            "max": 15975.826041999986
+          }
+        },
+        "context": {
+          "operations": 16,
+          "logicalCalls": 16,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 12.674207999953069,
+            "median": 21.625771000006353,
+            "max": 27.54283299999952
+          }
+        },
+        "drain-and-reopen": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 6.726332999998704,
+            "median": 42.67725049998262,
+            "max": 445.5338749999937
+          }
+        },
+        "index-ready": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 2.567749999987427,
+            "median": 3.6442505000159144,
+            "max": 5.547708000005514
+          }
+        },
+        "index-setup": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 7.186333000019658,
+            "median": 16.955770500009834,
+            "max": 26.72520800000001
+          }
+        },
+        "provided-seeded-contamination": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 16.463041999959387,
+            "median": 18.767479499976616,
+            "max": 21.071916999993846
+          }
+        },
+        "read": {
+          "operations": 68,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 0.3376660000067204,
+            "median": 0.8156455000062124,
+            "max": 2.6507500000006985
+          }
+        },
+        "rebuild": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 296.6832080000022,
+            "median": 349.65931200001796,
+            "max": 402.63541600003373
+          }
+        },
+        "recall": {
+          "operations": 16,
+          "logicalCalls": 16,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 19.74587500002235,
+            "median": 30.53856299998006,
+            "max": 64.11854100000346
+          }
+        },
+        "replay-reordered": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 1.177125000001979,
+            "median": 1.335312499992142,
+            "max": 1.4934999999823049
+          }
+        },
+        "restart": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 177.28404199995566,
+            "median": 199.70660399997723,
+            "max": 222.1291659999988
+          }
+        },
+        "retain:alternative": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 15365.642584000001,
+            "median": 15756.147646500023,
+            "max": 16146.652709000045
+          }
+        },
+        "retain:assistant-summary": {
+          "operations": 2,
+          "logicalCalls": 9,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 9710.697792000006,
+            "median": 16776.80625050002,
+            "max": 23842.914709000033
+          }
+        },
+        "retain:copy": {
+          "operations": 2,
+          "logicalCalls": 9,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 13949.518082999995,
+            "median": 26098.28077049997,
+            "max": 38247.04345799994
+          }
+        },
+        "retain:notice": {
+          "operations": 4,
+          "logicalCalls": 24,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 15673.81487500004,
+            "median": 19778.13091700001,
+            "max": 32483.440166
+          }
+        },
+        "retain:seed": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 10270.814583000029,
+            "median": 16096.799500000023,
+            "max": 21922.784417000017
+          }
+        },
+        "retain:speculation": {
+          "operations": 2,
+          "logicalCalls": 4,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 9743.456957999995,
+            "median": 28849.7408745,
+            "max": 47956.024791
+          }
+        },
+        "retract:alternative": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 37.17383400001563,
+            "median": 47.024083500000415,
+            "max": 56.8743329999852
+          }
+        },
+        "retract:assistant-summary": {
+          "operations": 2,
+          "logicalCalls": 1,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 0.6949169999861624,
+            "median": 104.34241700002167,
+            "max": 207.98991700005718
+          }
+        },
+        "retract:copy": {
+          "operations": 2,
+          "logicalCalls": 1,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 0.6253329999744892,
+            "median": 167.94858299997577,
+            "max": 335.27183299997705
+          }
+        },
+        "retract:seed": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 15.860875000013039,
+            "median": 16.07497900001181,
+            "max": 16.289083000010578
+          }
+        },
+        "timeline": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 1.0937919999996666,
+            "median": 2.0076669999980368,
+            "max": 4.645292000030167
+          }
+        }
+      }
+    },
+    {
+      "split": "held-out",
+      "arm": "extract-only",
+      "track": "folder",
+      "checkpoints": 10,
+      "logicalCalls": 109,
+      "returnedModelFailures": 2,
+      "backgroundLogicalCalls": 9,
+      "callsWithoutUsage": 61,
+      "inputTokens": null,
+      "outputTokens": null,
+      "totalTokens": null,
+      "summedOperationLatencyMs": 229914.747752,
+      "summedModelLatencyMs": 228130.98633600085,
+      "cachedMaintenanceLogicalCalls": [
+        {
+          "key": "held-out-folder/extract-only/1/unchanged",
+          "calls": 0
+        },
+        {
+          "key": "held-out-folder/extract-only/1/restart-clock",
+          "calls": 0
+        },
+        {
+          "key": "held-out-folder/extract-only/2/unchanged",
+          "calls": 0
+        },
+        {
+          "key": "held-out-folder/extract-only/2/restart-clock",
+          "calls": 0
+        }
+      ],
+      "observations": 0,
+      "phasesAttempted": [],
+      "operations": {
+        "answer": {
+          "operations": 6,
+          "logicalCalls": 16,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 5322.417000000016,
+            "median": 10926.487333999947,
+            "max": 15081.775124999927
+          }
+        },
+        "context": {
+          "operations": 10,
+          "logicalCalls": 10,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 12.598666000179946,
+            "median": 17.083853500022087,
+            "max": 36.17983300006017
+          }
+        },
+        "drain-and-reopen": {
+          "operations": 10,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 6.24108399997931,
+            "median": 232.56412549997913,
+            "max": 570.3986249999143
+          }
+        },
+        "index-ready": {
+          "operations": 10,
+          "logicalCalls": 6,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 2.3392499999608845,
+            "median": 30.259270500100683,
+            "max": 103.20595900004264
+          }
+        },
+        "index-setup": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 5.85791700007394,
+            "median": 6.385417000041343,
+            "max": 6.912917000008747
+          }
+        },
+        "index-source": {
+          "operations": 10,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 2.5270000000018626,
+            "median": 5.481604000087827,
+            "max": 375.98087499989197
+          }
+        },
+        "read": {
+          "operations": 40,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 0.3885000000009313,
+            "median": 0.8978539999807253,
+            "max": 1.9304579999297857
+          }
+        },
+        "rebuild": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 685.0995000000112,
+            "median": 736.9466874999925,
+            "max": 788.7938749999739
+          }
+        },
+        "recall": {
+          "operations": 10,
+          "logicalCalls": 10,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 21.83450000011362,
+            "median": 30.07997949991841,
+            "max": 55.94933299999684
+          }
+        },
+        "restart": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 5.743374999961816,
+            "median": 5.769687500025611,
+            "max": 5.796000000089407
+          }
+        },
+        "retain:alternative": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 13871.918249999871,
+            "median": 16980.429478999984,
+            "max": 20088.940708000096
+          }
+        },
+        "retain:copy": {
+          "operations": 2,
+          "logicalCalls": 9,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 15323.29983299994,
+            "median": 15444.851645499992,
+            "max": 15566.403458000044
+          }
+        },
+        "retain:distinct": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 15828.7592079998,
+            "median": 16521.854207999946,
+            "max": 17214.949208000093
+          }
+        },
+        "retain:notice": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 12917.918540999992,
+            "median": 13190.603791499976,
+            "max": 13463.28904199996
+          }
+        },
+        "retain:update": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 16106.798874999979,
+            "median": 19575.645207999914,
+            "max": 23044.49154099985
+          }
+        },
+        "timeline": {
+          "operations": 10,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 1.3307080001104623,
+            "median": 2.7216665000887588,
+            "max": 4.075249999994412
+          }
+        }
+      }
+    },
+    {
+      "split": "held-out",
+      "arm": "maintained",
+      "track": "retention",
+      "checkpoints": 16,
+      "logicalCalls": 150,
+      "returnedModelFailures": 1,
+      "backgroundLogicalCalls": 17,
+      "callsWithoutUsage": 81,
+      "inputTokens": null,
+      "outputTokens": null,
+      "totalTokens": null,
+      "summedOperationLatencyMs": 440531.2852909999,
+      "summedModelLatencyMs": 438703.36798699945,
+      "cachedMaintenanceLogicalCalls": [
+        {
+          "key": "held-out-retention/maintained/1/unchanged-reordered",
+          "calls": 0
+        },
+        {
+          "key": "held-out-retention/maintained/2/unchanged-reordered",
+          "calls": 0
+        }
+      ],
+      "observations": 0,
+      "phasesAttempted": [
+        "curate",
+        "housekeeping",
+        "observe",
+        "reflect"
+      ],
+      "operations": {
+        "answer": {
+          "operations": 10,
+          "logicalCalls": 31,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 4305.028333000024,
+            "median": 11587.37997900002,
+            "max": 21594.97191599995
+          }
+        },
+        "context": {
+          "operations": 16,
+          "logicalCalls": 16,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 11.372084000031464,
+            "median": 19.938646000009612,
+            "max": 32.037540999939665
+          }
+        },
+        "drain-and-reopen": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 4.352332999929786,
+            "median": 6.780021000013221,
+            "max": 9.203708000015467
+          }
+        },
+        "dream:1": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 8.360875000013039,
+            "median": 197.1653959999967,
+            "max": 467.20087499998044
+          }
+        },
+        "dream:2": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 5.546083000022918,
+            "median": 7.584749499976169,
+            "max": 9.738124999916181
+          }
+        },
+        "dream:3": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 5.494583999970928,
+            "median": 7.491749999986496,
+            "max": 12.31529200001387
+          }
+        },
+        "index-ready": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 2.1706249999115244,
+            "median": 2.7951664999418426,
+            "max": 3.6152920000022277
+          }
+        },
+        "index-setup": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 6.746959000010975,
+            "median": 6.791396000015084,
+            "max": 6.835833000019193
+          }
+        },
+        "provided-seeded-contamination": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 18.026292000024114,
+            "median": 19.052166500041494,
+            "max": 20.078041000058874
+          }
+        },
+        "read": {
+          "operations": 64,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 0.3430830000434071,
+            "median": 0.6549999999842839,
+            "max": 1.3387080000247806
+          }
+        },
+        "rebuild": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 328.90412500000093,
+            "median": 336.298833000008,
+            "max": 343.6935410000151
+          }
+        },
+        "recall": {
+          "operations": 16,
+          "logicalCalls": 16,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 21.549250000040047,
+            "median": 28.997271000029286,
+            "max": 57.49712499999441
+          }
+        },
+        "replay-reordered": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 1.590375000028871,
+            "median": 1.6688750000030268,
+            "max": 1.7473749999771826
+          }
+        },
+        "restart": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 238.39191600005142,
+            "median": 265.83795800001826,
+            "max": 293.2839999999851
+          }
+        },
+        "retain:alternative": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 15299.378208999988,
+            "median": 17449.224958999985,
+            "max": 19599.07170899998
+          }
+        },
+        "retain:assistant-summary": {
+          "operations": 2,
+          "logicalCalls": 4,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 8366.516125000024,
+            "median": 21289.31885400004,
+            "max": 34212.12158300006
+          }
+        },
+        "retain:copy": {
+          "operations": 2,
+          "logicalCalls": 9,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 12918.52358400001,
+            "median": 15456.307333499979,
+            "max": 17994.09108299995
+          }
+        },
+        "retain:notice": {
+          "operations": 4,
+          "logicalCalls": 28,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 13484.777084000001,
+            "median": 33692.508604000046,
+            "max": 52785.662709000055
+          }
+        },
+        "retain:seed": {
+          "operations": 2,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 10393.440333000035,
+            "median": 23240.410916499997,
+            "max": 36087.38149999996
+          }
+        },
+        "retain:speculation": {
+          "operations": 2,
+          "logicalCalls": 9,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 10489.288208000013,
+            "median": 11609.336479000049,
+            "max": 12729.384750000085
+          }
+        },
+        "retract:alternative": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 48.9460830000462,
+            "median": 52.415875000006054,
+            "max": 55.885666999965906
+          }
+        },
+        "retract:assistant-summary": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 0.3720830000238493,
+            "median": 0.4590414999984205,
+            "max": 0.5459999999729916
+          }
+        },
+        "retract:copy": {
+          "operations": 2,
+          "logicalCalls": 1,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 0.5642079999670386,
+            "median": 196.27835399995092,
+            "max": 391.9924999999348
+          }
+        },
+        "retract:seed": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 19.556250000023283,
+            "median": 19.782479500048794,
+            "max": 20.008709000074305
+          }
+        },
+        "timeline": {
+          "operations": 16,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 1.0625,
+            "median": 1.477666999999201,
+            "max": 2.0118749999674037
+          }
+        }
+      }
+    },
+    {
+      "split": "held-out",
+      "arm": "maintained",
+      "track": "folder",
+      "checkpoints": 10,
+      "logicalCalls": 109,
+      "returnedModelFailures": 0,
+      "backgroundLogicalCalls": 0,
+      "callsWithoutUsage": 36,
+      "inputTokens": null,
+      "outputTokens": null,
+      "totalTokens": null,
+      "summedOperationLatencyMs": 347057.9248729994,
+      "summedModelLatencyMs": 344079.5783759998,
+      "cachedMaintenanceLogicalCalls": [
+        {
+          "key": "held-out-folder/maintained/1/unchanged",
+          "calls": 0
+        },
+        {
+          "key": "held-out-folder/maintained/1/restart-clock",
+          "calls": 0
+        },
+        {
+          "key": "held-out-folder/maintained/2/unchanged",
+          "calls": 11
+        },
+        {
+          "key": "held-out-folder/maintained/2/restart-clock",
+          "calls": 8
+        }
+      ],
+      "observations": 0,
+      "phasesAttempted": [
+        "curate",
+        "housekeeping",
+        "observe",
+        "reflect"
+      ],
+      "operations": {
+        "answer": {
+          "operations": 6,
+          "logicalCalls": 14,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 5090.658250000095,
+            "median": 5470.062958499999,
+            "max": 9824.177875000052
+          }
+        },
+        "context": {
+          "operations": 10,
+          "logicalCalls": 10,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 13.171291999984533,
+            "median": 16.948937500012107,
+            "max": 34.57470900006592
+          }
+        },
+        "drain-and-reopen": {
+          "operations": 10,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 5.01970799989067,
+            "median": 7.305145499994978,
+            "max": 10.555915999924764
+          }
+        },
+        "dream:1": {
+          "operations": 10,
+          "logicalCalls": 28,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 11.341166999889538,
+            "median": 15475.984375499946,
+            "max": 29565.012124999892
+          }
+        },
+        "dream:2": {
+          "operations": 10,
+          "logicalCalls": 18,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 7.830667000031099,
+            "median": 7845.48814599996,
+            "max": 15654.37716699997
+          }
+        },
+        "dream:3": {
+          "operations": 10,
+          "logicalCalls": 19,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 6.537790999980643,
+            "median": 4903.179020500043,
+            "max": 44439.24279200006
+          }
+        },
+        "index-ready": {
+          "operations": 10,
+          "logicalCalls": 8,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 2.346417000051588,
+            "median": 428.09379149996676,
+            "max": 650.4232920000795
+          }
+        },
+        "index-setup": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 6.484666999895126,
+            "median": 6.567562999960501,
+            "max": 6.650459000025876
+          }
+        },
+        "index-source": {
+          "operations": 10,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 2.9558329998981208,
+            "median": 3.8326874999329448,
+            "max": 6.207999999867752
+          }
+        },
+        "read": {
+          "operations": 49,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 0.3128329999744892,
+            "median": 0.7369170000310987,
+            "max": 2.7139169999863952
+          }
+        },
+        "rebuild": {
+          "operations": 2,
+          "logicalCalls": 2,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 608.798167000059,
+            "median": 688.015728999977,
+            "max": 767.233290999895
+          }
+        },
+        "recall": {
+          "operations": 10,
+          "logicalCalls": 10,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 22.58187499991618,
+            "median": 26.797604000079446,
+            "max": 60.40641700010747
+          }
+        },
+        "restart": {
+          "operations": 2,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 6.774082999909297,
+            "median": 8.19668749999255,
+            "max": 9.619292000075802
+          }
+        },
+        "timeline": {
+          "operations": 10,
+          "logicalCalls": 0,
+          "failedOperations": 0,
+          "latencyMs": {
+            "min": 1.0817080000415444,
+            "median": 3.4924999999348074,
+            "max": 7.087125000078231
+          }
+        }
+      }
+    }
+  ]
+}

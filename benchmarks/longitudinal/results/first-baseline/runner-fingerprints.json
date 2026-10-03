@@ -1,0 +1,12 @@
+{
+  "version": "longitudinal-runner-fingerprints-v1",
+  "hash": "sha256_raw_file_bytes",
+  "files": {
+    "scripts/longitudinal-runtime.mjs": "69661554663842b6ea2a3eb04a72398adccbc66df5dfd2551993ceff55f6d954",
+    "scripts/bench-longitudinal.mjs": "c9bb01bcb79d36ac7d188b80b1f51a9d5fa060521ecce71efaaefc0653a92743",
+    "scripts/smoke-longitudinal.mjs": "6c06c0c7015a8b74681ed016dd88c22f0ee6063b1ace3f5ad9fd5090f4cb9abd",
+    "packages/core/src/bench/longitudinal-review.ts": "b55476835e9cdf365c3ada11114080ae776c964f7c24c0c8d7e7bab85fcf7a77",
+    "packages/core/src/bench/longitudinal-corpus.ts": "27c44ba125a364998542367da650e4cd5d6c4a1efb40447d0f0a9f65cc9dce31",
+    "packages/core/src/bench/longitudinal-corpus-v1.ts": "7fb2c027500b12ba7f606c2e8c1e57b69c580f145c2ef423035cf7175b64f8d1"
+  }
+}

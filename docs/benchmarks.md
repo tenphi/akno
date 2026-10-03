@@ -105,6 +105,18 @@ Detailed corpus contracts and historical evidence live beside each benchmark:
 - [automatic recall](https://github.com/tenphi/akno/blob/main/benchmarks/auto-recall/README.md)
 - [automatic recall plus host answer](https://github.com/tenphi/akno/blob/main/benchmarks/auto-recall-answer/README.md)
 
+## Longitudinal reliability
+
+`pnpm bench:longitudinal` is the opt-in first slice of #66: repeated English retention, source correction,
+retraction, source-folder timeline discovery and actual downstream use through built packages and a socket.
+It includes development/held-out episodes, explicitly seeded caller errors, unchanged cycles and
+restart/rebuild. Freeze inputs before live egress, then source-review all checkpoint outputs. Runtime
+verification is not ground truth, and an always-abstain pipeline fails the useful-coverage gates.
+
+The [longitudinal evaluation contract](https://github.com/tenphi/akno/blob/main/benchmarks/longitudinal/README.md)
+describes reproducible commands, review format, declared gates and coverage gaps. This slice has no positive
+observation/reflection control or model substitution and does not establish full #66 coverage.
+
 ## Running a relevant gate
 
 Choose the narrowest surface affected by a change, then run the general suite before release. Examples:
