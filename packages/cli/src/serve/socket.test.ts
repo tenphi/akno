@@ -67,6 +67,64 @@ afterEach(async () => {
 });
 
 describe('the socket door', () => {
+  it('returns committed change snapshots without reading newer page bytes', async () => {
+    const client = await connect({ socket: server.path });
+    try {
+      expect(client.hello.features).toContain('change_details');
+      const before = fs.readFileSync(path.join(root, 'home/lease.md'), 'utf8');
+      const receipt = await client.call(
+        'write',
+        {
+          slug: 'home/lease',
+          replace: { find: '1111 EUR', with: '2222 EUR' },
+          event: { date: '2031-04-05', summary: 'The invented lease was updated.' },
+        },
+        { actor: 'user' },
+      );
+      const after = fs.readFileSync(path.join(root, 'home/lease.md'), 'utf8');
+      await client.call('write', { slug: 'home/lease', append: 'A later note.' }, { actor: 'user' });
+      const details = await client.command('changes', { change_id: receipt.change_id });
+      expect(details).toMatchObject({
+        id: receipt.change_id,
+        status: 'applied',
+        files: expect.arrayContaining([
+          { relPath: 'home/lease.md', action: 'modified', before, after },
+          expect.objectContaining({ relPath: 'timeline.md' }),
+        ]),
+      });
+      expect(await client.command('changes', { limit: 1 })).toEqual([
+        expect.objectContaining({ files: [{ relPath: 'home/lease.md', action: 'modified' }] }),
+      ]);
+      expect(mem.change(receipt.change_id!)).toEqual(details);
+      await expect(client.command('changes', { change_id: 'chg_missing' })).rejects.toMatchObject({
+        code: 'not_found',
+      });
+      await expect(client.command('changes', { change_id: '' })).rejects.toMatchObject({ code: 'invalid' });
+      await expect(client.command('changes', { change_id: 12 })).rejects.toMatchObject({ code: 'invalid' });
+    } finally {
+      await client.close();
+    }
+  });
+
+  it('keeps original snapshots after undo and distinguishes creation from modification', async () => {
+    const receipt = await mem.write({
+      slug: 'home/preferences',
+      content: '# Preferences\n\nAfternoon meetings.',
+    });
+    const details = mem.change(receipt.change_id!);
+    expect(details.files).toEqual([
+      expect.objectContaining({
+        relPath: 'home/preferences.md',
+        action: 'created',
+        before: null,
+        after: expect.any(String),
+      }),
+    ]);
+    await mem.undo({ change_id: receipt.change_id! });
+    expect(mem.change(receipt.change_id!)).toEqual({ ...details, status: 'undone' });
+    expect(fs.existsSync(path.join(root, 'home/preferences.md'))).toBe(false);
+  });
+
   it('includes scheduler-owned health only when requested, without running maintenance', async () => {
     const schedule = dreamSchedule.calculateDreamSchedule(
       {
