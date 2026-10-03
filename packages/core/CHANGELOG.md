@@ -1,5 +1,16 @@
 # @tenphi/akno-core
 
+## 0.17.0
+
+### Minor Changes
+
+- [#167](https://github.com/tenphi/akno/pull/167) [`2a0e641`](https://github.com/tenphi/akno/commit/2a0e641b83540014e353d57f00f5578af63997d5) Thanks [@tenphi](https://github.com/tenphi)! - Expose exact committed journal snapshots through `change(id)` and the trusted socket's `changes` command with `change_id`. Advertise `change_details` so hosts can display accurate edit receipts without comparing live files or guessing what a mutation saved.
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.17.0
+
 ## 0.16.8
 
 ### Patch Changes
