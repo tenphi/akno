@@ -1551,7 +1551,7 @@ function sameEventEnvelope(left: ManagedMemoryMarker, right: ManagedMemoryMarker
     polarity: marker.polarity,
     basis: marker.basis,
     evidence: marker.evidence,
-    links: marker.links,
+    links: marker.links.filter((link) => !link.assessment),
     time: marker.time
       ? {
           start: marker.time.start,

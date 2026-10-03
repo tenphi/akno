@@ -418,6 +418,7 @@ export const GraphRelation = z.enum([
   'owns_document',
   'participates_in',
   'derived_from',
+  'same_event',
   'corrects',
   'supersedes',
   'contradicts',

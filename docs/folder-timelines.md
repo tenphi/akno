@@ -221,6 +221,23 @@ calls; zero disables history planning. Full evidence must fit the bounded curato
 shared maintenance budgets still apply. `maintenance.policies.timeline_history: "off"` disables this
 transformation independently of other curation.
 
+After source retention, bounded curation also reconciles assertions already held in the folder's managed
+companion. It can add `same_event` links when identifying details establish one underlying event, including
+attributed date alternatives. An explicit correction, cancellation or rescheduling can add `supersedes`;
+a newer document or different date alone cannot. Both statements, speakers, dates and lifecycle states
+remain visible. The link records a source's update, not a decision that its date is true or that an event
+occurred. A proposal and a separate semantic audit must agree on exact source witnesses before the ordinary
+independent curator can admit the journalled marker and ledger projection.
+
+The ledger links to the related assertion, and `timeline` exposes `assertion_links` with its durable target
+and `target_available`. An unavailable target remains an unresolved reference, not an invitation to merge
+or manufacture evidence. Relationship decisions are cached against the exact assertion envelopes, live
+source frames, ownership, policy and model contract. This reconciliation can process earlier retained
+assertions without re-extracting their successfully processed sources. Distinct items are cached; ambiguity
+and model failure receive a controlled retry. Exact undo suppresses the unchanged proposed relationship. Source cache dependencies use the effective
+source/companion policy and owning declaration, so an unrelated folder-rule edit does not repeat successful
+extraction. Exact verified legacy cache keys migrate without model calls.
+
 Source plans keep one complete evidence snapshot and seal their exact page operations with hashes.
 An oversized batch is reduced to a dependency-ordered prefix without repeating extraction; later cycles
 continue the cached unfinished assertions. A source or even a single-item write that cannot fit remains

@@ -37,12 +37,12 @@ import type { MaintenanceOperation } from './plans.ts';
 import type { TimelineHistoryDraft, TimelineHistoryReport } from './timeline-history.ts';
 import { dependencyOrder } from '../write/retained-relations.ts';
 
-interface SourceReference {
+export interface SourceReference {
   slug: string;
   relPath: string;
   documentId?: string;
 }
-interface SourceSnapshot {
+export interface SourceSnapshot {
   text: string;
   files: { path: string; hash: string }[];
   hash: string;
@@ -101,19 +101,30 @@ function sourceFingerprint(
   current: SourceSnapshot,
   source: SourceReference,
   owner: TimelineDescriptor,
+  legacy = false,
 ): string {
   return sha256(
     JSON.stringify([
       current.hash,
       source,
       owner,
-      ctx.config.rules,
-      ctx.config.ignore,
-      ctx.config.index.conflictPathPatterns,
+      legacy
+        ? ctx.config.rules
+        : [
+            effectiveRule(source.slug, ctx.config.rules),
+            ...current.files.map((file) =>
+              effectiveRule(file.path.replace(/\.[^.]+$/u, ''), ctx.config.rules),
+            ),
+            effectiveRule(`${owner.slug}-memories`, ctx.config.rules),
+          ],
+      legacy ? ctx.config.ignore : current.files.map((file) => ignoredPath(ctx, file.path)),
+      legacy
+        ? ctx.config.index.conflictPathPatterns
+        : current.files.map((file) => matchesConflictPath(file.path, ctx.config.index.conflictPathPatterns)),
       ctx.models.derive.endpointFingerprint,
       RETAIN_PROMPT_VERSION,
       RETAIN_VERIFIER_VERSION,
-      'source-timeline-v2',
+      legacy ? 'source-timeline-v2' : 'source-timeline-v3',
     ]),
   );
 }
@@ -297,7 +308,7 @@ async function destinationAllowed(ctx: AknoContext, owner: TimelineDescriptor): 
   }
   if (effectiveRule(slug, ctx.config.rules).role === 'ignored' || ignoredPath(ctx, `${slug}.md`))
     return false;
-  const bytes = await safeBytes(ctx, `${slug}.md`);
+  const bytes = await timelineSafeBytes(ctx, `${slug}.md`);
   if (bytes === null) {
     // Missing is admitted, but an unreadable/symlink/unindexed collision is not.
     return !(await fsp.lstat(path.join(ctx.config.aknoPath, `${slug}.md`)).catch(() => null));
@@ -325,7 +336,7 @@ function ignoredPath(ctx: AknoContext, relPath: string): boolean {
   );
 }
 
-async function safeBytes(ctx: AknoContext, relPath: string): Promise<Buffer | null> {
+export async function timelineSafeBytes(ctx: AknoContext, relPath: string): Promise<Buffer | null> {
   if (path.isAbsolute(relPath) || relPath.split(/[\\/]/u).some((part) => part === '..')) return null;
   if (
     quarantineReasonsForPath(ctx.store, relPath).length ||
@@ -354,9 +365,12 @@ function sourceEligible(ctx: AknoContext, source: SourceReference, text?: string
   );
 }
 
-async function snapshot(ctx: AknoContext, source: SourceReference): Promise<SourceSnapshot | null> {
+export async function timelineSourceSnapshot(
+  ctx: AknoContext,
+  source: SourceReference,
+): Promise<SourceSnapshot | null> {
   if (!source.documentId) {
-    const bytes = await safeBytes(ctx, source.relPath);
+    const bytes = await timelineSafeBytes(ctx, source.relPath);
     if (!bytes || !sourceEligible(ctx, source, bytes.toString('utf8'))) return null;
     const text = bytes.toString('utf8');
     return { text, files: [{ path: source.relPath, hash: sha256(bytes) }], hash: sha256(bytes) };
@@ -378,7 +392,7 @@ async function snapshot(ctx: AknoContext, source: SourceReference): Promise<Sour
       documentId: source.documentId,
     };
     if (!sourceEligible(ctx, member) || owningTimeline(catalog, member.slug).slug !== owner) return null;
-    const bytes = await safeBytes(ctx, part.rel_path);
+    const bytes = await timelineSafeBytes(ctx, part.rel_path);
     if (!bytes || sha256(bytes) !== part.sha256 || (part.extracted_sha && part.extracted_sha !== part.sha256))
       return null;
     files.push({ path: part.rel_path, hash: sha256(bytes) });
@@ -461,7 +475,7 @@ export async function planTimelineSources(
       hold('limit');
       break;
     }
-    const current = await snapshot(ctx, source);
+    const current = await timelineSourceSnapshot(ctx, source);
     if (!current) {
       hold('source_unavailable');
       const old = progress(ctx, progressKey(source));
@@ -494,6 +508,11 @@ export async function planTimelineSources(
     if (state?.status === 'undone' && state.sourceHash === current.hash) {
       report.cached++;
       continue;
+    }
+    // Preserve an exact verified legacy cache when only the dependency-key representation changed.
+    if (state?.fingerprint === sourceFingerprint(ctx, current, source, owner, true)) {
+      state = { ...state, fingerprint };
+      record(ctx, key, state, options.recordState ?? false);
     }
     if (state?.fingerprint !== fingerprint) state = null;
     if (!state) {
@@ -881,7 +900,7 @@ export async function timelineSourceIssue(
     !(await destinationAllowed(ctx, owner))
   )
     return 'source timeline authority or ownership changed';
-  const current = await snapshot(ctx, proof.source);
+  const current = await timelineSourceSnapshot(ctx, proof.source);
   if (!current || current.hash !== proof.snapshot.hash)
     return 'timeline source evidence changed or became unavailable';
   if (
@@ -1009,8 +1028,8 @@ async function revisionContext(
       SOURCE_REVISION_CONTRACT,
       SOURCE_TIMELINE_CURATOR_CONTRACT,
       fingerprint,
-      await safeBytes(ctx, owner.path),
-      await safeBytes(ctx, `${owner.slug}-memories.md`),
+      await timelineSafeBytes(ctx, owner.path),
+      await timelineSafeBytes(ctx, `${owner.slug}-memories.md`),
     ]),
   );
 }

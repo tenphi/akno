@@ -28,6 +28,7 @@ import {
   MAINTENANCE_RUNS_MIGRATION_INDEX,
   MANAGED_MEMORY_PROJECTION_MIGRATION_INDEX,
   MIGRATIONS,
+  EVENT_IDENTITY_RELATION_MIGRATION_INDEX,
   MUTATION_RECEIPTS_MIGRATION_INDEX,
   ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX,
   OBSERVATION_PROJECTION_MIGRATION_INDEX,
@@ -295,6 +296,11 @@ function migrate(db: Database.Database): void {
           ON observation_scope_verdicts(classifier_endpoint, prompt_version, created_at);`);
       }
     }
+    const relationsDdl = db
+      .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'managed_memory_relations'")
+      .get() as { sql: string };
+    if (!relationsDdl.sql.includes("'same_event'"))
+      db.exec(MIGRATIONS[EVENT_IDENTITY_RELATION_MIGRATION_INDEX]!);
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);
   })();
 }

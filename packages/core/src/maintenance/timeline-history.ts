@@ -1,4 +1,10 @@
 import fsp from 'node:fs/promises';
+import {
+  planTimelineAssertions,
+  timelineAssertionIssue,
+  recordTimelineAssertionDecision,
+  type TimelineAssertionProof,
+} from './timeline-assertions.ts';
 import path from 'node:path';
 import type { DegradedReason, TimelineDescriptor } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
@@ -33,6 +39,7 @@ interface HistorySource {
 
 export interface TimelineHistoryProof {
   retention?: TimelineSourceProof;
+  assertion?: TimelineAssertionProof;
   boundaries: string;
   sources: HistorySource[];
   actions: HistoryAction[];
@@ -52,12 +59,14 @@ export interface TimelineHistoryReport {
   cached: number;
   additions: number;
   relocations: number;
+  relationships?: number;
   held: Partial<
     Record<
       | 'source_unavailable'
       | 'source_ineligible'
       | 'unqualified_event'
       | 'ownership_uncertain'
+      | 'assertion_uncertain'
       | 'destination_unavailable'
       | 'model_unavailable'
       | 'model_failed'
@@ -339,6 +348,12 @@ export async function planTimelineHistory(
       retained.report.held[key] = (retained.report.held[key] ?? 0) + (count ?? 0);
     }
     retained.degraded = [...new Set([...degraded, ...retained.degraded])];
+    if (!retained.drafts.length)
+      retained.drafts = await planTimelineAssertions(ctx, options, retained.report);
+    if (retained.report.held.model_failed && !retained.degraded.includes('derive_failed'))
+      retained.degraded.push('derive_failed');
+    if (retained.report.held.model_unavailable && !retained.degraded.includes('no_derive_model'))
+      retained.degraded.push('no_derive_model');
     return retained;
   }
   const operations = operationsFor(after);
@@ -367,11 +382,23 @@ export function recordTimelineHistoryScans(
   changeId?: string,
   actor?: 'human' | 'curator',
 ): void {
+  if (proof?.assertion) recordTimelineAssertionDecision(ctx, proof.assertion);
   if (proof?.retention) recordTimelineSourceDecision(ctx, proof.retention, changeId, actor);
   for (const scan of proof?.scans ?? []) ctx.store.setMeta(scan.key, scan.fingerprint);
 }
 
 export function timelineHistoryEvidence(proof: TimelineHistoryProof): MaintenanceEvidence[] {
+  if (proof.assertion)
+    return [
+      {
+        type: 'page',
+        source: proof.assertion.a.relPath,
+        fingerprint: proof.assertion.fingerprint,
+        relationship: 'ownership',
+        timelineHistory: proof,
+        details: ['Exact retained assertions and live source frames sealed for relationship reconciliation.'],
+      },
+    ];
   if (proof.retention)
     return [
       {
@@ -401,6 +428,7 @@ export async function timelineHistoryIssue(
   operations: MaintenanceOperation[],
   stage: 'before' | 'after',
 ): Promise<string | null> {
+  if (proof?.assertion) return timelineAssertionIssue(ctx, proof.assertion, operations, stage);
   if (proof?.retention)
     return timelineSourceIssue(
       ctx,

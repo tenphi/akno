@@ -115,6 +115,23 @@ export async function retainedLedgerStages(
     ledgers.get(descriptor.slug)!.entries.set(item.entry.id, item.entry);
   }
 
+  for (const ledger of ledgers.values()) {
+    for (const [id, entry] of ledger.entries) {
+      const match = ITEM.exec(entry.line);
+      if (!match?.[3]) continue;
+      const base = match[1]!.replace(
+        /\[(same event|explicit update of|corrects|disagrees with|fulfills|answers|caused by)\]\(#akno-([A-Za-z0-9_-]+)\)(?: \(assertion unavailable\))?/gu,
+        (_reference, label: string, target: string) =>
+          `[${label}](#akno-${target})${ledger.entries.has(target) ? '' : ' (assertion unavailable)'}`,
+      );
+      if (base !== match[1])
+        ledger.entries.set(id, {
+          ...entry,
+          line: `${base} <!-- akno:timeline-item id=${id} date=${entry.date} hash=${sha256(`${base}\0${entry.date}`).slice(0, 12)} -->`,
+        });
+    }
+  }
+
   const staged: RetainedLedgerStage[] = [];
   for (const ledger of ledgers.values()) {
     const after = renderSection(ledger.before, ledger.entries);
@@ -185,7 +202,21 @@ function renderEntry(marker: ManagedMemoryMarker, body: string, slug: string, da
   const clean = readableBody.replace(/\s+/g, ' ').replaceAll('<!--', '&lt;!--');
   const qualifier = [...new Set(qualifications)].join(' · ');
   const annotation = qualifier ? `*${qualifier[0]!.toUpperCase()}${qualifier.slice(1)}* — ` : '';
-  const base = `- **${label}** | ${annotation}${clean} [[${slug}]]`;
+  const references = marker.links.flatMap((link) => {
+    if (!link.target.startsWith('memory:')) return [];
+    const relationLabel = {
+      same_event: 'same event',
+      supersedes: 'explicit update of',
+      corrects: 'corrects',
+      contradicts: 'disagrees with',
+      fulfills: 'fulfills',
+      answers: 'answers',
+      caused_by: 'caused by',
+    }[link.type];
+    return [`[${relationLabel}](#akno-${link.target.slice('memory:'.length)})`];
+  });
+  const related = references.length ? ` · ${references.join(' · ')}` : '';
+  const base = `- **${label}** | ${annotation}${clean} [[${slug}]]${related} <a id="akno-${marker.id}"></a>`;
   return {
     id: marker.id,
     date,

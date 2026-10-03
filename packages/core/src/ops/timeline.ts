@@ -8,6 +8,7 @@ import {
 import { eventId } from '../store/ids.ts';
 import {
   RetainedTime,
+  RetainedRelation,
   TimelineInput,
   type DegradedReason,
   type TimelineInput as TimelineInputType,
@@ -331,6 +332,13 @@ function retainedMemories(
     )
     .all() as TemporalEntryRow[];
   const rows = allRows.filter((row) => accepts(row.source_slug));
+  const linkRows = ctx.store.db
+    .prepare(
+      `SELECT source.memory_id, relation.relation, relation.target_id
+    FROM managed_memory_relations relation JOIN managed_memory_entries source ON source.entry_key = relation.entry_key
+    WHERE relation.target_kind = 'memory' ORDER BY source.memory_id, relation.ordinal`,
+    )
+    .all() as { memory_id: string; relation: string; target_id: string }[];
   const results: TimelineMemory[] = [];
   let limited = false;
   let invalid = 0;
@@ -360,12 +368,30 @@ function retainedMemories(
       invalid++;
       continue;
     }
+    const links = linkRows
+      .filter((link) => link.memory_id === row.memory_id)
+      .flatMap((link) => {
+        const type = RetainedRelation.shape.type.safeParse(link.relation);
+        if (!type.success) return [];
+        const target = allRows.filter((item) => item.memory_id === link.target_id);
+        return [
+          {
+            type: type.data,
+            target_memory_id: link.target_id,
+            target_available:
+              target.length === 1 &&
+              accepts(target[0]!.source_slug) &&
+              owningTimeline(timelineCatalog(ctx.config, ctx.store), target[0]!.source_slug).slug ===
+                owningTimeline(timelineCatalog(ctx.config, ctx.store), row.source_slug).slug,
+          },
+        ];
+      });
     const recurringInRange =
       parsed.data.recurrence !== undefined && range.since !== null && range.until !== null;
     const remainingOccurrences = maxOccurrences - expandedOccurrences;
     if (recurringInRange && remainingOccurrences <= 0) {
       if (temporalOverlapsRange(parsed.data, range, clock.timezone)) {
-        results.push(memoryResult(row, parsed.data, evidence, clock, 0));
+        results.push(memoryResult(row, parsed.data, evidence, clock, 0, links));
       }
       limited = true;
       continue;
@@ -383,7 +409,7 @@ function retainedMemories(
         }
         expandedOccurrences++;
       }
-      results.push(memoryResult(row, occurrence.time, evidence, clock, occurrence.index));
+      results.push(memoryResult(row, occurrence.time, evidence, clock, occurrence.index, links));
     }
   }
   return { results, limited, invalid };
@@ -395,6 +421,7 @@ function memoryResult(
   evidence: string[],
   clock: TimelineClock,
   occurrence: number,
+  links: NonNullable<TimelineMemory['assertion_links']>,
 ): TimelineMemory {
   return {
     type: 'memory',
@@ -408,6 +435,7 @@ function memoryResult(
     kind: row.kind,
     subject: row.subject,
     evidence,
+    ...(links.length ? { assertion_links: links } : {}),
     start: time.start ?? null,
     until: time.until ?? null,
     precision: time.precision,

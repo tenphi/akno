@@ -22,7 +22,7 @@ export const RetainEvidenceRef = z.union([
 export type RetainEvidenceRef = z.infer<typeof RetainEvidenceRef>;
 
 export const RetainedRelation = z.object({
-  type: z.enum(['corrects', 'supersedes', 'contradicts', 'fulfills', 'answers', 'caused_by']),
+  type: z.enum(['same_event', 'corrects', 'supersedes', 'contradicts', 'fulfills', 'answers', 'caused_by']),
   target: z.union([
     z.object({ candidate_id: RetainRef }),
     z.object({ memory_id: RetainRef }),

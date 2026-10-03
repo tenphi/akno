@@ -16,9 +16,11 @@ export interface ManagedMemorySupport {
 }
 
 interface ManagedMemoryLink {
-  type: 'corrects' | 'supersedes' | 'contradicts' | 'fulfills' | 'answers' | 'caused_by';
+  type: 'same_event' | 'corrects' | 'supersedes' | 'contradicts' | 'fulfills' | 'answers' | 'caused_by';
   target: string;
   support: string;
+  /** Verified derived annotation, separate from the source assertion envelope. */
+  assessment?: string;
 }
 
 interface ManagedMemoryReporter {
@@ -77,7 +79,15 @@ const DISPOSITIONS = new Set([
   'superseded',
 ]);
 const BASES = new Set(['self_attested', 'source_report', 'cited_evidence', 'system_record']);
-const LINK_TYPES = new Set(['corrects', 'supersedes', 'contradicts', 'fulfills', 'answers', 'caused_by']);
+const LINK_TYPES = new Set([
+  'same_event',
+  'corrects',
+  'supersedes',
+  'contradicts',
+  'fulfills',
+  'answers',
+  'caused_by',
+]);
 const TIME_RELATIONS = new Set(['occurred', 'valid', 'scheduled', 'due']);
 const TIME_STATUSES = new Set(['actual', 'scheduled', 'planned', 'tentative']);
 const TIME_PRECISIONS = new Set(['instant', 'day', 'month', 'year', 'unknown']);
@@ -345,6 +355,8 @@ function managedMemoryMarkerIssue(marker: ManagedMemoryMarker): string | null {
       (link) =>
         !LINK_TYPES.has(link.type) ||
         !FINGERPRINT.test(link.support) ||
+        (link.assessment !== undefined &&
+          (!FINGERPRINT.test(link.assessment) || !['same_event', 'supersedes'].includes(link.type))) ||
         !/^(?:memory|fact):[A-Za-z0-9_-]{4,300}$/.test(link.target),
     )
   ) {
@@ -460,6 +472,7 @@ function managedMemorySemanticKey(marker: ManagedMemoryMarker, omitSubject = fal
     ...marker,
     id: undefined,
     supports: undefined,
+    links: marker.links.filter((link) => !link.assessment),
     ...(omitSubject ? { subject: undefined } : {}),
   });
 }
@@ -507,18 +520,23 @@ function parseReporter(value: string): ManagedMemoryReporter | null {
 }
 
 function renderLink(link: ManagedMemoryLink): string {
-  return `${link.type}:${encode(link.target)}:${link.support}`;
+  return `${link.type}:${encode(link.target)}:${link.support}${link.assessment ? `:${link.assessment}` : ''}`;
 }
 
 function parseLink(value: string): ManagedMemoryLink | null {
-  const first = value.indexOf(':');
-  const last = value.lastIndexOf(':');
-  if (first <= 0 || last <= first) return null;
-  const type = value.slice(0, first);
-  const target = decode(value.slice(first + 1, last));
-  const support = value.slice(last + 1);
-  if (!LINK_TYPES.has(type) || target === null || !target || !FINGERPRINT.test(support)) return null;
-  return { type: type as ManagedMemoryLink['type'], target, support };
+  const [type, encodedTarget, support, assessment, extra] = value.split(':');
+  if (!type || !encodedTarget || !support || extra !== undefined) return null;
+  const target = decode(encodedTarget);
+  if (
+    !LINK_TYPES.has(type) ||
+    target === null ||
+    !target ||
+    !FINGERPRINT.test(support) ||
+    (assessment !== undefined &&
+      (!FINGERPRINT.test(assessment) || !['same_event', 'supersedes'].includes(type)))
+  )
+    return null;
+  return { type: type as ManagedMemoryLink['type'], target, support, ...(assessment ? { assessment } : {}) };
 }
 
 function parseList<T>(value: string, parse: (entry: string) => T | null): T[] | null {
