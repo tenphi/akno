@@ -1,7 +1,7 @@
 import type { MemoryQualification, MemoryView, RecallMode } from '@tenphi/akno-protocol';
 
 export type QualifiedMemory = Extract<MemoryQualification, { status: 'qualified' }>;
-export const MEMORY_VIEW_VERSION = 'memory-view-v12';
+export const MEMORY_VIEW_VERSION = 'memory-view-v13';
 
 /** The subset shared by protocol qualifications and the rebuildable SQL projection. */
 export interface MemorySemantics {
@@ -66,6 +66,7 @@ export function inferMemoryView(query: string, mode: RecallMode = 'lookup'): Mem
   }
   if (
     russian === 'planning' ||
+    estimatedTimingRequest(query) ||
     /\b(plan|plans|planned|planning|proposal|proposed|schedule|scheduled|upcoming|due|overdue|deadline|next action|next actions)\b/i.test(
       query,
     )
@@ -84,7 +85,11 @@ export function memoryEligibleForView(memory: MemorySemantics, view: MemoryView)
     return (
       (memory.kind === 'plan' ||
         memory.temporalStatus === 'planned' ||
-        memory.temporalStatus === 'scheduled') &&
+        memory.temporalStatus === 'scheduled' ||
+        (['claim', 'event'].includes(memory.kind) &&
+          ['asserted', 'tentative'].includes(memory.commitment) &&
+          memory.temporalStatus === 'tentative' &&
+          ['scheduled', 'due'].includes(memory.temporalRelation ?? ''))) &&
       ['active', 'proposed', 'accepted'].includes(memory.disposition)
     );
   }
@@ -129,6 +134,26 @@ function declinedOffer(query: string): boolean {
 // Binding the phrase and predicate by word distance excludes an unrelated predicate in a
 // following clause. These patterns are precision-oriented cues, not a general discourse parser.
 const DISCOURSE_WORD = String.raw`(?!(?:and|or|but|while|whereas|because|although|if|when|и|а|но|или|пока|когда|если|что|потому)(?![\p{L}\p{N}-]))[\p{L}\p{N}-]+`;
+// Bind estimation to requested timing within one clause; an estimated weight or cost alone
+// is not a request for plans. Possessives can occur in the subject of a timing question.
+const TIMING_WORD = String.raw`(?:${DISCOURSE_WORD})(?:['’]s)?`;
+const ENGLISH_TIMING = String.raw`(?:date|day|time|window|deadline)`;
+const ENGLISH_ESTIMATE = String.raw`(?:estimated|expected|tentative|provisional)`;
+const ENGLISH_ESTIMATED_TIMING = new RegExp(
+  String.raw`\b(?:${ENGLISH_ESTIMATE}(?:[ \t]+(?!of\b|for\b)${TIMING_WORD}){0,3}[ \t]+${ENGLISH_TIMING}|${ENGLISH_TIMING}[ \t]+(?:(?:is|are|was|were|has been|had been|will be)[ \t]+)?${ENGLISH_ESTIMATE}|when[ \t]+(?:is|are|was|were|will)(?:[ \t]+${TIMING_WORD}){0,8}[ \t]+(?:estimated|expected)[ \t]+to)\b`,
+  'iu',
+);
+const RUSSIAN_TIMING = String.raw`(?:дат(?:а|ы|е|у|ой|ам|ами|ах)?|срок(?:а|у|ом|е|и|ов|ам|ами|ах)?|врем(?:я|ени|енем)|окн(?:о|а|у|ом|е|ам|ами|ах))`;
+const RUSSIAN_ESTIMATE = String.raw`(?:ориентировочн|предполагаем|ожидаем|предварительн)\p{L}*`;
+const RUSSIAN_ESTIMATED_TIMING = new RegExp(
+  String.raw`(?:^|[^\p{L}\p{N}])(?:${RUSSIAN_ESTIMATE}(?:[ \t]+${TIMING_WORD}){0,3}[ \t]+${RUSSIAN_TIMING}|${RUSSIAN_TIMING}(?:[ \t]+${TIMING_WORD}){0,3}[ \t]+(?:${RUSSIAN_ESTIMATE}|ожидается|ожидаются)|когда(?:[ \t]+${TIMING_WORD}){0,8}[ \t]+(?:ожидается|ожидаются|ожидает|ожидают))(?=$|[^\p{L}\p{N}])`,
+  'iu',
+);
+
+function estimatedTimingRequest(query: string): boolean {
+  return ENGLISH_ESTIMATED_TIMING.test(query) || RUSSIAN_ESTIMATED_TIMING.test(query);
+}
+
 const ENGLISH_REPORT_REQUEST = new RegExp(
   String.raw`^\s*(?:(?:what|which|who|how|show|find|list)(?:[ \t]+${DISCOURSE_WORD}){0,8}[ \t]+(?:report(?:ed|s)?|said|says|told|claimed|claims)\b|according to\b)`,
   'iu',
