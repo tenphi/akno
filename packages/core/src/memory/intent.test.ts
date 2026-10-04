@@ -210,6 +210,32 @@ describe('memory-view inference', () => {
 });
 
 describe('memory-view eligibility', () => {
+  it.each(['claim', 'event', 'plan'] as const)(
+    'includes tentative dated %s schedules in planning',
+    (kind) => {
+      const estimate: MemorySemantics = {
+        ...factual,
+        kind,
+        basis: 'source_report',
+        answerEligible: false,
+        temporalRelation: 'scheduled',
+        temporalStatus: 'tentative',
+      };
+      expect(memoryEligibleForView(estimate, 'planning')).toBe(true);
+      expect(memoryEligibleForView(estimate, 'factual')).toBe(false);
+      for (const disposition of ['cancelled', 'completed', 'superseded', 'rejected'] as const) {
+        expect(memoryEligibleForView({ ...estimate, disposition }, 'planning')).toBe(false);
+      }
+      if (kind !== 'plan') {
+        for (const commitment of ['hypothetical', 'counterfactual', 'none'] as const) {
+          expect(memoryEligibleForView({ ...estimate, commitment }, 'planning')).toBe(false);
+        }
+        expect(memoryEligibleForView({ ...estimate, temporalRelation: 'valid' }, 'planning')).toBe(false);
+        expect(memoryEligibleForView({ ...estimate, temporalRelation: undefined }, 'planning')).toBe(false);
+        expect(memoryEligibleForView({ ...estimate, temporalRelation: 'due' }, 'planning')).toBe(true);
+      }
+    },
+  );
   it('keeps canonical facts narrow and exposes noncanonical memory only in its own view', () => {
     const report = { ...factual, basis: 'source_report' as const, answerEligible: false };
     const proposal = {
@@ -238,5 +264,51 @@ describe('memory-view eligibility', () => {
     expect(memoryEligibleForView(question, 'questions')).toBe(true);
     expect(memoryEligibleForView(hypothetical, 'discussion')).toBe(true);
     expect(memoryEligibleForView(hypothetical, 'all')).toBe(true);
+  });
+});
+
+describe('explicit estimated timing requests', () => {
+  it.each([
+    "When is Ada Marlow's Zephyr QX-100 estimated to arrive?",
+    'What is the estimated delivery date of the wrist accessory?',
+    'When is the wrist accessory expected to arrive?',
+    'Which delivery window is estimated for the device?',
+    'What is the expected date for the inspection?',
+    'Когда ожидается доставка Zephyr QX-100?',
+    'Когда примерно ожидается доставка Zephyr QX-100?',
+    'Какова ориентировочная дата доставки Zephyr QX-100?',
+    'Какой предполагаемый срок доставки аксессуара?',
+    'Какое окно доставки ожидается для аксессуара?',
+  ])('selects planning for %s', (query) => {
+    expect(inferMemoryView(query)).toBe('planning');
+  });
+  it.each([
+    'What is the estimated weight of Zephyr QX-100?',
+    'How much does the estimated repair cost change?',
+    'What is the expected value of this measurement?',
+    'What is the estimated delivery cost?',
+    'What is the estimated cost of delivery?',
+    'What date was the estimated weight measured?',
+    'What date is printed on the invoice?',
+    'The estimated weight changed. What date is printed on the invoice?',
+    'Какова предполагаемая масса Zephyr QX-100?',
+    'Какова ориентировочная стоимость ремонта?',
+    'Какова ориентировочная стоимость доставки?',
+    'Какова ожидаемая масса доставки?',
+    'Какой предполагаемый датчик стоит в Zephyr QX-100?',
+    'Какую предварительную модель датчика выпустили?',
+    'Какую дату напечатали на документе?',
+    'Когда Ada Marlow оценила вес устройства?',
+  ])('keeps an unrelated estimation or date question factual: %s', (query) => {
+    expect(inferMemoryView(query)).toBe('factual');
+  });
+  it.each([
+    ['What did Bo Winters report about the estimated delivery date?', 'reports'],
+    ['What if the estimated delivery date were different?', 'discussion'],
+    ['Show the cancelled estimated delivery schedule.', 'history'],
+    ['Какие гипотезы есть об ожидаемой дате доставки?', 'discussion'],
+    ['Что сообщил Bo Winters об ориентировочной дате доставки?', 'reports'],
+  ] as const)('keeps the explicit discourse view for %s', (query, view) => {
+    expect(inferMemoryView(query)).toBe(view);
   });
 });

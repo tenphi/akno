@@ -70,19 +70,25 @@ Recall chooses or accepts one mode:
 Search mode and memory view answer different questions. Mode controls how Akno searches; `memory_view`
 controls which meaning of an Akno-managed retained item is eligible for the primary result:
 
-| Memory view  | Eligible retained memory                                                      |
-| ------------ | ----------------------------------------------------------------------------- |
-| `factual`    | Narrow canonical claims, decisions, preferences, and actual events            |
-| `history`    | Rejected, cancelled, completed, superseded, or resolved records and decisions |
-| `planning`   | Active, proposed, or accepted plans and planned/scheduled items               |
-| `reports`    | Attributed `source_report` memory                                             |
-| `questions`  | Open or resolved questions                                                    |
-| `discussion` | Tentative, hypothetical, counterfactual, proposed, and rejected alternatives  |
-| `all`        | Every valid retained-memory form, still carrying its qualification            |
+| Memory view  | Eligible retained memory                                                                                             |
+| ------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `factual`    | Narrow canonical claims, decisions, preferences, and actual events                                                   |
+| `history`    | Rejected, cancelled, completed, superseded, or resolved records and decisions                                        |
+| `planning`   | Active, proposed, or accepted plans and planned/scheduled items, including tentative scheduled/due claims and events |
+| `reports`    | Attributed `source_report` memory                                                                                    |
+| `questions`  | Open or resolved questions                                                                                           |
+| `discussion` | Tentative, hypothetical, counterfactual, proposed, and rejected alternatives                                         |
+| `all`        | Every valid retained-memory form, still carrying its qualification                                                   |
 
 Akno infers only high-precision cues such as “reported,” “planned,” “decision history,” “open question,” or
 “hypothetical.” An ambiguous lookup stays `factual`; an ambiguous explore request uses `all`. Pass
 `--memory-view` or `memory_view` when the host already knows the intent. The explicit value always wins.
+
+An explicit question about an estimated date, delivery window, or when an item is expected to arrive
+selects `planning`, including equivalent Russian requests. Active tentative schedules and deadlines
+remain retrievable even when their retained kind is a claim or event. Their dates, reporter and uncertainty
+remain visible; they are not promoted to confirmed occurrence or canonical facts. Estimation of weight or
+cost alone does not change the view, and hypothetical or counterfactual claims do not become schedules.
 
 Eligibility is applied to isolated managed-memory chunks before lexical, vector, graph, and reranker candidate
 limits. Ordinary authored text and document evidence remain eligible in every view. If a relevant retained item
