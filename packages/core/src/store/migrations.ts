@@ -13,7 +13,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 45;
+export const SCHEMA_VERSION = 46;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -52,6 +52,7 @@ export const PROSE_PROJECTION_MIGRATION_INDEX = 34;
 export const MUTATION_RECEIPTS_MIGRATION_INDEX = 35;
 
 export const EVENT_IDENTITY_RELATION_MIGRATION_INDEX = 38;
+export const RETAIN_PENDING_CORRECTIONS_MIGRATION_INDEX = 39;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -1295,6 +1296,24 @@ export const MIGRATIONS: string[] = [
   INSERT INTO managed_memory_relations SELECT * FROM memory_relations_before_event_identity;
   DROP TABLE memory_relations_before_event_identity;
   CREATE INDEX managed_memory_relations_target ON managed_memory_relations(target_kind, target_id, relation);`,
+  // A held replacement does not revoke its earlier bytes. Persist only the caller's validated
+  // withdrawal intent so a restart cannot make that earlier revision current again.
+  `CREATE TABLE retain_pending_corrections (
+    source_id TEXT NOT NULL,
+    revision TEXT NOT NULL,
+    target_receipt TEXT NOT NULL REFERENCES retain_receipts(receipt_fingerprint) ON DELETE CASCADE,
+    target_candidate TEXT NOT NULL,
+    resolved_by TEXT REFERENCES retain_receipts(receipt_fingerprint) ON DELETE SET NULL,
+    PRIMARY KEY(source_id, revision, target_receipt, target_candidate)
+  );
+  CREATE INDEX retain_pending_corrections_target ON retain_pending_corrections(target_receipt, target_candidate);
+  CREATE INDEX retain_supports_proof_group ON retain_supports(proof_group);
+  CREATE TABLE retain_superseded_supports (
+    support_receipt TEXT NOT NULL REFERENCES retain_receipts(receipt_fingerprint) ON DELETE CASCADE,
+    candidate_id TEXT NOT NULL,
+    resolved_by TEXT NOT NULL REFERENCES retain_receipts(receipt_fingerprint) ON DELETE CASCADE,
+    PRIMARY KEY(support_receipt, candidate_id, resolved_by)
+  );`,
 ];
 
 /**

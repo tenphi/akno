@@ -1,7 +1,7 @@
 import type { MemoryQualification, MemoryView, RecallMode } from '@tenphi/akno-protocol';
 
 export type QualifiedMemory = Extract<MemoryQualification, { status: 'qualified' }>;
-export const MEMORY_VIEW_VERSION = 'memory-view-v13';
+export const MEMORY_VIEW_VERSION = 'memory-view-v14';
 
 /** The subset shared by protocol qualifications and the rebuildable SQL projection. */
 export interface MemorySemantics {
@@ -10,6 +10,7 @@ export interface MemorySemantics {
   disposition: QualifiedMemory['disposition'];
   basis: QualifiedMemory['basis'];
   answerEligible: boolean;
+  currentHold?: QualifiedMemory['current_hold'];
   temporalStatus?: 'actual' | 'scheduled' | 'planned' | 'tentative' | null;
   temporalRelation?: 'occurred' | 'valid' | 'scheduled' | 'due' | null;
 }
@@ -78,6 +79,7 @@ export function inferMemoryView(query: string, mode: RecallMode = 'lookup'): Mem
 
 export function memoryEligibleForView(memory: MemorySemantics, view: MemoryView): boolean {
   if (view === 'all') return true;
+  if (memory.currentHold) return view === 'history';
   if (view === 'factual') return memory.answerEligible;
   if (view === 'reports') return memory.basis === 'source_report';
   if (view === 'questions') return memory.kind === 'question';
@@ -116,6 +118,7 @@ export function qualificationEligibleForView(memory: QualifiedMemory, view: Memo
       disposition: memory.disposition,
       basis: memory.basis,
       answerEligible: memory.answer_eligible,
+      currentHold: memory.current_hold,
       temporalStatus: memory.temporal?.time.status,
       temporalRelation: memory.temporal?.time.relation,
     },

@@ -37,6 +37,7 @@ import {
   RETAIN_AUTOMATIC_MODES_MIGRATION_INDEX,
   RETAIN_SOURCE_LIFETIME_MIGRATION_INDEX,
   RETAIN_RECEIPTS_MIGRATION_INDEX,
+  RETAIN_PENDING_CORRECTIONS_MIGRATION_INDEX,
   SCHEMA_VERSION,
   SEMANTIC_MERGE_EMBEDDINGS_MIGRATION_INDEX,
   SEMANTIC_MERGE_VERDICTS_MIGRATION_INDEX,
@@ -301,6 +302,9 @@ function migrate(db: Database.Database): void {
       .get() as { sql: string };
     if (!relationsDdl.sql.includes("'same_event'"))
       db.exec(MIGRATIONS[EVENT_IDENTITY_RELATION_MIGRATION_INDEX]!);
+    if (!tableExists(db, 'retain_pending_corrections')) {
+      db.exec(MIGRATIONS[RETAIN_PENDING_CORRECTIONS_MIGRATION_INDEX]!);
+    }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);
   })();
 }

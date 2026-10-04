@@ -996,6 +996,17 @@ async function retainCandidates(
       [...suppliedCandidateIds].some((candidateId) => !acceptedCandidateIds.has(candidateId)) ||
       candidateResults.some((result) => result.outcome === 'held' || result.outcome === 'not_found'));
   if (correctionAdmissionFailed) {
+    if (!options.dryRun && !options.prepare) {
+      ctx.store.transaction(() => {
+        const insert = ctx.store.db.prepare(`
+          INSERT OR IGNORE INTO retain_pending_corrections(
+            source_id, revision, target_receipt, target_candidate
+          ) VALUES (?, ?, ?, ?)`);
+        for (const support of correction.removed) {
+          insert.run(source.source_id, source.revision, support.receipt_fingerprint, support.candidate_id);
+        }
+      });
+    }
     return {
       source_id: source.source_id,
       revision: source.revision,
@@ -1016,8 +1027,15 @@ async function retainCandidates(
             },
       ),
       source: sourceResultBinding(effectiveBinding),
+      ...(!options.dryRun && !options.prepare && correction.removed.length > 0
+        ? { current_hold: 'pending_correction' as const }
+        : {}),
       ...(degraded.length > 0 ? { degraded } : {}),
-      note: 'compound correction was not fully admissible; neither removal nor replacement was written',
+      note:
+        'compound correction was not fully admissible; neither removal nor replacement was written' +
+        (!options.dryRun && !options.prepare
+          ? '; prior correlated support cannot establish current meaning until resolved'
+          : '; preview created no current restriction'),
     };
   }
   for (const ledger of await retainedLedgerStages(
@@ -2391,7 +2409,27 @@ function persistReceipt(
        WHERE receipt_fingerprint = ? AND candidate_id = ? AND retracted_by IS NULL`,
     );
     for (const support of input.retracted) {
+      // Snapshot only existing correlated support. A later unrelated write in this group is
+      // not historical merely because an earlier correction happened; undo removes this fence.
+      ctx.store.db
+        .prepare(
+          `
+        INSERT OR IGNORE INTO retain_superseded_supports(support_receipt, candidate_id, resolved_by)
+        SELECT receipt_fingerprint, candidate_id, ? FROM retain_supports
+         WHERE proof_group = ? AND receipt_fingerprint <> ?
+           AND retracted_by IS NULL AND forgotten_by IS NULL
+      `,
+        )
+        .run(input.receiptFingerprint, support.proof_group, input.receiptFingerprint);
       retract.run(input.receiptFingerprint, support.receipt_fingerprint, support.candidate_id);
+      ctx.store.db
+        .prepare(
+          `
+        UPDATE retain_pending_corrections SET resolved_by = ?
+         WHERE target_receipt = ? AND target_candidate = ? AND resolved_by IS NULL
+      `,
+        )
+        .run(input.receiptFingerprint, support.receipt_fingerprint, support.candidate_id);
     }
     if (input.binding) {
       ctx.store.db

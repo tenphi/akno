@@ -273,6 +273,8 @@ export const MemoryQualification = z.discriminatedUnion('status', [
     basis: z.enum(['self_attested', 'source_report', 'cited_evidence', 'system_record']),
     answer_eligible: z.boolean(),
     current_eligible: z.boolean(),
+    /** Prior support remains inspectable, but a caller's held correction prevents current use. */
+    current_hold: z.enum(['pending_correction', 'superseded_revision']).optional(),
     temporal: z
       .object({
         time: RetainedTime,
@@ -285,6 +287,8 @@ export const MemoryQualification = z.discriminatedUnion('status', [
     status: z.literal('unavailable'),
     id: z.string(),
     answer_eligible: z.literal(false),
+    /** A rendered ledger copy cannot supply current evidence for its restricted source item. */
+    current_hold: z.enum(['pending_correction', 'superseded_revision']).optional(),
   }),
 ]);
 export type MemoryQualification = z.infer<typeof MemoryQualification>;
@@ -629,6 +633,8 @@ export const DegradedReason = z.enum([
   'partial_temporal_index',
   /** Retained-memory discourse projection is absent, stale, ambiguous, or malformed. */
   'partial_memory_index',
+  /** Query-matched retained support has an unresolved explicit correction. */
+  'pending_memory_correction',
   /** A bounded recurrence/range guard stopped timeline expansion. */
   'timeline_range_limited',
   /** A declared timeline boundary could not be read safely. */

@@ -299,6 +299,32 @@ candidate ids. When another source still supports the same memory, Akno removes 
 keeps the readable item. An explicit user `forget` also retires keyed support, so replaying an old source
 revision cannot resurrect memory the user removed; undo restores both the Markdown and its support state.
 
+When an explicit compound correction names active earlier candidates but its replacement is held,
+Akno preserves the earlier Markdown, supports and timeline bytes. It records only the validated withdrawal
+intent, without accepting any replacement fact or creating a successful replay receipt. The response and
+affected memory qualifications carry `current_hold: pending_correction`; those records have
+`answer_eligible: false`, `current_eligible: false` and no actionable schedule. Query-matched records remain
+inspectable in recall and history, but `answer` returns `current_correction_pending` instead of treating an
+old value as current. The restriction also covers active copies in the earlier support's caller-declared
+proof group. Use a precise `source_group` for correlated evidence: a broad group can conservatively hold
+otherwise unchanged facts from that group too. Independent groups remain unaffected.
+Focused automatic context returns typed `pending_memory_correction` degradation and injects no current
+evidence for a query that matches pending support; it does not report that support as absent.
+
+A dry run creates no restriction. Replaying the earlier revision does not clear it. Admitting a complete
+correction or explicitly retracting the addressed support resolves it; undo restores it, and restart or
+in-place index rebuild preserves it. Existing held attempts from before this behavior are not inferred
+retroactively: retry their explicit correction to establish the restriction.
+
+After an admitted correction or retraction, remaining older correlated copies carry
+`current_hold: superseded_revision`. Their payloads remain inspectable in history and cannot restore the
+obsolete value in current answers. A fact whose same memory identity is also supported by the admitted
+replacement remains usable, so an unchanged payment need not be lost with an obsolete departure.
+Derived observations cannot use restricted retained leaves as current proof, including before the next
+index pass refreshes their cached qualification.
+Rendered timeline copies inherit the same restriction by owned memory identity; a ledger row does not
+provide independent evidence that can bypass the canonical item's correction.
+
 To retain from source bytes Akno already owns, use exactly one reference input:
 
 ```json

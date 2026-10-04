@@ -7,6 +7,35 @@ import { describe, expect, it } from 'vitest';
 import { acquireWriteLock, openStore } from './db.ts';
 import { MIGRATIONS, SCHEMA_VERSION } from './migrations.ts';
 
+it('upgrades a released index without losing correction targets or adding private source bodies', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-correction-migration-'));
+  const dbPath = path.join(dir, 'index.db');
+  const legacy = new Database(dbPath);
+  for (const migration of MIGRATIONS.slice(0, -1)) legacy.exec(migration);
+  legacy.pragma('user_version = 45');
+  legacy
+    .prepare(
+      `INSERT INTO retain_receipts(source_id, revision, request_hash, source_hash,
+    source_group, receipt_fingerprint, mode, result, created_at)
+    VALUES ('source:1111', '1', 'request-1111', 'source-1111', 'group-1111', 'receipt-1111', 'provided_exact', '{}', '2035-04-01')`,
+    )
+    .run();
+  legacy.close();
+  const store = openStore({ dbPath, embeddingDimensions: 8 });
+  try {
+    expect(store.db.prepare('SELECT source_id FROM retain_receipts').all()).toEqual([
+      { source_id: 'source:1111' },
+    ]);
+    expect(store.db.prepare('SELECT * FROM retain_pending_corrections').all()).toEqual([]);
+    expect(store.db.prepare('SELECT * FROM retain_superseded_supports').all()).toEqual([]);
+    expect(store.db.pragma('foreign_key_check')).toEqual([]);
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+  } finally {
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 /**
  * Exactly one process may write, and the rule is enforced by a pid in a lock file. What is tested
  * here is the handover — the moment a restart replaces one holder with another.

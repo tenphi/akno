@@ -924,6 +924,21 @@ describe('provided exact retain', () => {
       const body = fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8');
       expect(body).toContain('five-year warranty');
       expect(body).not.toContain('seven-year warranty');
+      const memory = (await mem.read({ slug: 'memory/equipment' })).page?.lines.find(
+        (line) => line.memory?.status === 'qualified',
+      )?.memory;
+      expect(memory).toMatchObject({
+        current_hold: 'pending_correction',
+        answer_eligible: false,
+        current_eligible: false,
+      });
+      expect(
+        await mem.answer({ question: 'What is the current Zephyr QX-100 warranty?', expand: false }),
+      ).toMatchObject({
+        outcome: 'not_answered',
+        reason_code: 'current_correction_pending',
+        model_usage: { generation: null, verification: null },
+      });
       const db = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
       expect(
         db
@@ -949,6 +964,278 @@ describe('provided exact retain', () => {
         reason_code: 'source_unavailable',
         source: { kind: 'document', availability: 'unavailable' },
       });
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('keeps a held withdrawal across replay, restart and rebuild, then resolves and restores it on undo', async () => {
+    let mem = await openMem();
+    try {
+      const original = upsert('mail:pending-1111', '1');
+      await mem.retain({ sources: [original] });
+      const nextText = 'Ada Marlow selected a seven-year warranty.';
+      const corrected = upsert(original.source_id, '2', nextText);
+      corrected.retention.candidates[0] = {
+        ...corrected.retention.candidates[0]!,
+        text: nextText,
+        support: [{ quote: nextText }],
+        discourse_frame: [{ quote: nextText }],
+      };
+      const correction = {
+        ...corrected,
+        retracts: { target_revision: '1', candidate_ids: ['warranty-selection'] },
+      };
+      const held = {
+        ...correction,
+        retention: {
+          ...correction.retention,
+          candidates: [
+            {
+              ...corrected.retention.candidates[0]!,
+              support: [{ quote: 'Absent support.' }],
+            },
+          ],
+        },
+      };
+      const before = fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8');
+      expect((await mem.retain({ sources: [held], dry_run: true })).sources[0]?.current_hold).toBeUndefined();
+      const qualification = async () =>
+        (await mem.read({ slug: 'memory/equipment' })).page?.lines.find(
+          (line) => line.memory?.status === 'qualified',
+        )?.memory;
+      expect(await qualification()).toMatchObject({ current_eligible: true });
+      expect((await mem.retain({ sources: [held] })).sources[0]?.current_hold).toBe('pending_correction');
+      expect((await mem.retain({ sources: [held] })).sources[0]?.outcome).toBe('held');
+      expect((await mem.retain({ sources: [original] })).sources[0]?.outcome).toBe('replayed');
+      expect(fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8')).toBe(before);
+      await mem.close();
+      mem = await openMem();
+      await mem.index({ rebuild: true, structuralOnly: true });
+      expect(await qualification()).toMatchObject({
+        current_hold: 'pending_correction',
+        current_eligible: false,
+      });
+      expect(fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8')).toBe(before);
+      const admitted = await mem.retain({ sources: [correction] });
+      expect(admitted.sources[0]?.outcome).toBe('ok');
+      expect(await qualification()).toMatchObject({ current_eligible: true });
+      expect(await qualification()).not.toHaveProperty('current_hold');
+      await mem.undo({ change_id: admitted.sources[0]!.change_id! });
+      expect(await qualification()).toMatchObject({
+        current_hold: 'pending_correction',
+        current_eligible: false,
+      });
+      const retracted = await mem.retain({
+        sources: [
+          {
+            source_id: original.source_id,
+            revision: '3',
+            retention: {
+              mode: 'retract',
+              target_revision: '1',
+              candidate_ids: ['warranty-selection'],
+              reason: 'user_request',
+            },
+          },
+        ],
+      });
+      expect(retracted.sources[0]?.outcome).toBe('ok');
+      expect(await qualification()).toBeUndefined();
+      await mem.undo({ change_id: retracted.sources[0]!.change_id! });
+      expect(await qualification()).toMatchObject({ current_hold: 'pending_correction' });
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('restricts a correlated departure copy without changing source bytes or unrelated groups', async () => {
+    const mem = await openMem();
+    try {
+      const text = 'Ada Marlow booked journey JRN-1111 for 2035-04-11; departure has not occurred.';
+      const original = upsert('mail:journey-1111', '1', text);
+      original.source_group = 'journey:JRN-1111';
+      original.retention.candidates[0] = {
+        ...original.retention.candidates[0]!,
+        kind: 'event',
+        text,
+        subject: 'journey JRN-1111',
+        discourse: { commitment: 'asserted', disposition: 'active' },
+        time: { precision: 'day', start: '2035-04-11', status: 'scheduled', relation: 'scheduled' },
+        support: [{ quote: text }],
+        discourse_frame: [{ quote: text }],
+      } as never;
+      await mem.retain({ sources: [original] });
+      const copyText =
+        'The same journey JRN-1111 departs on 2035-04-11; its single 1111 EUR payment is complete.';
+      const copy = upsert('mail:journey-copy-1111', '1', copyText);
+      copy.source_group = original.source_group;
+      copy.retention.candidates[0] = {
+        ...copy.retention.candidates[0]!,
+        kind: 'claim',
+        text: copyText,
+        subject: 'journey JRN-1111',
+        discourse: { commitment: 'asserted', disposition: 'active' },
+        support: [{ quote: copyText }],
+        discourse_frame: [{ quote: copyText }],
+      } as never;
+      expect((await mem.retain({ sources: [copy] })).sources[0]?.candidates[0]?.outcome).toBe('written');
+      await mem.retain({ sources: [upsert('mail:independent-1111', '1')] });
+      const before = fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8');
+      const held = {
+        ...original,
+        revision: '2',
+        retention: {
+          ...original.retention,
+          candidates: [
+            {
+              ...original.retention.candidates[0]!,
+              support: [{ quote: 'Absent replacement support.' }],
+            },
+          ],
+        },
+        retracts: { target_revision: '1', candidate_ids: ['warranty-selection'] },
+      };
+      expect((await mem.retain({ sources: [held] })).sources[0]?.current_hold).toBe('pending_correction');
+      const lines = (await mem.read({ slug: 'memory/equipment' })).page!.lines;
+      const schedule = lines.find((line) => line.text.includes('booked journey'))?.memory;
+      const copied = lines.find((line) => line.text.includes('same journey'))?.memory;
+      expect(schedule).toMatchObject({ current_hold: 'pending_correction', temporal: { actionable: false } });
+      expect(copied).toMatchObject({ current_hold: 'pending_correction', answer_eligible: false });
+      expect(lines.find((line) => line.text.includes('five-year warranty'))?.memory).toMatchObject({
+        current_eligible: true,
+      });
+      expect(fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8')).toBe(before);
+      const context = await mem.context({
+        profile: 'auto_recall',
+        query: 'journey JRN-1111 departure',
+        memory_view: 'planning',
+      });
+      expect(context).toMatchObject({ status: 'degraded', results: [], activation: { activated: false } });
+      expect(context.degraded).toContain('pending_memory_correction');
+      const ledger = await mem.read({ slug: 'timeline' });
+      expect(ledger.page?.lines.find((line) => line.memory?.current_hold)?.memory).toMatchObject({
+        status: 'unavailable',
+        current_hold: 'pending_correction',
+        answer_eligible: false,
+      });
+      expect(
+        await mem.answer({
+          question: 'journey JRN-1111 departure',
+          memory_view: 'all',
+          filter: { folder: 'timeline' },
+          expand: false,
+        }),
+      ).toMatchObject({
+        reason_code: 'current_correction_pending',
+        outcome: 'not_answered',
+      });
+      expect(
+        await mem.context({
+          profile: 'auto_recall',
+          query: 'journey JRN-1111 departure',
+          memory_view: 'planning',
+          filter: { folder: 'timeline' },
+        }),
+      ).toMatchObject({
+        status: 'degraded',
+        degraded: expect.arrayContaining(['pending_memory_correction']),
+        results: [],
+      });
+      for (const memory_view of ['factual', 'planning', 'history', 'all'] as const) {
+        const recalled = await mem.recall({
+          query: 'journey JRN-1111 departure',
+          memory_view,
+          expand: false,
+        });
+        expect(JSON.stringify(recalled.results)).toContain('pending_correction');
+        expect(
+          await mem.answer({
+            question: 'What is the current departure for journey JRN-1111?',
+            memory_view,
+            expand: false,
+          }),
+        ).toMatchObject({
+          outcome: 'not_answered',
+          reason_code: 'current_correction_pending',
+        });
+      }
+      const correctedText = text.replace('2035-04-11', '2035-04-22');
+      const corrected = {
+        ...original,
+        revision: '2',
+        input: { text: correctedText },
+        retention: {
+          ...original.retention,
+          candidates: [
+            {
+              ...original.retention.candidates[0]!,
+              text: correctedText,
+              time: { precision: 'day', start: '2035-04-22', status: 'scheduled', relation: 'scheduled' },
+              support: [{ quote: correctedText }],
+              discourse_frame: [{ quote: correctedText }],
+            },
+          ],
+        },
+        retracts: held.retracts,
+      };
+      const admitted = await mem.retain({ sources: [corrected] });
+      expect(admitted.sources[0]?.outcome).toBe('ok');
+      const after = (await mem.read({ slug: 'memory/equipment' })).page!.lines;
+      expect(after.find((line) => line.text.includes('same journey'))?.memory).toMatchObject({
+        current_hold: 'superseded_revision',
+        answer_eligible: false,
+      });
+      expect(
+        after.find((line) => line.memory?.status === 'qualified' && line.text.includes('2035-04-22'))?.memory,
+      ).not.toHaveProperty('current_hold');
+      const planned = await mem.recall({
+        query: 'journey JRN-1111 departure',
+        memory_view: 'planning',
+        expand: false,
+      });
+      expect(JSON.stringify(planned.results)).toContain('2035-04-22');
+      expect(JSON.stringify(planned.results)).not.toContain('2035-04-11');
+      await mem.undo({ change_id: admitted.sources[0]!.change_id! });
+      expect(
+        (await mem.read({ slug: 'memory/equipment' })).page!.lines.find((line) =>
+          line.text.includes('same journey'),
+        )?.memory,
+      ).toMatchObject({ current_hold: 'pending_correction' });
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('keeps unchanged replacement support current and refuses an unowned correction target', async () => {
+    const mem = await openMem();
+    try {
+      const original = upsert('mail:unchanged-1111', '1');
+      await mem.retain({ sources: [original] });
+      const invalid = {
+        ...original,
+        revision: '2',
+        retracts: { target_revision: '1', candidate_ids: ['not-owned'] },
+      };
+      expect((await mem.retain({ sources: [invalid] })).sources[0]).toMatchObject({
+        outcome: 'held',
+        reason_code: 'conflict',
+      });
+      const qualification = async () =>
+        (await mem.read({ slug: 'memory/equipment' })).page?.lines.find(
+          (line) => line.memory?.status === 'qualified',
+        )?.memory;
+      expect(await qualification()).not.toHaveProperty('current_hold');
+      const copy = { ...original, source_id: 'mail:unchanged-copy-1111' };
+      await mem.retain({ sources: [copy] });
+      const corrected = {
+        ...original,
+        revision: '2',
+        retracts: { target_revision: '1', candidate_ids: ['warranty-selection'] },
+      };
+      expect((await mem.retain({ sources: [corrected] })).sources[0]?.outcome).toBe('ok');
+      expect(await qualification()).toMatchObject({ answer_eligible: true, current_eligible: true });
+      expect(await qualification()).not.toHaveProperty('current_hold');
     } finally {
       await mem.close();
     }
