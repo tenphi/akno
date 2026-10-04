@@ -1,5 +1,11 @@
 # @tenphi/akno-protocol
 
+## 0.17.2
+
+### Patch Changes
+
+- [#182](https://github.com/tenphi/akno/pull/182) [`86b0597`](https://github.com/tenphi/akno/commit/86b0597ce059d42331e3e387faf0b283af9df499) Thanks [@tenphi](https://github.com/tenphi)! - Keep validated withdrawal intent when a compound correction is held. Preserve earlier Markdown and support, but qualify prior correlated records as pending correction and hold current answers until the correction or retraction is admitted. Older copies remain historical after admission, unchanged replacement-supported facts remain usable, and restricted leaves cannot ground derived observations. The restriction survives replay, restart, rebuild and undo without accepting the held replacement.
+
 ## 0.17.1
 
 ## 0.17.0
