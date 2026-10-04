@@ -304,8 +304,11 @@ Akno preserves the earlier Markdown, supports and timeline bytes. It records onl
 intent, without accepting any replacement fact or creating a successful replay receipt. The response and
 affected memory qualifications carry `current_hold: pending_correction`; those records have
 `answer_eligible: false`, `current_eligible: false` and no actionable schedule. Query-matched records remain
-inspectable in recall and history, but `answer` returns `current_correction_pending` instead of treating an
-old value as current. The restriction also covers active copies in the earlier support's caller-declared
+inspectable in recall and history, but cannot establish current meaning. An answer with no independent
+support returns `current_correction_pending`. A compound question may return a verified partial answer
+from independent records, with the same typed reason and `pending_memory_correction` degradation for its
+unresolved part. Withheld support never becomes a claim that nothing was recorded.
+The restriction also covers active copies in the earlier support's caller-declared
 proof group. Use a precise `source_group` for correlated evidence: a broad group can conservatively hold
 otherwise unchanged facts from that group too. Independent groups remain unaffected.
 Focused automatic context returns typed `pending_memory_correction` degradation and injects no current
@@ -324,6 +327,23 @@ Derived observations cannot use restricted retained leaves as current proof, inc
 index pass refreshes their cached qualification.
 Rendered timeline copies inherit the same restriction by owned memory identity; a ledger row does not
 provide independent evidence that can bypass the canonical item's correction.
+
+Automatic extraction also compares newly admitted records with earlier retained assertions in the same
+precise source group. This covers a deciding turn whose original source was held while a correlated copy
+was admitted. A nominated withdrawal requires an exact deciding source quotation, the same source role
+and speaker, and an independent comparison confirming the same assertion, authority and explicit change.
+Only confirmed targets become historical; an independent payment remains usable. The new revision number,
+correlation or shared date never establishes withdrawal. Provided candidates do not gain this automatic
+relationship authority.
+
+If the bounded deciding comparison is unavailable or unresolved, the affected assertion pair receives a
+persisted current hold, with `deciding_relation_unavailable` in the retention response. The records remain
+inspectable; no replacement relation is admitted. A later confirmed deciding revision resolves that pair,
+unchanged replay preserves it, and undo or restart retains the corresponding state. The private workflow
+binding contains opaque record identities rather than a new source body.
+When extraction holds the deciding source itself, a separate source-intent comparison can establish
+only a current uncertainty hold for its earlier target. It cannot save any held replacement fact.
+Retracting that held source intent releases its hold; a later admitted deciding revision can resolve it.
 
 To retain from source bytes Akno already owns, use exactly one reference input:
 

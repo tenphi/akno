@@ -627,6 +627,7 @@ export const DegradedReason = z.enum([
   'derive_failed',
   /** Automatic retention could not independently verify extracted semantics. */
   'retain_verification_failed',
+  'deciding_relation_unavailable',
   /** A retained source could not complete its validated write/reconciliation path. */
   'retain_apply_failed',
   /** Retained temporal rows are absent, stale, or excluded by malformed temporal metadata. */

@@ -5,13 +5,53 @@ import Database from 'better-sqlite3';
 import { describe, expect, it } from 'vitest';
 
 import { acquireWriteLock, openStore } from './db.ts';
-import { MIGRATIONS, SCHEMA_VERSION } from './migrations.ts';
+import {
+  MIGRATIONS,
+  SCHEMA_VERSION,
+  RETAIN_PENDING_CORRECTIONS_MIGRATION_INDEX,
+  RETAIN_DECIDING_HOLDS_MIGRATION_INDEX,
+} from './migrations.ts';
+
+it('preserves released correction state when adding deciding holds to schema forty-seven', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-deciding-migration-'));
+  const dbPath = path.join(dir, 'index.db');
+  const legacy = new Database(dbPath);
+  for (const migration of MIGRATIONS.slice(0, RETAIN_DECIDING_HOLDS_MIGRATION_INDEX)) legacy.exec(migration);
+  legacy.pragma('user_version = 47');
+  legacy.exec(`INSERT INTO retain_receipts(source_id, revision, request_hash, source_hash,
+    source_group, receipt_fingerprint, mode, result, created_at)
+    VALUES ('source:1111', '2', 'request-1111', 'source-1111', 'group-1111', 'receipt-1111', 'extract_automatic', '{}', '2035-04-01')`);
+  legacy.exec(`INSERT INTO retain_pending_corrections(source_id, revision, target_receipt, target_candidate)
+    VALUES ('source:1111', '3', 'receipt-1111', 'candidate-1111')`);
+  const before = legacy.prepare('SELECT * FROM retain_receipts').all();
+  const pending = legacy.prepare('SELECT * FROM retain_pending_corrections').all();
+  legacy.close();
+  const store = openStore({ dbPath, embeddingDimensions: 8 });
+  try {
+    expect(store.db.prepare('SELECT * FROM retain_receipts').all()).toEqual(before);
+    expect(store.db.prepare('SELECT * FROM retain_pending_corrections').all()).toEqual(pending);
+    expect(store.db.prepare('SELECT * FROM retain_deciding_holds').all()).toEqual([]);
+    const columns = store.db.pragma('table_info(retain_deciding_holds)') as { name: string }[];
+    expect(columns.map((column) => column.name)).toEqual([
+      'deciding_receipt',
+      'earlier_memory',
+      'deciding_memory',
+      'resolved_by',
+    ]);
+    expect(store.db.pragma('foreign_key_check')).toEqual([]);
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+  } finally {
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
 
 it('upgrades a released index without losing correction targets or adding private source bodies', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-correction-migration-'));
   const dbPath = path.join(dir, 'index.db');
   const legacy = new Database(dbPath);
-  for (const migration of MIGRATIONS.slice(0, -1)) legacy.exec(migration);
+  for (const migration of MIGRATIONS.slice(0, RETAIN_PENDING_CORRECTIONS_MIGRATION_INDEX))
+    legacy.exec(migration);
   legacy.pragma('user_version = 45');
   legacy
     .prepare(
@@ -28,6 +68,7 @@ it('upgrades a released index without losing correction targets or adding privat
     ]);
     expect(store.db.prepare('SELECT * FROM retain_pending_corrections').all()).toEqual([]);
     expect(store.db.prepare('SELECT * FROM retain_superseded_supports').all()).toEqual([]);
+    expect(store.db.prepare('SELECT * FROM retain_deciding_holds').all()).toEqual([]);
     expect(store.db.pragma('foreign_key_check')).toEqual([]);
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
   } finally {

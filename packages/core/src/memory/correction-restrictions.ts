@@ -38,8 +38,21 @@ export function correctionMemoryRestrictions(store: Store): Map<string, Correcti
        AND copy.retracted_by IS NULL AND copy.forgotten_by IS NULL`,
     )
     .all() as { memory_id: string }[];
+  const deciding = store.db
+    .prepare(
+      `
+    SELECT DISTINCT support.memory_id FROM retain_deciding_holds hold
+    JOIN retain_supports support ON support.memory_id IN (hold.earlier_memory, hold.deciding_memory)
+     WHERE hold.resolved_by IS NULL AND EXISTS (
+       SELECT 1 FROM retain_supports active WHERE active.memory_id = support.memory_id
+         AND active.retracted_by IS NULL AND active.forgotten_by IS NULL
+     )
+  `,
+    )
+    .all() as { memory_id: string }[];
   return new Map([
     ...superseded.map((row) => [row.memory_id, 'superseded_revision'] as const),
     ...pending.map((row) => [row.memory_id, 'pending_correction'] as const),
+    ...deciding.map((row) => [row.memory_id, 'pending_correction'] as const),
   ]);
 }

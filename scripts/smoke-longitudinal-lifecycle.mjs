@@ -62,6 +62,16 @@ for (const split of ['development', 'held-out']) {
     })),
   };
   const report = adjudicateLifecycle(packet, review);
+  const incompleteArtifacts = structuredClone(packet);
+  delete incompleteArtifacts.contract.artifacts['core/dist/write/deciding-support.js'];
+  assert.throws(
+    () =>
+      adjudicateLifecycle(incompleteArtifacts, {
+        ...review,
+        packetFingerprint: lifecycleHash(incompleteArtifacts),
+      }),
+    /compiled artifacts/,
+  );
   assert(report.groups.every((group) => !group.passed && !group.gates.usefulCoverage));
   const stale = structuredClone(review);
   stale.packetFingerprint = 'stale';

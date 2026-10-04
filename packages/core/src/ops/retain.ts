@@ -69,6 +69,12 @@ import { pruneRetainEvidence, reconcileRetainManagedSources } from '../write/ret
 import { resolveRetainedSubject } from '../memory/subject-resolution.ts';
 import { routeAutomaticCandidate } from './remember.ts';
 import { read } from './read.ts';
+import {
+  decidingSupport,
+  type EarlierSupport,
+  type DecidingHold,
+  type SourceIntent,
+} from '../write/deciding-support.ts';
 import { normalizeSlug, titleFromSlug } from './write.ts';
 
 interface ReceiptRow {
@@ -1038,6 +1044,43 @@ async function retainCandidates(
           : '; preview created no current restriction'),
     };
   }
+  // Provided prose/relations retain their existing caller authority. Only admitted, independently
+  // verified extraction may establish a deciding relationship with earlier correlated records.
+  const deciding =
+    options.selection === 'extracted' && pendingSupports.length > 0
+      ? await assessEarlierSupport(
+          ctx,
+          proofGroup,
+          suppliedCandidates.filter((candidate) => acceptedCandidateIds.has(candidate.candidate_id)),
+          pendingSupports,
+        )
+      : {
+          superseded: [] as string[],
+          receipts: [] as RetainModelCallReceipt[],
+          pending: [] as DecidingHold[],
+          degraded: undefined,
+        };
+  options.modelUsage.placement.push(...deciding.receipts);
+  if (deciding.degraded) degraded.push(deciding.degraded);
+  const heldIntent =
+    options.selection === 'extracted' &&
+    !source.retracts &&
+    (options.sourceHold || candidateResults.some((result) => result.outcome === 'held'))
+      ? await assessEarlierSupport(
+          ctx,
+          proofGroup,
+          [],
+          pendingSupports,
+          decidingSourceIntents(source),
+          deciding.superseded,
+        )
+      : { receipts: [] as RetainModelCallReceipt[], pending: [] as DecidingHold[], degraded: undefined };
+  options.modelUsage.placement.push(...heldIntent.receipts);
+  if (heldIntent.degraded) degraded.push(heldIntent.degraded);
+  const decidingHolds = [...(deciding.pending ?? []), ...(heldIntent.pending ?? [])].flatMap((hold) => {
+    const next = pendingSupports.find((support) => support.candidate_id === hold.decidingCandidate);
+    return [{ earlierMemory: hold.earlierMemory, decidingMemory: next?.memory_id ?? '' }];
+  });
   for (const ledger of await retainedLedgerStages(
     ctx,
     [...stages.values()].filter((stage) => stage.managedDestination && stage.before !== stage.after),
@@ -1046,6 +1089,12 @@ async function retainCandidates(
   }
   const changed = [...stages.values()].filter((stage) => stage.before !== stage.after);
   const preview: RetainSourceResult = {
+    ...(decidingHolds.length
+      ? {
+          current_hold: 'pending_correction' as const,
+          note: 'admitted records were preserved; their deciding relationship with earlier support is unresolved, so affected assertions cannot establish current meaning',
+        }
+      : {}),
     knowledge_language: ctx.config.knowledgeLanguage,
     source_id: source.source_id,
     revision: source.revision,
@@ -1092,6 +1141,8 @@ async function retainCandidates(
         changeId: null,
         supports: pendingSupports,
         retracted: correction.removed,
+        superseded: deciding.superseded,
+        decidingHolds,
         binding: effectiveBinding,
       },
     });
@@ -1123,6 +1174,8 @@ async function retainCandidates(
       changeId,
       supports: pendingSupports,
       retracted: correction.removed,
+      superseded: deciding.superseded,
+      decidingHolds,
       binding: effectiveBinding,
     });
   } catch (error) {
@@ -2357,6 +2410,8 @@ function persistReceipt(
     changeId: string | null;
     supports: readonly PendingSupport[];
     retracted: readonly SupportRow[];
+    superseded?: readonly string[];
+    decidingHolds?: readonly { earlierMemory: string; decidingMemory: string }[];
     binding?: RetainSourceBinding;
   },
 ): void {
@@ -2431,6 +2486,47 @@ function persistReceipt(
         )
         .run(input.receiptFingerprint, support.receipt_fingerprint, support.candidate_id);
     }
+    for (const memoryId of input.superseded ?? []) {
+      ctx.store.db
+        .prepare(
+          'UPDATE retain_deciding_holds SET resolved_by = ? WHERE earlier_memory = ? AND resolved_by IS NULL',
+        )
+        .run(input.receiptFingerprint, memoryId);
+      ctx.store.db
+        .prepare(
+          `
+        INSERT OR IGNORE INTO retain_superseded_supports(support_receipt, candidate_id, resolved_by)
+        SELECT receipt_fingerprint, candidate_id, ? FROM retain_supports
+         WHERE memory_id = ? AND proof_group = ? AND receipt_fingerprint <> ?
+           AND retracted_by IS NULL AND forgotten_by IS NULL
+      `,
+        )
+        .run(
+          input.receiptFingerprint,
+          memoryId,
+          managedMemoryFingerprint(
+            `proof:${'source_group' in input.source ? (input.source.source_group ?? input.source.source_id) : input.source.source_id}`,
+          ),
+          input.receiptFingerprint,
+        );
+    }
+    for (const hold of input.decidingHolds ?? [])
+      ctx.store.db
+        .prepare(
+          'INSERT OR IGNORE INTO retain_deciding_holds(deciding_receipt, earlier_memory, deciding_memory) VALUES (?, ?, ?)',
+        )
+        .run(input.receiptFingerprint, hold.earlierMemory, hold.decidingMemory);
+    if (!('input' in input.source)) {
+      ctx.store.db
+        .prepare(
+          `
+        UPDATE retain_deciding_holds SET resolved_by = ? WHERE deciding_receipt IN (
+          SELECT receipt_fingerprint FROM retain_receipts WHERE source_id = ? AND revision = ?
+        ) AND resolved_by IS NULL
+      `,
+        )
+        .run(input.receiptFingerprint, input.source.source_id, input.source.retention.target_revision);
+    }
     if (input.binding) {
       ctx.store.db
         .prepare(
@@ -2455,6 +2551,96 @@ function persistReceipt(
     ...input.retracted.map((support) => support.memory_id),
   ]);
   if (input.retracted.length > 0) pruneRetainEvidence(ctx, { apply: true });
+}
+
+async function assessEarlierSupport(
+  ctx: AknoContext,
+  proofGroup: string,
+  admitted: readonly ProvidedRetainCandidate[],
+  incoming: readonly PendingSupport[],
+  sourceIntents?: readonly SourceIntent[],
+  excluded: readonly string[] = [],
+) {
+  const rows = ctx.store.db
+    .prepare(
+      `
+    SELECT memory_id, slug, evidence FROM retain_supports
+     WHERE proof_group = ? AND retracted_by IS NULL AND forgotten_by IS NULL
+     ORDER BY memory_id, receipt_fingerprint, candidate_id
+  `,
+    )
+    .all(proofGroup) as { memory_id: string; slug: string; evidence: string }[];
+  const incomingIds = new Set([...incoming.map((support) => support.memory_id), ...excluded]);
+  const decidingCandidates = sourceIntents ?? admitted;
+  const groups = new Map<string, typeof rows>();
+  for (const row of rows)
+    if (!incomingIds.has(row.memory_id)) {
+      const supports = groups.get(row.memory_id) ?? [];
+      supports.push(row);
+      groups.set(row.memory_id, supports);
+    }
+  // Compare the complete bounded set, never a clipped prefix which could hide another authority.
+  if (groups.size > 16 || JSON.stringify(rows).length > 24000)
+    return {
+      superseded: [],
+      receipts: [] as RetainModelCallReceipt[],
+      degraded: 'deciding_relation_unavailable' as const,
+      pending: [...groups.keys()].flatMap((earlierMemory) =>
+        decidingCandidates.map((candidate) => ({ earlierMemory, decidingCandidate: candidate.candidate_id })),
+      ),
+    };
+  const earlier: EarlierSupport[] = [];
+  const pages = new Map<string, Awaited<ReturnType<typeof read>>>();
+  for (const [memoryId, supports] of groups) {
+    const slug = supports[0]!.slug;
+    if (!pages.has(slug)) pages.set(slug, await read(ctx, { slug }));
+    const line = pages.get(slug)?.page?.lines.find((item) => item.memory?.id === memoryId);
+    if (line?.memory?.current_hold === 'superseded_revision') continue;
+    if (line?.memory?.status !== 'qualified')
+      return {
+        superseded: [],
+        receipts: [] as RetainModelCallReceipt[],
+        degraded: 'deciding_relation_unavailable' as const,
+        pending: [...groups.keys()].flatMap((earlierMemory) =>
+          decidingCandidates.map((candidate) => ({
+            earlierMemory,
+            decidingCandidate: candidate.candidate_id,
+          })),
+        ),
+      };
+    earlier.push({
+      memoryId,
+      text: line.text,
+      attribution: {
+        source_role: line.memory.source_role,
+        source_speaker: line.memory.source_speaker,
+      },
+      evidence: [...new Set(supports.map((support) => support.evidence))].join('\n'),
+    });
+  }
+  return decidingSupport(retentionModel(ctx), earlier, admitted, sourceIntents);
+}
+
+function decidingSourceIntents(source: ResolvedRetainUpsertSource): SourceIntent[] {
+  if ('text' in source.input)
+    return [
+      { candidate_id: 'source-intent', text: source.input.text, attribution: { source_role: 'unknown' } },
+    ];
+  const groups = new Map<string, SourceIntent>();
+  for (const item of source.input.items) {
+    const role =
+      item.role === 'user' || item.role === 'assistant' || item.role === 'external' ? item.role : 'unknown';
+    const key = JSON.stringify([role, item.speaker ?? null]);
+    const prior = groups.get(key);
+    if (prior) prior.text += '\n' + item.text;
+    else
+      groups.set(key, {
+        candidate_id: `source-intent-${groups.size}`,
+        text: item.text,
+        attribution: { source_role: role, ...(item.speaker ? { source_speaker: item.speaker } : {}) },
+      });
+  }
+  return [...groups.values()];
 }
 
 function sourceEvidence(candidate: ProvidedRetainCandidate): string {

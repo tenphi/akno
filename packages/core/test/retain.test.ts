@@ -55,9 +55,14 @@ interface AutomaticRetainStub {
   setEventIdentity: (selection: string) => void;
   setOwnership: (selection: string | null) => void;
   identityCalls: () => number;
+  setDeciding: (response: (payload: Record<string, unknown>, verifying: boolean) => unknown) => void;
 }
 
 async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
+  let deciding: AutomaticRetainStub['setDeciding'] extends (response: infer R) => void ? R : never = (
+    _payload,
+    verifying,
+  ) => (verifying ? { verdicts: [] } : { withdrawals: [] });
   let candidates: Record<string, unknown>[] = [];
   let verificationSupported = true;
   let retention: Parameters<AutomaticRetainStub['setRetention']>[0] = {
@@ -81,7 +86,9 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
       const system = body.messages?.find((message) => message.role === 'system')?.content ?? '';
       const user = body.messages?.find((message) => message.role === 'user')?.content ?? '';
       let content: unknown;
-      if (system.includes('independently verify proposed retained memories')) {
+      if (system.startsWith('Compare earlier retained source frames')) {
+        content = deciding(JSON.parse(user), system.includes('Independently verify'));
+      } else if (system.includes('independently verify proposed retained memories')) {
         counts.verification++;
         const payload = JSON.parse(user) as {
           candidates?: { candidate_id: string; kind: string; polarity: 'affirmed' | 'negated' }[];
@@ -170,6 +177,9 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
       ownership = selection;
     },
     identityCalls: () => identityCalls,
+    setDeciding: (response) => {
+      deciding = response;
+    },
   };
 }
 
@@ -254,6 +264,226 @@ it('keeps exact provided evidence model-free when its deciding frame contains a 
     expect((await mem.retain({ sources: [request] })).sources[0]?.outcome).toBe('replayed');
   } finally {
     await mem.close();
+  }
+});
+
+it('withdraws an earlier correlated copy through admitted deciding evidence without an original target', async () => {
+  const stub = await startAutomaticRetainStub();
+  let mem = await openAutomaticMem(stub.url);
+  const old = 'Ada Marlow booked journey JRN-1111 for 2035-04-11; the single 1111 EUR payment is complete.';
+  const payment = 'Ada Marlow paid the single 1111 EUR booking payment for journey JRN-1111.';
+  const next =
+    'Ada Marlow corrected journey JRN-1111: its departure is now 2035-04-22 instead of 2035-04-11. The single payment is unchanged; departure has not occurred.';
+  const make = (id: string, text: string) => ({
+    ...upsert(id, '1', text),
+    source_group: 'journey:JRN-1111',
+    retention: {
+      mode: 'provided' as const,
+      placement: 'exact' as const,
+      candidates: [
+        {
+          ...upsert(id, '1').retention.candidates[0]!,
+          kind: 'claim' as const,
+          text,
+          subject: 'journey JRN-1111',
+          discourse: { commitment: 'asserted' as const, disposition: 'active' as const },
+          support: [{ quote: text }],
+          discourse_frame: [{ quote: text }],
+        },
+      ],
+    },
+  });
+  const correction = {
+    source_id: 'source:booking-1111',
+    revision: '2',
+    source_group: 'journey:JRN-1111',
+    input: {
+      items: [{ item_id: 'correction-2222', role: 'user' as const, speaker: 'Ada Marlow', text: next }],
+    },
+    retention: { mode: 'extract' as const },
+  };
+  const qualification = async () =>
+    (await mem.read({ slug: 'memory/equipment' })).page!.lines.find((line) => line.text.includes(old))
+      ?.memory;
+  try {
+    await mem.retain({ sources: [make('source:copy-1111', old), make('source:payment-1111', payment)] });
+    const before = fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8');
+    stub.setCandidate({
+      text: next,
+      subject: 'journey JRN-1111',
+      page: 'memory/equipment',
+      kind: 'claim',
+      support: [{ item_id: 'correction-2222', quote: next }],
+      discourse_frame: [{ item_id: 'correction-2222', quote: next }],
+    });
+    let decidingVerified = false;
+    stub.setDeciding((payload, verifying) => {
+      if (verifying && !decidingVerified) return { verdicts: [] };
+      const earlier = payload.earlier as { id: string; text: string }[];
+      const admitted = payload.admitted as { id: string }[];
+      const pair = {
+        earlier_id: earlier.find((item) => item.text.includes('2035-04-11'))!.id,
+        deciding_id: admitted[0]!.id,
+      };
+      return verifying
+        ? {
+            verdicts: [
+              {
+                ...pair,
+                same_assertion_and_authority: true,
+                explicit_withdrawal: true,
+                deciding_representation_preserves_meaning: true,
+                deciding_status: 'withdrawal',
+                comparison: {
+                  earlier_assertion: old,
+                  deciding_assertion: next,
+                  withdrawn_scope: 'The earlier booked departure date for the same journey.',
+                  authority: 'Ada Marlow corrects her own booking.',
+                },
+                mismatches: [],
+              },
+            ],
+          }
+        : { withdrawals: [{ ...pair, deciding_quote: next }] };
+    });
+    await mem.retain({ sources: [correction], dry_run: true });
+    expect(await qualification()).not.toHaveProperty('current_hold');
+    expect(fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8')).toBe(before);
+    const result = await mem.retain({ sources: [correction] });
+    expect(result.sources[0]).toMatchObject({ outcome: 'ok', current_hold: 'pending_correction' });
+    expect(await qualification()).toMatchObject({ current_hold: 'pending_correction' });
+    expect(
+      (await mem.read({ slug: 'memory/equipment' })).page!.lines.find((line) => line.text.includes(next))
+        ?.memory,
+    ).toMatchObject({ current_hold: 'pending_correction' });
+    await mem.close();
+    mem = await openAutomaticMem(stub.url);
+    await mem.index({ rebuild: true, structuralOnly: true });
+    expect(await qualification()).toMatchObject({ current_hold: 'pending_correction' });
+    expect((await mem.retain({ sources: [correction] })).sources[0]?.outcome).toBe('replayed');
+    decidingVerified = true;
+    const confirmed = await mem.retain({ sources: [{ ...correction, revision: '3' }] });
+    expect(confirmed.sources[0]?.outcome).toBe('ok');
+    expect(await qualification()).toMatchObject({
+      current_hold: 'superseded_revision',
+      current_eligible: false,
+    });
+    expect(
+      (await mem.read({ slug: 'memory/equipment' })).page!.lines.find((line) => line.text.includes(payment))
+        ?.memory,
+    ).toMatchObject({ current_eligible: true });
+    expect(fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8')).toContain(old);
+    expect(
+      (await mem.read({ slug: 'memory/equipment' })).page!.lines.find((line) => line.text.includes(next))
+        ?.memory,
+    ).not.toHaveProperty('current_hold');
+    await mem.close();
+    mem = await openAutomaticMem(stub.url);
+    await mem.index({ rebuild: true, structuralOnly: true });
+    expect(await qualification()).toMatchObject({ current_hold: 'superseded_revision' });
+    await mem.undo({ change_id: confirmed.sources[0]!.change_id! });
+    expect(await qualification()).toMatchObject({ current_hold: 'pending_correction' });
+    await mem.undo({ change_id: result.sources[0]!.change_id! });
+    expect(await qualification()).not.toHaveProperty('current_hold');
+  } finally {
+    await mem.close();
+    await stub.close();
+  }
+});
+
+it('holds an older copy from unadmitted deciding intent without accepting replacement facts', async () => {
+  const stub = await startAutomaticRetainStub();
+  let mem = await openAutomaticMem(stub.url);
+  const old = 'Ada Marlow booked journey JRN-1111 for 2035-04-11.';
+  const next =
+    'Ada Marlow corrected the same journey JRN-1111: its booked departure is 2035-04-22 instead of 2035-04-11; departure has not occurred.';
+  const copy = upsert('source:copy-1111', '1', old);
+  copy.source_group = 'journey:JRN-1111';
+  copy.retention.candidates[0] = {
+    ...copy.retention.candidates[0]!,
+    kind: 'claim',
+    text: old,
+    subject: 'journey JRN-1111',
+    discourse: { commitment: 'asserted', disposition: 'active' },
+    support: [{ quote: old }],
+    discourse_frame: [{ quote: old }],
+  } as never;
+  const correction = {
+    source_id: 'source:booking-1111',
+    revision: '2',
+    source_group: copy.source_group,
+    input: {
+      items: [{ item_id: 'correction-2222', role: 'user' as const, speaker: 'Ada Marlow', text: next }],
+    },
+    retention: { mode: 'extract' as const },
+  };
+  const qualification = async () =>
+    (await mem.read({ slug: 'memory/equipment' })).page!.lines.find((line) => line.text.includes(old))
+      ?.memory;
+  try {
+    await mem.retain({ sources: [copy] });
+    const before = fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8');
+    stub.setCandidate({
+      text: next,
+      subject: 'journey JRN-1111',
+      page: 'memory/equipment',
+      kind: 'claim',
+      support: [{ item_id: 'correction-2222', quote: next }],
+      discourse_frame: [{ item_id: 'correction-2222', quote: next }],
+    });
+    stub.setVerification(false);
+    stub.setDeciding((_payload, verifying) =>
+      verifying
+        ? {
+            verdicts: [
+              {
+                earlier_id: 'old_0',
+                deciding_id: 'new_0',
+                same_assertion_and_authority: true,
+                explicit_withdrawal: true,
+                deciding_representation_preserves_meaning: true,
+                deciding_status: 'withdrawal',
+                comparison: {
+                  earlier_assertion: old,
+                  deciding_assertion: next,
+                  withdrawn_scope: 'The booked departure date.',
+                  authority: 'Ada Marlow corrects her own booking.',
+                },
+                mismatches: [],
+              },
+            ],
+          }
+        : { withdrawals: [{ earlier_id: 'old_0', deciding_id: 'new_0', deciding_quote: next }] },
+    );
+    const held = await mem.retain({ sources: [correction] });
+    expect(held.sources[0]).toMatchObject({ outcome: 'held', current_hold: 'pending_correction' });
+    expect(fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8')).toBe(before);
+    expect(await qualification()).toMatchObject({
+      current_hold: 'pending_correction',
+      current_eligible: false,
+    });
+    expect((await mem.retain({ sources: [correction] })).sources[0]?.outcome).toBe('replayed');
+    await mem.close();
+    mem = await openAutomaticMem(stub.url);
+    await mem.index({ rebuild: true, structuralOnly: true });
+    expect(await qualification()).toMatchObject({ current_hold: 'pending_correction' });
+    await mem.retain({
+      sources: [
+        {
+          source_id: correction.source_id,
+          revision: '3',
+          retention: { mode: 'retract', target_revision: '2', reason: 'user_request' },
+        },
+      ],
+    });
+    expect(await qualification()).not.toHaveProperty('current_hold');
+    stub.setVerification(true);
+    const admitted = await mem.retain({ sources: [{ ...correction, revision: '4' }] });
+    expect(admitted.sources[0]?.outcome).toBe('ok');
+    expect(await qualification()).toMatchObject({ current_hold: 'superseded_revision' });
+  } finally {
+    await mem.close();
+    await stub.close();
   }
 });
 

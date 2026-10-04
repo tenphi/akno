@@ -471,13 +471,12 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
     model_usage: { generation: null, verification: null },
   };
 
-  if (
-    recalled.results.some(
-      (result) =>
-        result.type === 'page' &&
-        result.lines.some((line) => line.memory?.current_hold === 'pending_correction'),
-    )
-  ) {
+  const correctionPending = recalled.results.some(
+    (result) =>
+      result.type === 'page' &&
+      result.lines.some((line) => line.memory?.current_hold === 'pending_correction'),
+  );
+  if (correctionPending && evidence.length === 0) {
     return {
       status: recalled.status,
       outcome: 'not_answered',
@@ -594,6 +593,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
       recalled.memory_view,
       sourceFrames,
       recordRendering,
+      correctionPending,
     ),
     {
       schema: liveDraftSchema,
@@ -716,7 +716,10 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
     ...Object.entries(recalled.coverage ?? {}).flatMap(([concept, covered]) => (covered ? [] : [concept])),
   ]);
   const guardFailed = checked.rejected > 0;
-  const reasons = dedupeReasons(recalled.degraded ?? []);
+  const reasons = dedupeReasons([
+    ...(recalled.degraded ?? []),
+    ...(correctionPending ? ['pending_memory_correction' as const] : []),
+  ]);
   const generatedBase = {
     ...verifiedBase,
     answer: rendered || null,
@@ -733,11 +736,13 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
       ...(reasons.length > 0 ? { degraded: reasons } : {}),
       outcome: 'not_answered',
       ...generatedBase,
-      reason_code: guardFailed
-        ? 'draft_rejected'
-        : supportRejected > 0
-          ? 'verification_rejected'
-          : 'empty_draft',
+      reason_code: correctionPending
+        ? 'current_correction_pending'
+        : guardFailed
+          ? 'draft_rejected'
+          : supportRejected > 0
+            ? 'verification_rejected'
+            : 'empty_draft',
       ...(guardFailed || supportRejected > 0
         ? {
             note: guardFailed
@@ -756,12 +761,16 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
     ...(reasons.length > 0 ? { degraded: reasons } : {}),
     outcome: reasons.length > 0 || missing.length > 0 || withheld ? 'partial' : 'complete',
     ...generatedBase,
-    reason_code: 'answered',
-    ...(missing.length > 0
-      ? { note: 'memory evidence did not cover every requested detail' }
-      : withheld
-        ? { note: 'one or more draft blocks were withheld because their support could not be established' }
-        : {}),
+    reason_code: correctionPending ? 'current_correction_pending' : 'answered',
+    ...(correctionPending
+      ? {
+          note: 'supported independent details are answered; an explicit correction is pending for other related memory, which cannot establish current meaning',
+        }
+      : missing.length > 0
+        ? { note: 'memory evidence did not cover every requested detail' }
+        : withheld
+          ? { note: 'one or more draft blocks were withheld because their support could not be established' }
+          : {}),
   };
 }
 
@@ -772,11 +781,17 @@ function answerMessages(
   memoryView: MemoryView = 'factual',
   sourceFrames: ReadonlyMap<string, string> = new Map(),
   recordRendering?: AnswerRecordRendering,
+  correctionPending = false,
 ) {
   return [
     {
       role: 'system' as const,
-      content: ANSWER_SYSTEM_PROMPT + (recordRendering ? '\n\n' + ANSWER_RECORD_RENDERING_CONTRACT : ''),
+      content:
+        ANSWER_SYSTEM_PROMPT +
+        (recordRendering ? '\n\n' + ANSWER_RECORD_RENDERING_CONTRACT : '') +
+        (correctionPending
+          ? '\nAn explicit correction is pending for some related memory. Restricted records are withheld, not absent. Answer only independent supplied evidence; do not claim that withheld details were never recorded or establish their current state. Leave unresolved requested concepts missing.'
+          : ''),
     },
     {
       role: 'user' as const,
@@ -1530,7 +1545,10 @@ function proseStatusSupported(text: string, sources: AnswerContextItem[]): boole
           text,
         )
       );
-    if (q.view === 'planning') return /\b(plan|propos|intend|scheduled)\w*\b|план|предлаг|намер/iu.test(text);
+    if (q.view === 'planning')
+      return /\b(plan|propos|intend|scheduled|booked)\w*\b|план|предлаг|намер|назнач|забронир|намеч/iu.test(
+        text,
+      );
     if (q.view === 'history')
       return /\b(reject|cancel|not decided|not accepted)\w*\b|отклон|отмен|не решено/iu.test(text);
     return /\b(question|unresolved|unanswered)\b|вопрос|не решен/iu.test(text);
@@ -1581,13 +1599,25 @@ function genericReporterLanguageSupported(
 }
 
 function attributedReportsSupported(answerText: string, sources: AnswerContextItem[]): boolean {
+  // A definite user schedule qualifies occurrence, not reporting. It may be answered as a
+  // schedule without a reporting clause; actor and occurrence meaning still face semantic verification.
   const reportLines = sources.flatMap((source) =>
     source.type === 'page'
       ? source.lines.filter(
           (line) =>
             line.memory?.status === 'qualified' &&
             (line.memory.basis === 'source_report' ||
-              (!line.memory.answer_eligible && !!line.memory.source_speaker)),
+              (!line.memory.answer_eligible &&
+                !!line.memory.source_speaker &&
+                !(
+                  (line.memory.kind === 'event' || line.memory.kind === 'claim') &&
+                  line.memory.basis === 'self_attested' &&
+                  line.memory.source_role === 'user' &&
+                  line.memory.commitment === 'asserted' &&
+                  line.memory.disposition === 'active' &&
+                  line.memory.temporal?.time.status === 'scheduled' &&
+                  line.memory.temporal.time.relation === 'scheduled'
+                ))),
         )
       : [],
   );
@@ -1778,7 +1808,9 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
       memory.kind === 'plan' &&
       ['rejected', 'cancelled', 'completed', 'superseded'].includes(memory.disposition);
     if (!closedPlan && memory.temporal?.time.status === 'scheduled')
-      required.push(/\b(scheduled|due|plan|planned)\b|заплан|назнач|план/iu.test(answerText));
+      required.push(
+        /\b(scheduled|booked|due|plan|planned)\b|заплан|назнач|забронир|намеч|план/iu.test(answerText),
+      );
     if (!closedPlan && memory.temporal?.time.status === 'planned')
       required.push(/\b(plan|planned|planning)\b|план/iu.test(answerText));
     if (memory.temporal?.time.status === 'tentative') required.push(tentative);

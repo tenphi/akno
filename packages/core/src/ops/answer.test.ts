@@ -65,6 +65,144 @@ afterEach(async () => {
 });
 
 describe('grounded answer discovery surface', () => {
+  it.each(
+    [
+      { basis: 'self_attested' as const, kind: 'event' as const },
+      { basis: 'self_attested' as const, kind: 'claim' as const },
+      { basis: 'source_report' as const, kind: 'event' as const },
+      { basis: 'source_report' as const, kind: 'claim' as const },
+    ].flatMap((item) => ['en', 'ru'].map((language) => ({ ...item, language }))),
+  )(
+    'distinguishes a direct schedule from attributed reporting: $basis $kind $language',
+    async ({ basis, kind, language }) => {
+      const marker = temporalMarker('mem_schedule', {
+        kind,
+        sourceRole: basis === 'self_attested' ? 'user' : 'external',
+        speaker: 'Ada Marlow',
+        basis,
+        time: { precision: 'day', start: '2035-04-22', status: 'scheduled', relation: 'scheduled' },
+      });
+      const text =
+        "Journey JRN-1111's booked departure is 2035-04-22, replacing 2035-04-11; departure is not confirmed as having occurred.";
+      write(
+        'journeys/jrn-1111.md',
+        '# Journey JRN-1111\n\n' + managedMemoryBlock(marker, renderManagedMemoryPayload(text, marker)),
+      );
+      await memory.index({ structuralOnly: true });
+      await useAnswerModel({
+        generation: {
+          blocks: [
+            {
+              text:
+                language === 'en'
+                  ? "Journey JRN-1111's booked departure is 2035-04-22, replacing 2035-04-11; departure is not confirmed as having occurred."
+                  : 'Забронированный отъезд по поездке JRN-1111 назначен на 2035-04-22 вместо 2035-04-11; факт отъезда не подтверждён.',
+              evidence_ids: ['E1'],
+            },
+          ],
+          missing_concepts: [],
+        },
+        verification: { verdicts: [verdict('B1', true)] },
+      });
+      const result = await memory.answer({
+        question: 'What is the scheduled departure of journey JRN-1111?',
+        memory_view: 'all',
+        answer_language: language,
+        filter: { folder: 'journeys' },
+        expand: false,
+      });
+      if (basis === 'self_attested') {
+        expect(result.answer).toContain('2035-04-22');
+        expect(result.validation?.verified_blocks).toBe(1);
+      } else {
+        expect(result.answer).toBeNull();
+        expect(result.validation?.rejection_counts).toMatchObject({ attribution: 1 });
+      }
+    },
+  );
+  it('answers an independent journey while preserving a typed hold for a pending plan correction', async () => {
+    write(
+      'memory/current.md',
+      '---\nakno:\n  role: knowledge\n  management:\n    remember: integrate\n---\n# Current records\n',
+    );
+    await useAnswerModel({
+      generation: (body: { messages: { content: string }[] }) => {
+        const payload = JSON.parse(body.messages.at(-1)!.content);
+        const evidence = payload.evidence.find((item: { excerpt: string }) =>
+          item.excerpt.includes('2035-04-22'),
+        );
+        expect(JSON.stringify(payload.evidence)).not.toContain('silver service proposal');
+        return {
+          blocks: [
+            {
+              text: 'According to Ada Marlow, journey JRN-1111 is scheduled for 2035-04-22; departure has not occurred.',
+              evidence_ids: [evidence.evidence_id],
+            },
+          ],
+          missing_concepts: ['current service choice'],
+        };
+      },
+      verification: { verdicts: [verdict('B1', true)] },
+    });
+    await memory.index({ structuralOnly: true });
+    const plan =
+      'Ada Marlow proposed the silver service proposal for Zephyr QX-100; no choice has been made.';
+    const journey = 'Ada Marlow booked journey JRN-1111 for 2035-04-22; departure has not occurred.';
+    const source = (id: string, text: string) => ({
+      source_id: id,
+      revision: '1',
+      input: { text },
+      retention: {
+        mode: 'provided' as const,
+        placement: 'exact' as const,
+        candidates: [
+          {
+            candidate_id: 'record',
+            text,
+            subject: id,
+            kind: 'claim' as const,
+            attribution: { source_role: 'user' as const, source_speaker: 'Ada Marlow' },
+            discourse: { commitment: 'asserted' as const, disposition: 'active' as const },
+            epistemic: { basis: 'self_attested' as const },
+            support: [{ quote: text }],
+            discourse_frame: [{ quote: text }],
+            destination: { slug: 'memory/current' },
+          },
+        ],
+      },
+    });
+    const proposal = source('plan:Zephyr QX-100', plan);
+    const booking = source('journey:JRN-1111', journey);
+    await memory.retain({ sources: [proposal, booking] });
+    await memory.retain({
+      sources: [
+        {
+          ...proposal,
+          revision: '2',
+          retracts: { target_revision: '1', candidate_ids: ['record'] },
+          retention: {
+            ...proposal.retention,
+            candidates: [
+              { ...proposal.retention.candidates[0]!, support: [{ quote: 'Absent replacement support.' }] },
+            ],
+          },
+        },
+      ],
+    });
+    const result = await memory.answer({
+      question: 'What is the Zephyr QX-100 service choice and the departure for journey JRN-1111?',
+      memory_view: 'all',
+      expand: false,
+    });
+    expect(result).toMatchObject({
+      outcome: 'partial',
+      reason_code: 'current_correction_pending',
+      degraded: expect.arrayContaining(['pending_memory_correction']),
+    });
+    expect(result.answer).toContain('2035-04-22');
+    expect(result.answer).not.toContain('no choice');
+    expect(result.model_usage?.verification).not.toBeNull();
+  });
   it.each([
     {
       kind: 'question' as const,

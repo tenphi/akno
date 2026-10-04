@@ -12,6 +12,7 @@ const { values } = parseArgs({
     split: { type: 'string', default: 'development' },
     runs: { type: 'string', default: '2' },
     'derive-model': { type: 'string' },
+    'answer-model': { type: 'string' },
     output: { type: 'string' },
     review: { type: 'string' },
     judgments: { type: 'string' },
@@ -56,6 +57,7 @@ else if (values.review && values.judgments) {
   )
     throw new Error('Freeze and source-review this version before model egress.');
   const config = loadConfig();
+  if (values['answer-model']) config.models.answer = { ...config.models.answer, id: values['answer-model'] };
   const packet = await runLifecycle(config, {
     split: values.split,
     runs: Number(values.runs),
@@ -67,7 +69,7 @@ else if (values.review && values.judgments) {
   console.log(JSON.stringify({ output, checkpoints: packet.checkpoints.length }));
 } else {
   console.error(
-    'Usage: pnpm bench:longitudinal:lifecycle --freeze-inputs | --live --split development|held-out --runs 1..5 [--derive-model ID] [--output FILE] | --review PACKET --judgments REVIEW [--output REPORT]',
+    'Usage: pnpm bench:longitudinal:lifecycle --freeze-inputs | --live --split development|held-out --runs 1..5 [--derive-model ID] [--answer-model ID] [--output FILE] | --review PACKET --judgments REVIEW [--output REPORT]',
   );
   process.exitCode = 2;
 }
