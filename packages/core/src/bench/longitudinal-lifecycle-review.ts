@@ -207,7 +207,8 @@ const contractSchema = z
         'core/dist/write/deciding-support.js',
         'core/dist/memory/correction-restrictions.js',
       ];
-      return [names, decidingNames].some(
+      const temporalNames = [...decidingNames, 'core/dist/models/predicate-time-audit.js'];
+      return [names, decidingNames, temporalNames].some(
         (inventory) =>
           Object.keys(value).length === inventory.length && inventory.every((name) => name in value),
       );

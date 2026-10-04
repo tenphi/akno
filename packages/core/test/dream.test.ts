@@ -1,4 +1,4 @@
-import { semanticAudit } from './semantic-audit.ts';
+import { semanticAudit, predicateTimeFixture } from './semantic-audit.ts';
 import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
@@ -1846,6 +1846,7 @@ describe('observe', () => {
         verdicts: [
           {
             block_id: 'B1',
+            predicate_time_audit: predicateTimeFixture(PATTERN, PATTERN),
             ...semanticAudit(true, true, true),
             proposition_supported: true,
             action_arguments_preserved: true,

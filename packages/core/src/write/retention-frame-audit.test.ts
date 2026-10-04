@@ -304,7 +304,7 @@ describe('required retention frame accounting', () => {
         const payload = JSON.parse(messages.at(-1)!.content);
         expect(payload.candidates).toHaveLength(2);
         expect(options.maxTokens).toBe(
-          1_024 + 2 * 1_200 + sizes.filter((n) => n > 1).reduce((sum, n) => sum + n, 0) * 160,
+          1_024 + 2 * 2_000 + sizes.filter((n) => n > 1).reduce((sum, n) => sum + n, 0) * 160,
         );
         return {
           ok: true,

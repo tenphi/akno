@@ -149,6 +149,19 @@ akno answer "How long is the Zephyr QX-100 warranty?" --rerank
 the opaque evidence labels, checks introduced numbers and negation against cited text, and renders persistent
 locators itself. A separate verifier call judges each answer block only against its nested evidence.
 
+For a bound original frame or a typed temporal record, a separate source-reading call identifies
+the selected predicates and their dates without seeing the new draft or question. These grounded
+readings constrain the verifier; it cannot rewrite their dates or status to fit the draft. They do
+not authorize additional facts from the original frame. Complete-record rendering compares every
+selected predicate, while focused answers may omit unrelated neighboring predicates.
+
+The verifier also compares each selected predicate with its own source date and status. A shared
+subject or sentence cannot transfer one action's date onto another. For example, a dated booking and
+an undated completed payment can answer the booking date and payment completion; they cannot answer
+when the payment occurred. An answer can identify that missing date without denying the completed
+payment. Unavailable or ungrounded audits withhold the block; a negative or incomplete audit rejects
+it, even if the broader semantic verdict is positive.
+
 Unsupported blocks are withheld. A missing model produces `degraded/not_answered`; complete empty recall
 produces `empty/not_found`. If equally applicable evidence gives incompatible values without an authority rule,
 Akno abstains rather than choosing one or inventing a conflict explanation.

@@ -86,6 +86,7 @@ describe.each(['chat', 'responses'] as const)('retention wire-schema compatibili
               const comparisonIndex = branch.required.indexOf('comparison');
               expect(comparisonIndex).toBe(sizes[index]! > 1 ? 2 : 1);
               expect(branch.required[comparisonIndex + 1]).toBe('source_selected_polarity');
+              expect(branch.required).toContain('predicate_time_audit');
               expect(payload.typed_label_contracts[index].candidate_id).toBe(
                 payload.candidates[index].candidate_id,
               );

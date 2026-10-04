@@ -209,7 +209,7 @@ describe('atomic negative witness verification', () => {
       if (chat.mock.calls.length === 1)
         return { ok: true, value: JSON.stringify({ candidates: [draft, second] }), latencyMs: 11 };
       const payload = JSON.parse(messages.at(-1)!.content);
-      expect(options.maxTokens).toBe(3424);
+      expect(options.maxTokens).toBe(5024);
       const verdicts = payload.candidates.map((record: RetainCandidate, index: number) => ({
         candidate_id: record.candidate_id,
         source_selected_polarity: record.polarity,

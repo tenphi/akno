@@ -156,6 +156,14 @@ never supplies an event date. Advertisements and unrelated coverage notices stil
 because they mention dates. Exact receipt replay makes no new rows, and an identical retained temporal
 representation adds support to its existing record rather than copying it.
 
+Dates remain attached to their stated operation or entity. A journey's booked date does not date an
+adjacent payment, and a completed payment does not establish that the journey occurred. Automatic
+extraction keeps these clauses explicit and can retain an undated completed action as an asserted
+claim without inventing an event time. The independent verifier compares each selected predicate's
+time and status against exact source excerpts. Changed attachments, incomplete comparisons and
+unavailable verification produce typed holds. This is a model-assisted semantic check, not a guarantee
+that every fact will be admitted; provided candidates retain their existing caller authority.
+
 For the automatic host path, the smallest useful request is:
 
 ```json

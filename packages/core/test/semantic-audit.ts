@@ -1,4 +1,19 @@
 /** Shared invented verifier response fields; individual tests control each semantic verdict. */
+export function predicateTimeFixture(source: string, candidate: string) {
+  // Mechanical tests supply their own changed comparisons when temporal meaning is under test.
+  const part = (excerpt: string) => ({
+    excerpt: excerpt.slice(0, 240).trim(),
+    predicate: 'The invented selected predicate.',
+    timing: null,
+    status: 'The invented recorded status.',
+    time_relation: 'unspecified',
+  });
+  return {
+    comparisons: [{ source: part(source), candidate: part(candidate), relation: 'preserved' }],
+    complete: true,
+  };
+}
+
 export function frameAuditFields(candidate: { frame_spans?: readonly { frame_id: string }[] }) {
   return candidate.frame_spans
     ? {
@@ -68,6 +83,10 @@ export function retentionAudit(
       candidate_scope: 'entity' as const,
     },
     comparison: audit.comparison,
+    predicate_time_audit: predicateTimeFixture(
+      candidate.discourse_frame?.[0]?.quote ?? candidate.text ?? 'Invented source predicate.',
+      candidate.text ?? 'Invented selected predicate.',
+    ),
     mismatches: audit.mismatches.map((mismatch) => ({
       ...mismatch,
       detail: 'The invented test changes this selected source constraint.',
