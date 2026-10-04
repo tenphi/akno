@@ -1,0 +1,181 @@
+{
+  "version": "longitudinal-lifecycle-publication-v1",
+  "productionBase": "716547c36c881cf05c020e59ef343ba8f7655591",
+  "priorTimelineCheckpoints": 104,
+  "newCheckpoints": 736,
+  "groups": 48,
+  "independentReview": false,
+  "seed": null,
+  "providerCost": null,
+  "runnerFingerprintMeaning": "publication source hashes; not retrospectively captured per-run runner snapshots",
+  "publicationSourceFingerprints": {
+    "packages/core/src/bench/longitudinal-lifecycle-corpus.ts": "6831f2e99d4ff8b382d2c566105166626118e7b5aaf685fe9b05912acc2ab5f7",
+    "packages/core/src/bench/longitudinal-inference-corpus.ts": "23c49ce4a0b26dcf6c55699920cbb2056875ac49c6e3e4055a152191ec4e0bcd",
+    "packages/core/src/bench/longitudinal-lifecycle-review.ts": "4082a687cf18c2629a8b33218c0c44a85c5e4c60326320d5ba5e780b4375ec54",
+    "scripts/longitudinal-lifecycle-runtime.mjs": "ae62650a9b2ead298fad71f17ddf556dc5bdfe14a2d59c41d7737032177f0831",
+    "scripts/bench-longitudinal-lifecycle.mjs": "a998570c52bb98f56613afa085c32881571e1d207c50d26c22526c9c101f5bce",
+    "scripts/smoke-longitudinal-lifecycle.mjs": "1000454f070a7714113134587ba9a83c3c2116e262a80ee746c20b4222018ffa",
+    "scripts/bench-longitudinal-regressions.mjs": "0447e968640f60ed4c99c622bef639841a7b88729c2115a36c33ff74c724a4e0"
+  },
+  "inputReviews": {
+    "lifecycle": {
+      "version": "longitudinal-lifecycle-v1",
+      "corpusFingerprint": "08119872c34070ab9b0688c3bd1c27e56469f03845d3080705a49a76b24f94ed",
+      "reviewer": {
+        "id": "Codex",
+        "sourceBased": true,
+        "independent": false,
+        "beforeOutputs": true
+      },
+      "limitations": [
+        "author_review_not_independent",
+        "coupled_derive_role_substitution",
+        "two_repeats_descriptive_only",
+        "seeded_valid_L2_control_is_not_natural_generation",
+        "unsupported_hypothesis_scenario_features_not_implemented"
+      ],
+      "gates": {
+        "semanticErrors": 0,
+        "sourceMutations": 0,
+        "usefulCoverage": 0.8,
+        "replayDuplicateGrowth": 0
+      }
+    },
+    "inference": {
+      "version": "longitudinal-inference-v1",
+      "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+      "reviewer": {
+        "id": "Codex",
+        "sourceBased": true,
+        "independent": false,
+        "beforeOutputs": true
+      },
+      "limitations": [
+        "author_review_not_independent",
+        "coupled_derive_role_substitution",
+        "two_repeats_descriptive_only",
+        "seeded_valid_L2_control_is_not_natural_generation",
+        "unsupported_hypothesis_scenario_features_not_implemented"
+      ],
+      "gates": {
+        "semanticErrors": 0,
+        "sourceMutations": 0,
+        "usefulCoverage": 0.8,
+        "replayDuplicateGrowth": 0
+      }
+    },
+    "inference-control": {
+      "version": "longitudinal-inference-control-v1",
+      "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+      "reviewer": {
+        "id": "Codex",
+        "sourceBased": true,
+        "independent": false,
+        "beforeOutputs": true
+      },
+      "limitations": [
+        "author_review_not_independent",
+        "coupled_derive_role_substitution",
+        "two_repeats_descriptive_only",
+        "seeded_valid_L2_control_is_not_natural_generation",
+        "unsupported_hypothesis_scenario_features_not_implemented"
+      ],
+      "gates": {
+        "semanticErrors": 0,
+        "sourceMutations": 0,
+        "usefulCoverage": 0.8,
+        "replayDuplicateGrowth": 0
+      }
+    },
+    "inference-authorized": {
+      "version": "longitudinal-inference-authorized-v1",
+      "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+      "reviewer": {
+        "id": "Codex",
+        "sourceBased": true,
+        "independent": false,
+        "beforeOutputs": true
+      },
+      "limitations": [
+        "author_review_not_independent",
+        "coupled_derive_role_substitution",
+        "two_repeats_descriptive_only",
+        "seeded_valid_L2_control_is_not_natural_generation",
+        "unsupported_hypothesis_scenario_features_not_implemented"
+      ],
+      "gates": {
+        "semanticErrors": 0,
+        "sourceMutations": 0,
+        "usefulCoverage": 0.8,
+        "replayDuplicateGrowth": 0
+      }
+    },
+    "inference-leaf-control": {
+      "version": "longitudinal-inference-leaf-control-v1",
+      "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+      "reviewer": {
+        "id": "Codex",
+        "sourceBased": true,
+        "independent": false,
+        "beforeOutputs": true
+      },
+      "limitations": [
+        "author_review_not_independent",
+        "coupled_derive_role_substitution",
+        "two_repeats_descriptive_only",
+        "seeded_valid_L2_control_is_not_natural_generation",
+        "unsupported_hypothesis_scenario_features_not_implemented"
+      ],
+      "gates": {
+        "semanticErrors": 0,
+        "sourceMutations": 0,
+        "usefulCoverage": 0.8,
+        "replayDuplicateGrowth": 0
+      }
+    },
+    "overview-authorized": {
+      "version": "longitudinal-overview-authorized-v1",
+      "corpusFingerprint": "fd734552a7d4810c2e4cc772a15de330c67d465e8cb4bab0d4496c901bd0feca",
+      "reviewer": {
+        "id": "Codex",
+        "sourceBased": true,
+        "independent": false,
+        "beforeOutputs": true
+      },
+      "limitations": [
+        "author_review_not_independent",
+        "coupled_derive_role_substitution",
+        "two_repeats_descriptive_only",
+        "seeded_valid_L2_control_is_not_natural_generation",
+        "unsupported_hypothesis_scenario_features_not_implemented"
+      ],
+      "gates": {
+        "semanticErrors": 0,
+        "sourceMutations": 0,
+        "usefulCoverage": 0.8,
+        "replayDuplicateGrowth": 0
+      }
+    }
+  },
+  "followups": {
+    "reporter_attribution": 169,
+    "overview_freshness": 171,
+    "deciding_turn_and_correction": 172,
+    "reflected_prose_eligibility": 173,
+    "observation_admission_and_sample_scope": 174,
+    "retrieval_context": 160,
+    "coherent_integration": 79,
+    "caller_candidate_verification": 63
+  },
+  "limits": [
+    "coupled_derive_role",
+    "two_repeats_descriptive",
+    "exposed_source_controls",
+    "no_independent_judge",
+    "no_live_eligible_L3_graph_fact_recovery",
+    "unsupported_hypothesis_scenario_features",
+    "process_clock_not_OS_timers",
+    "settled_index_not_hot_path_readiness",
+    "missing_token_fields_not_estimated"
+  ]
+}

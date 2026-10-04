@@ -1,0 +1,1725 @@
+{
+  "version": "longitudinal-deterministic-regressions-v1",
+  "evidence": "production_paths_scripted_model_outcomes_not_live_model_quality",
+  "operationLatencyMs": 15748.239625,
+  "providerCost": null,
+  "liveModelCalls": 0,
+  "source": "existing_invented_regression_suites",
+  "success": true,
+  "suites": [
+    {
+      "file": "packages/core/test/dream.test.ts",
+      "coverage": [
+        "blocked_plan_then_independent_work",
+        "colocated_observation",
+        "positive_reflection",
+        "dependent_evidence_retraction",
+        "graph_and_answer_leaf_citations",
+        "adoption_rollback"
+      ],
+      "sourceFingerprint": "ec1e09ba315d2d292b09abf7d0eec09cba939cde406c24f3c10c274f0107b460",
+      "tests": [
+        {
+          "name": "reflect is told the principles it already wrote",
+          "status": "passed",
+          "durationMs": 305.4478329999997
+        },
+        {
+          "name": "reflect refuses a principle that is only an observation, or a fact, repeated",
+          "status": "passed",
+          "durationMs": 111.81754200000023
+        },
+        {
+          "name": "reflect holds an L3 broadening after checking the current leaf facts behind its observations",
+          "status": "passed",
+          "durationMs": 105.50454200000013
+        },
+        {
+          "name": "reflect does not read, or cite, the page it writes",
+          "status": "passed",
+          "durationMs": 179.64312500000005
+        },
+        {
+          "name": "reflect seals an exact reflection audit plan without writing or deciding",
+          "status": "passed",
+          "durationMs": 92.83529199999975
+        },
+        {
+          "name": "reflect seals reflection for human review and applies an approved principle",
+          "status": "passed",
+          "durationMs": 165.3847499999997
+        },
+        {
+          "name": "reflect does not resubmit an unchanged rejected principle",
+          "status": "passed",
+          "durationMs": 120.20241699999997
+        },
+        {
+          "name": "reflect refuses an approved reflection after sealed observation evidence changes",
+          "status": "passed",
+          "durationMs": 108.16379200000029
+        },
+        {
+          "name": "reflect uses a separate curator and shared budget for autonomous reflection",
+          "status": "passed",
+          "durationMs": 152.143959
+        },
+        {
+          "name": "reflect defers an approved autonomous reflection when its shared run budget is exhausted",
+          "status": "passed",
+          "durationMs": 125.88354200000003
+        },
+        {
+          "name": "the full-run planning barrier seals every inference plan before the first curator decision or write",
+          "status": "passed",
+          "durationMs": 207.47362500000008
+        },
+        {
+          "name": "the full-run planning barrier resumes a plan deferred by the shared post-planning budget without replanning it",
+          "status": "passed",
+          "durationMs": 208.51016700000037
+        },
+        {
+          "name": "the full-run planning barrier retires a legacy blocked residual after restart and lets independent work progress",
+          "status": "passed",
+          "durationMs": 182.79329100000086
+        },
+        {
+          "name": "the full-run planning barrier replans a dependency-deferred phase once from the post-apply index",
+          "status": "passed",
+          "durationMs": 161.5004169999993
+        },
+        {
+          "name": "the full-run planning barrier keeps a same-run dependency retry within the shared budget and resumes it later",
+          "status": "passed",
+          "durationMs": 179.9974170000005
+        },
+        {
+          "name": "the full-run planning barrier rechecks a sealed operation input before the first curator call and replans next run",
+          "status": "passed",
+          "durationMs": 148.91112499999963
+        },
+        {
+          "name": "the full-run planning barrier rechecks sealed inference evidence before the first curator call",
+          "status": "passed",
+          "durationMs": 99.13337500000034
+        },
+        {
+          "name": "the full-run planning barrier holds a concurrent index pass until every planner seals, then drains it before curation",
+          "status": "passed",
+          "durationMs": 137.7408749999995
+        },
+        {
+          "name": "the full-run planning barrier lets a foreground write preempt planning and aborts before curator or apply",
+          "status": "passed",
+          "durationMs": 126.59191600000031
+        },
+        {
+          "name": "the full-run planning barrier attributes sealed writes while reporting an unrelated concurrent edit without replacing it",
+          "status": "passed",
+          "durationMs": 96.89624999999978
+        },
+        {
+          "name": "repair applies exact alias-backed links through a verified low-risk plan",
+          "status": "passed",
+          "durationMs": 128.74283300000025
+        },
+        {
+          "name": "repair seals proposals without writing in audit mode",
+          "status": "passed",
+          "durationMs": 80.79770800000006
+        },
+        {
+          "name": "repair can audit deterministic link items without a model",
+          "status": "passed",
+          "durationMs": 88.99937500000033
+        },
+        {
+          "name": "repair makes an approved item stale when its destination changed after planning",
+          "status": "passed",
+          "durationMs": 78.29591700000037
+        },
+        {
+          "name": "repair keeps the legacy repair phase report-only",
+          "status": "passed",
+          "durationMs": 66.78870800000004
+        },
+        {
+          "name": "repair retains curate outcomes when the compatibility phase follows in a full run",
+          "status": "passed",
+          "durationMs": 128.8600409999999
+        },
+        {
+          "name": "repair reports both curate and adopt plans from one full run",
+          "status": "passed",
+          "durationMs": 140.03908299999966
+        },
+        {
+          "name": "repair seals curation and adoption before their first full-run curator call",
+          "status": "passed",
+          "durationMs": 154.23174999999992
+        },
+        {
+          "name": "repair shares one item budget across curate and adopt, then resumes deferred work next run",
+          "status": "passed",
+          "durationMs": 164.9312090000003
+        },
+        {
+          "name": "repair verifies only the work resumed from a plan used by an earlier run",
+          "status": "passed",
+          "durationMs": 165.74533299999985
+        },
+        {
+          "name": "repair uses journalled move history when the new name has no textual resemblance",
+          "status": "passed",
+          "durationMs": 101.48041599999942
+        },
+        {
+          "name": "repair declines ambiguous exact identities and similarity-only guesses",
+          "status": "passed",
+          "durationMs": 127.652333
+        },
+        {
+          "name": "observe co-locates a qualified L2 block without changing authored bytes",
+          "status": "passed",
+          "durationMs": 120.77737500000057
+        },
+        {
+          "name": "observe holds repeated choices that do not establish a preference",
+          "status": "passed",
+          "durationMs": 81.1206659999998
+        },
+        {
+          "name": "observe rechecks and seals an exact narrower observation",
+          "status": "passed",
+          "durationMs": 103.36045800000011
+        },
+        {
+          "name": "observe preserves assessed scope across restart and projection rebuild",
+          "status": "passed",
+          "durationMs": 124.45829199999935
+        },
+        {
+          "name": "observe verifies a co-located observation when the destination supplies sealed evidence",
+          "status": "passed",
+          "durationMs": 103.16120899999987
+        },
+        {
+          "name": "observe recovers a co-located observation interrupted after its exact write",
+          "status": "passed",
+          "durationMs": 95.66137499999968
+        },
+        {
+          "name": "observe answers from an observation as one item while citing every current leaf fact",
+          "status": "passed",
+          "durationMs": 153.85562500000015
+        },
+        {
+          "name": "observe withholds the whole answer observation when a leaf changed before re-indexing",
+          "status": "passed",
+          "durationMs": 133.56687500000044
+        },
+        {
+          "name": "observe projects observation lineage into the graph with leaf-source evidence",
+          "status": "passed",
+          "durationMs": 92.31070799999998
+        },
+        {
+          "name": "observe is safe to re-run: the same pattern is not written twice",
+          "status": "passed",
+          "durationMs": 90.85258299999987
+        },
+        {
+          "name": "observe tells the model what it already recorded for this subject",
+          "status": "passed",
+          "durationMs": 97.23862499999996
+        },
+        {
+          "name": "observe turns back a repeat that is only reworded",
+          "status": "passed",
+          "durationMs": 95.88087499999892
+        },
+        {
+          "name": "observe refines only the owned block and preserves the surrounding page",
+          "status": "passed",
+          "durationMs": 124.62933300000077
+        },
+        {
+          "name": "observe reinforces a stable observation id with newly independent evidence",
+          "status": "passed",
+          "durationMs": 118.16633399999955
+        },
+        {
+          "name": "observe splits one owned observation while retaining its superseded lineage",
+          "status": "passed",
+          "durationMs": 144.76220900000044
+        },
+        {
+          "name": "observe weakens invalid lineage through a verified, reversible plan",
+          "status": "passed",
+          "durationMs": 166.0505839999987
+        },
+        {
+          "name": "observe retracts unsupported lineage through a verified plan",
+          "status": "passed",
+          "durationMs": 110.80483300000014
+        },
+        {
+          "name": "observe marks a reviewed weaken plan stale when its last support disappears before apply",
+          "status": "passed",
+          "durationMs": 109.5528749999994
+        },
+        {
+          "name": "observe does not write where observation integration is denied",
+          "status": "passed",
+          "durationMs": 57.40154199999961
+        },
+        {
+          "name": "observe never uses a reference page as evidence",
+          "status": "passed",
+          "durationMs": 63.1672499999986
+        },
+        {
+          "name": "observe never feeds an observation back into itself",
+          "status": "passed",
+          "durationMs": 91.54762500000106
+        },
+        {
+          "name": "observe undoes a whole run as one change",
+          "status": "passed",
+          "durationMs": 94.29395900000054
+        },
+        {
+          "name": "observe writes nothing on a dry run",
+          "status": "passed",
+          "durationMs": 47.88875000000007
+        },
+        {
+          "name": "observe seals an exact audit plan without writing or making a decision",
+          "status": "passed",
+          "durationMs": 47.30341699999917
+        },
+        {
+          "name": "observe seals observations for human review under the review profile",
+          "status": "passed",
+          "durationMs": 112.86654199999975
+        },
+        {
+          "name": "observe does not resubmit an unchanged human-rejected observation",
+          "status": "passed",
+          "durationMs": 72.39966699999968
+        },
+        {
+          "name": "observe refuses an approved observation when sealed evidence changes before apply",
+          "status": "passed",
+          "durationMs": 62.28245799999968
+        },
+        {
+          "name": "observe refuses a delayed observation when unselected same-subject context changes",
+          "status": "passed",
+          "durationMs": 75.86341700000048
+        },
+        {
+          "name": "observe rejects revised observation wording that lacks a matching scope assessment",
+          "status": "passed",
+          "durationMs": 60.88824999999997
+        },
+        {
+          "name": "observe uses a separate curator and verified plan apply under the autonomous profile",
+          "status": "passed",
+          "durationMs": 124.9212920000009
+        },
+        {
+          "name": "observe defers an approved autonomous observation before writing when the run budget is zero",
+          "status": "passed",
+          "durationMs": 58.0841249999994
+        },
+        {
+          "name": "the thorough conflict pass finds two pages that disagree, and reports rather than repairs",
+          "status": "passed",
+          "durationMs": 55.78137500000048
+        },
+        {
+          "name": "the thorough conflict pass believes the model when it says two claims do not conflict",
+          "status": "passed",
+          "durationMs": 64.36274999999841
+        },
+        {
+          "name": "the thorough conflict pass caches a typed verdict for unchanged claim bytes",
+          "status": "passed",
+          "durationMs": 64.30183399999987
+        },
+        {
+          "name": "the thorough conflict pass inspects before observe and excludes unresolved claims from inference",
+          "status": "passed",
+          "durationMs": 65.15241699999933
+        },
+        {
+          "name": "the thorough conflict pass plans, curates, verifies, converges, and undoes an explicit supersession",
+          "status": "passed",
+          "durationMs": 157.28129200000149
+        },
+        {
+          "name": "the thorough conflict pass qualifies a broad claim only from exact sealed scope evidence",
+          "status": "passed",
+          "durationMs": 154.69420899999932
+        },
+        {
+          "name": "the thorough conflict pass downgrades qualification when evidence does not contain the target value",
+          "status": "passed",
+          "durationMs": 77.39500000000044
+        },
+        {
+          "name": "the thorough conflict pass represents an unresolved conflict without changing either authored claim",
+          "status": "passed",
+          "durationMs": 150.24324999999953
+        },
+        {
+          "name": "the thorough conflict pass ignores a reference page disagreeing with a claim",
+          "status": "passed",
+          "durationMs": 58.060333999999784
+        },
+        {
+          "name": "the thorough conflict pass does not report one page disagreeing with itself",
+          "status": "passed",
+          "durationMs": 55.078041999999186
+        },
+        {
+          "name": "housekeeping reports broken links, orphaned documents and rule drift",
+          "status": "passed",
+          "durationMs": 95.87408300000061
+        },
+        {
+          "name": "housekeeping reports a page whose type contradicts its folder rule",
+          "status": "passed",
+          "durationMs": 71.97245799999837
+        },
+        {
+          "name": "housekeeping explains when exact rule repair is disabled by policy",
+          "status": "passed",
+          "durationMs": 73.65020800000093
+        },
+        {
+          "name": "housekeeping explains why slug-pattern drift remains report-only",
+          "status": "passed",
+          "durationMs": 74.81516699999884
+        },
+        {
+          "name": "housekeeping seals exact type drift in audit mode and marks housekeeping coverage",
+          "status": "passed",
+          "durationMs": 85.93004200000178
+        },
+        {
+          "name": "housekeeping autonomously applies and verifies one exact type correction without page-wide dream authority",
+          "status": "passed",
+          "durationMs": 119.74854200000118
+        },
+        {
+          "name": "housekeeping relocates an over-deep page only to an explicit rule destination and preserves identity and links",
+          "status": "passed",
+          "durationMs": 170.68612500000017
+        },
+        {
+          "name": "housekeeping relocates owned documents and renditions atomically with an over-deep page",
+          "status": "passed",
+          "durationMs": 133.18533299999945
+        },
+        {
+          "name": "housekeeping holds attachment-aware relocation when an owned document changed after indexing",
+          "status": "passed",
+          "durationMs": 68.4350830000003
+        },
+        {
+          "name": "housekeeping keeps max-depth drift report-only when no exact relocation folder is declared",
+          "status": "passed",
+          "durationMs": 66.1517500000009
+        },
+        {
+          "name": "housekeeping preserves relative page, self, and owned-document links while relocating",
+          "status": "passed",
+          "durationMs": 100.82479199999943
+        },
+        {
+          "name": "housekeeping keeps relocation held for a relative local file the page does not own",
+          "status": "passed",
+          "durationMs": 69.2879580000008
+        },
+        {
+          "name": "housekeeping keeps relocation held when reference material has an incoming about relationship",
+          "status": "passed",
+          "durationMs": 68.67733399999997
+        },
+        {
+          "name": "housekeeping keeps relocation held when an incoming about relationship is inherited from folder policy",
+          "status": "passed",
+          "durationMs": 67.07150000000001
+        },
+        {
+          "name": "housekeeping never plans type correction for reference material",
+          "status": "passed",
+          "durationMs": 68.2841669999998
+        },
+        {
+          "name": "housekeeping includes graph findings as read-only housekeeping candidates",
+          "status": "passed",
+          "durationMs": 56.751500000000306
+        },
+        {
+          "name": "the cycle remains bounded across repeated cycles, retraction, rebuild, and restart",
+          "status": "passed",
+          "durationMs": 155.32725000000028
+        },
+        {
+          "name": "the cycle persists a content-safe receipt tied to the indexed state at run start",
+          "status": "passed",
+          "durationMs": 54.412208000001556
+        },
+        {
+          "name": "the cycle persists exact provider-reported model usage by stage",
+          "status": "passed",
+          "durationMs": 57.79908299999988
+        },
+        {
+          "name": "the cycle persists a malformed planner reply as one billed but semantically failed call",
+          "status": "passed",
+          "durationMs": 51.92224999999962
+        },
+        {
+          "name": "the cycle runs every enabled phase, and says why the others did not",
+          "status": "passed",
+          "durationMs": 51.83708300000035
+        },
+        {
+          "name": "the cycle says which phase could not run when the cycle has no model",
+          "status": "passed",
+          "durationMs": 55.778582999999344
+        },
+        {
+          "name": "the cycle refuses to write from a read-only handle, but will still report",
+          "status": "passed",
+          "durationMs": 46.98554200000035
+        },
+        {
+          "name": "observe when a knowledge base has not asked for it is off, and says so rather than looking like a quiet night",
+          "status": "passed",
+          "durationMs": 51.69954200000029
+        },
+        {
+          "name": "adopt adopts only the document card the caller selected",
+          "status": "passed",
+          "durationMs": 80.30899999999929
+        },
+        {
+          "name": "adopt uses audit mode for a selected document without writing it",
+          "status": "passed",
+          "durationMs": 55.127542000000176
+        },
+        {
+          "name": "adopt keeps a selected review item stale-safe while it waits for a human",
+          "status": "passed",
+          "durationMs": 60.48212500000045
+        },
+        {
+          "name": "adopt turns a standalone document result into an owned page result without losing evidence",
+          "status": "passed",
+          "durationMs": 100.48345799999879
+        },
+        {
+          "name": "adopt gives the parts of one document a single page",
+          "status": "passed",
+          "durationMs": 102.04641699999956
+        },
+        {
+          "name": "adopt keeps both result types in a mixed budget and applies source filters before ranking",
+          "status": "passed",
+          "durationMs": 56.774875000000975
+        },
+        {
+          "name": "adopt honours ingest: file for an already indexed orphan",
+          "status": "passed",
+          "durationMs": 56.17775000000074
+        },
+        {
+          "name": "adopt honours ingest: ignore for an already indexed orphan",
+          "status": "passed",
+          "durationMs": 77.3128340000003
+        },
+        {
+          "name": "adopt skips adoption into a folder with role source without decisions, writes, or recovery failures",
+          "status": "passed",
+          "durationMs": 81.20175000000017
+        },
+        {
+          "name": "adopt skips adoption into a folder with role inference without decisions, writes, or recovery failures",
+          "status": "passed",
+          "durationMs": 87.27983400000085
+        },
+        {
+          "name": "adopt skips adoption into a folder with role ignored without decisions, writes, or recovery failures",
+          "status": "passed",
+          "durationMs": 64.01337500000045
+        },
+        {
+          "name": "adopt blocks an approved adoption before writing when policy changes to {\"role\":\"source\"}",
+          "status": "passed",
+          "durationMs": 60.463583000000654
+        },
+        {
+          "name": "adopt blocks an approved adoption before writing when policy changes to {\"role\":\"inference\"}",
+          "status": "passed",
+          "durationMs": 52.45012500000121
+        },
+        {
+          "name": "adopt blocks an approved adoption before writing when policy changes to {\"role\":\"ignored\"}",
+          "status": "passed",
+          "durationMs": 55.81062500000007
+        },
+        {
+          "name": "adopt blocks an approved adoption before writing when policy changes to {\"ingest\":\"file\"}",
+          "status": "passed",
+          "durationMs": 51.15504200000032
+        },
+        {
+          "name": "adopt blocks an approved adoption before writing when policy changes to {\"ingest\":\"ignore\"}",
+          "status": "passed",
+          "durationMs": 54.21279200000026
+        },
+        {
+          "name": "adopt uses provenance and composed destination rules without overriding them in the filing page",
+          "status": "passed",
+          "durationMs": 118.49158399999942
+        },
+        {
+          "name": "adopt rechecks destination policy after the automatic curator decision",
+          "status": "passed",
+          "durationMs": 52.51233300000058
+        },
+        {
+          "name": "adopt still journals and rolls back an eligible adoption whose indexed role fails verification",
+          "status": "passed",
+          "durationMs": 81.6253340000003
+        },
+        {
+          "name": "adopt leaves someone else’s page alone when one is already there",
+          "status": "passed",
+          "durationMs": 60.4122499999994
+        },
+        {
+          "name": "adopt caps how many it writes in one run",
+          "status": "passed",
+          "durationMs": 124.24895899999865
+        },
+        {
+          "name": "adopt writes nothing on a dry run",
+          "status": "passed",
+          "durationMs": 49.29216599999927
+        },
+        {
+          "name": "adopt persists an audit plan without writing",
+          "status": "passed",
+          "durationMs": 52.964750000001004
+        },
+        {
+          "name": "adopt can audit adoption without a model",
+          "status": "passed",
+          "durationMs": 55.50133300000016
+        },
+        {
+          "name": "adopt keeps review separate from apply and verifies document ownership",
+          "status": "passed",
+          "durationMs": 80.20170899999903
+        },
+        {
+          "name": "adopt makes an approved adoption stale when the source bytes changed after planning",
+          "status": "passed",
+          "durationMs": 53.496917000000394
+        },
+        {
+          "name": "adopt does not resubmit an unchanged human-rejected adoption",
+          "status": "passed",
+          "durationMs": 49.84333400000105
+        },
+        {
+          "name": "adopt is undone as its own change, apart from a night’s observations",
+          "status": "passed",
+          "durationMs": 77.60683300000164
+        },
+        {
+          "name": "the run log writes nothing at all by default",
+          "status": "passed",
+          "durationMs": 82.08816699999988
+        },
+        {
+          "name": "the run log records what it applied, and what a guardrail refused",
+          "status": "passed",
+          "durationMs": 98.39916599999924
+        },
+        {
+          "name": "the run log records a dry run as one, so a review of what *would* happen is possible",
+          "status": "passed",
+          "durationMs": 52.27399999999943
+        }
+      ]
+    },
+    {
+      "file": "packages/core/test/curate.test.ts",
+      "coverage": [
+        "overview_membership_clock_restart",
+        "heading_and_status_table",
+        "qualified_quote_scoped_edit",
+        "stale_dependent_page",
+        "bounded_verification_context"
+      ],
+      "sourceFingerprint": "e12a22ae2dde05319b12b8a9c918a46145ca71cdb985e25a890eea19203fea12",
+      "tests": [
+        {
+          "name": "curate holds whole-page rewriting of ordinary qualified discourse before any model call",
+          "status": "passed",
+          "durationMs": 171.35108300000002
+        },
+        {
+          "name": "curate uses a draft and verifier but keeps scheduled writes in preview mode",
+          "status": "passed",
+          "durationMs": 92.45204199999989
+        },
+        {
+          "name": "curate rejects a draft that loses a stable item before asking the verifier",
+          "status": "passed",
+          "durationMs": 66.69312499999978
+        },
+        {
+          "name": "curate logs a missing value with its source context",
+          "status": "passed",
+          "durationMs": 68.70895800000017
+        },
+        {
+          "name": "curate reconsiders hygiene after body or frontmatter changes",
+          "status": "passed",
+          "durationMs": 99.84958300000017
+        },
+        {
+          "name": "curate reconsiders synthesis when linked evidence changes",
+          "status": "passed",
+          "durationMs": 127.66370900000038
+        },
+        {
+          "name": "curate reconsiders an accepted preview once when writes are enabled",
+          "status": "passed",
+          "durationMs": 119.02879200000007
+        },
+        {
+          "name": "curate marks a bounded event, archives it once, and ignores weak later link churn",
+          "status": "passed",
+          "durationMs": 218.00125000000025
+        },
+        {
+          "name": "section-preserving synthesis applies verified independent knowledge, converges across restart, and undoes exact bytes",
+          "status": "passed",
+          "durationMs": 182.56829100000004
+        },
+        {
+          "name": "section-preserving synthesis integrates supported knowledge after a quote in the same section",
+          "status": "passed",
+          "durationMs": 162.29079199999978
+        },
+        {
+          "name": "section-preserving synthesis allows an independent addition after a quote-only section",
+          "status": "passed",
+          "durationMs": 134.90333299999975
+        },
+        {
+          "name": "section-preserving synthesis adds a supported factual line before a quote while preserving the protected block",
+          "status": "passed",
+          "durationMs": 158.0580420000001
+        },
+        {
+          "name": "section-preserving synthesis updates a supported fact between quotations, converges, and undoes exact bytes",
+          "status": "passed",
+          "durationMs": 155.55220800000006
+        },
+        {
+          "name": "section-preserving synthesis rejects a reviewed middle edit that changes a protected quotation",
+          "status": "passed",
+          "durationMs": 114.77020799999991
+        },
+        {
+          "name": "section-preserving synthesis rejects a reviewed lead edit that also changes the protected quote",
+          "status": "passed",
+          "durationMs": 105.76883300000009
+        },
+        {
+          "name": "section-preserving synthesis rejects changing a protected quotation before verification and caches the rejection",
+          "status": "passed",
+          "durationMs": 72.36720799999966
+        },
+        {
+          "name": "section-preserving synthesis rejects promotion of a 'quoted sentence' before semantic verification",
+          "status": "passed",
+          "durationMs": 60.7217499999997
+        },
+        {
+          "name": "section-preserving synthesis rejects promotion of a 'unchecked option' before semantic verification",
+          "status": "passed",
+          "durationMs": 81.78629100000035
+        },
+        {
+          "name": "section-preserving synthesis still requires semantic verification of new independent prose",
+          "status": "passed",
+          "durationMs": 62.63879200000065
+        },
+        {
+          "name": "section-preserving synthesis refuses a later plan revision that changes protected text and applies a safe plan once",
+          "status": "passed",
+          "durationMs": 91.16608300000007
+        },
+        {
+          "name": "section-preserving synthesis makes a saved plan stale when the source qualifier changes",
+          "status": "passed",
+          "durationMs": 79.9313749999992
+        },
+        {
+          "name": "section-preserving synthesis rechecks protected sections when applying a previously saved unsafe proposal",
+          "status": "passed",
+          "durationMs": 63.2998749999997
+        },
+        {
+          "name": "section-preserving synthesis makes no model call when every section is protected",
+          "status": "passed",
+          "durationMs": 74.49691699999948
+        },
+        {
+          "name": "section-preserving synthesis assesses an explicitly bounded event while preserving a separate plan as a plan",
+          "status": "passed",
+          "durationMs": 106.39383300000009
+        },
+        {
+          "name": "section-preserving synthesis does not infer a whole-page event from a qualified option",
+          "status": "passed",
+          "durationMs": 109.70720799999981
+        },
+        {
+          "name": "section-preserving synthesis seals only eligible mixed-page evidence and makes qualifier changes stale before apply",
+          "status": "passed",
+          "durationMs": 89.88666599999942
+        },
+        {
+          "name": "section-preserving synthesis seals only eligible mixed-page evidence and makes identity changes stale before apply",
+          "status": "passed",
+          "durationMs": 96.41462500000034
+        },
+        {
+          "name": "declared overview refresh wakes for unlinked membership, source changes, and time boundaries, but converges across restart",
+          "status": "passed",
+          "durationMs": 171.8784169999999
+        },
+        {
+          "name": "declared overview refresh applies a heading-only schedule correction, preserves a quote, and supports exact undo",
+          "status": "passed",
+          "durationMs": 124.18891600000006
+        },
+        {
+          "name": "declared overview refresh reconciles a year-qualified heading and status table without rewriting an unresolved link",
+          "status": "passed",
+          "durationMs": 150.34812500000044
+        },
+        {
+          "name": "declared overview refresh accepts a status-only repair when the temporal heading is already current",
+          "status": "passed",
+          "durationMs": 102.97962499999994
+        },
+        {
+          "name": "declared overview refresh does not let a reviewed overview revision restore a stale table status",
+          "status": "passed",
+          "durationMs": 99.11483399999997
+        },
+        {
+          "name": "declared overview refresh adds a newly discovered member, preserves unresolved links, and converges",
+          "status": "passed",
+          "durationMs": 163.47691700000087
+        },
+        {
+          "name": "declared overview refresh holds a correction whose complete verification context would be truncated",
+          "status": "passed",
+          "durationMs": 306.298417
+        },
+        {
+          "name": "declared overview refresh makes pending overview plans stale after a membership change",
+          "status": "passed",
+          "durationMs": 101.48058399999991
+        },
+        {
+          "name": "declared overview refresh makes pending overview plans stale after a boundary change",
+          "status": "passed",
+          "durationMs": 88.88450000000012
+        },
+        {
+          "name": "plan-backed hygiene persists an audit plan without changing the knowledge base",
+          "status": "passed",
+          "durationMs": 76.34837499999958
+        },
+        {
+          "name": "plan-backed hygiene filters the plan queue and safely supersedes unapplied work",
+          "status": "passed",
+          "durationMs": 93.14458300000024
+        },
+        {
+          "name": "plan-backed hygiene prunes terminal plan payloads before their compact receipts and never touches active work",
+          "status": "passed",
+          "durationMs": 97.06604200000038
+        },
+        {
+          "name": "plan-backed hygiene retains failed plans that still carry verification recovery state",
+          "status": "passed",
+          "durationMs": 50.41820800000005
+        },
+        {
+          "name": "plan-backed hygiene keeps human review separate from apply and leaves an undoable change",
+          "status": "passed",
+          "durationMs": 123.54529199999979
+        },
+        {
+          "name": "plan-backed hygiene makes keyed decision and apply retries durable without duplicating a change",
+          "status": "passed",
+          "durationMs": 87.14233400000012
+        },
+        {
+          "name": "plan-backed hygiene resumes an apply whose durable key was claimed before a restart",
+          "status": "passed",
+          "durationMs": 83.56408300000021
+        },
+        {
+          "name": "plan-backed hygiene seals a human correction as a new reviewable revision and preserves the old diff",
+          "status": "passed",
+          "durationMs": 84.49162499999966
+        },
+        {
+          "name": "plan-backed hygiene refuses a revision that widens path scope or fails deterministic preflight",
+          "status": "passed",
+          "durationMs": 53.38075000000026
+        },
+        {
+          "name": "plan-backed hygiene refuses an approved item when its source changed after planning",
+          "status": "passed",
+          "durationMs": 49.21045799999956
+        },
+        {
+          "name": "plan-backed hygiene does not regenerate a human-rejected plan for unchanged input",
+          "status": "passed",
+          "durationMs": 53.853290999999444
+        },
+        {
+          "name": "plan-backed hygiene uses an independent curator in auto mode",
+          "status": "passed",
+          "durationMs": 76.9496250000002
+        },
+        {
+          "name": "plan-backed hygiene lets the curator request one guarded revision and independently reviews the new head",
+          "status": "passed",
+          "durationMs": 76.37083299999995
+        },
+        {
+          "name": "plan-backed hygiene blocks wrong-language curator revisions before recording a revision or changing source bytes",
+          "status": "passed",
+          "durationMs": 61.2694590000001
+        },
+        {
+          "name": "plan-backed hygiene rejects another revision request after the configured bounded attempt",
+          "status": "passed",
+          "durationMs": 60.231165999999575
+        },
+        {
+          "name": "plan-backed hygiene can disable automatic correction calls while retaining curator approval and rejection",
+          "status": "passed",
+          "durationMs": 55.225790999999845
+        },
+        {
+          "name": "plan-backed hygiene keeps applied bytes but degrades the run when changed facts cannot be refreshed",
+          "status": "passed",
+          "durationMs": 80.37975000000006
+        },
+        {
+          "name": "plan-backed hygiene enforces configured plan retention at the end of a writable dream run",
+          "status": "passed",
+          "durationMs": 83.16079199999967
+        },
+        {
+          "name": "plan-backed hygiene lowers every autonomous class to audit for an audit invocation",
+          "status": "passed",
+          "durationMs": 61.70579199999884
+        },
+        {
+          "name": "plan-backed hygiene applies only auto items while review items remain proposed in the same plan",
+          "status": "passed",
+          "durationMs": 84.79858299999978
+        },
+        {
+          "name": "plan-backed hygiene does not inspect curation classes whose policies are all off",
+          "status": "passed",
+          "durationMs": 58.882417000000714
+        },
+        {
+          "name": "plan-backed hygiene rejects cosmetic-only synthesis and caches that completed input",
+          "status": "passed",
+          "durationMs": 56.1825000000008
+        },
+        {
+          "name": "plan-backed hygiene caches unchanged plan-backed candidates instead of resampling them",
+          "status": "passed",
+          "durationMs": 62.63695800000096
+        },
+        {
+          "name": "plan-backed hygiene uses configured auto mode inside the complete scheduled cycle",
+          "status": "passed",
+          "durationMs": 88.9697500000002
+        },
+        {
+          "name": "plan-backed hygiene applies synthesis and its child page as one plan item and one undo",
+          "status": "passed",
+          "durationMs": 133.88916599999902
+        },
+        {
+          "name": "plan-backed hygiene does not merge unchanged sibling pages created by the same split",
+          "status": "passed",
+          "durationMs": 334.0650000000005
+        },
+        {
+          "name": "plan-backed hygiene atomically extracts a reusable subject into an independent page and converges",
+          "status": "passed",
+          "durationMs": 132.18895799999882
+        },
+        {
+          "name": "plan-backed hygiene rejects an extraction that does not select an exact eligible source heading",
+          "status": "passed",
+          "durationMs": 61.29566700000032
+        },
+        {
+          "name": "plan-backed hygiene rejects an extraction outside the supplied folder taxonomy",
+          "status": "passed",
+          "durationMs": 50.87512499999866
+        },
+        {
+          "name": "plan-backed hygiene rejects moving a heading that an incoming link addresses",
+          "status": "passed",
+          "durationMs": 67.72462500000074
+        },
+        {
+          "name": "plan-backed hygiene makes the whole extraction stale when its destination appears before apply",
+          "status": "passed",
+          "durationMs": 55.919332999999824
+        },
+        {
+          "name": "plan-backed hygiene atomically merges an exact-alias duplicate, rewrites inbound links, and converges",
+          "status": "passed",
+          "durationMs": 159.3597090000003
+        },
+        {
+          "name": "plan-backed hygiene blocks an already-sealed merge when current split provenance appears before apply",
+          "status": "passed",
+          "durationMs": 68.94929199999933
+        },
+        {
+          "name": "plan-backed hygiene discovers an identity-backed merge from exact graph subjects without an authored alias",
+          "status": "passed",
+          "durationMs": 88.82841700000063
+        },
+        {
+          "name": "plan-backed hygiene routes a qualified semantic candidate through every existing merge guard",
+          "status": "passed",
+          "durationMs": 91.41433300000062
+        },
+        {
+          "name": "plan-backed hygiene caches an unchanged semantic rejection without retaining model rationale",
+          "status": "passed",
+          "durationMs": 92.41841700000077
+        },
+        {
+          "name": "plan-backed hygiene reports semantic embedding failure as typed dream degradation",
+          "status": "passed",
+          "durationMs": 57.99358299999949
+        },
+        {
+          "name": "plan-backed hygiene does not treat one exact graph attribute as merge identity",
+          "status": "passed",
+          "durationMs": 50.870584000000235
+        },
+        {
+          "name": "plan-backed hygiene does not use exact graph attributes when the candidate title omits part of the identity",
+          "status": "passed",
+          "durationMs": 57.823083000001134
+        },
+        {
+          "name": "plan-backed hygiene refuses a merge when an inbound page does not permit synthesis writes",
+          "status": "passed",
+          "durationMs": 69.92183300000033
+        },
+        {
+          "name": "plan-backed hygiene rejects a merge draft that drops one unique authored line before verification",
+          "status": "passed",
+          "durationMs": 61.16566700000112
+        },
+        {
+          "name": "plan-backed hygiene makes the whole merge stale when the duplicate changes before apply",
+          "status": "passed",
+          "durationMs": 72.26779200000055
+        },
+        {
+          "name": "plan-backed hygiene seals linked evidence into a high-risk synthesis decision",
+          "status": "passed",
+          "durationMs": 94.89579199999935
+        },
+        {
+          "name": "plan-backed hygiene completes synthesis and full-run verification while skipping source-folder adoption",
+          "status": "passed",
+          "durationMs": 115.79162500000166
+        },
+        {
+          "name": "plan-backed hygiene makes synthesis stale when linked evidence bytes change before apply",
+          "status": "passed",
+          "durationMs": 79.46141699999862
+        },
+        {
+          "name": "plan-backed hygiene composes reciprocal synthesis drafts into one exact atomic item",
+          "status": "passed",
+          "durationMs": 139.90870900000118
+        },
+        {
+          "name": "plan-backed hygiene caches rejection for every component of a composed item",
+          "status": "passed",
+          "durationMs": 83.3065000000006
+        },
+        {
+          "name": "plan-backed hygiene reserves composed risk and item budgets without partially writing",
+          "status": "passed",
+          "durationMs": 72.06108299999869
+        },
+        {
+          "name": "plan-backed hygiene restores and reapplies an interrupted partial composition as one item",
+          "status": "passed",
+          "durationMs": 152.67254200000025
+        },
+        {
+          "name": "plan-backed hygiene makes a whole split item stale when its child target appears before apply",
+          "status": "passed",
+          "durationMs": 60.14037500000086
+        },
+        {
+          "name": "plan-backed hygiene lets autonomous dream recover an interrupted exact write after restart",
+          "status": "passed",
+          "durationMs": 88.27695800000038
+        },
+        {
+          "name": "plan-backed hygiene restores and reapplies an interrupted partial split as one item",
+          "status": "passed",
+          "durationMs": 130.0058339999996
+        },
+        {
+          "name": "plan-backed hygiene recovers a fully written merge that was interrupted before journalling",
+          "status": "passed",
+          "durationMs": 146.61233299999913
+        },
+        {
+          "name": "plan-backed hygiene rolls a journaled write back when post-apply verification fails",
+          "status": "passed",
+          "durationMs": 80.10612500000025
+        },
+        {
+          "name": "curation link integrity preserves supplied targets and allows resolvable wikilinks",
+          "status": "passed",
+          "durationMs": 45.45062500000131
+        },
+        {
+          "name": "curation link integrity rejects changed URLs, new relative paths and unresolved wikilinks",
+          "status": "passed",
+          "durationMs": 42.59454199999891
+        }
+      ]
+    },
+    {
+      "file": "packages/core/test/retain.test.ts",
+      "coverage": [
+        "support_replay_and_retraction",
+        "atomic_correction_holds",
+        "relative_time_clock",
+        "wrong_destination_hold"
+      ],
+      "sourceFingerprint": "937a073a086093df72a5635050d928af1b9ff205f3974060e6e50b3bb291e1f0",
+      "tests": [
+        {
+          "name": "keeps exact provided evidence model-free when its deciding frame contains a narrower support span",
+          "status": "passed",
+          "durationMs": 177.21837499999992
+        },
+        {
+          "name": "provided exact retain replays an undated proposal with split exact frames without scheduling it",
+          "status": "passed",
+          "durationMs": 93.93274999999994
+        },
+        {
+          "name": "provided exact retain holds relative time unless the source supplies the exact clock and timezone",
+          "status": "passed",
+          "durationMs": 55.30441699999983
+        },
+        {
+          "name": "provided exact retain writes v2 memory once and replays without touching bytes or the journal",
+          "status": "passed",
+          "durationMs": 84.0600000000004
+        },
+        {
+          "name": "provided exact retain adds support to an identical managed memory on another page without creating the requested page",
+          "status": "passed",
+          "durationMs": 102.98062499999969
+        },
+        {
+          "name": "provided exact retain adds independent support and retracts only the addressed source",
+          "status": "passed",
+          "durationMs": 188.03395900000032
+        },
+        {
+          "name": "provided exact retain dry-runs without creating a receipt",
+          "status": "passed",
+          "durationMs": 41.585000000000036
+        },
+        {
+          "name": "provided exact retain holds an exact placement when its existing section is absent",
+          "status": "passed",
+          "durationMs": 45.72762499999999
+        },
+        {
+          "name": "provided exact retain reports a mixed written and held candidate batch as partial",
+          "status": "passed",
+          "durationMs": 80.74708400000009
+        },
+        {
+          "name": "provided exact retain does not resurrect explicitly forgotten memory on source replay",
+          "status": "passed",
+          "durationMs": 105.40137499999992
+        },
+        {
+          "name": "provided exact retain forgets one exact managed memory even when it has no derived fact",
+          "status": "passed",
+          "durationMs": 111.29241699999966
+        },
+        {
+          "name": "provided exact retain holds attribution that conflicts with a structured source item",
+          "status": "passed",
+          "durationMs": 58.6609169999997
+        },
+        {
+          "name": "provided exact retain resolves candidate relations to durable memory ids before writing",
+          "status": "passed",
+          "durationMs": 70.07916699999987
+        },
+        {
+          "name": "provided exact retain retains from an indexed source page but refuses a canonical knowledge page as input",
+          "status": "passed",
+          "durationMs": 89.83754200000021
+        },
+        {
+          "name": "provided exact retain preserves an inline source and its retained memory in one undoable change",
+          "status": "passed",
+          "durationMs": 96.71374999999989
+        },
+        {
+          "name": "provided exact retain does not treat marker-shaped text in a preserved source as a memory destination",
+          "status": "passed",
+          "durationMs": 86.46066699999983
+        },
+        {
+          "name": "provided exact retain refuses to use one page as both a preserved source and a memory destination",
+          "status": "passed",
+          "durationMs": 52.45570899999984
+        },
+        {
+          "name": "provided exact retain atomically replaces exact support in a corrected source revision",
+          "status": "passed",
+          "durationMs": 116.33791699999983
+        },
+        {
+          "name": "provided exact retain keeps earlier support when any compound-correction replacement is held",
+          "status": "passed",
+          "durationMs": 72.73100000000068
+        },
+        {
+          "name": "provided exact retain reports missing document references as unavailable rather than empty",
+          "status": "passed",
+          "durationMs": 52.269874999999956
+        },
+        {
+          "name": "provided exact retain retains from indexed document text and reports a missing original as degraded",
+          "status": "passed",
+          "durationMs": 76.28929100000005
+        },
+        {
+          "name": "provided exact retain prunes inactive private evidence after its grace without touching live support",
+          "status": "passed",
+          "durationMs": 100.9335000000001
+        },
+        {
+          "name": "automatic retain verifies an assistant report with the same source clock used for event extraction",
+          "status": "passed",
+          "durationMs": 245.30533399999968
+        },
+        {
+          "name": "automatic retain does not bury an uncertain ownership decision in the configured inbox",
+          "status": "passed",
+          "durationMs": 97.86524999999983
+        },
+        {
+          "name": "automatic retain holds one-task document cleanup before routing and replays the admission decision",
+          "status": "passed",
+          "durationMs": 58.32524999999987
+        },
+        {
+          "name": "automatic retain holds document scope widened into a standing preference before routing and replays the admission decision",
+          "status": "passed",
+          "durationMs": 54.891709000000446
+        },
+        {
+          "name": "automatic retain holds a question only needed for the current task before routing and replays the admission decision",
+          "status": "passed",
+          "durationMs": 53.02891700000055
+        },
+        {
+          "name": "automatic retain keeps both a standing preference and a useful open question",
+          "status": "passed",
+          "durationMs": 87.08229200000005
+        },
+        {
+          "name": "automatic retain keeps a durable document preference on its named document instead of widening it",
+          "status": "passed",
+          "durationMs": 81.26245899999958
+        },
+        {
+          "name": "automatic retain consolidates a repeated identified event but not another event on the same day",
+          "status": "passed",
+          "durationMs": 249.17704199999935
+        },
+        {
+          "name": "automatic retain extracts, independently verifies, places, and replays before another model call",
+          "status": "passed",
+          "durationMs": 79.44737499999974
+        },
+        {
+          "name": "automatic retain preserves admitted knowledge and typed repair failure through retain",
+          "status": "passed",
+          "durationMs": 84.83895799999937
+        },
+        {
+          "name": "automatic retain preserves admitted knowledge and typed repair failure through remember",
+          "status": "passed",
+          "durationMs": 83.73183400000016
+        },
+        {
+          "name": "automatic retain preserves admitted knowledge and typed repair failure through preview",
+          "status": "passed",
+          "durationMs": 50.470916999999645
+        },
+        {
+          "name": "automatic retain durably holds a verifier disagreement without writing the proposed fact",
+          "status": "passed",
+          "durationMs": 52.558915999999954
+        },
+        {
+          "name": "automatic retain places caller-provided semantic candidates automatically without re-extracting them",
+          "status": "passed",
+          "durationMs": 78.31174999999985
+        },
+        {
+          "name": "automatic retain distinguishes unavailable placement from a policy hold and replays its diagnostics",
+          "status": "passed",
+          "durationMs": 43.597999999999956
+        },
+        {
+          "name": "automatic retain holds a read-only destination without calling the placement model or changing its bytes",
+          "status": "passed",
+          "durationMs": 50.11333300000024
+        },
+        {
+          "name": "automatic retain holds an oversized complete source instead of truncating discourse for the model",
+          "status": "passed",
+          "durationMs": 42.26716699999997
+        },
+        {
+          "name": "folder-owned timeline retention replaces a corrected date and restores the old ledger on undo",
+          "status": "passed",
+          "durationMs": 141.32087499999943
+        },
+        {
+          "name": "folder-owned timeline retention keeps scheduled status visible rather than claiming an event happened",
+          "status": "passed",
+          "durationMs": 81.5191249999998
+        },
+        {
+          "name": "folder-owned timeline retention previews and migrates the old ledger style without changing standalone events or counting a duplicate",
+          "status": "passed",
+          "durationMs": 115.99204199999986
+        },
+        {
+          "name": "folder-owned timeline retention renders an until-only deadline without losing its planned qualification",
+          "status": "passed",
+          "durationMs": 78.3070829999997
+        },
+        {
+          "name": "folder-owned timeline retention shows a reported schedule once while keeping the canonical report and its provenance",
+          "status": "passed",
+          "durationMs": 105.1621669999995
+        },
+        {
+          "name": "folder-owned timeline retention keeps a due date beside a reported proposal without a dangling Due label",
+          "status": "passed",
+          "durationMs": 67.83662499999991
+        },
+        {
+          "name": "folder-owned timeline retention explicitly previews and reconciles older retained memories without index writes",
+          "status": "passed",
+          "durationMs": 141.47091700000055
+        },
+        {
+          "name": "folder-owned timeline retention materializes an indexed dated memory whose valid payload is a paragraph",
+          "status": "passed",
+          "durationMs": 91.45524999999998
+        },
+        {
+          "name": "folder-owned timeline retention keeps physical entries aligned through forget, move, and undo",
+          "status": "passed",
+          "durationMs": 277.0179169999992
+        },
+        {
+          "name": "folder-owned timeline retention routes a mixed conversation per item and preserves placement on exact replay",
+          "status": "passed",
+          "durationMs": 185.1376250000003
+        },
+        {
+          "name": "folder-owned timeline retention does not redirect identical provided memory across a timeline boundary",
+          "status": "passed",
+          "durationMs": 80.24366700000064
+        }
+      ]
+    },
+    {
+      "file": "packages/core/test/recovery-policy.test.ts",
+      "coverage": ["paused_maintenance_inspection_and_explicit_resume"],
+      "sourceFingerprint": "1e7d0cdd08af3ed9032b0d5c4b65c94c5076d60047ebe0bb6fb4b8e076484857",
+      "tests": [
+        {
+          "name": "automatic recovery policy fails auto before planning while leaving audit inspection available",
+          "status": "passed",
+          "durationMs": 132.2911250000002
+        },
+        {
+          "name": "automatic recovery policy resumes only the explicitly selected transformation pause",
+          "status": "passed",
+          "durationMs": 47.77025000000003
+        }
+      ]
+    },
+    {
+      "file": "packages/core/test/run-recovery.test.ts",
+      "coverage": ["abandoned_cycle_recovery"],
+      "sourceFingerprint": "e1302b308e63429b7146924805869f689dd83d176ee48ea6c7be874afe3773a8",
+      "tests": [
+        {
+          "name": "dream restart recovery finalizes an abandoned run as soon as the next writer opens",
+          "status": "passed",
+          "durationMs": 105.62912499999993
+        }
+      ]
+    },
+    {
+      "file": "packages/core/src/maintenance/recovery.test.ts",
+      "coverage": ["rollback_counting_and_pause"],
+      "sourceFingerprint": "4132b28ce5aeb8c2a4ee2bdaa95e63238cad7212c7f9598218fda375cfa6481e",
+      "tests": [
+        {
+          "name": "persistent maintenance recovery counts each rolled-back item once and pauses only its transformation at three",
+          "status": "passed",
+          "durationMs": 72.99312500000008
+        },
+        {
+          "name": "persistent maintenance recovery clears an unpaused rollback streak after a verified success",
+          "status": "passed",
+          "durationMs": 93.52029199999993
+        },
+        {
+          "name": "persistent maintenance recovery pauses the profile when journaled state cannot be proven and requires explicit resume",
+          "status": "passed",
+          "durationMs": 93.99225000000001
+        }
+      ]
+    },
+    {
+      "file": "packages/core/src/maintenance/overview.test.ts",
+      "coverage": [
+        "missing_scope_unavailable_vs_empty",
+        "legacy_links_literal_scope",
+        "controlled_date_boundaries"
+      ],
+      "sourceFingerprint": "3fb07620356989062f7babcc4884cd4fd92e240c98211446d7c7574cad185f23",
+      "tests": [
+        {
+          "name": "declared overview dependencies admits a bounded mix of types while excluding literal non-trip pages",
+          "status": "passed",
+          "durationMs": 193.59450000000015
+        },
+        {
+          "name": "declared overview dependencies reclassifies only exact authored legacy ranges, never inferred completion or repaired links",
+          "status": "passed",
+          "durationMs": 92.90866700000015
+        },
+        {
+          "name": "declared overview dependencies requires a past-dated status table to retain planning as history, not a present state",
+          "status": "passed",
+          "durationMs": 68.64745799999992
+        },
+        {
+          "name": "declared overview dependencies reconciles a linked scoped member without relying on its page type or a legacy label",
+          "status": "passed",
+          "durationMs": 68.42079200000035
+        },
+        {
+          "name": "declared overview dependencies does not classify ambiguous legacy dates or a heading for another year",
+          "status": "passed",
+          "durationMs": 77.03233399999999
+        },
+        {
+          "name": "declared overview dependencies does not treat a resolved page outside the declared scope as a legacy entry",
+          "status": "passed",
+          "durationMs": 60.829249999999774
+        },
+        {
+          "name": "declared overview dependencies admits only the named type within a literal folder boundary",
+          "status": "passed",
+          "durationMs": 108.6289999999999
+        },
+        {
+          "name": "declared overview dependencies changes only at a member boundary, with timezone-aware inclusive end dates",
+          "status": "passed",
+          "durationMs": 59.85245799999984
+        },
+        {
+          "name": "declared overview dependencies tracks new, renamed, removed, and cancelled members",
+          "status": "passed",
+          "durationMs": 71.58566700000029
+        },
+        {
+          "name": "declared overview dependencies distinguishes unavailable sources and a bounded catalog from absence",
+          "status": "passed",
+          "durationMs": 388.6773330000001
+        },
+        {
+          "name": "declared overview dependencies exposes missing or ambiguous scope: ",
+          "status": "passed",
+          "durationMs": 63.5954999999999
+        },
+        {
+          "name": "declared overview dependencies exposes missing or ambiguous scope:   overview: { folder: ../journeys, type: trip }\n",
+          "status": "passed",
+          "durationMs": 65.3997919999997
+        },
+        {
+          "name": "declared overview dependencies exposes missing or ambiguous scope:   overview: { folder: journeys, type: trip, year: 2034 }\n",
+          "status": "passed",
+          "durationMs": 56.82916699999987
+        },
+        {
+          "name": "declared overview dependencies exposes missing or ambiguous scope:   overview: { folder: journeys, type: [trip, trip] }\n",
+          "status": "passed",
+          "durationMs": 60.8307920000002
+        },
+        {
+          "name": "declared overview dependencies exposes missing or ambiguous scope:   overview: { folder: journeys, type: trip, exclude: [elsewhere/page] }\n",
+          "status": "passed",
+          "durationMs": 58.4236249999999
+        },
+        {
+          "name": "declared overview dependencies holds an unindexed scope edit and does not silently truncate authored metadata",
+          "status": "passed",
+          "durationMs": 54.56558300000006
+        },
+        {
+          "name": "declared overview dependencies rebuilds the same dependency fingerprint from Markdown in a fresh index",
+          "status": "passed",
+          "durationMs": 113.59691699999985
+        },
+        {
+          "name": "declared overview dependencies counts a supported heading change as material while preserving a separate quote",
+          "status": "passed",
+          "durationMs": 87.21029199999975
+        },
+        {
+          "name": "declared overview dependencies inherits temporal headings through trip subsections and preserves mixed phases",
+          "status": "passed",
+          "durationMs": 66.02595900000051
+        },
+        {
+          "name": "declared overview dependencies preserves mixed phases and rejects promoting cancelled schedules",
+          "status": "passed",
+          "durationMs": 60.92370799999935
+        }
+      ]
+    },
+    {
+      "file": "packages/core/src/observations/projection.test.ts",
+      "coverage": ["wrong_subject_and_correlated_lineage"],
+      "sourceFingerprint": "c5d1f209c1e4b775410c2d84af7656fa1cf25f28ae8b7ef9ef957cf11fd90ca8",
+      "tests": [
+        {
+          "name": "the observation projection rebuilds exact lineage and qualifies only the owned payload line",
+          "status": "passed",
+          "durationMs": 93.34787500000016
+        },
+        {
+          "name": "the observation projection rebuilds scope provenance only for an explicitly assessed marker",
+          "status": "passed",
+          "durationMs": 87.11670799999979
+        },
+        {
+          "name": "the observation projection excludes stale lineage and policy drift without rewriting Markdown",
+          "status": "passed",
+          "durationMs": 59.26474999999982
+        },
+        {
+          "name": "the observation projection fails closed when evidence resolves to the wrong subject",
+          "status": "passed",
+          "durationMs": 31.29124999999999
+        },
+        {
+          "name": "the observation projection fails closed when a sealed independent proof is no longer present",
+          "status": "passed",
+          "durationMs": 28.66687499999989
+        },
+        {
+          "name": "the observation projection fails closed when current marker-owned bytes changed before re-indexing",
+          "status": "passed",
+          "durationMs": 32.66516700000011
+        },
+        {
+          "name": "the observation projection counts only currently eligible exact lineage as surviving proof",
+          "status": "passed",
+          "durationMs": 27.878999999999905
+        },
+        {
+          "name": "the observation projection requalifies against a stricter configured proof floor",
+          "status": "passed",
+          "durationMs": 33.49145900000008
+        },
+        {
+          "name": "the observation projection keeps malformed markers visible but marks their payload ineligible",
+          "status": "passed",
+          "durationMs": 37.89383299999986
+        },
+        {
+          "name": "the observation projection fails closed over the next readable line after a detached malformed marker",
+          "status": "passed",
+          "durationMs": 30.130957999999964
+        },
+        {
+          "name": "the observation projection fails closed for every copy of a duplicate stable id",
+          "status": "passed",
+          "durationMs": 27.914416999999958
+        },
+        {
+          "name": "the observation projection does not let an unknown marker version reuse an eligible stable id",
+          "status": "passed",
+          "durationMs": 26.55791699999986
+        },
+        {
+          "name": "the observation projection ignores marker examples inside fenced code",
+          "status": "passed",
+          "durationMs": 25.863875000000007
+        },
+        {
+          "name": "the observation projection does not project marker-shaped quoted source material",
+          "status": "passed",
+          "durationMs": 35.14829200000008
+        }
+      ]
+    },
+    {
+      "file": "packages/core/src/write/retain-quality-corpus.test.ts",
+      "coverage": [
+        "nested_attribution_uncertainty",
+        "unresolved_relative_time",
+        "source_correction_relations"
+      ],
+      "sourceFingerprint": "57fb9818b27c543f2c6b1754730809bf11a06b15e048ea32f45e90c024910b14",
+      "tests": [
+        {
+          "name": "automatic retain discourse quality corpus detects reciprocal dependencies before verification so one bounded repair can preserve the hypotheses",
+          "status": "passed",
+          "durationMs": 12.338291000000027
+        },
+        {
+          "name": "automatic retain discourse quality corpus preserves nested reporting as a report with its speaker chain",
+          "status": "passed",
+          "durationMs": 218.58712500000001
+        },
+        {
+          "name": "automatic retain discourse quality corpus keeps a typed 'hypothesis' noncanonical instead of promoting or discarding it",
+          "status": "passed",
+          "durationMs": 0.7790420000001177
+        },
+        {
+          "name": "automatic retain discourse quality corpus keeps a typed 'counterfactual' noncanonical instead of promoting or discarding it",
+          "status": "passed",
+          "durationMs": 1.0337090000000444
+        },
+        {
+          "name": "automatic retain discourse quality corpus holds the same hypothetical frame when extraction labels it as a current fact",
+          "status": "passed",
+          "durationMs": 0.9068749999999
+        },
+        {
+          "name": "automatic retain discourse quality corpus preserves an explicit 'proposal' with its disposition",
+          "status": "passed",
+          "durationMs": 0.730209000000059
+        },
+        {
+          "name": "automatic retain discourse quality corpus preserves an explicit 'rejection' with its disposition",
+          "status": "passed",
+          "durationMs": 0.5169160000000375
+        },
+        {
+          "name": "automatic retain discourse quality corpus resolves a correction relation to the retained candidate id",
+          "status": "passed",
+          "durationMs": 0.6717909999999847
+        },
+        {
+          "name": "automatic retain discourse quality corpus holds a correction whose relation target did not survive validation",
+          "status": "passed",
+          "durationMs": 0.5318750000001273
+        },
+        {
+          "name": "automatic retain discourse quality corpus keeps explicit tentative wording when its noncanonical semantics agree",
+          "status": "passed",
+          "durationMs": 0.20862499999998363
+        },
+        {
+          "name": "automatic retain discourse quality corpus does not let an invalid first duplicate suppress a later supported candidate",
+          "status": "passed",
+          "durationMs": 0.30662499999994
+        },
+        {
+          "name": "automatic retain discourse quality corpus takes speaker and role from structured source items rather than the model",
+          "status": "passed",
+          "durationMs": 45.342750000000024
+        },
+        {
+          "name": "automatic retain discourse quality corpus holds proposition support that crosses structured speakers",
+          "status": "passed",
+          "durationMs": 0.249416999999994
+        },
+        {
+          "name": "automatic retain discourse quality corpus accepts an anchored relative date but holds unresolved calendar language",
+          "status": "passed",
+          "durationMs": 15.78691600000002
+        },
+        {
+          "name": "automatic retain discourse quality corpus holds relative calendar language when the mention time has no timezone",
+          "status": "passed",
+          "durationMs": 30.38408400000003
+        }
+      ]
+    }
+  ]
+}

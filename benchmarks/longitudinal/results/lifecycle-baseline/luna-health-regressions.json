@@ -1,0 +1,25 @@
+{
+  "version": "longitudinal-luna-health-regressions-v1",
+  "repository": "tenphi/luna-agent",
+  "commit": "24802d4f5671dc9edc778bace3da887675cc8624",
+  "evidence": "scripted_health_and_host_contracts_not_live_model_quality",
+  "files": [
+    {
+      "file": "src/health-report.test.ts",
+      "sourceFingerprint": "6c1dd1b1fffa82f25e4e9bc75411b71d7c32287018ab9fce7413abb7f671d88c"
+    },
+    {
+      "file": "src/memory/health.test.ts",
+      "sourceFingerprint": "a267a9cfdb672285d12cc07435290489b7282da0e9af0038aed263f422d6b7c7"
+    }
+  ],
+  "tests": 50,
+  "passed": 50,
+  "coverage": [
+    "reachable_writable_with_maintenance_paused",
+    "latest_failed_cycle_distinct_from_independent_phase_success",
+    "content_safe_health_receipts",
+    "typed_available_degraded_unavailable_health"
+  ],
+  "changesRequired": false
+}
