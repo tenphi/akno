@@ -21,7 +21,7 @@
     "docs:doctor": "cookbook doctor",
     "docs:build": "astro build",
     "docs:preview": "astro preview",
-    "smoke": "node scripts/smoke.mjs && node scripts/smoke-demo.mjs && node scripts/smoke-longitudinal.mjs",
+    "smoke": "node scripts/smoke.mjs && node scripts/smoke-demo.mjs && node scripts/smoke-longitudinal.mjs && node scripts/smoke-longitudinal-lifecycle.mjs",
     "smoke:packages": "pnpm build && node scripts/smoke-packages.mjs",
     "check:repository": "node scripts/check-repository-safety.mjs",
     "changeset": "changeset",
@@ -34,7 +34,9 @@
     "bench": "node packages/cli/src/bin.ts bench",
     "knip": "knip",
     "bench:language": "node scripts/bench-language.mjs",
-    "bench:longitudinal": "pnpm build && node scripts/bench-longitudinal.mjs"
+    "bench:longitudinal": "pnpm build && node scripts/bench-longitudinal.mjs",
+    "bench:longitudinal:lifecycle": "pnpm build && node scripts/bench-longitudinal-lifecycle.mjs",
+    "bench:longitudinal:regressions": "node scripts/bench-longitudinal-regressions.mjs"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^1.0.0",
