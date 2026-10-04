@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.17.1
+
+### Patch Changes
+
+- [#179](https://github.com/tenphi/akno/pull/179) [`527c33d`](https://github.com/tenphi/akno/commit/527c33d4a538737c1d7d594ae70092bceebe35e4) Thanks [@tenphi](https://github.com/tenphi)! - Let recall and focused automatic context retrieve explicitly requested estimated dates and arrival windows. Preserve tentative scheduled or due claims and events in planning views while keeping factual eligibility, attribution, caller overrides and ambient-history boundaries unchanged.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.17.1
+
 ## 0.17.0
 
 ### Minor Changes
