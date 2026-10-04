@@ -1,5 +1,18 @@
 # @tenphi/akno
 
+## 0.18.0
+
+### Minor Changes
+
+- [#181](https://github.com/tenphi/akno/pull/181) [`d8509d7`](https://github.com/tenphi/akno/commit/d8509d76ac58849969a884e239e53e64dccc1b9c) Thanks [@tenphi](https://github.com/tenphi)! - Expose scoped raw page observations with ordered journal applications and undos to trusted hosts. Observations defer while service mutations commit, so external editor feedback never mistakes service writes for user changes.
+
+### Patch Changes
+
+- Updated dependencies [[`d8509d7`](https://github.com/tenphi/akno/commit/d8509d76ac58849969a884e239e53e64dccc1b9c)]:
+  - @tenphi/akno-core@0.18.0
+  - @tenphi/akno-client@0.18.0
+  - @tenphi/akno-protocol@0.18.0
+
 ## 0.17.2
 
 ### Patch Changes
