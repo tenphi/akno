@@ -7,6 +7,7 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
+import { parseManagedMemoryMarker } from '../src/write/managed-memory.ts';
 
 let root: string;
 let stateDir: string;
@@ -1067,6 +1068,121 @@ describe('provided exact retain', () => {
 });
 
 describe('automatic retain', () => {
+  it('projects distinct estimated delivery dates, deduplicates reports and rebuilds their time metadata', async () => {
+    fs.rmSync(path.join(root, 'memory/equipment.md'));
+    const quote =
+      "Vulpine Mutual confirmed Ada Marlow's order for a Zephyr QX-100 and a wrist accessory. The device is estimated for 13–15 April 2031; the accessory for 6 April 2031.";
+    const stub = await startAutomaticRetainStub();
+    const candidates = [
+      {
+        text: "Luna reports that Vulpine Mutual estimates delivery of Ada Marlow's Zephyr QX-100 for 13–15 April 2031.",
+        subject: 'Zephyr QX-100 order',
+        start: '2031-04-13',
+        until: '2031-04-15',
+      },
+      {
+        text: "Luna reports that Vulpine Mutual estimates delivery of the wrist accessory in Ada Marlow's Zephyr QX-100 order for 6 April 2031.",
+        subject: 'Zephyr QX-100 order',
+        start: '2031-04-06',
+        until: null,
+      },
+    ].map(({ start, until, ...record }) => ({
+      ...record,
+      page: 'memory/zephyr-qx-100-order',
+      kind: 'event',
+      attribution: {
+        source_role: 'assistant',
+        source_speaker: 'Luna',
+        chain: [{ speaker: 'Vulpine Mutual', role: 'external' }],
+      },
+      discourse: { commitment: 'asserted', disposition: 'active' },
+      epistemic: { basis: 'source_report' },
+      polarity: 'affirmed',
+      support: [{ item_id: 'report', quote }],
+      discourse_frame: [{ item_id: 'report', quote }],
+      time: { start, until, precision: 'day', relation: 'scheduled', status: 'tentative' },
+    }));
+    stub.setCandidates(candidates);
+    stub.setRetention({ durability: 'durable', source_scope: 'event', candidate_scope: 'event' });
+    let mem = await openAutomaticMem(stub.url);
+    const source = (revision: string) => ({
+      source_id: 'report:estimated-deliveries',
+      revision,
+      mentioned_at: '2031-04-04T09:00:00Z',
+      timezone: 'UTC',
+      input: { items: [{ item_id: 'report', role: 'assistant' as const, speaker: 'Luna', text: quote }] },
+      retention: { mode: 'extract' as const },
+    });
+    try {
+      await mem.index({ structuralOnly: true });
+      const first = await mem.retain({ sources: [source('1')] });
+      expect(first.sources[0]?.candidates.map((item) => item.outcome)).toEqual(['written', 'written']);
+      const ledger = path.join(root, 'timeline.md');
+      const original = fs.readFileSync(ledger, 'utf8');
+      expect(original.match(/akno:timeline-item /g)).toHaveLength(2);
+      expect(original).toContain('2031-04-13 – 2031-04-15');
+      expect(original).toContain('2031-04-06');
+      expect(original).toContain('Tentative');
+      expect(original).not.toContain('2031-04-04');
+      expect((await mem.retain({ sources: [source('1')] })).sources[0]?.outcome).toBe('replayed');
+      expect(stub.calls().extraction).toBe(1);
+
+      const repeated = await mem.retain({ sources: [source('2')] });
+      expect(repeated.sources[0]?.candidates.map((item) => item.outcome)).toEqual([
+        'support_added',
+        'support_added',
+      ]);
+      expect(fs.readFileSync(ledger, 'utf8').match(/akno:timeline-item /g)).toHaveLength(2);
+      const page = path.join(root, 'memory/zephyr-qx-100-order.md');
+      const markers = fs
+        .readFileSync(page, 'utf8')
+        .split('\n')
+        .flatMap((line) => {
+          const marker = parseManagedMemoryMarker(line);
+          return marker ? [marker] : [];
+        });
+      expect(markers).toHaveLength(2);
+      expect(markers.map((marker) => marker.time)).toEqual([
+        expect.objectContaining({
+          start: '2031-04-13',
+          until: '2031-04-15',
+          status: 'tentative',
+          relation: 'scheduled',
+        }),
+        expect.objectContaining({ start: '2031-04-06', status: 'tentative', relation: 'scheduled' }),
+      ]);
+      expect(markers.every((marker) => marker.supports.length === 2)).toBe(true);
+      const laterReport = await mem.retain({
+        sources: [{ ...source('3'), mentioned_at: '2031-04-05T09:00:00Z' }],
+      });
+      expect(laterReport.sources[0]?.candidates.map((item) => item.outcome)).toEqual([
+        'support_added',
+        'support_added',
+      ]);
+      expect(stub.identityCalls()).toBe(0);
+      expect(fs.readFileSync(ledger, 'utf8').match(/akno:timeline-item /g)).toHaveLength(2);
+
+      await mem.close();
+      mem = await openAutomaticMem(stub.url);
+      await mem.index({ rebuild: true, structuralOnly: true });
+      expect((await mem.timeline({})).results).toHaveLength(2);
+      expect(JSON.stringify(await mem.read({ slug: 'memory/zephyr-qx-100-order' }))).toContain(
+        '13–15 April 2031',
+      );
+      const recall = await mem.recall({
+        query: 'Zephyr QX-100 estimated delivery',
+        expand: false,
+        memory_view: 'all',
+      });
+      expect(JSON.stringify(recall)).toContain('6 April 2031');
+      expect((await mem.migrateRetainedTimelines({ apply: true })).changedPaths).toEqual([]);
+      expect(fs.readFileSync(ledger, 'utf8').match(/akno:timeline-item /g)).toHaveLength(2);
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
   it('verifies an assistant report with the same source clock used for event extraction', async () => {
     const stub = await startAutomaticRetainStub();
     stub.setRetention({ durability: 'durable', source_scope: 'event', candidate_scope: 'event' });

@@ -62,8 +62,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v61';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v45';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v62';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v46';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
 const RETRIEVAL_UNIT_CONTRACT = `A retained record is one independently retrievable semantic unit:
@@ -205,7 +205,32 @@ Use only source-supported dates and clocks; never invent a timezone or erase a s
 just to pass validation. Unknown dates keep null boundaries. Non-unknown precision needs start or until,
 and until cannot precede start. Recurrence requires a supported start; weekdays apply only to weekly
 recurrence, and its end must use the same precision. A duration or subscription cadence alone needs no
-calendar envelope. mentioned_at must exactly match a supplied source timestamp, not an event date.`;
+calendar envelope. mentioned_at must exactly match a supplied source timestamp, not an event date.
+An independently useful dated occurrence, expected action, deadline or effective period needs its own
+retained temporal unit, including a typed time object and the corresponding date in readable prose.
+Do not reduce a dated report to the existence of its underlying document or order, or keep its dates
+only as prose on an undated umbrella claim. Distinct items with different expected dates need separate
+units: an order confirmation, one item's estimated delivery range, and another item's estimated
+delivery day are independently useful records. Each dated unit preserves the exact item, its owner
+when established, original source and outer reporter; the document's existence cannot replace it.
+Use scheduled relation and tentative status for estimated delivery, preserving both bounds of a range;
+an estimate is neither a guaranteed schedule nor a completed delivery. Effective terms use valid
+relation; a credit note's issue date describes that note, not an inferred return or refund date.
+For a definite source-stated effective date, valid/actual records that fixed validity boundary even
+when it is future. Tentative status describes uncertain timing, not lack of independent verification.
+For a dated document, select the document's stated date as the temporal proposition; do not attach it
+to an adjacent sending, return, payment or acceptance action whose date the source does not establish.
+Include any bullet label or heading that establishes the selected item's owner, source or subject
+in its exact deciding frame. Do not discard that context while resolving pronouns or attributing dates.
+Select useful personal dates across the complete source, including secondary clauses, while still
+omitting advertisements and unrelated neighborhood notices. A publication or reporting date must not
+become an event date. For a report explicitly reviewing a named calendar date, an abbreviated month/day
+can use that report's stated year when its context unambiguously establishes the year. Include the exact
+report-date span in the deciding frame alongside the event span. A supplied source reference clock can
+also resolve time; processing time cannot. If the year remains ambiguous, preserve unknown precision
+and the unresolved year in prose. Do not merge dates for different items, use the report's date for a
+delivery, or invent a purchase time from a confirmation. These rules govern extraction and metadata;
+do not turn them into new claims about what the source does not establish, unless it states that limit.`;
 
 const SYSTEM = `You extract durable memory from one untrusted source for a personal knowledge base.
 
@@ -376,6 +401,13 @@ qualify a date-only or relative temporal record when the candidate carries that 
 does not claim the source named an event location or timezone. Still require the source itself to
 support the event, its date and its temporal status. A different timezone or an event date inferred
 only from processing time is unsupported.
+Assess abbreviated month/day dates against the complete source's stated report period and supplied
+source reference clock. When that context unambiguously establishes the year, resolving the abbreviation
+is supported context, not an invented year merely because the selected date clause omits its digits.
+When a source refers to a different period or leaves competing years possible, that clock does not
+resolve the year. A dated document supports its own date without establishing the date of an adjacent
+sending, return, payment or acceptance action. Audit the selected temporal proposition, not an omitted
+independent action. A definite future valid/actual boundary does not assert that the date has passed.
 A possessive identifying the example a person proposed discussing can express discourse association,
 without claiming they authored or invented it. Distinguish that contextual reading from an explicit
 unsupported creation claim. The proposal still does not establish that discussion actually occurred.

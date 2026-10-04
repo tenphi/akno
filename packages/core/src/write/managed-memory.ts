@@ -468,11 +468,19 @@ export function sameManagedMemorySemantics(left: ManagedMemoryMarker, right: Man
 }
 
 function managedMemorySemanticKey(marker: ManagedMemoryMarker, omitSubject = false): string {
+  const time = marker.time ? RetainedTimeSchema.parse(marker.time) : undefined;
   return JSON.stringify({
     ...marker,
     id: undefined,
     supports: undefined,
     links: marker.links.filter((link) => !link.assessment),
+    // Canonical field order survives a stored-marker round trip. Once boundaries are
+    // resolved, the reporting clock is support context, not a different dated assertion.
+    // Keep it for unknown time so unresolved references cannot merge across source clocks.
+    time:
+      time && time.precision !== 'unknown' && (time.start || time.until)
+        ? { ...time, mentioned_at: undefined }
+        : time,
     ...(omitSubject ? { subject: undefined } : {}),
   });
 }
