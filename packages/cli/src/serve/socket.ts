@@ -59,7 +59,7 @@ export async function serveSocket(
     const hello: Hello = {
       hello: 'akno',
       protocol: PROTOCOL_VERSION,
-      features: ['folder_timelines', 'scoped_timeline_migration', 'change_details'],
+      features: ['folder_timelines', 'scoped_timeline_migration', 'change_details', 'page_observations'],
       version: AKNO_VERSION,
       writable: akno.writable,
       akno_path: akno.config.aknoPath,
@@ -178,6 +178,11 @@ async function runCommand(akno: Akno, command: CommandName, input: unknown): Pro
     case 'decline':
       return akno.decline(idFrom(input, 'proposal_id'));
     case 'changes':
+      if (input != null && Object.prototype.hasOwnProperty.call(input, 'rel_path')) {
+        const after = (input as { after?: unknown }).after;
+        if (typeof after !== 'number') throw new AknoError('invalid', 'after must be a journal cursor');
+        return akno.observePage(idFrom(input, 'rel_path'), after);
+      }
       return input != null && Object.prototype.hasOwnProperty.call(input, 'change_id')
         ? akno.change(idFrom(input, 'change_id'))
         : akno.changes(limitFrom(input));

@@ -11,7 +11,7 @@ import { reconcileRetainManagedSources } from '../write/retain-supports.ts';
  */
 export async function undo(ctx: AknoContext, rawInput: unknown): Promise<UndoOutput> {
   const input = UndoInput.parse(rawInput);
-  const reversed = await ctx.journal.undo(input.change_id);
+  const reversed = await ctx.journal.undo(input.change_id, ctx.actor);
   realignMaintenanceIdentityAfterUndo(ctx, input.change_id);
   const forgottenRetainItems = ctx.store.db
     .prepare('SELECT DISTINCT memory_id FROM retain_supports WHERE forgotten_by = ?')

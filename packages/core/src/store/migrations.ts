@@ -13,7 +13,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 46;
+export const SCHEMA_VERSION = 47;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -53,6 +53,7 @@ export const MUTATION_RECEIPTS_MIGRATION_INDEX = 35;
 
 export const EVENT_IDENTITY_RELATION_MIGRATION_INDEX = 38;
 export const RETAIN_PENDING_CORRECTIONS_MIGRATION_INDEX = 39;
+export const JOURNAL_EVENTS_MIGRATION_INDEX = 40;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -1314,6 +1315,22 @@ export const MIGRATIONS: string[] = [
     resolved_by TEXT NOT NULL REFERENCES retain_receipts(receipt_fingerprint) ON DELETE CASCADE,
     PRIMARY KEY(support_receipt, candidate_id, resolved_by)
   );`,
+
+  // Journal order must include reversals: changing a status cannot be a cursor.
+  `CREATE TABLE journal_events (
+    seq INTEGER PRIMARY KEY AUTOINCREMENT,
+    change_id TEXT NOT NULL REFERENCES changes(id),
+    phase TEXT NOT NULL CHECK (phase IN ('apply', 'undo')),
+    actor TEXT NOT NULL,
+    UNIQUE(change_id, phase)
+  );
+  INSERT INTO journal_events(change_id, phase, actor)
+    SELECT id, phase, actor FROM (
+      SELECT id, 'apply' AS phase, actor, at AS stamp, rowid AS ordinal FROM changes
+      UNION ALL
+      SELECT id, 'undo' AS phase, 'unknown' AS actor, undone_at AS stamp, rowid AS ordinal FROM changes
+        WHERE status = 'undone'
+    ) ORDER BY stamp, ordinal, phase;`,
 ];
 
 /**

@@ -22,6 +22,7 @@ import { effectiveRule, matchRules } from './rules/compile.ts';
 import { looksLikeLedger } from './reserved.ts';
 import type { AknoContext } from './context.ts';
 import { Journal, type ChangeSummary, type ChangeDetails } from './write/journal.ts';
+import { observePage, type PageObservation } from './write/page-observation.ts';
 import {
   executeReplaySafeMutation,
   isReplaySafeOperation,
@@ -140,6 +141,8 @@ export interface Akno extends AknoOps {
   changes(limit?: number): ChangeSummary[];
   /** Exact committed text for one journal change, independent of current file contents. */
   change(changeId: string): ChangeDetails;
+  /** Observe exact file text and journal transitions without attributing service writes to an editor. */
+  observePage(relPath: string, after: number): PageObservation;
   /** Gated proposals waiting on the user. */
   proposals(): ProposalRow[];
   /** Durable maintenance plans, newest first. */
@@ -332,7 +335,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
       onArrival: async (changed) => {
         const arrivals = changed.filter((relPath) => isInInbox(ctx, relPath));
         if (arrivals.length === 0) return;
-        const result = await processInbox(ctx, { only: arrivals });
+        const result = await duringWrite(() => processInbox(ctx, { only: arrivals }));
         options.watchEvents?.onInbox?.(result);
       },
     });
@@ -359,6 +362,16 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     ingest: ingestOp,
     adopt: adoptOp,
   };
+
+  let activeWrites = 0;
+  async function duringWrite<T>(work: () => Promise<T>): Promise<T> {
+    activeWrites++;
+    try {
+      return await work();
+    } finally {
+      activeWrites--;
+    }
+  }
 
   async function call<N extends OpName>(
     op: N,
@@ -400,15 +413,18 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     // proposal as the person who answered it.
     const forCall =
       callOptions.actor && callOptions.actor !== ctx.actor ? { ...ctx, actor: callOptions.actor } : ctx;
-    if (isReplaySafeOperation(op)) {
-      return executeReplaySafeMutation(
-        forCall,
-        op,
-        parsed.data as Record<string, unknown>,
-        (mutationContext, mutationInput) => implementation(mutationContext, mutationInput),
-      ) as Promise<OpResult<N>>;
-    }
-    return implementation(forCall, parsed.data);
+    const work = async (): Promise<OpResult<N>> => {
+      if (isReplaySafeOperation(op)) {
+        return executeReplaySafeMutation(
+          forCall,
+          op,
+          parsed.data as Record<string, unknown>,
+          (mutationContext, mutationInput) => implementation(mutationContext, mutationInput),
+        ) as Promise<OpResult<N>>;
+      }
+      return implementation(forCall, parsed.data);
+    };
+    return definition.kind === 'write' ? duringWrite(work) : work();
   }
 
   const akno: Akno = {
@@ -466,6 +482,11 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
 
     changes: (limit) => ctx.journal.list(limit),
     change: (changeId) => ctx.journal.detail(changeId),
+    observePage(relPath, after) {
+      // Journal commits follow filesystem writes. A host must never classify that gap as a human edit.
+      if (activeWrites) throw new AknoError('busy', 'memory mutations are still committing');
+      return observePage(ctx.journal, config.aknoPath, relPath, after);
+    },
 
     proposals: () => ctx.gate.pending(),
 
@@ -630,6 +651,34 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
       lock?.release();
     },
   };
+
+  function protect<
+    K extends
+      | 'index'
+      | 'inbox'
+      | 'dream'
+      | 'approve'
+      | 'applyPlan'
+      | 'migrateBrain'
+      | 'migrateObservations'
+      | 'migrateRetainedTimelines'
+      | 'reconcile',
+  >(key: K): void {
+    const original = akno[key] as (...args: unknown[]) => Promise<unknown>;
+    akno[key] = ((...args: unknown[]) => duringWrite(() => original(...args))) as Akno[K];
+  }
+  for (const key of [
+    'index',
+    'inbox',
+    'dream',
+    'approve',
+    'applyPlan',
+    'migrateBrain',
+    'migrateObservations',
+    'migrateRetainedTimelines',
+    'reconcile',
+  ] as const)
+    protect(key);
 
   return akno;
 }

@@ -39,3 +39,5 @@ Full documentation: [github.com/tenphi/akno](https://github.com/tenphi/akno#read
 ## License
 
 PolyForm Noncommercial License 1.0.0 © Andrey Yamanov — noncommercial use only.
+
+Hosts can observe an edited Markdown page with `akno.observePage("notes/preferences.md", cursor)` or the Unix-socket operator command `changes {rel_path, after}`. `page_observations` is advertised in the handshake. Each result contains raw current text (null for deletion), ordered committed before/after transitions with their actor, a durable cursor, and `hasMore` for catch-up pagination. Apply/undo event order survives restarts; existing history is migrated without changing page bytes. Observations return typed `busy` while service mutations commit, and reject symlinks, unsafe paths, non-page files, and pages larger than 2 MiB. Hosts establish a baseline from a committed change's `sequence` and reconcile external edits in gaps between journal transitions. This read-only operator surface is not an agent tool.

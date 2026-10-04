@@ -5,6 +5,7 @@ import * as sqliteVec from 'sqlite-vec';
 import { AknoError } from '@tenphi/akno-protocol';
 import {
   CHANGE_FILE_HASHES_MIGRATION_INDEX,
+  JOURNAL_EVENTS_MIGRATION_INDEX,
   CONTEXTUAL_ENTITY_MIGRATION_INDEX,
   CONFLICT_VERDICTS_MIGRATION_INDEX,
   CONFLICT_QUALIFICATION_MIGRATION_INDEX,
@@ -305,6 +306,7 @@ function migrate(db: Database.Database): void {
     if (!tableExists(db, 'retain_pending_corrections')) {
       db.exec(MIGRATIONS[RETAIN_PENDING_CORRECTIONS_MIGRATION_INDEX]!);
     }
+    if (!tableExists(db, 'journal_events')) db.exec(MIGRATIONS[JOURNAL_EVENTS_MIGRATION_INDEX]!);
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);
   })();
 }
