@@ -3,6 +3,18 @@ import { personalNegativeActionsSupported } from '../memory/personal-negative-ac
 import { reportingRolesSupported } from '../memory/reporting-roles.ts';
 import { coverageRolesSupported } from '../memory/coverage-roles.ts';
 import { retentionSourceFrames } from '../memory/retention-source-frame.ts';
+import {
+  predicateTimeAuditSchema,
+  predicateTimeAuditGrounded,
+  predicateTimeAuditSupported,
+  PREDICATE_TIME_AUDIT_CONTRACT,
+  PREDICATE_TIME_COMPOSITION_CONTRACT,
+  readPredicateTimes,
+  boundPredicateTimeAuditSchema,
+  boundPredicateTimeAuditGrounded,
+  boundPredicateTimeAuditSupported,
+  type PredicateTimeBinding,
+} from '../models/predicate-time-audit.ts';
 import { causeNonselectionAgencySupported, proposalAgencySupported } from '../memory/action-agency.ts';
 import { proseEligibleForView } from '../kb/prose.ts';
 import { z } from 'zod';
@@ -62,8 +74,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v68';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v48';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v69';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v50';
 
 function answerDraftSchema(
   evidenceId: z.ZodType<string>,
@@ -97,6 +109,7 @@ function answerVerificationSchema(
   blockId: z.ZodType<string>,
   count: number,
   coordinates?: AnswerAuditCoordinates,
+  bindings?: readonly PredicateTimeBinding[],
 ) {
   const hasFrames = coordinates !== undefined && coordinates.sources.size > 0;
   return z.object({
@@ -104,6 +117,7 @@ function answerVerificationSchema(
       .array(
         z.object({
           block_id: blockId,
+          predicate_time_audit: bindings ? boundPredicateTimeAuditSchema(bindings) : predicateTimeAuditSchema,
           ...(hasFrames
             ? {
                 excerpt_selection: EXCERPT_SELECTION_SCHEMA,
@@ -221,6 +235,8 @@ unspecified. A proposed discussion is not a completed discussion, and permission
 
 ${PROPOSITION_SCOPE_CONTRACT}
 
+${PREDICATE_TIME_COMPOSITION_CONTRACT}
+
 Preserve the experiencer of each selected knowledge limit: "unknown to us" / "нам неизвестны" may
 become "we do not know" / "мы не знаем", but not bare "unknown" / "неизвестны", "Ada does not know",
 "nobody knows", "unknowable", or "the record does not establish". Keep the original group reference
@@ -295,6 +311,8 @@ original-frame neighbors still are not selected and cannot supply an added recor
 Copying exact retained text does not prove source entailment: verify it against the complete bound frame.
 
 ${ANSWER_ALIGNMENT_CONTRACT}
+
+${PREDICATE_TIME_AUDIT_CONTRACT}
 
 When the schema requires excerpt_selection, first compare answer content with the visible retained
 excerpts alone, before consulting any retention_source_frame. Set selected_by_retained_excerpt true
@@ -869,6 +887,40 @@ async function verifyDraftBlock(
     ),
   );
   const hasSourceFrames = citedFrames.size > 0;
+  const sourceReading =
+    hasSourceFrames ||
+    draftBlock.evidence_ids.some((id) => {
+      const item = byEvidenceId.get(id)!;
+      return (
+        item.type === 'page' &&
+        item.lines.some((line) => line.memory?.status === 'qualified' && line.memory.temporal)
+      );
+    })
+      ? await readPredicateTimes(
+          model,
+          draftBlock.evidence_ids.map((id) => {
+            const item = byEvidenceId.get(id)!;
+            const text =
+              item.type === 'page'
+                ? item.lines.map((line) => line.text).join('\n')
+                : item.type === 'document'
+                  ? item.quote
+                  : item.text;
+            return {
+              id,
+              text: sourceFrames.get(id) ?? text,
+              ...(sourceFrames.has(id) ? { selection: text } : {}),
+            };
+          }),
+        )
+      : undefined;
+  if (sourceReading && !sourceReading.bindings)
+    return {
+      ok: false,
+      note: 'the independent temporal source reading could not be established',
+      outcome: sourceReading.outcome,
+    };
+  const bindings = sourceReading?.bindings ?? undefined;
   const coordinates: AnswerAuditCoordinates = {
     sources: new Map([...citedFrames].map(([id, frame]) => [id, answerAuditAnchors(frame, id)])),
     answer: answerAuditAnchors(draftBlock.text, blockIds[0]!),
@@ -877,6 +929,7 @@ async function verifyDraftBlock(
     z.enum(blockIds as [string, ...string[]]),
     blocks.length,
     hasSourceFrames ? coordinates : undefined,
+    bindings,
   );
   const result = await model.chat(
     [
@@ -888,6 +941,7 @@ async function verifyDraftBlock(
           // supply a competing referent or determine which of that record's clauses is audited.
           ...(completeRecord ? {} : { question }),
           memory_view: memoryView,
+          ...(bindings ? { fixed_predicate_readings: bindings } : {}),
           blocks: blocks.map((block, index) => ({
             block_id: blockIds[index],
             ...(completeRecord ? { rendering_scope: 'complete_retained_record' } : {}),
@@ -924,13 +978,14 @@ async function verifyDraftBlock(
         }),
       },
     ],
-    { schema: liveSchema, maxTokens: 1_024 + blocks.length * 1_200 + citedFrames.size * 900 },
+    { schema: liveSchema, maxTokens: 1_024 + blocks.length * 2_000 + citedFrames.size * 900 },
   );
+  const outcome = sourceReading ? aggregateSemanticOutcomes([sourceReading.outcome, result]) : result;
   if (!result.ok || result.value === null) {
     return {
       ok: false,
       note: 'the independent support verifier could not establish a trustworthy answer',
-      outcome: result,
+      outcome,
     };
   }
   // A missing audit tail is not a verdict. Never repair a truncated structured comparison.
@@ -938,12 +993,21 @@ async function verifyDraftBlock(
   if (
     !parsed.success ||
     !parsed.data.verdicts.every(semanticVerdictConsistent) ||
+    !parsed.data.verdicts.every((verdict) =>
+      bindings
+        ? boundPredicateTimeAuditGrounded(verdict.predicate_time_audit, bindings, draftBlock.text)
+        : predicateTimeAuditGrounded(
+            verdict.predicate_time_audit,
+            draftBlock.evidence_ids.map((id) => sourceFrames.get(id) ?? evidenceText(byEvidenceId.get(id)!)),
+            draftBlock.text,
+          ),
+    ) ||
     new Set(parsed.data.verdicts.map((verdict) => verdict.block_id)).size !== blocks.length
   ) {
     return {
       ok: false,
       note: 'the independent support verifier returned an invalid structured verdict',
-      outcome: result,
+      outcome,
     };
   }
 
@@ -954,6 +1018,9 @@ async function verifyDraftBlock(
           verdict.proposition_supported &&
           verdict.action_arguments_preserved &&
           verdict.qualification_scope_preserved &&
+          (bindings
+            ? boundPredicateTimeAuditSupported(verdict.predicate_time_audit, bindings, completeRecord)
+            : predicateTimeAuditSupported(verdict.predicate_time_audit)) &&
           (!hasSourceFrames ||
             (EXCERPT_SELECTION_SCHEMA.parse(verdict.excerpt_selection).selected_by_retained_excerpt &&
               answerAlignmentsSupported(verdict.source_alignments, coordinates))),
@@ -963,7 +1030,7 @@ async function verifyDraftBlock(
   return {
     ok: true,
     blocks: blocks.filter((_, index) => supported.has(blockIds[index]!)),
-    outcome: result,
+    outcome,
   };
 }
 

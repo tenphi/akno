@@ -1,4 +1,4 @@
-import { semanticAudit } from '../../test/semantic-audit.ts';
+import { semanticAudit, predicateTimeFixture } from '../../test/semantic-audit.ts';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AknoConfig, ResolvedModelRole } from '../config/schema.ts';
 import { markAnswerBenchPersisted, runAnswerBench } from './answer.ts';
@@ -35,8 +35,8 @@ describe('grounded-answer benchmark', () => {
       embedding: { available: true, totalChunks: 15, embeddedChunks: 15 },
       answerModel: {
         available: true,
-        generationPromptVersion: 'answer-generation-v68',
-        verifierPromptVersion: 'answer-verifier-v48',
+        generationPromptVersion: 'answer-generation-v69',
+        verifierPromptVersion: 'answer-verifier-v50',
       },
       metrics: {
         executionRate: 1,
@@ -191,13 +191,14 @@ function inventedProvider(options: { alternateHeldOutAmbiguity?: boolean } = {})
     const user = JSON.parse(body.messages?.at(-1)?.content ?? '{}') as {
       question?: string;
       evidence?: Array<{ evidence_id: string; excerpt: string }>;
-      blocks?: Array<{ block_id: string }>;
+      blocks?: Array<{ block_id: string; answer_text: string; cited_evidence: Array<{ excerpt: string }> }>;
     };
     const content = system.includes('independently verify')
       ? {
           verdicts: (user.blocks ?? []).map((block) => ({
             block_id: block.block_id,
             ...semanticAudit(true, true, true),
+            predicate_time_audit: predicateTimeFixture(block.cited_evidence[0]!.excerpt, block.answer_text),
             proposition_supported: true,
             action_arguments_preserved: true,
             qualification_scope_preserved: true,

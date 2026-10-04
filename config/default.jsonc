@@ -220,11 +220,11 @@
     "answer": {
       "provider": "local",
       "id": null,
-      // Original-source alignment shares the existing verification response. A
-      // larger ceiling permits fuller audits, at possible extra latency/cost;
+      // Original-source and predicate/time alignment share the verification response.
+      // This ceiling permits fuller audits, at possible extra latency/cost;
       // ordinary generation still asks for 1024. Explicit lower limits can
       // withhold an answer if its complete structured audit does not fit.
-      "max_output_tokens": 2400,
+      "max_output_tokens": 4096,
       "reasoning_effort": null,
       "concurrency": 2,
       "timeout_ms": 60000

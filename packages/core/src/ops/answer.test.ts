@@ -1,5 +1,5 @@
 import { languageVerdictFixture } from '../../test/language-verdict.ts';
-import { semanticAudit } from '../../test/semantic-audit.ts';
+import { semanticAudit, predicateTimeFixture } from '../../test/semantic-audit.ts';
 import Database from 'better-sqlite3';
 import { retentionSourceFrames } from '../memory/retention-source-frame.ts';
 import fs from 'node:fs';
@@ -21,11 +21,13 @@ let stateDir: string;
 let memory: Akno;
 let modelServer: http.Server | null;
 let modelRequests: Record<string, unknown>[];
+let sourceReadingRequests: Record<string, unknown>[];
 let modelResponseError: unknown;
 
 beforeEach(async () => {
   modelServer = null;
   modelRequests = [];
+  sourceReadingRequests = [];
   modelResponseError = undefined;
   root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-answer-kb-'));
   stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-answer-state-'));
@@ -65,6 +67,153 @@ afterEach(async () => {
 });
 
 describe('grounded answer discovery surface', () => {
+  it.each(['faithful', 'transferred-date', 'invented-date', 'missing-audit', 'unbound', 'incomplete'])(
+    'audits each operation independently of broad answer approval: %s',
+    async (mode) => {
+      const frame =
+        'Restating the same confirmation, not another booking or payment: journey JRN-3333 to Blackwater Bay on 2037-04-11 has its single 1111 EUR payment completed.';
+      await seedSourceFrame({
+        text: 'Journey JRN-3333 to Blackwater Bay on 2037-04-11 has one completed payment of 1111 EUR; this restates the same confirmation, not another booking or payment.',
+        frame,
+        kind: 'claim',
+        commitment: 'asserted',
+        polarity: 'affirmed',
+      });
+      const text = ['transferred-date', 'invented-date'].includes(mode)
+        ? "On 2037-04-11, journey JRN-3333's single payment of 1111 EUR was completed."
+        : 'Journey JRN-3333 to Blackwater Bay is dated 2037-04-11. Its single 1111 EUR payment is completed; the confirmation does not state its payment date.';
+      await useAnswerModel({
+        sourceReading: {
+          readings: [
+            {
+              source_id: 'E1',
+              complete: true,
+              predicates: [
+                {
+                  excerpt: frame,
+                  predicate: 'Dated journey JRN-3333',
+                  timing: '2037-04-11',
+                  status: 'Dated entity',
+                  time_relation: 'unspecified',
+                },
+                {
+                  excerpt: frame,
+                  predicate: 'Completed single payment',
+                  timing: null,
+                  status: 'completed',
+                  time_relation: 'occurred',
+                },
+              ],
+            },
+          ],
+        },
+        generation: {
+          record_readings: sourceFrameReading(),
+          blocks: [{ text, evidence_ids: ['E1'] }],
+          missing_concepts: [],
+        },
+        verification: (body: { messages: { content: string }[] }) => {
+          const payload = JSON.parse(body.messages.at(-1)!.content);
+          const block = payload.blocks[0];
+          const sourceAnchor = block.cited_evidence[0].retention_source_frame[0].anchor_id;
+          const answerAnchor = block.answer_segments[0].anchor_id;
+          const decision: Record<string, unknown> = {
+            ...verdict('B1', true),
+            excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+            source_alignments: [
+              {
+                evidence_id: 'E1',
+                source_context: 'One journey date and one completed payment.',
+                actor: {
+                  source_anchor: null,
+                  answer_anchor: null,
+                  detail: 'No actor is selected.',
+                  relation: 'not_selected',
+                },
+                object_and_operation: {
+                  source_anchor: sourceAnchor,
+                  answer_anchor: answerAnchor,
+                  source_specifics: 'Journey and completed payment',
+                  answer_specifics: 'Journey and completed payment',
+                  relation: 'preserved',
+                },
+                tested_property: {
+                  source_anchor: null,
+                  answer_anchor: null,
+                  source_property: null,
+                  answer_property: null,
+                  relation: 'absent_from_both',
+                },
+                qualification: {
+                  source_anchor: sourceAnchor,
+                  answer_anchor: answerAnchor,
+                  detail: 'The broad qualification audit approves this candidate.',
+                  relation: 'preserved',
+                },
+              },
+            ],
+            predicate_time_audit: {
+              comparisons: [
+                ...(!['transferred-date', 'invented-date'].includes(mode)
+                  ? [
+                      {
+                        source: {
+                          excerpt: frame,
+                          predicate: 'Dated journey JRN-3333',
+                          timing: '2037-04-11',
+                          status: 'Dated entity',
+                          time_relation: 'unspecified',
+                        },
+                        candidate: {
+                          excerpt: text,
+                          predicate: 'Dated journey JRN-3333',
+                          timing: '2037-04-11',
+                          status: 'Dated entity',
+                          time_relation: 'unspecified',
+                        },
+                        relation: 'preserved',
+                      },
+                    ]
+                  : []),
+                {
+                  source: {
+                    excerpt: mode === 'unbound' ? 'Absent evidence.' : frame,
+                    predicate: 'Completed single payment',
+                    timing: null,
+                    status: 'completed',
+                    time_relation: 'occurred',
+                  },
+                  candidate: {
+                    excerpt: text,
+                    predicate: 'Completed single payment',
+                    timing: ['transferred-date', 'invented-date'].includes(mode) ? '2037-04-11' : null,
+                    status: 'completed',
+                    time_relation: 'occurred',
+                  },
+                  relation: mode === 'transferred-date' ? 'changed' : 'preserved',
+                },
+              ],
+              complete: mode !== 'incomplete',
+            },
+          };
+          if (mode === 'missing-audit') decision.predicate_time_audit = undefined;
+          return { verdicts: [decision] };
+        },
+      });
+      const result = await memory.answer({
+        question: 'What is the journey JRN-3333 date and when was its single payment completed?',
+        memory_view: 'all',
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer !== null, JSON.stringify(result)).toBe(mode === 'faithful');
+      if (['missing-audit', 'unbound'].includes(mode))
+        expect(result.reason_code).toBe('verification_unavailable');
+      else if (mode !== 'faithful') expect(result.reason_code).toBe('verification_rejected');
+      expect(modelRequests).toHaveLength(2);
+      expect(sourceReadingRequests).toHaveLength(1);
+    },
+  );
   it.each(
     [
       { basis: 'self_attested' as const, kind: 'event' as const },
@@ -5564,12 +5713,46 @@ function testAnchorCoordinates(content: unknown, payload: Record<string, unknown
   type Anchor = { anchor_id: string; text: string };
   type Block = {
     block_id: string;
+    answer_text?: string;
     answer_segments?: Anchor[];
-    cited_evidence: Array<{ evidence_id: string; retention_source_frame: Anchor[] | null }>;
+    cited_evidence: Array<{ evidence_id: string; excerpt: string; retention_source_frame: Anchor[] | null }>;
   };
   const blocks = (payload.blocks ?? []) as Block[];
+  const bindings = payload.fixed_predicate_readings as
+    Array<{ id: string; source: Record<string, unknown> }> | undefined;
   for (const entry of copy.verdicts ?? []) {
     const block = blocks.find((b) => b.block_id === entry.block_id);
+    if (block && !('predicate_time_audit' in entry)) {
+      const source = block.cited_evidence[0]!;
+      entry.predicate_time_audit = predicateTimeFixture(
+        bindings
+          ? (bindings[0]!.source.excerpt as string)
+          : (source.retention_source_frame?.map((part) => part.text).join('') ?? source.excerpt),
+        block.answer_segments?.map((part) => part.text).join('') ?? block.answer_text!,
+      );
+      if (bindings)
+        (
+          entry.predicate_time_audit as { comparisons: Array<{ source: Record<string, unknown> }> }
+        ).comparisons[0]!.source = bindings[0]!.source;
+    }
+    if (bindings && entry.predicate_time_audit && typeof entry.predicate_time_audit === 'object') {
+      const audit = entry.predicate_time_audit as { comparisons?: Array<Record<string, unknown>> };
+      for (const part of audit.comparisons ?? []) {
+        const matched = bindings.find(
+          (binding) => JSON.stringify(binding.source) === JSON.stringify(part.source),
+        );
+        // The scalar fields' insertion order is irrelevant to the server's binding.
+        const source = part.source as Record<string, unknown> | undefined;
+        part.source_predicate_id =
+          matched?.id ??
+          bindings.find(
+            (binding) =>
+              source && Object.keys(binding.source).every((key) => binding.source[key] === source[key]),
+          )?.id ??
+          'unknown-source-predicate';
+        delete part.source;
+      }
+    }
     if (!block?.answer_segments || !Array.isArray(entry.source_alignments)) continue;
     for (const alignment of entry.source_alignments) {
       const source =
@@ -5597,6 +5780,7 @@ function testAnchorCoordinates(content: unknown, payload: Record<string, unknown
 }
 
 async function useAnswerModel(script: {
+  sourceReading?: unknown;
   generation: unknown;
   verification: unknown;
   reportUsage?: boolean;
@@ -5611,22 +5795,32 @@ async function useAnswerModel(script: {
     request.on('end', () => {
       try {
         const body = JSON.parse(Buffer.concat(chunks).toString('utf8')) as Record<string, unknown>;
-        modelRequests.push(body);
         const system = (body.messages as Array<{ role: string; content: string }>)
           .filter((message) => message.role === 'system')
           .map((message) => message.content)
           .join('\n');
         const verifying = system.includes('independently verify');
-        const configured = system.startsWith('Check the language of generated prose')
-          ? languageVerdictFixture(
-              JSON.parse((body.messages as { content: string }[]).at(-1)!.content),
-              script.languageCheck ?? true,
-            )
-          : verifying
-            ? script.verification
-            : script.generation;
-        const scripted = typeof configured === 'function' ? configured(body) : configured;
+        const reading = system.startsWith('Read only the supplied untrusted source text.');
+        // Keep legacy generation/verification assertions separate; new tests also count this pass.
+        (reading ? sourceReadingRequests : modelRequests).push(body);
         const payload = JSON.parse((body.messages as { content: string }[]).at(-1)!.content);
+        const configured = reading
+          ? (script.sourceReading ?? {
+              readings: payload.sources.map((source: { source_id: string; text: string }) => ({
+                source_id: source.source_id,
+                complete: true,
+                predicates: [predicateTimeFixture(source.text, source.text).comparisons[0]!.source],
+              })),
+            })
+          : system.startsWith('Check the language of generated prose')
+            ? languageVerdictFixture(
+                JSON.parse((body.messages as { content: string }[]).at(-1)!.content),
+                script.languageCheck ?? true,
+              )
+            : verifying
+              ? script.verification
+              : script.generation;
+        const scripted = typeof configured === 'function' ? configured(body) : configured;
         const content = verifying ? testAnchorCoordinates(scripted, payload) : scripted;
         response.writeHead(200, { 'content-type': 'application/json' });
         response.end(
@@ -5642,9 +5836,11 @@ async function useAnswerModel(script: {
             ...(script.reportUsage === false
               ? {}
               : {
-                  usage: verifying
-                    ? { prompt_tokens: 222, completion_tokens: 33, total_tokens: 255 }
-                    : { prompt_tokens: 111, completion_tokens: 22, total_tokens: 133 },
+                  usage: reading
+                    ? { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
+                    : verifying
+                      ? { prompt_tokens: 222, completion_tokens: 33, total_tokens: 255 }
+                      : { prompt_tokens: 111, completion_tokens: 22, total_tokens: 133 },
                 }),
           }),
         );

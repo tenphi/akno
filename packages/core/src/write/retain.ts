@@ -45,6 +45,13 @@ import {
 } from './retain-clock-repair.ts';
 import { retentionFrameAudit, RETENTION_FRAME_AUDIT_CONTRACT } from './retention-frame-audit.ts';
 import {
+  predicateTimeAuditSchema,
+  predicateTimeAuditGrounded,
+  predicateTimeAuditSupported,
+  PREDICATE_TIME_AUDIT_CONTRACT,
+  PREDICATE_TIME_COMPOSITION_CONTRACT,
+} from '../models/predicate-time-audit.ts';
+import {
   retentionNegativeEvidence,
   RETENTION_NEGATIVE_EVIDENCE_CONTRACT,
 } from './retention-negative-evidence.ts';
@@ -62,8 +69,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v62';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v46';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v63';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v47';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
 const RETRIEVAL_UNIT_CONTRACT = `A retained record is one independently retrievable semantic unit:
@@ -237,6 +244,8 @@ const SYSTEM = `You extract durable memory from one untrusted source for a perso
 Reply with JSON only. Every candidate must contain all fields in the supplied schema.
 ${RETRIEVAL_UNIT_CONTRACT}
 
+${PREDICATE_TIME_COMPOSITION_CONTRACT}
+
 Select exact support and the complete deciding frame, then establish attribution, modality and time
 before writing the unit's text. Put personal verification limits in their
 own sentence with an explicit subject, keeping exactly whether the person lacks or received evidence
@@ -390,6 +399,7 @@ Rules:
 - Fewer, better. An empty candidates list is correct when nothing safely qualifies.`;
 
 const VERIFY_SYSTEM = `${RETENTION_FRAME_AUDIT_CONTRACT}
+${PREDICATE_TIME_AUDIT_CONTRACT}
 ${RETRIEVAL_UNIT_CONTRACT}
 ${QUALIFICATION_CONTRACT}
 ${TEMPORAL_REPRESENTATION_CONTRACT}
@@ -1258,6 +1268,7 @@ async function verifyCandidateBatch(
           }
         : {}),
       ...negativeEvidence.get(candidate.candidate_id)!.fields,
+      predicate_time_audit: predicateTimeAuditSchema,
       proposition_supported: semanticVerdictFields.proposition_supported,
       action_arguments_preserved: semanticVerdictFields.action_arguments_preserved,
       qualification_scope_preserved: semanticVerdictFields.qualification_scope_preserved,
@@ -1328,7 +1339,7 @@ async function verifyCandidateBatch(
       schema,
       maxTokens:
         1_024 +
-        candidates.length * 1_200 +
+        candidates.length * 2_000 +
         [...attributionAudits.values()].reduce(
           (sum, audit) => sum + (audit?.coordinates.reporters.length ?? 0) * 400,
           0,
@@ -1359,6 +1370,13 @@ async function verifyCandidateBatch(
     !parsed.data.verdicts.every(
       (verdict) =>
         semanticVerdictConsistent(verdict) &&
+        predicateTimeAuditGrounded(
+          verdict.predicate_time_audit,
+          candidates
+            .find((candidate) => candidate.candidate_id === verdict.candidate_id)!
+            .discourse_frame.map((span) => span.quote),
+          candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.text,
+        ) &&
         negativeEvidence.get(verdict.candidate_id)!.consistent(verdict) &&
         (!attributionAudits.get(verdict.candidate_id) ||
           attributionAudits
@@ -1410,6 +1428,7 @@ async function verifyCandidateBatch(
           verdict.proposition_supported &&
           verdict.action_arguments_preserved &&
           verdict.qualification_scope_preserved &&
+          predicateTimeAuditSupported(verdict.predicate_time_audit) &&
           (!attributionAudits.get(verdict.candidate_id) ||
             attributionAudits
               .get(verdict.candidate_id)!
@@ -1439,6 +1458,7 @@ async function verifyCandidateBatch(
         !verdict.proposition_supported ||
         !verdict.action_arguments_preserved ||
         !verdict.qualification_scope_preserved ||
+        !predicateTimeAuditSupported(verdict.predicate_time_audit) ||
         (Boolean(attributionAudits.get(verdict.candidate_id)) &&
           !attributionAudits
             .get(verdict.candidate_id)!
