@@ -66,6 +66,31 @@ describe('managed memory v2 marker', () => {
     expect(rendered).toContain('v=2 supports=');
     expect(rendered.indexOf('kind=')).toBeLessThan(rendered.indexOf('commitment='));
     expect(parseManagedMemoryMarker(rendered)).toEqual(marker);
+    expect(sameManagedMemorySemantics(marker, parseManagedMemoryMarker(rendered)!)).toBe(true);
+    const parsed = parseManagedMemoryMarker(rendered)!;
+    expect(
+      sameManagedMemorySemantics(
+        { ...marker, time: { ...marker.time!, mentioned_at: '2031-04-01T08:00:00Z' } },
+        { ...parsed, time: { ...parsed.time!, mentioned_at: '2031-04-02T08:00:00Z' } },
+      ),
+    ).toBe(true);
+    const unknown = {
+      precision: 'unknown' as const,
+      relation: 'scheduled' as const,
+      status: 'tentative' as const,
+    };
+    expect(
+      sameManagedMemorySemantics(
+        { ...marker, time: { ...unknown, mentioned_at: '2031-04-01T08:00:00Z' } },
+        { ...parsed, time: { ...unknown, mentioned_at: '2031-04-02T08:00:00Z' } },
+      ),
+    ).toBe(false);
+    expect(
+      sameManagedMemorySemantics(marker, { ...parsed, time: { ...parsed.time!, start: '2031-05' } }),
+    ).toBe(false);
+    expect(
+      sameManagedMemorySemantics(marker, { ...parsed, time: { ...parsed.time!, status: 'tentative' } }),
+    ).toBe(false);
   });
 
   it('does not parse the legacy grammar', () => {

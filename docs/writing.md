@@ -148,6 +148,14 @@ The retention mode and placement policy are independent where applicable:
   synchronous model call; and
 - `mode: "retract"` removes only support owned by an addressed earlier receipt.
 
+Automatic retention keeps independently useful dates as typed temporal records. An order report with
+different delivery estimates for its items produces separate dated units, preserving each item's range
+and tentative status. An undated order-confirmation claim cannot substitute for those units. Source
+headings and the report's stated calendar context remain part of the deciding evidence; processing time
+never supplies an event date. Advertisements and unrelated coverage notices still do not qualify merely
+because they mention dates. Exact receipt replay makes no new rows, and an identical retained temporal
+representation adds support to its existing record rather than copying it.
+
 For the automatic host path, the smallest useful request is:
 
 ```json
