@@ -1,6 +1,7 @@
 import type { Line, ObservationEvidence, ObservationQualification } from '@tenphi/akno-protocol';
 import { sha256 } from '../store/ids.ts';
 import type { Store } from '../store/db.ts';
+import { correctionMemoryRestrictions } from '../memory/correction-restrictions.ts';
 import type { ParsedPage } from '../kb/page.ts';
 import {
   observationMarkerIssue,
@@ -155,6 +156,7 @@ export function qualifyObservationLines<T extends Line>(
   allLines?: string[],
 ): T[] {
   if (lines.length === 0) return lines;
+  const restricted = correctionMemoryRestrictions(store);
   const rows = store.db
     .prepare(
       `SELECT id, marker_line, payload_line, subject_entity, disposition, payload_hash,
@@ -230,7 +232,20 @@ export function qualifyObservationLines<T extends Line>(
           }
         : line;
     }
-    const runtimeIssue = allLines ? currentLineIssue(store, row, line.text, allLines) : null;
+    const restrictedSupport = (
+      store.db
+        .prepare(
+          `
+      SELECT fact.item_id FROM observation_evidence evidence JOIN facts fact ON fact.id = evidence.fact_id
+       WHERE evidence.observation_id = ? AND fact.item_id IS NOT NULL`,
+        )
+        .all(row.id) as { item_id: string }[]
+    ).some((fact) => restricted.has(fact.item_id));
+    const runtimeIssue = restrictedSupport
+      ? 'observation evidence is restricted by a source correction'
+      : allLines
+        ? currentLineIssue(store, row, line.text, allLines)
+        : null;
     const qualification: ObservationQualification =
       row.eligible && !runtimeIssue
         ? {
@@ -395,6 +410,7 @@ export function proofGroupsForFact(
     resolvedItem = fact.item_id;
   }
   if (!resolvedItem) return new Set([`page:${resolvedPage}`]);
+  if (correctionMemoryRestrictions(store).has(resolvedItem)) return new Set();
   const rows = store.db
     .prepare(
       `SELECT DISTINCT proof_group FROM retain_supports

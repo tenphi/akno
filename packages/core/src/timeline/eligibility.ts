@@ -27,6 +27,7 @@ export function temporalQueryIntent(query: string): TemporalQueryIntent {
 
 export function futureMemoryEligible(memory: QualifiedMemory): boolean {
   return (
+    !memory.current_hold &&
     memory.temporal?.actionable === true &&
     memory.commitment === 'asserted' &&
     memory.basis !== 'source_report' &&
@@ -36,11 +37,13 @@ export function futureMemoryEligible(memory: QualifiedMemory): boolean {
 }
 
 export function canonicalMemoryEligibleNow(memory: QualifiedMemory): boolean {
+  if (memory.current_hold) return false;
   if (memory.temporal?.time.relation === 'valid') return memory.current_eligible;
   return memory.answer_eligible;
 }
 
 export function historicalMemoryEligible(memory: QualifiedMemory, sourceReport: boolean): boolean {
+  if (memory.current_hold) return false;
   if (memory.answer_eligible) return true;
   return (
     memory.temporal !== undefined &&

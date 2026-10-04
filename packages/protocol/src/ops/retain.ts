@@ -322,6 +322,8 @@ export const RetainSourceResult = z.object({
   candidates: z.array(RetainCandidateResult),
   /** Source-level hold when no safe candidate boundary exists yet. */
   reason_code: RetainHoldReason.optional(),
+  /** A held replacement leaves its prior correlated support restricted to inspection. */
+  current_hold: z.literal('pending_correction').optional(),
   status: z.enum(['ok', 'empty', 'degraded', 'unavailable']).optional(),
   degraded: z.array(DegradedReason).optional(),
   source: z

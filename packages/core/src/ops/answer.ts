@@ -471,6 +471,22 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
     model_usage: { generation: null, verification: null },
   };
 
+  if (
+    recalled.results.some(
+      (result) =>
+        result.type === 'page' &&
+        result.lines.some((line) => line.memory?.current_hold === 'pending_correction'),
+    )
+  ) {
+    return {
+      status: recalled.status,
+      outcome: 'not_answered',
+      ...base,
+      ...(recalled.degraded ? { degraded: recalled.degraded } : {}),
+      reason_code: 'current_correction_pending',
+      note: 'an explicit correction is pending; prior correlated support is available for inspection but cannot establish current meaning',
+    };
+  }
   if (recalled.status === 'empty') {
     return {
       status: 'empty',
@@ -1133,6 +1149,7 @@ function answerLineEligible(line: Line, question: string, memoryView: MemoryView
   const memory = line.memory;
   if (!memory) return true;
   if (memory.status !== 'qualified') return false;
+  if (memory.current_hold) return false;
   if (memoryView !== 'factual') return qualificationEligibleForView(memory, memoryView);
   const intent = temporalQueryIntent(question);
   if (intent.current && !intent.future) return memory.current_eligible;

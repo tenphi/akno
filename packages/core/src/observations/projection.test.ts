@@ -38,6 +38,52 @@ afterEach(() => {
 });
 
 describe('the observation projection', () => {
+  it('restricts cached observations immediately when a retained leaf has a pending correction', () => {
+    store.db
+      .prepare(
+        `INSERT INTO retain_receipts(source_id, revision, request_hash, source_hash,
+      source_group, receipt_fingerprint, mode, result, created_at)
+      VALUES ('source:1111', '1', 'request-1111', 'source-1111', 'group-1111', 'receipt-1111', 'provided_exact', '{}', '2035-04-01')`,
+      )
+      .run();
+    store.db
+      .prepare(
+        `INSERT INTO retain_supports(receipt_fingerprint, candidate_id, candidate_fingerprint,
+      proof_group, memory_id, slug, selection, source_ref, origin, input_hash, evidence, evidence_hash)
+      VALUES ('receipt-1111', 'candidate-1111', 'candidate-hash-1111', 'proof:1111', 'mem_11111111',
+        'logs/one', 'provided', 'source:1111', 'user', 'source-1111', 'Invented evidence.', 'evidence-1111')`,
+      )
+      .run();
+    store.db.prepare("UPDATE facts SET item_id = 'mem_11111111' WHERE id = 'fac_11111111'").run();
+    const marker = markerForFixture();
+    marker.evidence[0]!.proofGroups = ['proof:1111'];
+    const page = parsePage(
+      'people/ada-marlow.md',
+      `# Ada Marlow\n\n${observationBlock(marker, 'Ada Marlow consistently chooses the quiet route.', [
+        'logs/one',
+        'logs/two',
+      ])}\n`,
+    );
+    replaceObservationEntries(store, 'pag_target', page);
+    expect(qualifyObservationEntries(store)).toEqual({ indexed: 1, issues: 0 });
+    store.db
+      .prepare(
+        `INSERT INTO retain_pending_corrections(source_id, revision, target_receipt, target_candidate)
+      VALUES ('source:1111', '2', 'receipt-1111', 'candidate-1111')`,
+      )
+      .run();
+    const lines = qualifyObservationLines(
+      store,
+      'pag_target',
+      page.lines.map((text, index) => ({ n: page.bodyLine + index, text })),
+    );
+    expect(lines.find((line) => line.observation)?.observation).toMatchObject({
+      status: 'ineligible',
+      reason: 'observation evidence is restricted by a source correction',
+    });
+    expect([...liveObservationProofGroups(store, marker)]).toEqual(['page:pag_two']);
+    expect(qualifyObservationEntries(store)).toEqual({ indexed: 0, issues: 1 });
+  });
   it('rebuilds exact lineage and qualifies only the owned payload line', () => {
     const page = projectedPage();
     expect(replaceObservationEntries(store, 'pag_target', page)).toEqual({ indexed: 1, issues: 0 });

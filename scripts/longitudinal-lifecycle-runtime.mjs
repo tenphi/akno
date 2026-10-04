@@ -197,6 +197,11 @@ export function lifecycleInputReview(kind = 'lifecycle') {
 }
 
 function experiment(kind) {
+  if (kind === 'discourse')
+    return {
+      corpus: LIFECYCLE_CORPUS.filter((episode) => episode.track === 'discourse'),
+      version: 'longitudinal-discourse-v1',
+    };
   if (kind === 'inference-leaf-control')
     return {
       corpus: INFERENCE_CORPUS,

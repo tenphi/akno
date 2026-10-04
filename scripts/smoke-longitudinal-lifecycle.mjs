@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import os from 'node:os';
 import http from 'node:http';
 import { loadConfig } from '../packages/core/dist/index.js';
-import { runLifecycle, lifecycleHash } from './longitudinal-lifecycle-runtime.mjs';
+import { runLifecycle, lifecycleHash, lifecycleInputReview } from './longitudinal-lifecycle-runtime.mjs';
 import { adjudicateLifecycle } from '../packages/core/src/bench/longitudinal-lifecycle-review.ts';
 const clock = Date;
 const config = loadConfig({
@@ -119,6 +119,22 @@ for (const split of ['development', 'held-out']) {
   assert.throws(() =>
     adjudicateLifecycle(privateReceipt, { ...review, packetFingerprint: lifecycleHash(privateReceipt) }),
   );
+  const discourseInputs = lifecycleInputReview('discourse');
+  const discourse = {
+    ...packet,
+    version: discourseInputs.version,
+    corpusFingerprint: discourseInputs.corpusFingerprint,
+    inputReviewFingerprint: lifecycleHash(discourseInputs),
+    checkpoints: packet.checkpoints.filter((row) => row.episode.endsWith('-discourse')),
+  };
+  assert.equal(discourse.checkpoints.length, 12);
+  const keys = new Set(discourse.checkpoints.map((row) => row.key));
+  const focused = adjudicateLifecycle(discourse, {
+    ...review,
+    packetFingerprint: lifecycleHash(discourse),
+    checkpoints: review.checkpoints.filter((row) => keys.has(row.key)),
+  });
+  assert(focused.groups.every((group) => !group.passed && !group.gates.usefulCoverage));
 }
 console.log(
   'lifecycle smoke: compiled isolated socket, fixed/restored clocks, complete matrix and failing always-abstain controls',
