@@ -1,5 +1,16 @@
 # @tenphi/akno-core
 
+## 0.18.2
+
+### Patch Changes
+
+- [#190](https://github.com/tenphi/akno/pull/190) [`9142c21`](https://github.com/tenphi/akno/commit/9142c21075a048891539083bc4bfc9b3f1d8aa0b) Thanks [@tenphi](https://github.com/tenphi)! - Keep dates attached to their stated operation during automatic retention and grounded answers. Compare each selected predicate's timing and status independently, preserve undated completed actions as useful claims, and withhold unsupported date transfers or schedule-to-occurrence changes.
+
+  Raise the default answer-role output ceiling to 4,096 tokens so complete structured audits can fit; ordinary generation budgets and explicit caller-configured lower ceilings remain unchanged.
+
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.18.2
+
 ## 0.18.1
 
 ### Patch Changes
