@@ -1,5 +1,11 @@
 # @tenphi/akno-protocol
 
+## 0.18.1
+
+### Patch Changes
+
+- [#188](https://github.com/tenphi/akno/pull/188) [`a468f9f`](https://github.com/tenphi/akno/commit/a468f9fa37a0d3f589924663d66add9c08442f4b) Thanks [@tenphi](https://github.com/tenphi)! - Verify deciding relationships against earlier correlated retained assertions, including when the original source was never admitted. Keep displaced copies historical, preserve unchanged independent facts, and persist typed uncertainty when the relationship cannot be established. Allow verified partial answers from independent evidence while a related correction remains pending.
+
 ## 0.18.0
 
 ## 0.17.2
