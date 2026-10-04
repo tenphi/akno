@@ -136,30 +136,36 @@ describe('scoped raw page observations', () => {
       store.close();
     }
   });
-  it('upgrades historical journal rows and survives reopening the migrated database', () => {
-    const dbPath = path.join(dir, 'legacy.db');
-    const legacy = new Database(dbPath);
-    for (const migration of MIGRATIONS.slice(0, 39)) legacy.exec(migration);
-    legacy
-      .prepare(
-        "INSERT INTO changes(id, at, actor, op, summary, status, undone_at) VALUES('chg_legacy', '2031-01-01T00:00:00Z', 'agent', 'write', 'Invented.', 'undone', '2031-01-02T00:00:00Z')",
-      )
-      .run();
-    legacy
-      .prepare(
-        "INSERT INTO change_files(change_id, ord, rel_path, action, before, after) VALUES('chg_legacy', 0, ?, 'modified', 'Before', 'After')",
-      )
-      .run(file);
-    legacy.pragma('user_version = 45');
-    legacy.close();
-    const store = openStore({ dbPath, embeddingDimensions: 8 });
-    expect(new Journal(store, root, path.join(dir, 'trash')).pageTransitions(file, 0).transitions).toEqual([
-      { sequence: 1, actor: 'agent', before: 'Before', after: 'After' },
-      { sequence: 2, actor: 'unknown', before: 'After', after: 'Before' },
-    ]);
-    store.close();
-    const reopened = openStore({ dbPath, embeddingDimensions: 8 });
-    expect(new Journal(reopened, root, path.join(dir, 'trash')).detail('chg_legacy').sequence).toBe(1);
-    reopened.close();
-  });
+  it.each([39, 40])(
+    'upgrades historical journal rows after %i migrations and survives reopening',
+    (count) => {
+      const dbPath = path.join(dir, 'legacy.db');
+      const legacy = new Database(dbPath);
+      for (const migration of MIGRATIONS.slice(0, count)) legacy.exec(migration);
+      legacy
+        .prepare(
+          "INSERT INTO changes(id, at, actor, op, summary, status, undone_at) VALUES('chg_legacy', '2031-01-01T00:00:00Z', 'agent', 'write', 'Invented.', 'undone', '2031-01-02T00:00:00Z')",
+        )
+        .run();
+      legacy
+        .prepare(
+          "INSERT INTO change_files(change_id, ord, rel_path, action, before, after) VALUES('chg_legacy', 0, ?, 'modified', 'Before', 'After')",
+        )
+        .run(file);
+      legacy.pragma(`user_version = ${count + 6}`);
+      legacy.close();
+      const store = openStore({ dbPath, embeddingDimensions: 8 });
+      expect(
+        store.db.prepare("SELECT name FROM sqlite_master WHERE name = 'retain_pending_corrections'").get(),
+      ).toBeTruthy();
+      expect(new Journal(store, root, path.join(dir, 'trash')).pageTransitions(file, 0).transitions).toEqual([
+        { sequence: 1, actor: 'agent', before: 'Before', after: 'After' },
+        { sequence: 2, actor: 'unknown', before: 'After', after: 'Before' },
+      ]);
+      store.close();
+      const reopened = openStore({ dbPath, embeddingDimensions: 8 });
+      expect(new Journal(reopened, root, path.join(dir, 'trash')).detail('chg_legacy').sequence).toBe(1);
+      reopened.close();
+    },
+  );
 });

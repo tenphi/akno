@@ -246,6 +246,24 @@ async function autoRecallContext(
   }
 
   const degraded = new Set(initial.degraded ?? []);
+  if (
+    initial.results.some(
+      (result) =>
+        result.type === 'page' &&
+        result.lines.some((line) => line.memory?.current_hold === 'pending_correction'),
+    )
+  ) {
+    return emptyAutoRecall({
+      status: 'degraded',
+      budget,
+      searched: [input.query],
+      candidates: initial.results.length,
+      degraded: [...degraded, 'pending_memory_correction'],
+      note: 'related memory has an unresolved explicit correction; no current evidence was injected',
+      memoryView,
+      referenceResolution: reference ? 'unresolved' : 'not_needed',
+    });
+  }
   const eligibleInitial = initial.results.flatMap((result) => {
     const eligible = temporallyEligibleResult(result, input.query, memoryView);
     return eligible ? [eligible] : [];

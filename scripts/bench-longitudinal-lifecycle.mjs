@@ -24,6 +24,7 @@ const write = (file, value) => {
 if (
   ![
     'lifecycle',
+    'discourse',
     'inference',
     'inference-control',
     'inference-authorized',

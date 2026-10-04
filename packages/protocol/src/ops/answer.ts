@@ -112,6 +112,7 @@ export const AnswerReason = z.enum([
   'evidence_unavailable',
   'retrieval_incomplete',
   'no_eligible_evidence',
+  'current_correction_pending',
   'generation_unavailable',
   'generation_failed',
   'invalid_draft',

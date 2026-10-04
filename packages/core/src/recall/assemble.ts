@@ -589,6 +589,9 @@ function memoryLineMatches(line: Line, options: AssembleOptions): boolean {
     return options.memorySelection === 'eligible' ? eligible : !eligible;
   }
   if (!memory) return options.memorySelection === 'eligible';
+  // Return query-matched workflow restrictions beside useful evidence; otherwise another
+  // eligible hit can hide a pending correction and turn uncertainty into apparent absence.
+  if (memory.current_hold === 'pending_correction') return true;
   if (memory.status !== 'qualified') return options.memorySelection === 'contextual';
   const eligible = qualificationEligibleForView(memory, options.memoryView);
   return options.memorySelection === 'eligible' ? eligible : !eligible;

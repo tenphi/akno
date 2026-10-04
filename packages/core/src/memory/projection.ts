@@ -11,6 +11,7 @@ import {
   parseManagedMemoryMarker,
 } from '../write/managed-memory.ts';
 import { memoryEligibleForView } from './intent.ts';
+import { correctionMemoryRestrictions } from './correction-restrictions.ts';
 
 export const MANAGED_MEMORY_PROJECTION_VERSION = 'managed-memory-v1';
 
@@ -153,6 +154,7 @@ export function replaceManagedMemoryEntries(
  * only, which keeps factual absence inconclusive without allowing unknown semantics into answers.
  */
 export function managedMemoryProjectionForView(store: Store, view: MemoryView): ManagedMemoryProjectionState {
+  const restrictions = correctionMemoryRestrictions(store);
   const rows = store.db
     .prepare(
       `SELECT m.entry_key, m.memory_id, m.source_page, m.marker_line, m.payload_line, m.kind,
@@ -220,18 +222,20 @@ export function managedMemoryProjectionForView(store: Store, view: MemoryView): 
     const eligible = memories.some(
       (memory) =>
         !duplicateIds.has(memory.memory_id) &&
-        memoryEligibleForView(
-          {
-            kind: memory.kind,
-            commitment: memory.commitment,
-            disposition: memory.disposition,
-            basis: memory.basis,
-            answerEligible: memory.answer_eligible === 1,
-            temporalStatus: memory.temporal_status,
-            temporalRelation: memory.temporal_relation,
-          },
-          view,
-        ),
+        (restrictions.get(memory.memory_id) === 'pending_correction' ||
+          memoryEligibleForView(
+            {
+              kind: memory.kind,
+              commitment: memory.commitment,
+              disposition: memory.disposition,
+              basis: memory.basis,
+              answerEligible: memory.answer_eligible === 1,
+              currentHold: restrictions.get(memory.memory_id),
+              temporalStatus: memory.temporal_status,
+              temporalRelation: memory.temporal_relation,
+            },
+            view,
+          )),
     );
     // A mixed chunk may also contain useful authored facts; live assembly filters each line.
     if (eligible || proseViews.get(chunkId) === true) eligibleChunkIds.add(chunkId);

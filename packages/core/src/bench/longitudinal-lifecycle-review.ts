@@ -249,11 +249,13 @@ interface Packet {
 export function adjudicateLifecycle(packet: Packet, judgments: unknown) {
   const review = reviewSchema.parse(judgments);
   const corpus =
-    packet.version === 'longitudinal-overview-authorized-v1'
-      ? LIFECYCLE_CORPUS.filter((episode) => episode.track === 'overview')
-      : packet.version !== LIFECYCLE_CORPUS_VERSION
-        ? INFERENCE_CORPUS
-        : LIFECYCLE_CORPUS;
+    packet.version === 'longitudinal-discourse-v1'
+      ? LIFECYCLE_CORPUS.filter((episode) => episode.track === 'discourse')
+      : packet.version === 'longitudinal-overview-authorized-v1'
+        ? LIFECYCLE_CORPUS.filter((episode) => episode.track === 'overview')
+        : packet.version !== LIFECYCLE_CORPUS_VERSION
+          ? INFERENCE_CORPUS
+          : LIFECYCLE_CORPUS;
   if (
     ![
       LIFECYCLE_CORPUS_VERSION,
@@ -262,6 +264,7 @@ export function adjudicateLifecycle(packet: Packet, judgments: unknown) {
       'longitudinal-inference-authorized-v1',
       'longitudinal-inference-leaf-control-v1',
       'longitudinal-overview-authorized-v1',
+      'longitudinal-discourse-v1',
     ].includes(packet.version) ||
     packet.corpusFingerprint !== hash(corpus) ||
     review.packetFingerprint !== hash(packet)
