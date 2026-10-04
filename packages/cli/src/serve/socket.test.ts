@@ -67,6 +67,26 @@ afterEach(async () => {
 });
 
 describe('the socket door', () => {
+  it('exposes scoped page observations through the trusted operator door', async () => {
+    const client = await connect({ socket: server.path });
+    try {
+      expect(client.hello.features).toContain('page_observations');
+      const receipt = await client.call('write', { slug: 'home/lease', append: 'An agent note.' });
+      const detail = mem.change(receipt.change_id!);
+      fs.writeFileSync(path.join(root, 'home/lease.md'), 'Human correction.\n');
+      expect(
+        await client.command('changes', { rel_path: 'home/lease.md', after: detail.sequence }),
+      ).toMatchObject({ relPath: 'home/lease.md', content: 'Human correction.\n', transitions: [] });
+      await expect(client.command('changes', { rel_path: '../private.md', after: 0 })).rejects.toMatchObject({
+        code: 'invalid',
+      });
+      await expect(
+        client.command('changes', { rel_path: 'home/lease.md', after: 'bad' }),
+      ).rejects.toMatchObject({ code: 'invalid' });
+    } finally {
+      await client.close();
+    }
+  });
   it('returns committed change snapshots without reading newer page bytes', async () => {
     const client = await connect({ socket: server.path });
     try {

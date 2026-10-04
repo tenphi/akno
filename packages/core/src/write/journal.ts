@@ -48,6 +48,8 @@ export interface ChangeSummary {
 
 /** Original committed snapshots, even if a later write or undo changed the live file. */
 export interface ChangeDetails extends Omit<ChangeSummary, 'files'> {
+  /** Durable application cursor for hosts subscribing after this write. */
+  sequence: number;
   files: {
     relPath: string;
     action: FileAction;
@@ -124,6 +126,10 @@ export class Journal {
         .prepare('INSERT INTO changes(id, at, actor, op, summary, status) VALUES(?, ?, ?, ?, ?, ?)')
         .run(changeId, now, input.actor, input.op, input.summary, 'applied');
 
+      this.#store.db
+        .prepare("INSERT INTO journal_events(change_id, phase, actor) VALUES(?, 'apply', ?)")
+        .run(changeId, input.actor);
+
       const insert = this.#store.db.prepare(
         `INSERT INTO change_files(
            change_id, ord, rel_path, action, before, after, snapshot, moved_to,
@@ -185,7 +191,10 @@ export class Journal {
    * recreated. Forward order would try to recreate the source while the
    * destination still holds it.
    */
-  async undo(changeId: string): Promise<{ restored: string[]; removed: string[]; summary: string }> {
+  async undo(
+    changeId: string,
+    actor = 'user',
+  ): Promise<{ restored: string[]; removed: string[]; summary: string }> {
     const change = this.#store.db.prepare('SELECT * FROM changes WHERE id = ?').get(changeId) as
       { id: string; op: string; summary: string; status: string } | undefined;
     if (!change) throw new AknoError('not_found', `no change with id ${changeId}`);
@@ -245,6 +254,9 @@ export class Journal {
         this.#store.db
           .prepare("UPDATE changes SET status = 'undone', undone_at = ? WHERE id = ?")
           .run(new Date().toISOString(), changeId);
+        this.#store.db
+          .prepare("INSERT INTO journal_events(change_id, phase, actor) VALUES(?, 'undo', ?)")
+          .run(changeId, actor);
       });
     } catch (error) {
       await this.#restorePostChangeState(applied);
@@ -368,12 +380,72 @@ export class Journal {
       .all(changeId) as ChangeFileRow[];
     return {
       ...row,
+      sequence: (
+        this.#store.db
+          .prepare("SELECT seq FROM journal_events WHERE change_id = ? AND phase = 'apply'")
+          .get(changeId) as { seq: number }
+      ).seq,
       files: files.map((file) => ({
         relPath: file.rel_path,
         action: file.action,
         before: file.before,
         after: file.after,
         ...(file.moved_to ? { movedTo: file.moved_to } : {}),
+      })),
+    };
+  }
+
+  /** Scoped journal transitions in commit order, including undos of older changes. */
+  pageTransitions(
+    relPath: string,
+    after: number,
+  ): {
+    cursor: number;
+    hasMore: boolean;
+    transitions: { sequence: number; actor: string; before: string | null; after: string | null }[];
+  } {
+    const events = this.#store.db
+      .prepare(
+        `
+      SELECT e.seq FROM journal_events e WHERE e.seq > ? AND EXISTS (
+        SELECT 1 FROM change_files f WHERE f.change_id = e.change_id AND f.rel_path = ? AND f.snapshot IS NULL
+      ) ORDER BY e.seq LIMIT 501
+    `,
+      )
+      .all(after, relPath) as { seq: number }[];
+    const hasMore = events.length > 500;
+    const end = events[Math.min(events.length, 500) - 1]?.seq ?? after;
+    // Paginate whole events, never a partial multi-file mutation with the same sequence.
+    const included = this.#store.db
+      .prepare(
+        `
+      SELECT e.seq AS sequence, e.phase, e.actor, f.before, f.after FROM journal_events e
+      JOIN change_files f ON f.change_id = e.change_id
+      WHERE f.rel_path = ? AND e.seq > ? AND e.seq <= ? AND f.snapshot IS NULL
+      ORDER BY e.seq, CASE WHEN e.phase = 'undo' THEN -f.ord ELSE f.ord END
+    `,
+      )
+      .all(relPath, after, end) as {
+      sequence: number;
+      actor: string;
+      phase: string;
+      before: string | null;
+      after: string | null;
+    }[];
+    return {
+      cursor: hasMore
+        ? end
+        : (
+            this.#store.db.prepare('SELECT COALESCE(MAX(seq), 0) AS seq FROM journal_events').get() as {
+              seq: number;
+            }
+          ).seq,
+      hasMore,
+      transitions: included.map((row) => ({
+        sequence: row.sequence,
+        actor: row.actor,
+        before: row.phase === 'undo' ? row.after : row.before,
+        after: row.phase === 'undo' ? row.before : row.after,
       })),
     };
   }

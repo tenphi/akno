@@ -383,3 +383,5 @@ export {
   type TimelineMemory,
   type TimelineResult,
 } from '@tenphi/akno-protocol';
+
+export type { PageObservation } from './write/page-observation.ts';
