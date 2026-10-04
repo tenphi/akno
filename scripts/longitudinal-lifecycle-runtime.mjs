@@ -15,10 +15,15 @@ import {
   LIFECYCLE_CORPUS_VERSION,
   LIFECYCLE_GATES,
 } from '../packages/core/src/bench/longitudinal-lifecycle-corpus.ts';
+import {
+  INFERENCE_CORPUS,
+  INFERENCE_CORPUS_VERSION,
+} from '../packages/core/src/bench/longitudinal-inference-corpus.ts';
 const Database = createRequire(new URL('../packages/core/package.json', import.meta.url))('better-sqlite3');
 export const lifecycleHash = (value) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const accounting = new AsyncLocalStorage();
 const nesting = new AsyncLocalStorage();
+const indexControl = new AsyncLocalStorage();
 let active = false;
 
 function observeModels() {
@@ -28,6 +33,46 @@ function observeModels() {
     originals.set(method, original);
     ModelClient.prototype[method] = async function (...args) {
       const calls = accounting.getStore();
+      const control = indexControl.getStore();
+      if (
+        method === 'chat' &&
+        control &&
+        args[0]?.[0]?.content.startsWith('You extract structure from a personal knowledge base page.')
+      ) {
+        const user = args[0].find((message) => message.role === 'user')?.content ?? '';
+        const slug = /^Page: (.+)$/m.exec(user)?.[1];
+        const fact = (Array.isArray(control) ? control : control.facts).find((entry) => entry.slug === slug);
+        if (fact || !control.leafOnly) {
+          const line = fact
+            ? [...user.matchAll(/^(\d+): (.+)$/gm)].find(
+                (match) => match[2].startsWith(fact.subject) && /before|after/.test(match[2]),
+              )
+            : null;
+          const value = {
+            summary: '',
+            keywords: [],
+            facts: line
+              ? [
+                  {
+                    line: Number(line[1]),
+                    claim: line[2],
+                    subject: fact.subject,
+                    attribute: 'preparation timing',
+                    value: /after operation/.test(line[2])
+                      ? 'after operation'
+                      : /before operation/.test(line[2])
+                        ? 'before operation'
+                        : /before departure/.test(line[2])
+                          ? 'before departure'
+                          : 'before assembly',
+                  },
+                ]
+              : [],
+          };
+          calls?.push({ scripted: true, completedAt: performance.now() });
+          return { ok: true, value: JSON.stringify(value), latencyMs: 0, endpointRequests: 0 };
+        }
+      }
       if (!calls || nesting.getStore()) return original.apply(this, args);
       return nesting.run(true, async () => {
         const result = await original.apply(this, args);
@@ -48,7 +93,7 @@ function observeModels() {
   };
 }
 
-function fixtureConfiguration(config, arm, track, deriveId) {
+function fixtureConfiguration(config, arm, track, deriveId, kind) {
   const env = {};
   const providers = Object.fromEntries(
     Object.entries(config.providers).map(([name, provider], index) => {
@@ -89,6 +134,9 @@ function fixtureConfiguration(config, arm, track, deriveId) {
       folders: {
         '**': { role: 'knowledge', remember: 'integrate' },
         'copies/**': { role: 'source', remember: 'deny' },
+        ...(['inference-authorized', 'inference-leaf-control'].includes(kind)
+          ? { 'observations/**': { role: 'inference', remember: 'integrate' } }
+          : {}),
       },
       models: {
         derive: role('derive'),
@@ -116,7 +164,12 @@ function fixtureConfiguration(config, arm, track, deriveId) {
               : 'off',
           ]),
         ),
-        limits: { max_items: 12, max_files_changed: 12, max_bytes_written: 65536, max_high_risk_items: 0 },
+        limits: {
+          max_items: 12,
+          max_files_changed: 12,
+          max_bytes_written: 65536,
+          max_high_risk_items: kind === 'overview-authorized' ? 12 : 0,
+        },
         observe: { enabled: true, max_subjects: 3, min_evidence: 2 },
         reflect: { enabled: true },
         curate: { max_pages: 3 },
@@ -126,10 +179,11 @@ function fixtureConfiguration(config, arm, track, deriveId) {
   };
 }
 
-export function lifecycleInputReview() {
+export function lifecycleInputReview(kind = 'lifecycle') {
+  const { corpus, version } = experiment(kind);
   return {
-    version: LIFECYCLE_CORPUS_VERSION,
-    corpusFingerprint: lifecycleHash(LIFECYCLE_CORPUS),
+    version,
+    corpusFingerprint: lifecycleHash(corpus),
     reviewer: { id: 'Codex', sourceBased: true, independent: false, beforeOutputs: true },
     limitations: [
       'author_review_not_independent',
@@ -142,24 +196,61 @@ export function lifecycleInputReview() {
   };
 }
 
+function experiment(kind) {
+  if (kind === 'inference-leaf-control')
+    return {
+      corpus: INFERENCE_CORPUS,
+      version: 'longitudinal-inference-leaf-control-v1',
+    };
+  if (kind === 'overview-authorized')
+    return {
+      corpus: LIFECYCLE_CORPUS.filter((episode) => episode.track === 'overview'),
+      version: 'longitudinal-overview-authorized-v1',
+    };
+  if (kind === 'inference-authorized')
+    return {
+      corpus: INFERENCE_CORPUS,
+      version: 'longitudinal-inference-authorized-v1',
+    };
+  return {
+    corpus: kind === 'lifecycle' ? LIFECYCLE_CORPUS : INFERENCE_CORPUS,
+    version:
+      kind === 'inference-control'
+        ? 'longitudinal-inference-control-v1'
+        : kind === 'inference'
+          ? INFERENCE_CORPUS_VERSION
+          : LIFECYCLE_CORPUS_VERSION,
+  };
+}
+
 export async function runLifecycle(
   config,
-  { split, runs = 2, deriveId = config.models.derive.id, onProgress = () => {} },
+  { split, runs = 2, deriveId = config.models.derive.id, corpus: kind = 'lifecycle', onProgress = () => {} },
 ) {
   if (active) throw new Error('One lifecycle run per process.');
   active = true;
   const restoreModels = observeModels();
   try {
+    const { corpus, version } = experiment(kind);
     const checkpoints = [];
-    for (const episode of LIFECYCLE_CORPUS.filter((entry) => entry.split === split)) {
+    for (const episode of corpus.filter((entry) => entry.split === split)) {
       for (let run = 1; run <= runs; run++)
         for (const arm of ['extract-only', 'maintained'])
-          checkpoints.push(...(await runEpisode(config, episode, arm, run, deriveId, onProgress)));
+          checkpoints.push(
+            ...(await indexControl.run(
+              kind === 'inference-leaf-control'
+                ? { facts: episode.facts, leafOnly: true }
+                : ['inference-control', 'inference-authorized'].includes(kind)
+                  ? episode.facts
+                  : null,
+              () => runEpisode(config, episode, arm, run, deriveId, onProgress, kind),
+            )),
+          );
     }
     return {
-      version: LIFECYCLE_CORPUS_VERSION,
-      corpusFingerprint: lifecycleHash(LIFECYCLE_CORPUS),
-      inputReviewFingerprint: lifecycleHash(lifecycleInputReview()),
+      version,
+      corpusFingerprint: lifecycleHash(corpus),
+      inputReviewFingerprint: lifecycleHash(lifecycleInputReview(kind)),
       split,
       runs,
       contract: {
@@ -173,7 +264,7 @@ export async function runLifecycle(
         maxItems: 12,
         maxFiles: 12,
         maxBytes: 65536,
-        maxHighRiskItems: 0,
+        maxHighRiskItems: kind === 'overview-authorized' ? 12 : 0,
         facts: 'inference_only',
         summaries: false,
         expansion: false,
@@ -181,6 +272,15 @@ export async function runLifecycle(
         clock: 'fixture_process_Date_fixed_source_clock_explicit_when_available',
         seed: null,
         cost: null,
+        indexMode:
+          kind === 'inference-leaf-control'
+            ? 'scripted_source_leaves'
+            : ['inference-control', 'inference-authorized'].includes(kind)
+              ? 'scripted_positive_control'
+              : 'live',
+        inferenceNamespace: ['inference-authorized', 'inference-leaf-control'].includes(kind)
+          ? 'observations'
+          : null,
         models: Object.fromEntries(
           ['derive', 'answer', 'embedding'].map((name) => {
             const model = config.models[name];
@@ -229,7 +329,8 @@ export async function runLifecycle(
   }
 }
 
-async function runEpisode(config, episode, arm, run, deriveId, onProgress) {
+async function runEpisode(config, episode, arm, run, deriveId, onProgress, kind) {
+  const factsControl = indexControl.getStore();
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-lifecycle-'));
   const brain = path.join(temp, 'brain'),
     state = path.join(temp, 'state');
@@ -259,7 +360,7 @@ async function runEpisode(config, episode, arm, run, deriveId, onProgress) {
     stateDir: state,
     isolated: true,
     actor: 'user',
-    ...fixtureConfiguration(config, arm, episode.track, deriveId),
+    ...fixtureConfiguration(config, arm, episode.track, deriveId, kind),
   };
   let memory,
     service,
@@ -292,7 +393,10 @@ async function runEpisode(config, episode, arm, run, deriveId, onProgress) {
       get(target, property) {
         const value = target[property];
         return ['call', 'index', 'dream'].includes(property)
-          ? (...args) => accounting.run(currentCalls ?? [], () => value.apply(target, args))
+          ? (...args) =>
+              indexControl.run(factsControl, () =>
+                accounting.run(currentCalls ?? [], () => value.apply(target, args)),
+              )
           : value;
       },
     });
@@ -496,7 +600,7 @@ async function runEpisode(config, episode, arm, run, deriveId, onProgress) {
               originals
                 .get(rel)
                 .split('\n')
-                .filter((line) => !line.includes(`${episode.clock.slice(0, 4)}-01-`))
+                .filter((line) => !line.includes(`${episode.clock.slice(0, 4)}-`))
                 .join('\n'),
             );
           }
@@ -591,7 +695,8 @@ async function runEpisode(config, episode, arm, run, deriveId, onProgress) {
       });
     }
     await stop();
-    for (const [metric, { calls, finishedAt }] of metrics) {
+    for (const [metric, { calls: recorded, finishedAt }] of metrics) {
+      const calls = recorded.filter((call) => !call.scripted);
       const sum = (key) =>
         !calls.length
           ? 0
@@ -600,6 +705,7 @@ async function runEpisode(config, episode, arm, run, deriveId, onProgress) {
             : null;
       Object.assign(metric, {
         calls: calls.length,
+        scriptedIndexCalls: recorded.filter((call) => call.scripted).length,
         failures: calls.filter((call) => !call.ok).length,
         callsWithoutUsage: calls.filter((call) => !call.usage).length,
         backgroundCalls: calls.filter((call) => call.completedAt > finishedAt).length,

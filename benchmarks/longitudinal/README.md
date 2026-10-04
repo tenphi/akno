@@ -114,3 +114,78 @@ identifiers and dates. Neither this repair nor grader repairs change production 
 
 The [first baseline](results/first-baseline/README.md) records 104 reviewed live checkpoints, unmet gates,
 typed answer failures, usage gaps and the remaining #66 coverage.
+
+## Lifecycle extension and controlled model comparison
+
+The extension adds frozen English inference, discourse and overview trajectories. Read the
+[completion report](results/lifecycle-baseline/README.md) before interpreting a score. It records
+failed admission controls as well as useful output; it does not certify production reliability.
+
+```sh
+pnpm build
+pnpm bench:longitudinal:lifecycle --corpus lifecycle --freeze-inputs
+pnpm bench:longitudinal:lifecycle --corpus lifecycle --live --split development --runs 2 --derive-model MODEL --output bench-results/lifecycle/model-development-packet.json
+pnpm bench:longitudinal:lifecycle --corpus lifecycle --live --split held-out --runs 2 --derive-model MODEL --output bench-results/lifecycle/model-held-out-packet.json
+pnpm bench:longitudinal:lifecycle --review PACKET --judgments SOURCE_REVIEW --output SAFE_REPORT
+pnpm bench:longitudinal:regressions
+```
+
+Repeat both splits with the comparison derive model and the same answer/embedding roles. Each invocation
+contains extraction-only and maintained arms, with two fresh isolated repetitions. Raw packets and
+source reviews belong under ignored `bench-results/`. The public scorer projects fixed coordinates,
+typed judgments, counters and contract metadata; it never copies source text, answers, provider errors,
+credentials or endpoints. Freeze the input review in the output directory before any live invocation.
+Review the authored sources and expectations before egress, and assess every checkpoint against them.
+The checked-in review identity describes this baseline's author review, not independent adjudication.
+
+Select `--corpus inference` for explicit canonical subjects and an unrelated speculative distractor.
+Select `inference-control` to script **all page fact derivation** and seed three valid L2 dependencies;
+observation, scope, reflection, curation, retrieval and answer calls remain production operations.
+Generated pages receive no indexed facts in this control, so it cannot establish live L3 graph recovery.
+These are calibration controls on exposed sources, not fresh held-out quality measurements.
+`inference-authorized` adds the required `observations/**` inference role to that control.
+`inference-leaf-control` scripts only the six designated leaf pages, leaves generated-page fact
+derivation live, and includes that inference role. This separates leaf admission from live L3 indexing.
+`overview-authorized` runs the overview episodes with a twelve-item high-risk write allowance.
+Freeze each selection in its own output directory. Never pool these authority/index interventions
+with the original natural-extraction results.
+
+An inference trajectory has six checkpoints, with three bounded maintenance cycles at each; an
+overview trajectory has five. Corrections modify a reviewed leaf and reindex it normally; retractions
+remove its assertion. Restart/rebuild then tests that excluded dependencies do not return. The fixture
+world clock changes page selection and generation context without waiting months. It is not a test of
+OS timer/mtime behavior or a multi-day service deployment. Delayed maintenance is an unchanged-input
+checkpoint that can finish previously unadmitted work, not a claim that every inventory increase is
+a duplicate.
+
+The derive role couples extraction, retention verification, observation, scope assessment, reflection
+and curator decisions. Substituting it measures that coupled role, never consolidation alone. The
+scripted-index controls remove fact-extraction coupling to different extents; generator and verifier substitutions cannot be separated
+without changing the existing production role contract. Corpus/policies/budgets remain fixed within
+each comparison, and the compiled production artifacts bind embedded prompts and schema. Provider
+seeds and prices are unavailable, so seed/cost stay null. Two repetitions support descriptive min/max
+and per-repeat denominators, not a confidence interval or a population ranking. Concurrent provider
+load makes measured latency descriptive rather than a controlled speed comparison.
+
+Required positive coverage is an all-or-nothing authored proposition at each stage: a durable L2/L3
+output for memory, sufficient qualified evidence for recall/context, and explicit supported meaning
+for answers. Reading leaf sources can satisfy retrieval/answer coverage without demonstrating a stored
+reflection. Negative exclusion/ambiguity checks stay outside the useful-positive denominator. A withheld
+source-supported output is a missed-coverage (`false_hold`) coordinate, not proof that a runtime verifier
+incorrectly rejected a particular draft. Typed unavailable verification never earns semantic coverage.
+The gate requires zero accepted meaning errors, exact source bytes, no semantic duplicate growth on
+replay, focused context, available operations, and at least 80% positive coverage **in every stage**.
+
+Error IDs follow one meaning through stages/checkpoints. `first_observed` is the first reviewed
+checkpoint, not proof of the precise internal creation time; subsequent use is `propagated`.
+Detection/recovery receipts name the observer and bound, and may remain unresolved. A three-cycle
+checkpoint plus drained indexing gives an upper bound on recovery, not the exact failing model call.
+Seeded wrong facts, caller-seeded duplicate controls, and naturally generated errors remain distinct.
+Current unsupported hypothesis/scenario features (#64/#65), independent review, longer horizons and
+component-specific model substitutions are declared limitations, not implied capabilities.
+
+The regression command records existing invented production-path suites for admission, positive L3
+reflection and dependency removal, blocked-only plans followed by independent work, co-located
+observations, overview scope/quotes/tables/time, adoption rollback and maintenance recovery. Scripted
+regressions prove mechanics, not live-model quality. Luna's focused health tests are a separate receipt;
+they are not a test of Akno's live memory generation.

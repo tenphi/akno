@@ -1,0 +1,4058 @@
+[
+  {
+    "experiment": "lifecycle",
+    "label": "luna-development",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "08119872c34070ab9b0688c3bd1c27e56469f03845d3080705a49a76b24f94ed",
+    "inputReviewFingerprint": "1f8eeccfc03366a633c87f3f104e0a3399ab2f824d7ce75288b27b90e836aabe",
+    "packetFingerprint": "984d81804714846684454f3d9050c72c4b2a795d3167f9a53a5bb11cc046f2d7",
+    "split": "development",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "live",
+      "inferenceNamespace": null,
+      "models": {
+        "derive": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 15,
+            "required": 42,
+            "fraction": 0.35714285714285715
+          },
+          "recall": {
+            "covered": 21,
+            "required": 42,
+            "fraction": 0.5
+          },
+          "context": {
+            "covered": 10,
+            "required": 42,
+            "fraction": 0.23809523809523808
+          },
+          "answer": {
+            "covered": 14,
+            "required": 34,
+            "fraction": 0.4117647058823529
+          }
+        },
+        "semanticIncidences": {
+          "natural": 16,
+          "seeded": 0
+        },
+        "falseHolds": 73,
+        "unavailable": 1,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": false
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 14,
+            "required": 42,
+            "fraction": 0.3333333333333333
+          },
+          "recall": {
+            "covered": 20,
+            "required": 42,
+            "fraction": 0.47619047619047616
+          },
+          "context": {
+            "covered": 10,
+            "required": 42,
+            "fraction": 0.23809523809523808
+          },
+          "answer": {
+            "covered": 17,
+            "required": 34,
+            "fraction": 0.5
+          }
+        },
+        "semanticIncidences": {
+          "natural": 21,
+          "seeded": 0
+        },
+        "falseHolds": 72,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "lifecycle",
+    "label": "luna-held-out",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "08119872c34070ab9b0688c3bd1c27e56469f03845d3080705a49a76b24f94ed",
+    "inputReviewFingerprint": "1f8eeccfc03366a633c87f3f104e0a3399ab2f824d7ce75288b27b90e836aabe",
+    "packetFingerprint": "95708cf54212b5a64edd21b9298d4687f55a2c84ce1c7c40965b53a50a8c8704",
+    "split": "held-out",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "live",
+      "inferenceNamespace": null,
+      "models": {
+        "derive": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 16,
+            "required": 42,
+            "fraction": 0.38095238095238093
+          },
+          "recall": {
+            "covered": 22,
+            "required": 42,
+            "fraction": 0.5238095238095238
+          },
+          "context": {
+            "covered": 10,
+            "required": 42,
+            "fraction": 0.23809523809523808
+          },
+          "answer": {
+            "covered": 18,
+            "required": 34,
+            "fraction": 0.5294117647058824
+          }
+        },
+        "semanticIncidences": {
+          "natural": 16,
+          "seeded": 0
+        },
+        "falseHolds": 71,
+        "unavailable": 1,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": false
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 19,
+            "required": 42,
+            "fraction": 0.4523809523809524
+          },
+          "recall": {
+            "covered": 25,
+            "required": 42,
+            "fraction": 0.5952380952380952
+          },
+          "context": {
+            "covered": 10,
+            "required": 42,
+            "fraction": 0.23809523809523808
+          },
+          "answer": {
+            "covered": 21,
+            "required": 34,
+            "fraction": 0.6176470588235294
+          }
+        },
+        "semanticIncidences": {
+          "natural": 17,
+          "seeded": 0
+        },
+        "falseHolds": 67,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "lifecycle",
+    "label": "next-development",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "08119872c34070ab9b0688c3bd1c27e56469f03845d3080705a49a76b24f94ed",
+    "inputReviewFingerprint": "1f8eeccfc03366a633c87f3f104e0a3399ab2f824d7ce75288b27b90e836aabe",
+    "packetFingerprint": "98b96e07ca3320b0ff86f1a5ae5b69f536d7aa40364f7dee5208c65de14402b3",
+    "split": "development",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "live",
+      "inferenceNamespace": null,
+      "models": {
+        "derive": {
+          "id": "gpt-6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 16,
+            "required": 42,
+            "fraction": 0.38095238095238093
+          },
+          "recall": {
+            "covered": 22,
+            "required": 42,
+            "fraction": 0.5238095238095238
+          },
+          "context": {
+            "covered": 10,
+            "required": 42,
+            "fraction": 0.23809523809523808
+          },
+          "answer": {
+            "covered": 16,
+            "required": 34,
+            "fraction": 0.47058823529411764
+          }
+        },
+        "semanticIncidences": {
+          "natural": 16,
+          "seeded": 0
+        },
+        "falseHolds": 67,
+        "unavailable": 3,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": false
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 18,
+            "required": 42,
+            "fraction": 0.42857142857142855
+          },
+          "recall": {
+            "covered": 24,
+            "required": 42,
+            "fraction": 0.5714285714285714
+          },
+          "context": {
+            "covered": 10,
+            "required": 42,
+            "fraction": 0.23809523809523808
+          },
+          "answer": {
+            "covered": 19,
+            "required": 34,
+            "fraction": 0.5588235294117647
+          }
+        },
+        "semanticIncidences": {
+          "natural": 16,
+          "seeded": 0
+        },
+        "falseHolds": 70,
+        "unavailable": 1,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": false
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "lifecycle",
+    "label": "next-held-out",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "08119872c34070ab9b0688c3bd1c27e56469f03845d3080705a49a76b24f94ed",
+    "inputReviewFingerprint": "1f8eeccfc03366a633c87f3f104e0a3399ab2f824d7ce75288b27b90e836aabe",
+    "packetFingerprint": "e2496cd317c3b9fc90da28c27025722ef936d8aaa2aa70a848c721240889d689",
+    "split": "held-out",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "live",
+      "inferenceNamespace": null,
+      "models": {
+        "derive": {
+          "id": "gpt-6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 24,
+            "required": 42,
+            "fraction": 0.5714285714285714
+          },
+          "recall": {
+            "covered": 29,
+            "required": 42,
+            "fraction": 0.6904761904761905
+          },
+          "context": {
+            "covered": 10,
+            "required": 42,
+            "fraction": 0.23809523809523808
+          },
+          "answer": {
+            "covered": 21,
+            "required": 34,
+            "fraction": 0.6176470588235294
+          }
+        },
+        "semanticIncidences": {
+          "natural": 12,
+          "seeded": 0
+        },
+        "falseHolds": 56,
+        "unavailable": 2,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": false
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 24,
+            "required": 42,
+            "fraction": 0.5714285714285714
+          },
+          "recall": {
+            "covered": 30,
+            "required": 42,
+            "fraction": 0.7142857142857143
+          },
+          "context": {
+            "covered": 10,
+            "required": 42,
+            "fraction": 0.23809523809523808
+          },
+          "answer": {
+            "covered": 17,
+            "required": 34,
+            "fraction": 0.5
+          }
+        },
+        "semanticIncidences": {
+          "natural": 12,
+          "seeded": 0
+        },
+        "falseHolds": 58,
+        "unavailable": 2,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": false
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "inference",
+    "label": "luna-development",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+    "inputReviewFingerprint": "d6a391322a320f3247040a4f421441b00dd9521722e6434ca206cf8453789fb7",
+    "packetFingerprint": "924ab80e1bb20e39d54eefd6609d2ac8e8947410f76ad559974ef370021df7a7",
+    "split": "development",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "live",
+      "inferenceNamespace": null,
+      "models": {
+        "derive": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 0,
+            "required": 4,
+            "fraction": 0
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 22,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 0,
+            "required": 4,
+            "fraction": 0
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 22,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "inference",
+    "label": "luna-held-out",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+    "inputReviewFingerprint": "d6a391322a320f3247040a4f421441b00dd9521722e6434ca206cf8453789fb7",
+    "packetFingerprint": "397bae9170b843d32ea39b3ffd202c71fb6da8a8029c900ee3a671f29a424762",
+    "split": "held-out",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "live",
+      "inferenceNamespace": null,
+      "models": {
+        "derive": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 4,
+            "required": 4,
+            "fraction": 1
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 18,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 3,
+            "required": 4,
+            "fraction": 0.75
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 19,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "inference",
+    "label": "next-development",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+    "inputReviewFingerprint": "d6a391322a320f3247040a4f421441b00dd9521722e6434ca206cf8453789fb7",
+    "packetFingerprint": "d1fd79ec6ce525d248b3021ddf63dca344ba89a053f27a83142655b7116be6dc",
+    "split": "development",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "live",
+      "inferenceNamespace": null,
+      "models": {
+        "derive": {
+          "id": "gpt-6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 0,
+            "required": 4,
+            "fraction": 0
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 22,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 0,
+            "required": 4,
+            "fraction": 0
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 22,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "inference",
+    "label": "next-held-out",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+    "inputReviewFingerprint": "d6a391322a320f3247040a4f421441b00dd9521722e6434ca206cf8453789fb7",
+    "packetFingerprint": "a6083ed26e88c7f32bc96b95d13ba904f9121e83971c1261342a5c8a0d38af3e",
+    "split": "held-out",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "live",
+      "inferenceNamespace": null,
+      "models": {
+        "derive": {
+          "id": "gpt-6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 2,
+            "required": 4,
+            "fraction": 0.5
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 20,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 3,
+            "required": 4,
+            "fraction": 0.75
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 19,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "inference-control",
+    "label": "luna-development",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+    "inputReviewFingerprint": "d7be465634989177e5de4ac64987d973e2ac6043715c8a8a337909fb075f3b84",
+    "packetFingerprint": "a584b6e52a968d13d9a73bb990b7b7d5b36c61dd6c766dd7f54a4cb512f3fbce",
+    "split": "development",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "scripted_positive_control",
+      "inferenceNamespace": null,
+      "models": {
+        "derive": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 1,
+            "required": 4,
+            "fraction": 0.25
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 19,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 2,
+            "required": 4,
+            "fraction": 0.5
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 18,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "inference-control",
+    "label": "luna-held-out",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+    "inputReviewFingerprint": "d7be465634989177e5de4ac64987d973e2ac6043715c8a8a337909fb075f3b84",
+    "packetFingerprint": "e6de638313e243aab55479939b0df554cc1eb3b1b35f7474abead27ba2b0101e",
+    "split": "held-out",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "scripted_positive_control",
+      "inferenceNamespace": null,
+      "models": {
+        "derive": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 4,
+            "required": 4,
+            "fraction": 1
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 16,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 2,
+            "required": 4,
+            "fraction": 0.5
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 18,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "inference-control",
+    "label": "next-development",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+    "inputReviewFingerprint": "d7be465634989177e5de4ac64987d973e2ac6043715c8a8a337909fb075f3b84",
+    "packetFingerprint": "93fcaf1b814b1b638f197b5a6c3b7cc8188d4e41f7eda7d616d96eb5dfed8ec5",
+    "split": "development",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "scripted_positive_control",
+      "inferenceNamespace": null,
+      "models": {
+        "derive": {
+          "id": "gpt-6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 2,
+            "required": 4,
+            "fraction": 0.5
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 18,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 2,
+            "required": 4,
+            "fraction": 0.5
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 18,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "inference-control",
+    "label": "next-held-out",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+    "inputReviewFingerprint": "d7be465634989177e5de4ac64987d973e2ac6043715c8a8a337909fb075f3b84",
+    "packetFingerprint": "311579258cf89632bbe2e5166a6467618e842a02cdad4ddc1998e6d0e6e43ba1",
+    "split": "held-out",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "scripted_positive_control",
+      "inferenceNamespace": null,
+      "models": {
+        "derive": {
+          "id": "gpt-6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 2,
+            "required": 4,
+            "fraction": 0.5
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 18,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 3,
+            "required": 4,
+            "fraction": 0.75
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 17,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "overview-authorized",
+    "label": "luna-development",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "fd734552a7d4810c2e4cc772a15de330c67d465e8cb4bab0d4496c901bd0feca",
+    "inputReviewFingerprint": "11c87de57e11f96e5d4ccdfeba11304945f6e16d176145b38beb6bd8d849cdd4",
+    "packetFingerprint": "e1b43eff16d1d6cebbe2fd3f6bbea57b57eb7a6e17c1fe1eec4f8b885b3aca2b",
+    "split": "development",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 12,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "live",
+      "inferenceNamespace": null,
+      "models": {
+        "derive": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 10,
+            "required": 20,
+            "fraction": 0.5
+          },
+          "recall": {
+            "covered": 16,
+            "required": 20,
+            "fraction": 0.8
+          },
+          "context": {
+            "covered": 10,
+            "required": 20,
+            "fraction": 0.5
+          },
+          "answer": {
+            "covered": 10,
+            "required": 18,
+            "fraction": 0.5555555555555556
+          }
+        },
+        "semanticIncidences": {
+          "natural": 12,
+          "seeded": 0
+        },
+        "falseHolds": 20,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 16,
+            "required": 20,
+            "fraction": 0.8
+          },
+          "recall": {
+            "covered": 16,
+            "required": 20,
+            "fraction": 0.8
+          },
+          "context": {
+            "covered": 16,
+            "required": 20,
+            "fraction": 0.8
+          },
+          "answer": {
+            "covered": 10,
+            "required": 18,
+            "fraction": 0.5555555555555556
+          }
+        },
+        "semanticIncidences": {
+          "natural": 12,
+          "seeded": 0
+        },
+        "falseHolds": 16,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "overview-authorized",
+    "label": "luna-held-out",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "fd734552a7d4810c2e4cc772a15de330c67d465e8cb4bab0d4496c901bd0feca",
+    "inputReviewFingerprint": "11c87de57e11f96e5d4ccdfeba11304945f6e16d176145b38beb6bd8d849cdd4",
+    "packetFingerprint": "63b584a719d53aeb73d539e59d06a9568c0370e29271375b7c23b4ea87fa4d58",
+    "split": "held-out",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 12,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "live",
+      "inferenceNamespace": null,
+      "models": {
+        "derive": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 10,
+            "required": 20,
+            "fraction": 0.5
+          },
+          "recall": {
+            "covered": 16,
+            "required": 20,
+            "fraction": 0.8
+          },
+          "context": {
+            "covered": 10,
+            "required": 20,
+            "fraction": 0.5
+          },
+          "answer": {
+            "covered": 10,
+            "required": 18,
+            "fraction": 0.5555555555555556
+          }
+        },
+        "semanticIncidences": {
+          "natural": 12,
+          "seeded": 0
+        },
+        "falseHolds": 21,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 18,
+            "required": 20,
+            "fraction": 0.9
+          },
+          "recall": {
+            "covered": 18,
+            "required": 20,
+            "fraction": 0.9
+          },
+          "context": {
+            "covered": 18,
+            "required": 20,
+            "fraction": 0.9
+          },
+          "answer": {
+            "covered": 12,
+            "required": 18,
+            "fraction": 0.6666666666666666
+          }
+        },
+        "semanticIncidences": {
+          "natural": 6,
+          "seeded": 0
+        },
+        "falseHolds": 10,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "overview-authorized",
+    "label": "next-development",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "fd734552a7d4810c2e4cc772a15de330c67d465e8cb4bab0d4496c901bd0feca",
+    "inputReviewFingerprint": "11c87de57e11f96e5d4ccdfeba11304945f6e16d176145b38beb6bd8d849cdd4",
+    "packetFingerprint": "cc68033feb4ef9162457e0e44e35e760c7e084c1bf043f387292da639b28cb6f",
+    "split": "development",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 12,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "live",
+      "inferenceNamespace": null,
+      "models": {
+        "derive": {
+          "id": "gpt-6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 10,
+            "required": 20,
+            "fraction": 0.5
+          },
+          "recall": {
+            "covered": 16,
+            "required": 20,
+            "fraction": 0.8
+          },
+          "context": {
+            "covered": 10,
+            "required": 20,
+            "fraction": 0.5
+          },
+          "answer": {
+            "covered": 12,
+            "required": 18,
+            "fraction": 0.6666666666666666
+          }
+        },
+        "semanticIncidences": {
+          "natural": 12,
+          "seeded": 0
+        },
+        "falseHolds": 21,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 20,
+            "required": 20,
+            "fraction": 1
+          },
+          "recall": {
+            "covered": 20,
+            "required": 20,
+            "fraction": 1
+          },
+          "context": {
+            "covered": 20,
+            "required": 20,
+            "fraction": 1
+          },
+          "answer": {
+            "covered": 12,
+            "required": 18,
+            "fraction": 0.6666666666666666
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 5,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "overview-authorized",
+    "label": "next-held-out",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "fd734552a7d4810c2e4cc772a15de330c67d465e8cb4bab0d4496c901bd0feca",
+    "inputReviewFingerprint": "11c87de57e11f96e5d4ccdfeba11304945f6e16d176145b38beb6bd8d849cdd4",
+    "packetFingerprint": "1bbb27af15468837a67e1749d0688b08d343801463be79787e2f1d1f0484be0d",
+    "split": "held-out",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 12,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "live",
+      "inferenceNamespace": null,
+      "models": {
+        "derive": {
+          "id": "gpt-6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 10,
+            "required": 20,
+            "fraction": 0.5
+          },
+          "recall": {
+            "covered": 16,
+            "required": 20,
+            "fraction": 0.8
+          },
+          "context": {
+            "covered": 10,
+            "required": 20,
+            "fraction": 0.5
+          },
+          "answer": {
+            "covered": 14,
+            "required": 18,
+            "fraction": 0.7777777777777778
+          }
+        },
+        "semanticIncidences": {
+          "natural": 12,
+          "seeded": 0
+        },
+        "falseHolds": 20,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 20,
+            "required": 20,
+            "fraction": 1
+          },
+          "recall": {
+            "covered": 20,
+            "required": 20,
+            "fraction": 1
+          },
+          "context": {
+            "covered": 20,
+            "required": 20,
+            "fraction": 1
+          },
+          "answer": {
+            "covered": 10,
+            "required": 18,
+            "fraction": 0.5555555555555556
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 5,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "inference-authorized",
+    "label": "luna-development",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+    "inputReviewFingerprint": "df22e29c70733c98571c3ffc4e793c65ea5b05e70586836be90bc40954f9faa8",
+    "packetFingerprint": "017bb691dfe5b69ccf0c43e034aa00a2e401843fd56d871549aaee19dabaf3a3",
+    "split": "development",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "scripted_positive_control",
+      "inferenceNamespace": "observations",
+      "models": {
+        "derive": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 1,
+            "required": 4,
+            "fraction": 0.25
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 19,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 2,
+            "required": 4,
+            "fraction": 0.5
+          }
+        },
+        "semanticIncidences": {
+          "natural": 6,
+          "seeded": 0
+        },
+        "falseHolds": 16,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "inference-authorized",
+    "label": "luna-held-out",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+    "inputReviewFingerprint": "df22e29c70733c98571c3ffc4e793c65ea5b05e70586836be90bc40954f9faa8",
+    "packetFingerprint": "0d0faa98c1a4132199efbe1f4845680427d4c61f606672cf30fffa1645f39a17",
+    "split": "held-out",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "scripted_positive_control",
+      "inferenceNamespace": "observations",
+      "models": {
+        "derive": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 3,
+            "required": 4,
+            "fraction": 0.75
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 17,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "recall": {
+            "covered": 3,
+            "required": 6,
+            "fraction": 0.5
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 1,
+            "required": 4,
+            "fraction": 0.25
+          }
+        },
+        "semanticIncidences": {
+          "natural": 6,
+          "seeded": 0
+        },
+        "falseHolds": 16,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "inference-authorized",
+    "label": "next-development",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+    "inputReviewFingerprint": "df22e29c70733c98571c3ffc4e793c65ea5b05e70586836be90bc40954f9faa8",
+    "packetFingerprint": "6f65ad4113038b50b4787e491d23929e42207de34bf86bcfbfc4f8d0bacdd69f",
+    "split": "development",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "scripted_positive_control",
+      "inferenceNamespace": "observations",
+      "models": {
+        "derive": {
+          "id": "gpt-6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 2,
+            "required": 4,
+            "fraction": 0.5
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 18,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 1,
+            "required": 4,
+            "fraction": 0.25
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 19,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "inference-authorized",
+    "label": "next-held-out",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+    "inputReviewFingerprint": "df22e29c70733c98571c3ffc4e793c65ea5b05e70586836be90bc40954f9faa8",
+    "packetFingerprint": "9091cd2ff0114981a0babf3d83f1f1cf94268c03eb62fe44433b9c15689dc1b5",
+    "split": "held-out",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "scripted_positive_control",
+      "inferenceNamespace": "observations",
+      "models": {
+        "derive": {
+          "id": "gpt-6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 3,
+            "required": 4,
+            "fraction": 0.75
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 17,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 2,
+            "required": 4,
+            "fraction": 0.5
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 18,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "inference-leaf-control",
+    "label": "luna-development",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+    "inputReviewFingerprint": "441504ec8708df564810f48e2ff28e7bd91c6f4adc4cbd1f48f71f321b87aca7",
+    "packetFingerprint": "36f9533b21c6ddb51bb2d6fc0eaa7fbff492336ce89537500021883bcd1867c8",
+    "split": "development",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "scripted_source_leaves",
+      "inferenceNamespace": "observations",
+      "models": {
+        "derive": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 2,
+            "required": 4,
+            "fraction": 0.5
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 18,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 1,
+            "required": 6,
+            "fraction": 0.16666666666666666
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 1,
+            "required": 4,
+            "fraction": 0.25
+          }
+        },
+        "semanticIncidences": {
+          "natural": 3,
+          "seeded": 0
+        },
+        "falseHolds": 18,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "inference-leaf-control",
+    "label": "luna-held-out",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+    "inputReviewFingerprint": "441504ec8708df564810f48e2ff28e7bd91c6f4adc4cbd1f48f71f321b87aca7",
+    "packetFingerprint": "7779aaeeaf4fd9a50a6ce57ed6f002c530e33e2a044027162771dfcaa9e82e10",
+    "split": "held-out",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "scripted_source_leaves",
+      "inferenceNamespace": "observations",
+      "models": {
+        "derive": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 4,
+            "required": 4,
+            "fraction": 1
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 16,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 0,
+            "required": 4,
+            "fraction": 0
+          }
+        },
+        "semanticIncidences": {
+          "natural": 18,
+          "seeded": 0
+        },
+        "falseHolds": 18,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": false,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "inference-leaf-control",
+    "label": "next-development",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+    "inputReviewFingerprint": "441504ec8708df564810f48e2ff28e7bd91c6f4adc4cbd1f48f71f321b87aca7",
+    "packetFingerprint": "c8fd269e0ef4896c8f2b31042f28f0b759a134b3adc0f443ad6faae1253a36b9",
+    "split": "development",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "scripted_source_leaves",
+      "inferenceNamespace": "observations",
+      "models": {
+        "derive": {
+          "id": "gpt-6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 1,
+            "required": 4,
+            "fraction": 0.25
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 19,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 1,
+            "required": 4,
+            "fraction": 0.25
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 19,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  },
+  {
+    "experiment": "inference-leaf-control",
+    "label": "next-held-out",
+    "version": "lifecycle-report-v1",
+    "corpusFingerprint": "3fa5b8ab02fbdd1619969ebca9937bccfa575ebbb080fc2e15c8bfbc6271ef40",
+    "inputReviewFingerprint": "441504ec8708df564810f48e2ff28e7bd91c6f4adc4cbd1f48f71f321b87aca7",
+    "packetFingerprint": "234246ebcbad533ea57a18af8e35ae05b620e4667843fa799e585dc9c1f0f3f0",
+    "split": "held-out",
+    "runs": 2,
+    "reviewer": {
+      "id": "Codex-author-source-review",
+      "sourceBased": true,
+      "independent": false
+    },
+    "contract": {
+      "runtime": "built-core-socket-built-client",
+      "measurement": "socket-scoped-drained-index-v2",
+      "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+      "retrievalBudget": 6000,
+      "answerOutputTokens": 2400,
+      "cycles": 3,
+      "maxItems": 12,
+      "maxFiles": 12,
+      "maxBytes": 65536,
+      "maxHighRiskItems": 0,
+      "facts": "inference_only",
+      "summaries": false,
+      "expansion": false,
+      "reranker": false,
+      "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+      "seed": null,
+      "cost": null,
+      "indexMode": "scripted_source_leaves",
+      "inferenceNamespace": "observations",
+      "models": {
+        "derive": {
+          "id": "gpt-6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 300000,
+          "maxOutputTokens": 16384,
+          "reasoningEffort": null,
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "answer": {
+          "id": "gpt-5.6-luna",
+          "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": 1024,
+          "reasoningEffort": "low",
+          "dimensions": null,
+          "maxRetries": 2
+        },
+        "embedding": {
+          "id": "text-embedding-qwen3-embedding-0.6b",
+          "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+          "enabled": true,
+          "timeoutMs": 60000,
+          "maxOutputTokens": null,
+          "reasoningEffort": null,
+          "dimensions": 1024,
+          "maxRetries": 2
+        }
+      },
+      "artifacts": {
+        "core/dist/write/retain.js": "e74ab7eeacd4ec9041acb9b695f79a2c381e0df8f9417af627efbed2806c618b",
+        "core/dist/maintenance/dream.js": "3f3e141ae7665ea5fdc802a41a62e6c6b9fca8e2e32646d9949a63b523dbdac7",
+        "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+        "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+        "core/dist/maintenance/curate.js": "9ef0ae9b50b3dea8d33e562040003740edd28e32dea60e1e82d753e1f8dc360e",
+        "core/dist/maintenance/overview.js": "0ee7f1daede186a8544fd74e40016c8478505925a1db3777f10b157d243b3bc4",
+        "core/dist/observations/projection.js": "a0b09869a0cdccba4adb62b37d6c6267941c4567a414ff93599aaa02467048b3",
+        "core/dist/ops/answer.js": "d73bb3ffa00e9913c0679656b3c293662548d96cd38233d66f157e29f129f23a",
+        "core/dist/open.js": "0178d971c45dfac77d589f1de572d524d5a6c7d94069cc3a86cb33f89aaff30a",
+        "cli/dist/serve/socket.js": "c049024426fe7596f3c0f947a092966802ca801f7a3665bdfdbd4f04910fb361",
+        "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+      }
+    },
+    "gates": {
+      "semanticErrors": 0,
+      "sourceMutations": 0,
+      "usefulCoverage": 0.8,
+      "replayDuplicateGrowth": 0
+    },
+    "groups": [
+      {
+        "arm": "extract-only",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 3,
+            "required": 4,
+            "fraction": 0.75
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 17,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      },
+      {
+        "arm": "maintained",
+        "coverage": {
+          "memory": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "recall": {
+            "covered": 2,
+            "required": 6,
+            "fraction": 0.3333333333333333
+          },
+          "context": {
+            "covered": 0,
+            "required": 6,
+            "fraction": 0
+          },
+          "answer": {
+            "covered": 3,
+            "required": 4,
+            "fraction": 0.75
+          }
+        },
+        "semanticIncidences": {
+          "natural": 0,
+          "seeded": 0
+        },
+        "falseHolds": 17,
+        "unavailable": 0,
+        "gates": {
+          "zeroSemanticErrors": true,
+          "sourceIntegrity": true,
+          "replayStable": true,
+          "usefulCoverage": false,
+          "focusedContext": true,
+          "operationsAvailable": true
+        },
+        "passed": false
+      }
+    ]
+  }
+]

@@ -6,6 +6,7 @@ import {
   LIFECYCLE_GATES,
   type LifecycleEpisode,
 } from './longitudinal-lifecycle-corpus.ts';
+import { INFERENCE_CORPUS, INFERENCE_CORPUS_VERSION } from './longitudinal-inference-corpus.ts';
 
 const hash = (value: unknown) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const stages = ['memory', 'recall', 'context', 'answer'] as const;
@@ -80,7 +81,30 @@ const reviewSchema = z
   .strict();
 const metricSchema = z
   .object({
-    stage: z.string().regex(/^[a-z0-9:-]+$/),
+    stage: z.enum([
+      'answer',
+      'context',
+      'drain-and-reopen',
+      'dream:1',
+      'dream:2',
+      'dream:3',
+      'index-inputs',
+      'index-ready',
+      'index-setup',
+      'read',
+      'rebuild',
+      'recall',
+      'restart',
+      'retain:booking',
+      'retain:copy',
+      'retain:correction',
+      'retain:decision',
+      'retain:replay',
+      'retain:scope',
+      'retract:booking',
+      'retract:copy',
+      'retract:correction',
+    ]),
     latencyMs: z.number().nonnegative(),
     failed: z.boolean(),
     calls: z.number().int().nonnegative(),
@@ -92,6 +116,7 @@ const metricSchema = z
     totalTokens: z.number().nonnegative().nullable(),
     modelLatencyMs: z.number().nonnegative(),
     endpointRequests: z.number().int().nonnegative().nullable(),
+    scriptedIndexCalls: z.number().int().nonnegative().default(0),
   })
   .strict();
 const modelSchema = z
@@ -106,6 +131,39 @@ const modelSchema = z
     maxRetries: z.number().nullable(),
   })
   .strict();
+// Only typed receipts are public. Private prose accidentally occupying a code field must fail closed.
+const phaseReceiptSchema = z.object({
+  phase: z.enum(['observe', 'reflect', 'curate', 'adopt', 'conflicts', 'repair', 'housekeeping']),
+  ran: z.boolean(),
+});
+const itemReceiptSchema = z.object({
+  kind: z.enum(['observe', 'reflect', 'synthesis']),
+  status: z.enum([
+    'proposed',
+    'approved',
+    'rejected',
+    'blocked',
+    'stale',
+    'applying',
+    'applied',
+    'verification_pending',
+    'verification_failed',
+  ]),
+  statusCode: z
+    .enum([
+      'budget_exhausted',
+      'dependency_conflict',
+      'dependency_unmet',
+      'inverse_transformation',
+      'snapshot_drift',
+      'source_revision_unsupported',
+    ])
+    .nullable(),
+});
+const controlReceiptSchema = z.object({
+  status: z.enum(['not_admitted', 'seeded_valid_lineage']),
+  seeded: z.number().int().nonnegative(),
+});
 const contractSchema = z
   .object({
     runtime: z.literal('built-core-socket-built-client'),
@@ -119,7 +177,7 @@ const contractSchema = z
     maxItems: z.literal(12),
     maxFiles: z.literal(12),
     maxBytes: z.literal(65536),
-    maxHighRiskItems: z.literal(0),
+    maxHighRiskItems: z.union([z.literal(0), z.literal(12)]),
     facts: z.literal('inference_only'),
     summaries: z.literal(false),
     expansion: z.literal(false),
@@ -127,8 +185,25 @@ const contractSchema = z
     clock: z.literal('fixture_process_Date_fixed_source_clock_explicit_when_available'),
     seed: z.null(),
     cost: z.null(),
+    indexMode: z.enum(['live', 'scripted_positive_control', 'scripted_source_leaves']).default('live'),
+    inferenceNamespace: z.union([z.literal('observations'), z.null()]).default(null),
     models: z.object({ derive: modelSchema, answer: modelSchema, embedding: modelSchema }).strict(),
-    artifacts: z.record(z.string(), z.string().regex(/^[a-f0-9]{64}$/)),
+    artifacts: z.record(z.string(), z.string().regex(/^[a-f0-9]{64}$/)).refine((value) => {
+      const names = [
+        'core/dist/write/retain.js',
+        'core/dist/maintenance/dream.js',
+        'core/dist/maintenance/observe.js',
+        'core/dist/maintenance/observation-scope.js',
+        'core/dist/maintenance/curate.js',
+        'core/dist/maintenance/overview.js',
+        'core/dist/observations/projection.js',
+        'core/dist/ops/answer.js',
+        'core/dist/open.js',
+        'cli/dist/serve/socket.js',
+        'client/dist/index.js',
+      ];
+      return Object.keys(value).length === names.length && names.every((name) => name in value);
+    }, 'Require exactly the recorded compiled artifacts.'),
   })
   .strict();
 
@@ -139,13 +214,14 @@ interface Checkpoint {
   run: number;
   step: string;
   seeded: boolean;
-  pages: { lines?: unknown[] }[];
+  pages: { slug: string; lines?: unknown[] }[];
   recall: { status: string; results?: unknown[] } | null;
   context: { status: string; results?: unknown[]; pinned?: unknown[]; timeline?: unknown[] } | null;
   answer: { status: string; answer: string | null; reason_code?: string } | null;
   before: { observations: { id: string; eligible: number }[]; supports: unknown[] };
   after: {
     observations: { id: string; eligible: number }[];
+    facts: { slug: string; eligibility: string | null; traversable: number | null }[];
     supports: unknown[];
     sourceBytesUnchanged: boolean;
   };
@@ -172,12 +248,40 @@ interface Packet {
 /** Source-authored judgments, never a regex or another model's agreement as truth. */
 export function adjudicateLifecycle(packet: Packet, judgments: unknown) {
   const review = reviewSchema.parse(judgments);
+  const corpus =
+    packet.version === 'longitudinal-overview-authorized-v1'
+      ? LIFECYCLE_CORPUS.filter((episode) => episode.track === 'overview')
+      : packet.version !== LIFECYCLE_CORPUS_VERSION
+        ? INFERENCE_CORPUS
+        : LIFECYCLE_CORPUS;
   if (
-    packet.version !== LIFECYCLE_CORPUS_VERSION ||
-    packet.corpusFingerprint !== hash(LIFECYCLE_CORPUS) ||
+    ![
+      LIFECYCLE_CORPUS_VERSION,
+      INFERENCE_CORPUS_VERSION,
+      'longitudinal-inference-control-v1',
+      'longitudinal-inference-authorized-v1',
+      'longitudinal-inference-leaf-control-v1',
+      'longitudinal-overview-authorized-v1',
+    ].includes(packet.version) ||
+    packet.corpusFingerprint !== hash(corpus) ||
     review.packetFingerprint !== hash(packet)
   )
     throw new Error('Stale corpus or packet fingerprint.');
+  const frozenInputReview = {
+    version: packet.version,
+    corpusFingerprint: hash(corpus),
+    reviewer: { id: 'Codex', sourceBased: true, independent: false, beforeOutputs: true },
+    limitations: [
+      'author_review_not_independent',
+      'coupled_derive_role_substitution',
+      'two_repeats_descriptive_only',
+      'seeded_valid_L2_control_is_not_natural_generation',
+      'unsupported_hypothesis_scenario_features_not_implemented',
+    ],
+    gates: LIFECYCLE_GATES,
+  };
+  if (packet.inputReviewFingerprint !== hash(frozenInputReview))
+    throw new Error('Stale input-review fingerprint.');
   if (
     !['development', 'held-out'].includes(packet.split) ||
     !Number.isInteger(packet.runs) ||
@@ -186,7 +290,19 @@ export function adjudicateLifecycle(packet: Packet, judgments: unknown) {
   )
     throw new Error('Invalid split/repeats.');
   const contract = contractSchema.parse(packet.contract);
-  const episodes = LIFECYCLE_CORPUS.filter((episode) => episode.split === packet.split);
+  if (
+    ['longitudinal-inference-control-v1', 'longitudinal-inference-authorized-v1'].includes(packet.version) !==
+      (contract.indexMode === 'scripted_positive_control') ||
+    (packet.version === 'longitudinal-inference-leaf-control-v1') !==
+      (contract.indexMode === 'scripted_source_leaves') ||
+    ['longitudinal-inference-authorized-v1', 'longitudinal-inference-leaf-control-v1'].includes(
+      packet.version,
+    ) !==
+      (contract.inferenceNamespace === 'observations') ||
+    (packet.version === 'longitudinal-overview-authorized-v1') !== (contract.maxHighRiskItems === 12)
+  )
+    throw new Error('Scripted index controls cannot be relabeled as natural extraction.');
+  const episodes = corpus.filter((episode) => episode.split === packet.split);
   const expected = new Map<
     string,
     { episode: LifecycleEpisode; step: LifecycleEpisode['steps'][number]; arm: string; run: number }
@@ -213,7 +329,10 @@ export function adjudicateLifecycle(packet: Packet, judgments: unknown) {
   )
     throw new Error('Require every unique checkpoint.');
   const reviews = new Map(review.checkpoints.map((row) => [row.key, row]));
+  if (packet.checkpoints.some((row, index) => row.key !== [...expected.keys()][index]))
+    throw new Error('Checkpoint order must match the source trajectory.');
   const seenErrors = new Set<string>();
+  const errorKinds = new Map<string, string>();
   const rows = packet.checkpoints.map((checkpoint) => {
     const coordinate = expected.get(checkpoint.key),
       judged = reviews.get(checkpoint.key);
@@ -266,12 +385,18 @@ export function adjudicateLifecycle(packet: Packet, judgments: unknown) {
         (judgment.outcome !== 'unavailable' || judgment.covered.length || judgment.errors.length)
       )
         throw new Error('Availability cannot become semantic coverage.');
+      if (!unavailable && judgment.outcome === 'unavailable')
+        throw new Error('Available operations cannot be relabeled unavailable.');
       if (!output && judgment.covered.some((id) => positive.has(id)))
         throw new Error('Positive coverage needs output.');
       if (stage === 'answer' && !output && judgment.errors.length)
         throw new Error('A withheld answer cannot promote an error.');
       const errors = judgment.errors.map((error) => {
-        const identity = `${checkpoint.episode}/${checkpoint.arm}/${checkpoint.run}/${stage}/${error.id}`;
+        const identity = `${checkpoint.episode}/${checkpoint.arm}/${checkpoint.run}/${error.id}`;
+        const kind = `${error.code}/${error.origin}`;
+        if (errorKinds.has(identity) && errorKinds.get(identity) !== kind)
+          throw new Error('An error trajectory cannot change code or origin.');
+        errorKinds.set(identity, kind);
         const event = seenErrors.has(identity) ? 'propagated' : 'first_observed';
         seenErrors.add(identity);
         return { ...error, event };
@@ -287,6 +412,17 @@ export function adjudicateLifecycle(packet: Packet, judgments: unknown) {
       };
     });
     const operations = checkpoint.operations.map((metric) => metricSchema.parse(metric));
+    if (contract.indexMode === 'live' && operations.some((metric) => metric.scriptedIndexCalls > 0))
+      throw new Error('Scripted calls cannot be relabeled as live indexing.');
+    for (const event of judged.recovery) {
+      const identity = `${checkpoint.episode}/${checkpoint.arm}/${checkpoint.run}/${event.errorId}`;
+      if (!seenErrors.has(identity)) throw new Error('Recovery requires an observed error trajectory.');
+      if (
+        event.event === 'recovered' &&
+        stageRows.some((stage) => stage.errors.some((error) => error.id === event.errorId))
+      )
+        throw new Error('An error still used at this checkpoint cannot be recovered.');
+    }
     const eligible = checkpoint.after.observations.filter((row) => row.eligible === 1);
     const replay = coordinate.step.id.startsWith('unchanged');
     return {
@@ -303,16 +439,24 @@ export function adjudicateLifecycle(packet: Packet, judgments: unknown) {
       sourceBytesUnchanged: checkpoint.after.sourceBytesUnchanged,
       eligibleObservations: eligible.length,
       eligibleSeededObservations: eligible.filter((row) => row.id.startsWith('obs_seeded_')).length,
+      reflectedPagePresent: checkpoint.pages.some((page) => page.slug === 'observations/principles'),
+      reflectedFacts: {
+        indexed: checkpoint.after.facts.filter((fact) => fact.slug === 'observations/principles').length,
+        eligible: checkpoint.after.facts.filter(
+          (fact) => fact.slug === 'observations/principles' && fact.eligibility === 'eligible',
+        ).length,
+        traversable: checkpoint.after.facts.filter(
+          (fact) => fact.slug === 'observations/principles' && fact.traversable === 1,
+        ).length,
+      },
       replayInventoryGrowth: replay
         ? Math.max(0, checkpoint.after.supports.length - checkpoint.before.supports.length) +
           Math.max(0, checkpoint.after.observations.length - checkpoint.before.observations.length)
         : null,
       focusedContext: !checkpoint.context?.pinned?.length && !checkpoint.context?.timeline?.length,
-      control: checkpoint.control
-        ? { status: checkpoint.control.status, seeded: checkpoint.control.seeded }
-        : null,
+      control: checkpoint.control ? controlReceiptSchema.parse(checkpoint.control) : null,
       maintenance: checkpoint.maintenance.map((cycle) => ({
-        phases: cycle.phases.map((phase) => ({ phase: phase.phase, ran: phase.ran })),
+        phases: cycle.phases.map((phase) => phaseReceiptSchema.parse(phase)),
         observations: cycle.observations.length,
         rejected: cycle.rejected.length,
         applied: cycle.maintenancePlans
@@ -322,7 +466,7 @@ export function adjudicateLifecycle(packet: Packet, judgments: unknown) {
           .length,
         itemOutcomes: cycle.maintenancePlans
           .flatMap((plan) => plan.items)
-          .map((item) => ({ kind: item.kind, status: item.status, statusCode: item.statusCode })),
+          .map((item) => itemReceiptSchema.parse(item)),
       })),
     };
   });
@@ -353,7 +497,11 @@ export function adjudicateLifecycle(packet: Packet, judgments: unknown) {
         (value) => value.fraction !== null && value.fraction >= LIFECYCLE_GATES.usefulCoverage,
       ),
       focusedContext: checkpoints.every((row) => row.focusedContext),
-      operationsAvailable: checkpoints.every((row) => row.operations.every((operation) => !operation.failed)),
+      operationsAvailable: checkpoints.every(
+        (row) =>
+          row.operations.every((operation) => !operation.failed) &&
+          row.stages.every((stage) => stage.outcome !== 'unavailable'),
+      ),
     };
     return {
       arm,

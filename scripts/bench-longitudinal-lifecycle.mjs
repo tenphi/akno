@@ -7,6 +7,7 @@ import { adjudicateLifecycle } from '../packages/core/src/bench/longitudinal-lif
 const { values } = parseArgs({
   options: {
     live: { type: 'boolean' },
+    corpus: { type: 'string', default: 'lifecycle' },
     'freeze-inputs': { type: 'boolean' },
     split: { type: 'string', default: 'development' },
     runs: { type: 'string', default: '2' },
@@ -20,8 +21,22 @@ const write = (file, value) => {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n');
 };
+if (
+  ![
+    'lifecycle',
+    'inference',
+    'inference-control',
+    'inference-authorized',
+    'inference-leaf-control',
+    'overview-authorized',
+  ].includes(values.corpus)
+)
+  throw new Error('Unknown corpus.');
 if (values['freeze-inputs'])
-  write(values.output ?? 'bench-results/lifecycle/input-review.json', lifecycleInputReview());
+  write(
+    values.output ?? `bench-results/${values.corpus}/input-review.json`,
+    lifecycleInputReview(values.corpus),
+  );
 else if (values.review && values.judgments) {
   write(
     values.output ?? 'bench-results/lifecycle/report.json',
@@ -31,11 +46,12 @@ else if (values.review && values.judgments) {
     ),
   );
 } else if (values.live && ['development', 'held-out'].includes(values.split) && /^[1-5]$/.test(values.runs)) {
-  const output = values.output ?? `bench-results/lifecycle/${values.split}-packet.json`;
+  const output = values.output ?? `bench-results/${values.corpus}/${values.split}-packet.json`;
   const frozen = path.join(path.dirname(output), 'input-review.json');
   if (
     !fs.existsSync(frozen) ||
-    lifecycleHash(JSON.parse(fs.readFileSync(frozen, 'utf8'))) !== lifecycleHash(lifecycleInputReview())
+    lifecycleHash(JSON.parse(fs.readFileSync(frozen, 'utf8'))) !==
+      lifecycleHash(lifecycleInputReview(values.corpus))
   )
     throw new Error('Freeze and source-review this version before model egress.');
   const config = loadConfig();
@@ -43,6 +59,7 @@ else if (values.review && values.judgments) {
     split: values.split,
     runs: Number(values.runs),
     deriveId: values['derive-model'] ?? config.models.derive.id,
+    corpus: values.corpus,
     onProgress: (key) => console.error(key),
   });
   write(output, packet);
