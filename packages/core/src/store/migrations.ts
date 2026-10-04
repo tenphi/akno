@@ -13,7 +13,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 47;
+export const SCHEMA_VERSION = 48;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -54,6 +54,7 @@ export const MUTATION_RECEIPTS_MIGRATION_INDEX = 35;
 export const EVENT_IDENTITY_RELATION_MIGRATION_INDEX = 38;
 export const RETAIN_PENDING_CORRECTIONS_MIGRATION_INDEX = 39;
 export const JOURNAL_EVENTS_MIGRATION_INDEX = 40;
+export const RETAIN_DECIDING_HOLDS_MIGRATION_INDEX = 41;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -1331,6 +1332,14 @@ export const MIGRATIONS: string[] = [
       SELECT id, 'undo' AS phase, 'unknown' AS actor, undone_at AS stamp, rowid AS ordinal FROM changes
         WHERE status = 'undone'
     ) ORDER BY stamp, ordinal, phase;`,
+  // A failed deciding comparison is uncertainty, never replacement evidence.
+  `CREATE TABLE retain_deciding_holds (
+    deciding_receipt TEXT NOT NULL REFERENCES retain_receipts(receipt_fingerprint) ON DELETE CASCADE,
+    earlier_memory TEXT NOT NULL,
+    deciding_memory TEXT NOT NULL,
+    resolved_by TEXT REFERENCES retain_receipts(receipt_fingerprint) ON DELETE SET NULL,
+    PRIMARY KEY(deciding_receipt, earlier_memory, deciding_memory)
+  );`,
 ];
 
 /**

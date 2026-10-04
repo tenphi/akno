@@ -1,5 +1,8 @@
 # Explicit correction restrictions (#172)
 
+This records the first correction-boundary stage. The remaining untargeted-copy and partial-answer
+work is covered in the [deciding-evidence follow-up](../current-decisions/README.md).
+
 This is a bounded follow-up to the lifecycle baseline, not a new passing quality estimate. The patch
 preserves validated withdrawal intent when a compound replacement is held. Prior correlated records,
 rendered ledger copies and their observation leaves cannot establish current meaning. After admission,

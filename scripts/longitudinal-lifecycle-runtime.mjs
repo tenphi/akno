@@ -310,6 +310,8 @@ export async function runLifecycle(
         artifacts: Object.fromEntries(
           [
             'core/dist/write/retain.js',
+            'core/dist/write/deciding-support.js',
+            'core/dist/memory/correction-restrictions.js',
             'core/dist/maintenance/dream.js',
             'core/dist/maintenance/observe.js',
             'core/dist/maintenance/observation-scope.js',

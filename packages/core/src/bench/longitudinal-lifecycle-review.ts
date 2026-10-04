@@ -202,7 +202,15 @@ const contractSchema = z
         'cli/dist/serve/socket.js',
         'client/dist/index.js',
       ];
-      return Object.keys(value).length === names.length && names.every((name) => name in value);
+      const decidingNames = [
+        ...names,
+        'core/dist/write/deciding-support.js',
+        'core/dist/memory/correction-restrictions.js',
+      ];
+      return [names, decidingNames].some(
+        (inventory) =>
+          Object.keys(value).length === inventory.length && inventory.every((name) => name in value),
+      );
     }, 'Require exactly the recorded compiled artifacts.'),
   })
   .strict();
