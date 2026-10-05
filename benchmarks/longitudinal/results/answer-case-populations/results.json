@@ -95,7 +95,14 @@
           }
         }
       ],
-      "scripted_calls": 1
+      "scripted_calls": 1,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "separate-dates",
@@ -159,7 +166,15 @@
           }
         }
       ],
-      "scripted_calls": 1
+      "scripted_calls": 1,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index",
+        "answer_verification_failed"
+      ]
     },
     {
       "case": "separate-dates",
@@ -212,7 +227,14 @@
           }
         }
       ],
-      "scripted_calls": 1
+      "scripted_calls": 1,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "separate-dates",
@@ -265,7 +287,14 @@
           }
         }
       ],
-      "scripted_calls": 1
+      "scripted_calls": 1,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "separate-dates",
@@ -318,7 +347,14 @@
           }
         }
       ],
-      "scripted_calls": 1
+      "scripted_calls": 1,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "separate-dates",
@@ -371,7 +407,14 @@
           }
         }
       ],
-      "scripted_calls": 1
+      "scripted_calls": 1,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "separate-dates",
@@ -424,7 +467,14 @@
           }
         }
       ],
-      "scripted_calls": 1
+      "scripted_calls": 1,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "separate-dates",
@@ -477,7 +527,14 @@
           }
         }
       ],
-      "scripted_calls": 1
+      "scripted_calls": 1,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "separate-dates",
@@ -673,7 +730,14 @@
           }
         }
       ],
-      "scripted_calls": 0
+      "scripted_calls": 0,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "shared-sessions",
@@ -737,7 +801,14 @@
           }
         }
       ],
-      "scripted_calls": 1
+      "scripted_calls": 1,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "shared-sessions",
@@ -790,7 +861,14 @@
           }
         }
       ],
-      "scripted_calls": 1
+      "scripted_calls": 1,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "shared-sessions",
@@ -867,7 +945,15 @@
           }
         }
       ],
-      "scripted_calls": 0
+      "scripted_calls": 0,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index",
+        "answer_verification_failed"
+      ]
     },
     {
       "case": "one-event-many-facts",
@@ -931,7 +1017,14 @@
           }
         }
       ],
-      "scripted_calls": 1
+      "scripted_calls": 1,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "one-event-many-facts",
@@ -984,7 +1077,14 @@
           }
         }
       ],
-      "scripted_calls": 1
+      "scripted_calls": 1,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "one-event-many-facts",
@@ -1061,7 +1161,14 @@
           }
         }
       ],
-      "scripted_calls": 0
+      "scripted_calls": 0,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "one-event-copies",
@@ -1125,7 +1232,14 @@
           }
         }
       ],
-      "scripted_calls": 1
+      "scripted_calls": 1,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "one-event-copies",
@@ -1178,7 +1292,14 @@
           }
         }
       ],
-      "scripted_calls": 1
+      "scripted_calls": 1,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "one-event-copies",
@@ -1218,7 +1339,14 @@
           }
         }
       ],
-      "scripted_calls": 0
+      "scripted_calls": 0,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "one-event-competing-dates",
@@ -1282,7 +1410,8 @@
           }
         }
       ],
-      "scripted_calls": 1
+      "scripted_calls": 1,
+      "degraded": ["no_expansion_model", "no_embedding_model", "partial_index", "no_vector_index"]
     },
     {
       "case": "one-event-competing-dates",
@@ -1335,7 +1464,8 @@
           }
         }
       ],
-      "scripted_calls": 1
+      "scripted_calls": 1,
+      "degraded": ["no_expansion_model", "no_embedding_model", "partial_index", "no_vector_index"]
     },
     {
       "case": "one-event-competing-dates",
@@ -1375,7 +1505,8 @@
           }
         }
       ],
-      "scripted_calls": 0
+      "scripted_calls": 0,
+      "degraded": ["no_expansion_model", "no_embedding_model", "partial_index", "no_vector_index"]
     }
   ]
 }

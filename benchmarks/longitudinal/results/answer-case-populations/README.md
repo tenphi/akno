@@ -50,7 +50,9 @@ native drafts are rejected before semantic verification. These missing answers a
 
 All **11/11** unsupported candidates are withheld: ten `verification_rejected` and one
 `verification_unavailable`. No scope error appears in the **7** source-reviewed returned answers.
-Every returned protocol outcome is `partial`/`degraded`; none is labeled complete. Exact validation
+Every returned protocol outcome is `partial`/`degraded`; none is labeled complete.
+The deliberately disabled expansion/embedding roles and incomplete seeded index contribute
+retrieval degradation; the exact `degraded` values are retained per coordinate. Exact validation
 counts are retained in the receipt. This does not assert that the broader answer coverage gate passes.
 
 The cohort accounts for **61** actual logical model calls, **61** endpoint requests,
