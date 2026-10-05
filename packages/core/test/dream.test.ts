@@ -119,30 +119,56 @@ async function startStubChat(): Promise<StubServer> {
         requestKinds.push('curator');
         curatorHook?.();
       }
-      const answer = user.startsWith('Page: ')
-        ? derive(user, byPage)
-        : system.startsWith('You independently verify whether drafted answer blocks')
-          ? (answerScripted?.verification ?? { verdicts: [] })
-          : system.startsWith('You answer a question using only supplied memory evidence')
-            ? (answerScripted?.generation ?? { blocks: [], missing_concepts: [] })
-            : system.startsWith('You classify structurally incompatible claims')
-              ? conflictScripted
-              : scopeRequest
-                ? typeof scopeScripted === 'function'
-                  ? scopeScripted(user)
-                  : scopeScripted
-                : system.startsWith('You are the independent curator for an autonomous memory system')
-                  ? {
-                      outcome: 'approve',
-                      reason: 'The sealed contradiction item preserves authored knowledge.',
-                    }
-                  : system.startsWith('A personal knowledge base holds two claims')
-                    ? { line: 'Before 2002-02-02, the Zephyr QX-100 warranty was 1111 days.' }
-                    : observeRequest &&
-                        user.startsWith('Subject: decision principles') &&
-                        reflectionScripted !== null
-                      ? reflectionScripted
-                      : scripted;
+      const populationInput =
+        system.startsWith('Read the populations in the supplied untrusted memory records') ||
+        system.startsWith("Compare the candidate's case populations")
+          ? JSON.parse(user)
+          : null;
+      const answer = system.startsWith('Read the populations in the supplied untrusted memory records')
+        ? {
+            populations: populationInput.records.map((record) => ({
+              record_id: record.record_id,
+              scope: 'recorded_cases',
+              case_count: null,
+              support_quotes: record.leaves.map((leaf) => ({ leaf_id: leaf.leaf_id, quote: leaf.text })),
+            })),
+            shared_populations: [],
+            disjoint_populations: [],
+          }
+        : system.startsWith("Compare the candidate's case populations")
+          ? {
+              comparisons: populationInput.fixed_case_populations.populations.map((population) => ({
+                record_ids: [population.record_id],
+                quote: populationInput.answer_text,
+                scope: 'recorded_cases',
+                relation: 'separate_record',
+                case_count: null,
+              })),
+            }
+          : user.startsWith('Page: ')
+            ? derive(user, byPage)
+            : system.startsWith('You independently verify whether drafted answer blocks')
+              ? (answerScripted?.verification ?? { verdicts: [] })
+              : system.startsWith('You answer a question using only supplied memory evidence')
+                ? (answerScripted?.generation ?? { blocks: [], missing_concepts: [] })
+                : system.startsWith('You classify structurally incompatible claims')
+                  ? conflictScripted
+                  : scopeRequest
+                    ? typeof scopeScripted === 'function'
+                      ? scopeScripted(user)
+                      : scopeScripted
+                    : system.startsWith('You are the independent curator for an autonomous memory system')
+                      ? {
+                          outcome: 'approve',
+                          reason: 'The sealed contradiction item preserves authored knowledge.',
+                        }
+                      : system.startsWith('A personal knowledge base holds two claims')
+                        ? { line: 'Before 2002-02-02, the Zephyr QX-100 warranty was 1111 days.' }
+                        : observeRequest &&
+                            user.startsWith('Subject: decision principles') &&
+                            reflectionScripted !== null
+                          ? reflectionScripted
+                          : scripted;
 
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(
@@ -425,7 +451,7 @@ async function seedIndexedReflectionObservations(
 }
 
 describe('reflect', () => {
-  const PRINCIPLE = 'Recurring activities are managed through explicit structures.';
+  const PRINCIPLE = 'The recorded appliance service visits span March, June and September 2026.';
   const REFLECTED = {
     observations: [
       {
@@ -2229,19 +2255,20 @@ describe('observe', () => {
   });
 
   it('answers from an observation as one item while citing every current leaf fact', async () => {
+    const bounded = 'The recorded household appliance service visits are roughly three months apart.';
     server.reply(OBSERVED);
     await mem.dream({ phase: 'observe' });
     const [observationId] = observationIds(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8'));
     server.answer(
       {
-        blocks: [{ text: PATTERN, evidence_ids: ['E2'] }],
+        blocks: [{ text: bounded, evidence_ids: ['E2'] }],
         missing_concepts: [],
       },
       {
         verdicts: [
           {
             block_id: 'B1',
-            predicate_time_audit: predicateTimeFixture(PATTERN, PATTERN),
+            predicate_time_audit: predicateTimeFixture(PATTERN, bounded),
             ...semanticAudit(true, true, true),
             proposition_supported: true,
             action_arguments_preserved: true,

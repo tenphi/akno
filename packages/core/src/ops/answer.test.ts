@@ -10,6 +10,11 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AnswerOutput, type AnswerContextItem } from '@tenphi/akno-protocol';
 import { open, type Akno } from '../open.ts';
 import { sha256 } from '../store/ids.ts';
+import { observationBlock, renderObservationMarker } from '../observations/marker.ts';
+import { qualifyObservationEntries, replaceObservationEntries } from '../observations/projection.ts';
+import { parsePage } from '../kb/page.ts';
+import type { Store } from '../store/db.ts';
+import { reflectionId, renderReflectionMarker } from '../observations/reflection.ts';
 import {
   managedMemoryBlock,
   renderManagedMemoryPayload,
@@ -22,12 +27,14 @@ let memory: Akno;
 let modelServer: http.Server | null;
 let modelRequests: Record<string, unknown>[];
 let sourceReadingRequests: Record<string, unknown>[];
+let populationReadingRequests: Record<string, unknown>[];
 let modelResponseError: unknown;
 
 beforeEach(async () => {
   modelServer = null;
   modelRequests = [];
   sourceReadingRequests = [];
+  populationReadingRequests = [];
   modelResponseError = undefined;
   root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-answer-kb-'));
   stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-answer-state-'));
@@ -67,6 +74,291 @@ afterEach(async () => {
 });
 
 describe('grounded answer discovery surface', () => {
+  it('cannot bypass the population comparison by citing only raw observation leaves', async () => {
+    await seedPopulationObservations();
+    const text = 'Journey and workshop silverpine preparation was completed in the same recorded session.';
+    await useAnswerModel({
+      populationReading: (body) => {
+        const data = populationFixtureReading(body);
+        for (const population of data.populations) population.case_count = 1;
+        return data;
+      },
+      generation: (body) => {
+        const data = JSON.parse(body.messages.at(-1).content);
+        const ids = ['journey', 'workshop'].map(
+          (activity) =>
+            data.evidence.find((e) => e.excerpt.includes(`${activity} case CASE-1111`)).evidence_id,
+        );
+        return { blocks: [{ text, evidence_ids: ids }], missing_concepts: [] };
+      },
+      verification: (body) => {
+        const data = JSON.parse(body.messages.at(-1).content);
+        if (!data.fixed_case_populations) return { verdicts: [verdict(data.blocks[0].block_id, true)] };
+        return {
+          verdicts: [
+            {
+              ...verdict('B1', true),
+              case_population_audit: {
+                comparisons: [
+                  {
+                    record_ids: data.fixed_case_populations.populations.map((p) => p.record_id),
+                    quote: text,
+                    scope: 'recorded_cases',
+                    relation: 'shared_cases',
+                    case_count: 1,
+                  },
+                ],
+              },
+            },
+          ],
+        };
+      },
+    });
+    const result = await memory.answer({
+      question: 'Compare the silverpine preparation records.',
+      limit: 20,
+      retrieval_budget: 12000,
+    });
+    expect(result.reason_code).toBe('verification_rejected');
+    const data = JSON.parse(
+      (populationReadingRequests[0]!.messages as { content: string }[]).at(-1)!.content,
+    );
+    expect(data.records).toHaveLength(2);
+    expect(data.records.every((r) => r.leaves.length === 1)).toBe(true);
+  });
+  it('holds a merged population block while preserving a separately verified useful block and its call accounting', async () => {
+    await seedPopulationObservations();
+    const bad = 'Journey and workshop silverpine preparation was completed in both sessions.';
+    await useAnswerModel({
+      populationReading: (body) => populationFixtureReading(body),
+      generation: (body) => {
+        const data = JSON.parse(body.messages.at(-1).content);
+        return {
+          blocks: [
+            {
+              text: bad,
+              evidence_ids: data.evidence
+                .filter((e) => e.excerpt.includes('**Observation:**'))
+                .map((e) => e.evidence_id),
+            },
+            {
+              text: 'The silverpine warranty lasts five years.',
+              evidence_ids: [data.evidence.find((e) => e.excerpt.includes('warranty lasts')).evidence_id],
+            },
+          ],
+          missing_concepts: [],
+        };
+      },
+      verification: (body) => {
+        const data = JSON.parse(body.messages.at(-1).content);
+        return {
+          verdicts: data.answer_text
+            ? [
+                {
+                  ...verdict('B1', true),
+                  case_population_audit: {
+                    comparisons: [
+                      {
+                        record_ids: data.fixed_case_populations.populations.map((p) => p.record_id),
+                        quote: bad,
+                        scope: 'recorded_cases',
+                        relation: 'shared_cases',
+                        case_count: 2,
+                      },
+                    ],
+                  },
+                },
+              ]
+            : [verdict(data.blocks[0].block_id, true)],
+        };
+      },
+    });
+    const result = await memory.answer({
+      question: 'Compare silverpine preparation and the warranty.',
+      limit: 20,
+      retrieval_budget: 12000,
+    });
+    expect(result.outcome).toBe('partial');
+    expect(result.answer).toContain('five years');
+    expect(result.answer).not.toContain('both sessions');
+    expect(result.validation?.rejection_counts.semantic_support).toBe(1);
+    expect(result.model_usage?.verification?.total_tokens).toBe(521);
+  });
+  it.each(['separate', 'merged', 'wrong-count', 'habit', 'missing-audit', 'invalid-reading'])(
+    'preserves observation case populations through the complete answer path: %s',
+    async (mode) => {
+      await seedPopulationObservations();
+      const text =
+        mode === 'merged'
+          ? 'Journey and workshop preparation was complete in both sessions.'
+          : mode === 'wrong-count'
+            ? 'Journey preparation was complete in one recorded journey; workshop preparation in both workshops.'
+            : mode === 'habit'
+              ? 'Journey and workshop preparation is always completed.'
+              : 'Journey preparation was complete in both recorded journeys; workshop preparation in both recorded workshops.';
+      await useAnswerModel({
+        populationReading: (body) => populationFixtureReading(body, mode === 'invalid-reading'),
+        generation: (body) => {
+          const data = JSON.parse(body.messages.at(-1).content);
+          return {
+            blocks: [
+              {
+                text,
+                evidence_ids: data.evidence
+                  .filter((e) => e.current_lineage && e.excerpt.includes('**Observation:**'))
+                  .map((e) => e.evidence_id),
+              },
+            ],
+            missing_concepts: [],
+          };
+        },
+        verification: (body) => {
+          const data = JSON.parse(body.messages.at(-1).content);
+          if (!data.fixed_case_populations) return { verdicts: [verdict(data.blocks[0].block_id, true)] };
+          const ids = data.fixed_case_populations.populations.map((p) => p.record_id);
+          const comparisons =
+            mode === 'merged'
+              ? [
+                  {
+                    record_ids: ids,
+                    quote: text,
+                    scope: 'recorded_cases',
+                    relation: 'shared_cases',
+                    case_count: 2,
+                  },
+                ]
+              : ids.map((id, n) => ({
+                  record_ids: [id],
+                  quote: mode === 'habit' ? text : text.split(';')[n]!.trim(),
+                  scope: mode === 'habit' ? 'general_rule' : 'recorded_cases',
+                  relation: 'separate_record',
+                  case_count: mode === 'habit' ? null : mode === 'wrong-count' && n === 0 ? 1 : 2,
+                }));
+          return {
+            verdicts: [
+              {
+                ...verdict('B1', true),
+                ...(mode === 'missing-audit' ? {} : { case_population_audit: { comparisons } }),
+              },
+            ],
+          };
+        },
+      });
+      const result = await memory.answer({
+        question: 'What do the silverpine preparation observations show?',
+        token_budget: 4000,
+        memory_view: 'all',
+      });
+      expect(result.reason_code).toBe(
+        mode === 'separate'
+          ? 'answered'
+          : ['missing-audit', 'invalid-reading'].includes(mode)
+            ? 'verification_unavailable'
+            : 'verification_rejected',
+      );
+      expect(populationReadingRequests).toHaveLength(mode === 'invalid-reading' ? 1 : 2);
+      expect(
+        JSON.parse((populationReadingRequests[0]!.messages as { content: string }[]).at(-1)!.content),
+      ).not.toHaveProperty('question');
+      if (mode === 'separate') expect(result.answer).toContain('both recorded workshops');
+      else expect(result.answer).toBeNull();
+    },
+  );
+  it('expands each reflected conclusion to its own current observation groups and excludes edited support after restart', async () => {
+    await seedPopulationObservations(true);
+    const principle = await memory.read({ slug: 'principles' });
+    expect(
+      principle.page?.lines.some((line) => line.prose?.reason === 'reflection_supported'),
+      JSON.stringify(principle),
+    ).toBe(true);
+    await useAnswerModel({
+      populationReading: (body) => populationFixtureReading(body),
+      generation: (body) => {
+        const data = JSON.parse(body.messages.at(-1).content);
+        const selected = data.evidence.find((e) => e.current_lineage?.length === 3);
+        if (!selected) throw new Error(JSON.stringify(data));
+        return {
+          blocks: [
+            {
+              text: 'Silverpine journey preparation was completed in both recorded journeys; workshop preparation was completed in both recorded workshops; equipment preparation was completed in both recorded equipment cases.',
+              evidence_ids: [selected.evidence_id],
+            },
+          ],
+          missing_concepts: [],
+        };
+      },
+      verification: (body) => {
+        const data = JSON.parse(body.messages.at(-1).content);
+        if (!data.fixed_case_populations) return { verdicts: [verdict(data.blocks[0].block_id, true)] };
+        return {
+          verdicts: [
+            {
+              ...verdict('B1', true),
+              case_population_audit: {
+                comparisons: data.fixed_case_populations.populations.map((p, n) => ({
+                  record_ids: [p.record_id],
+                  quote: data.blocks[0].population_answer_text.split(';')[n]!.trim(),
+                  scope: 'recorded_cases',
+                  relation: 'separate_record',
+                  case_count: 2,
+                })),
+              },
+            },
+          ],
+        };
+      },
+    });
+    const result = await memory.answer({
+      question: 'What do the silverpine preparation principles show?',
+      retrieval_budget: 12000,
+      limit: 20,
+      memory_view: 'all',
+    });
+    expect(result.reason_code).toBe('answered');
+    expect(populationReadingRequests).toHaveLength(2);
+    const input = JSON.parse(
+      (populationReadingRequests[0]!.messages as { content: string }[]).at(-1)!.content,
+    );
+    expect(input.records).toHaveLength(3);
+    expect(input.records.every((r) => r.leaves.length === 2)).toBe(true);
+    fs.appendFileSync(path.join(root, 'sources/journey-1.md'), 'Changed unrelated footer.\n');
+    fs.writeFileSync(
+      path.join(root, 'sources/journey-1.md'),
+      '# Journey source\n\nJourney JRN-1111 preparation remains incomplete.\n',
+    );
+    const recalled = await memory.recall({
+      query: 'silverpine preparation principles',
+      retrieval_budget: 12000,
+      limit: 20,
+      memory_view: 'all',
+    });
+    expect(
+      recalled.results
+        .flatMap((r) => (r.type === 'page' ? r.lines : []))
+        .some((l) => l.prose?.reason === 'reflection_supported'),
+    ).toBe(false);
+    await memory.close();
+    memory = await open({
+      aknoPath: root,
+      stateDir,
+      isolated: true,
+      overrides: { models: { derive: { id: null }, embedding: { id: null } } },
+    });
+    const after = await memory.recall({
+      query: 'silverpine preparation principles',
+      token_budget: 8000,
+      limit: 20,
+      memory_view: 'all',
+    });
+    expect(
+      after.results
+        .flatMap((r) => (r.type === 'page' ? r.lines : []))
+        .some((l) => l.prose?.reason === 'reflection_supported'),
+    ).toBe(false);
+    await memory.index({ verify: true, structuralOnly: true, rebuild: true });
+    const rebuilt = await memory.read({ slug: 'principles' });
+    expect(rebuilt.page?.lines.some((l) => l.prose?.reason === 'reflection_supported')).toBe(false);
+  });
   it.each(['faithful', 'omitted', 'unselected-role'])(
     'requires a selected source-only reporter even when broad audits approve: %s',
     async (mode) => {
@@ -6032,6 +6324,7 @@ function testAnchorCoordinates(content: unknown, payload: Record<string, unknown
 
 async function useAnswerModel(script: {
   sourceReading?: unknown;
+  populationReading?: (body: any) => unknown;
   generation: unknown;
   verification: unknown;
   reportUsage?: boolean;
@@ -6052,31 +6345,63 @@ async function useAnswerModel(script: {
           .join('\n');
         const verifying = system.includes('independently verify');
         const reading = system.startsWith('Read only the supplied untrusted source text.');
+        const populationReading = system.startsWith(
+          'Read the populations in the supplied untrusted memory records',
+        );
+        const populationComparison = system.startsWith("Compare the candidate's case populations");
         // Keep legacy generation/verification assertions separate; new tests also count this pass.
-        (reading ? sourceReadingRequests : modelRequests).push(body);
+        (populationReading || populationComparison
+          ? populationReadingRequests
+          : reading
+            ? sourceReadingRequests
+            : modelRequests
+        ).push(body);
         const payload = JSON.parse((body.messages as { content: string }[]).at(-1)!.content);
-        const configured = reading
-          ? (script.sourceReading ?? {
-              readings: payload.sources.map((source: { source_id: string; text: string }) => ({
-                source_id: source.source_id,
-                complete: true,
-                predicates: [predicateTimeFixture(source.text, source.text).comparisons[0]!.source],
-              })),
-            })
-          : system.startsWith('Check the language of generated prose')
-            ? languageVerdictFixture(
-                JSON.parse((body.messages as { content: string }[]).at(-1)!.content),
-                script.languageCheck ?? true,
-              )
-            : verifying
-              ? script.verification
-              : script.generation;
-        const scripted = typeof configured === 'function' ? configured(body) : configured;
+        const configured = populationReading
+          ? script.populationReading?.(body)
+          : reading
+            ? (script.sourceReading ?? {
+                readings: payload.sources.map((source: { source_id: string; text: string }) => ({
+                  source_id: source.source_id,
+                  complete: true,
+                  predicates: [predicateTimeFixture(source.text, source.text).comparisons[0]!.source],
+                })),
+              })
+            : system.startsWith('Check the language of generated prose')
+              ? languageVerdictFixture(
+                  JSON.parse((body.messages as { content: string }[]).at(-1)!.content),
+                  script.languageCheck ?? true,
+                )
+              : verifying
+                ? script.verification
+                : script.generation;
+        const comparisonBody = populationComparison
+          ? {
+              ...body,
+              messages: [
+                ...(body.messages as { role: string; content: string }[]).slice(0, -1),
+                {
+                  role: 'user',
+                  content: JSON.stringify({
+                    ...payload,
+                    blocks: [{ population_answer_text: payload.answer_text }],
+                  }),
+                },
+              ],
+            }
+          : body;
+        const comparisonScript = populationComparison ? script.verification : configured;
+        const scripted =
+          typeof comparisonScript === 'function' ? comparisonScript(comparisonBody) : comparisonScript;
         if (reading && system.includes('also read named_roles')) {
           for (const entry of scripted.readings ?? [])
             for (const predicate of entry.predicates ?? []) predicate.named_roles ??= [];
         }
-        const content = verifying ? testAnchorCoordinates(scripted, payload) : scripted;
+        const content = populationComparison
+          ? (scripted.verdicts?.[0]?.case_population_audit ?? {})
+          : verifying
+            ? testAnchorCoordinates(scripted, payload)
+            : scripted;
         response.writeHead(200, { 'content-type': 'application/json' });
         response.end(
           JSON.stringify({
@@ -6127,6 +6452,131 @@ async function useAnswerModel(script: {
       },
     },
   });
+}
+
+function populationFixtureReading(body: any, truncated = false) {
+  const input = JSON.parse(body.messages.at(-1).content);
+  return {
+    populations: input.records.slice(0, truncated ? 0 : undefined).map((r) => ({
+      record_id: r.record_id,
+      scope: 'recorded_cases',
+      case_count: 2,
+      support_quotes: r.leaves.map((l) => ({ leaf_id: l.leaf_id, quote: l.text })),
+    })),
+    shared_populations: [],
+    disjoint_populations: [],
+  };
+}
+
+/** Seed valid lineage, not model-generated observations: this tests the answer's own boundary. */
+async function seedPopulationObservations(reflection = false): Promise<void> {
+  const activities = reflection ? ['journey', 'workshop', 'equipment'] : ['journey', 'workshop'];
+  for (const activity of activities) {
+    write(
+      `topics/${activity}.md`,
+      `---\nrole: knowledge\nakno:\n  management:\n    observe: integrate\n---\n# ${activity} preparation\n\nSilverpine preparation records.\n`,
+    );
+    for (const n of [1, 2])
+      write(
+        `sources/${activity}-${n}.md`,
+        `# ${activity} source\n\n${activity} case CASE-${n === 1 ? '1111' : '2222'} silverpine preparation was completed.\n`,
+      );
+  }
+  await memory.index({ verify: true });
+  const db = new Database(path.join(stateDir, 'akno.db'));
+  const markers = activities.map((activity, n) => {
+    const pages = [1, 2].map(
+      (i) =>
+        db.prepare('SELECT id FROM pages WHERE slug=?').get(`sources/${activity}-${i}`) as { id: string },
+    );
+    return {
+      id: `obs_population_${n}1111111`,
+      subject: `ent_population_${n}1111`,
+      disposition: 'active' as const,
+      proofCount: 2,
+      evidence: pages.map((page, i) => ({
+        factId: `fac_population_${n}_${i}1111`,
+        sourceLineHash: sha256(
+          `${activity} case CASE-${i === 0 ? '1111' : '2222'} silverpine preparation was completed.`,
+        ),
+        proofGroups: [`page:${page.id}`],
+      })),
+    };
+  });
+  db.close();
+  for (const [n, activity] of activities.entries())
+    fs.appendFileSync(
+      path.join(root, `topics/${activity}.md`),
+      '\n' +
+        observationBlock(
+          markers[n]!,
+          `${activity} silverpine preparation was completed in both recorded ${activity} cases.`,
+          [1, 2].map((i) => `sources/${activity}-${i}`),
+        ) +
+        '\n',
+    );
+  if (reflection) {
+    const evidence = markers.map((marker, n) => ({
+      observationId: marker.id,
+      markerHash: sha256(renderObservationMarker(marker)),
+      payloadHash: sha256(
+        observationBlock(
+          marker,
+          `${activities[n]} silverpine preparation was completed in both recorded ${activities[n]} cases.`,
+          [1, 2].map((i) => `sources/${activities[n]}-${i}`),
+        ).split('\n')[1]!,
+      ),
+    }));
+    const payload =
+      '- 2039-02-22 — The recorded silverpine preparations were completed in both cases for each activity. [[topics/journey]] [[topics/workshop]] [[topics/equipment]]';
+    write(
+      'principles.md',
+      `---\nderived: true\ntitle: Principles\nakno:\n  role: inference\n---\n# Principles\n\n${renderReflectionMarker({ id: reflectionId(evidence, payload), evidence, payloadHash: sha256(payload), scopeAssessment: 'c'.repeat(64) })}\n${payload}\n`,
+    );
+  }
+  await memory.index({ verify: true });
+  const seededDb = new Database(path.join(stateDir, 'akno.db'));
+  const seededStore = { db: seededDb } as Store;
+  for (const [n, activity] of activities.entries()) {
+    const target = seededDb.prepare('SELECT id FROM pages WHERE slug=?').get(`topics/${activity}`) as {
+      id: string;
+    };
+    seededDb.prepare(`UPDATE pages SET observe_management='integrate' WHERE id=?`).run(target.id);
+    seededDb
+      .prepare(
+        `INSERT OR REPLACE INTO graph_entities(id,canonical_page,entity_type,label,normalized_label,source_hash,derivation_version) VALUES(?,?,'topic',?,?,'fixture','test')`,
+      )
+      .run(markers[n]!.subject, target.id, activity, activity);
+    for (const [i, locator] of markers[n]!.evidence.entries()) {
+      const page = seededDb
+        .prepare('SELECT id FROM pages WHERE slug=?')
+        .get(`sources/${activity}-${i + 1}`) as { id: string };
+      seededDb.prepare('UPDATE pages SET derived_hash=body_hash WHERE id=?').run(page.id);
+      const text = `${activity} case CASE-${i === 0 ? '1111' : '2222'} silverpine preparation was completed.`;
+      seededDb
+        .prepare(
+          `INSERT INTO facts(id,page_id,claim,subject,attribute,value,line_start,line_end,source_line_hash,confidence,valid_from,first_seen,last_seen) VALUES(?,?,?,?,'preparation','completed',3,3,?,0.9,'2039-02-22','2039-02-22','2039-02-22')`,
+        )
+        .run(locator.factId, page.id, text, activity, locator.sourceLineHash);
+      seededDb
+        .prepare(
+          `INSERT INTO graph_fact_status(fact_id,subject_entity,object_entity,subject_resolution,subject_candidates,subject_resolution_fingerprint,object_resolution,object_candidates,object_resolution_fingerprint,predicate,eligibility,traversable,conflict_fingerprint,source_hash,derivation_version) VALUES(?,?,NULL,'exact',?,NULL,'scalar','[]',NULL,'preparation','eligible',1,NULL,?,'test')`,
+        )
+        .run(
+          locator.factId,
+          markers[n]!.subject,
+          JSON.stringify([markers[n]!.subject]),
+          locator.sourceLineHash,
+        );
+    }
+    replaceObservationEntries(
+      seededStore,
+      target.id,
+      parsePage(`topics/${activity}.md`, fs.readFileSync(path.join(root, `topics/${activity}.md`), 'utf8')),
+    );
+  }
+  expect(qualifyObservationEntries(seededStore)).toEqual({ indexed: activities.length, issues: 0 });
+  seededDb.close();
 }
 
 function write(relPath: string, content: string): void {

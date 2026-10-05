@@ -230,7 +230,16 @@ const contractSchema = z
         'protocol/dist/common.js',
       ];
       const eventContextNames = [...reflectionNames, 'core/dist/maintenance/conflicts.js'];
-      return [names, decidingNames, temporalNames, roleNames, reflectionNames, eventContextNames].some(
+      const populationNames = [...eventContextNames, 'core/dist/ops/answer-populations.js'];
+      return [
+        names,
+        decidingNames,
+        temporalNames,
+        roleNames,
+        reflectionNames,
+        eventContextNames,
+        populationNames,
+      ].some(
         (inventory) =>
           Object.keys(value).length === inventory.length && inventory.every((name) => name in value),
       );

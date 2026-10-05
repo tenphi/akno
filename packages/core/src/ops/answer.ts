@@ -3,6 +3,15 @@ import { personalNegativeActionsSupported } from '../memory/personal-negative-ac
 import { reportingRolesSupported } from '../memory/reporting-roles.ts';
 import { coverageRolesSupported } from '../memory/coverage-roles.ts';
 import { retentionSourceFrames } from '../memory/retention-source-frame.ts';
+import { currentReflectionSupport, parseReflectionMarker } from '../observations/reflection.ts';
+import { markerFromProjection } from '../observations/projection.ts';
+import {
+  ANSWER_POPULATION_COMPOSITION_CONTRACT,
+  readAnswerPopulations,
+  selectAnswerPopulations,
+  verifyAnswerPopulations,
+  type AnswerPopulationSource,
+} from './answer-populations.ts';
 import {
   exactSourceName,
   sourceRoleAuditSchema,
@@ -81,8 +90,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v71';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v55';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v72';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v56';
 
 function answerDraftSchema(
   evidenceId: z.ZodType<string>,
@@ -495,7 +504,14 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
       ),
     ).values(),
   ];
-  const evidence = buildEvidence(ctx, recalled.results, input.question, recalled.memory_view);
+  const populationSources = new Map<string, AnswerPopulationSource[]>();
+  const evidence = buildEvidence(
+    ctx,
+    recalled.results,
+    input.question,
+    recalled.memory_view,
+    populationSources,
+  );
   const base: Omit<AnswerOutput, 'status' | 'outcome' | 'degraded' | 'note'> = {
     answer: null,
     answer_language: answerLanguage,
@@ -638,6 +654,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
       sourceFrames,
       recordRendering,
       correctionPending,
+      populationSources,
     ),
     {
       schema: liveDraftSchema,
@@ -671,7 +688,10 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
       evidence_tokens: estimateTokens(
         evidence
           .map(
-            (item) => evidenceText(item, true, answerLanguage) + (sourceFrames.get(item.evidence_id) ?? ''),
+            (item) =>
+              evidenceText(item, true, answerLanguage) +
+              (sourceFrames.get(item.evidence_id) ?? '') +
+              JSON.stringify(populationSources.get(item.evidence_id) ?? []),
           )
           .join('\n'),
       ),
@@ -719,6 +739,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
           recalled.memory_view,
           sourceFrames,
           recordRendering !== undefined,
+          populationSources,
         )
       : null;
   const validation: NonNullable<AnswerOutput['validation']> = {
@@ -826,12 +847,15 @@ function answerMessages(
   sourceFrames: ReadonlyMap<string, string> = new Map(),
   recordRendering?: AnswerRecordRendering,
   correctionPending = false,
+  populationSources: ReadonlyMap<string, AnswerPopulationSource[]> = new Map(),
 ) {
   return [
     {
       role: 'system' as const,
       content:
         ANSWER_SYSTEM_PROMPT +
+        '\n\n' +
+        ANSWER_POPULATION_COMPOSITION_CONTRACT +
         (recordRendering ? '\n\n' + ANSWER_RECORD_RENDERING_CONTRACT : '') +
         (correctionPending
           ? '\nAn explicit correction is pending for some related memory. Restricted records are withheld, not absent. Answer only independent supplied evidence; do not claim that withheld details were never recorded or establish their current state. Leave unresolved requested concepts missing.'
@@ -848,6 +872,9 @@ function answerMessages(
           evidence_id: item.evidence_id,
           excerpt: evidenceText(item, true, outputLanguage),
           retention_source_frame: sourceFrames.get(item.evidence_id) ?? null,
+          ...(populationSources.has(item.evidence_id)
+            ? { current_lineage: populationSources.get(item.evidence_id) }
+            : {}),
         })),
       }),
     },
@@ -862,6 +889,7 @@ async function verifyDraftSupport(
   memoryView: MemoryView = 'factual',
   sourceFrames: ReadonlyMap<string, string> = new Map(),
   completeRecord = false,
+  populationSources: ReadonlyMap<string, AnswerPopulationSource[]> = new Map(),
 ): Promise<
   | { ok: true; blocks: AnswerDraft['blocks']; outcome: ModelOutcome<string> }
   | { ok: false; note: string; outcome: ModelOutcome<string> }
@@ -880,6 +908,7 @@ async function verifyDraftSupport(
       index,
       sourceFrames,
       completeRecord,
+      populationSources,
     );
     outcomes.push(checked.outcome);
     if (!checked.ok) return { ...checked, outcome: aggregateSemanticOutcomes(outcomes) };
@@ -897,6 +926,7 @@ async function verifyDraftBlock(
   offset: number,
   sourceFrames: ReadonlyMap<string, string>,
   completeRecord: boolean,
+  populationSources: ReadonlyMap<string, AnswerPopulationSource[]>,
 ): Promise<
   | { ok: true; blocks: AnswerDraft['blocks']; outcome: ModelOutcome<string> }
   | { ok: false; note: string; outcome: ModelOutcome<string> }
@@ -913,6 +943,38 @@ async function verifyDraftBlock(
     ),
   );
   const hasSourceFrames = citedFrames.size > 0;
+  const citedPopulations = selectAnswerPopulations(
+    draftBlock.evidence_ids.flatMap((id) => populationSources.get(id) ?? []),
+  );
+  const populationReading = citedPopulations.length
+    ? await readAnswerPopulations(model, citedPopulations)
+    : undefined;
+  if (populationReading && !populationReading.reading)
+    return {
+      ok: false,
+      note: 'the independent source reading of case populations could not be established',
+      outcome: populationReading.outcome,
+    };
+  const populations = populationReading?.reading ?? undefined;
+  const populationAudit = populations
+    ? await verifyAnswerPopulations(model, populations, draftBlock.text)
+    : undefined;
+  const populationOutcomes = [
+    ...(populationReading ? [populationReading.outcome] : []),
+    ...(populationAudit ? [populationAudit.outcome] : []),
+  ];
+  if (populationAudit?.supported === null)
+    return {
+      ok: false,
+      note: 'the independent case-population comparison could not be established',
+      outcome: aggregateSemanticOutcomes(populationOutcomes),
+    };
+  if (populationAudit?.supported === false)
+    return {
+      ok: true,
+      blocks: [],
+      outcome: aggregateSemanticOutcomes(populationOutcomes),
+    };
   const sourceReading =
     hasSourceFrames ||
     draftBlock.evidence_ids.some((id) => {
@@ -945,7 +1007,7 @@ async function verifyDraftBlock(
     return {
       ok: false,
       note: 'the independent source reading of predicate timing and named roles could not be established',
-      outcome: sourceReading.outcome,
+      outcome: aggregateSemanticOutcomes([...populationOutcomes, sourceReading.outcome]),
     };
   const bindings = sourceReading?.bindings ?? undefined;
   const roles = sourceReading?.roles ?? [];
@@ -962,7 +1024,10 @@ async function verifyDraftBlock(
   );
   const result = await model.chat(
     [
-      { role: 'system', content: ANSWER_VERIFIER_SYSTEM_PROMPT },
+      {
+        role: 'system',
+        content: ANSWER_VERIFIER_SYSTEM_PROMPT,
+      },
       {
         role: 'user',
         content: JSON.stringify({
@@ -1009,6 +1074,10 @@ async function verifyDraftBlock(
               evidence_id: evidenceId,
               excerpt: evidenceText(byEvidenceId.get(evidenceId)!),
               retention_source_frame: coordinates.sources.get(evidenceId) ?? null,
+              ...(byEvidenceId.get(evidenceId)!.type === 'page' &&
+              populationSources.get(evidenceId)?.some((source) => source.derived)
+                ? { current_lineage: populationSources.get(evidenceId) }
+                : {}),
             })),
           })),
         }),
@@ -1016,7 +1085,11 @@ async function verifyDraftBlock(
     ],
     { schema: liveSchema, maxTokens: 1_024 + blocks.length * 2_000 + citedFrames.size * 900 },
   );
-  const outcome = sourceReading ? aggregateSemanticOutcomes([sourceReading.outcome, result]) : result;
+  const outcome = aggregateSemanticOutcomes([
+    ...populationOutcomes,
+    ...(sourceReading ? [sourceReading.outcome] : []),
+    result,
+  ]);
   if (!result.ok || result.value === null) {
     return {
       ok: false,
@@ -1187,13 +1260,16 @@ function buildEvidence(
   results: RecallResult[],
   question: string,
   memoryView: MemoryView,
+  populationSources: Map<string, AnswerPopulationSource[]> = new Map(),
 ): AnswerContextItem[] {
   const out: UnlabeledEvidence[] = [];
+  const lineage = new Map<UnlabeledEvidence, AnswerPopulationSource[]>();
   const seen = new Set<string>();
-  const add = (key: string, item: UnlabeledEvidence): void => {
+  const add = (key: string, item: UnlabeledEvidence, sources?: AnswerPopulationSource[]): void => {
     if (seen.has(key)) return;
     seen.add(key);
     out.push(item);
+    if (sources) lineage.set(item, sources);
   };
 
   for (const result of results) {
@@ -1202,7 +1278,9 @@ function buildEvidence(
         (line) =>
           answerLineEligible(line, question, memoryView) && !line.observation && !/^\s*<!--/.test(line.text),
       );
-      const ordinaryLines = eligibleLines.filter((line) => !line.memory);
+      const ordinaryLines = eligibleLines.filter(
+        (line) => !line.memory && line.prose?.reason !== 'reflection_supported',
+      );
       if (ordinaryLines.length > 0) {
         add(`page:${result.slug}`, {
           type: 'page',
@@ -1215,6 +1293,22 @@ function buildEvidence(
             ...(line.confidence !== undefined ? { confidence: line.confidence } : {}),
           })),
         });
+      }
+      for (const line of eligibleLines.filter(
+        (candidate) => candidate.prose?.reason === 'reflection_supported',
+      )) {
+        const sources = reflectionPopulationSources(ctx, line);
+        if (!sources) continue;
+        add(
+          `reflection:${result.slug}:${line.n}`,
+          {
+            type: 'page',
+            slug: result.slug,
+            title: result.title,
+            lines: [{ n: line.n, text: line.text, prose: line.prose! }],
+          },
+          sources,
+        );
       }
       for (const line of eligibleLines) {
         if (line.memory?.status !== 'qualified') continue;
@@ -1236,13 +1330,29 @@ function buildEvidence(
         if (line.observation?.status !== 'eligible') continue;
         const leaves = observationLeafEvidence(ctx, line.observation.evidence);
         if (leaves.length !== line.observation.evidence.length) continue;
-        add(`observation:${line.observation.id}`, {
-          type: 'observation',
-          observation_id: line.observation.id,
-          subject: line.observation.subject,
-          text: line.text,
-          evidence: leaves,
-        });
+        add(
+          `observation:${line.observation.id}`,
+          {
+            type: 'observation',
+            observation_id: line.observation.id,
+            subject: line.observation.subject,
+            text: line.text,
+            evidence: leaves,
+          },
+          [
+            {
+              record_id: '',
+              derived: true,
+              selected_text: line.text,
+              leaves: leaves.map((leaf) => ({
+                leaf_id: leaf.fact,
+                text: leaf.text,
+                source_slug: leaf.slug,
+                source_line: leaf.line,
+              })),
+            },
+          ],
+        );
       }
       for (const document of result.documents ?? []) {
         if (!document.quote?.trim()) continue;
@@ -1264,7 +1374,109 @@ function buildEvidence(
     }
   }
 
-  return out.map((item, index) => ({ ...item, evidence_id: `E${index + 1}` }) as AnswerContextItem);
+  // Selecting a recalled raw leaf instead of its observation must not evade the same case check.
+  const currentLeaves = new Map(
+    [...lineage.values()].flatMap((sources) =>
+      sources.flatMap((source) =>
+        source.leaves.map((leaf) => [`${leaf.source_slug}:${leaf.source_line}`, leaf] as const),
+      ),
+    ),
+  );
+  for (const item of out) {
+    if (item.type !== 'page' || lineage.has(item)) continue;
+    const leaves = item.lines.flatMap((line) => {
+      const leaf = currentLeaves.get(`${item.slug}:${line.n}`);
+      return leaf && leaf.text === line.text.trim() ? [leaf] : [];
+    });
+    if (leaves.length)
+      lineage.set(item, [
+        { record_id: '', selected_text: leaves.map((leaf) => leaf.text).join('\n'), leaves },
+      ]);
+  }
+  return out.map((item, index) => {
+    const evidence_id = `E${index + 1}`;
+    const sources = lineage.get(item);
+    if (sources)
+      populationSources.set(
+        evidence_id,
+        sources.map((source, n) => ({
+          ...source,
+          record_id: `${evidence_id}:S${n + 1}`,
+          leaves: source.leaves.map((leaf, i) => ({
+            ...leaf,
+            leaf_id: `${evidence_id}:S${n + 1}:L${i + 1}`,
+          })),
+        })),
+      );
+    return { ...item, evidence_id } as AnswerContextItem;
+  });
+}
+
+/** A conclusion's own observation groups constrain it; page-wide evidence cannot supply its sample. */
+function reflectionPopulationSources(ctx: AknoContext, line: Line): AnswerPopulationSource[] | null {
+  const marker = line.prose?.frame
+    ?.map((frame) => parseReflectionMarker(frame.text))
+    .find((value) => value !== null);
+  if (!marker || marker.payloadHash !== sha256(line.text.trim())) return null;
+  const sources: AnswerPopulationSource[] = [];
+  for (const support of marker.evidence) {
+    const current = currentReflectionSupport(ctx.store, support.observationId, ctx.config.aknoPath);
+    const observation = markerFromProjection(ctx.store, support.observationId);
+    if (
+      !current ||
+      !observation ||
+      current.markerHash !== support.markerHash ||
+      current.payloadHash !== support.payloadHash
+    )
+      return null;
+    const row = ctx.store.db
+      .prepare(
+        `SELECT oe.payload_line, p.rel_path FROM observation_entries oe JOIN pages p ON p.id=oe.source_page WHERE oe.id=?`,
+      )
+      .get(support.observationId) as { payload_line: number; rel_path: string };
+    let selected_text: string | undefined;
+    try {
+      selected_text = fs.readFileSync(path.join(ctx.config.aknoPath, row.rel_path), 'utf8').split(/\r?\n/)[
+        row.payload_line - 1
+      ];
+    } catch {
+      return null;
+    }
+    selected_text = selected_text?.trim();
+    if (!selected_text || sha256(selected_text) !== support.payloadHash) return null;
+    const locators = observation.evidence.flatMap((locator) => {
+      const leaf = ctx.store.db
+        .prepare(
+          `SELECT f.line_start, p.slug FROM facts f JOIN pages p ON p.id=f.page_id WHERE f.id=? AND f.valid_to IS NULL`,
+        )
+        .get(locator.factId) as { line_start: number; slug: string } | undefined;
+      return leaf
+        ? [
+            {
+              fact: locator.factId,
+              slug: leaf.slug,
+              line: leaf.line_start,
+              line_hash: locator.sourceLineHash,
+              proof_groups: locator.proofGroups,
+            },
+          ]
+        : [];
+    });
+    const leaves = observationLeafEvidence(ctx, locators);
+    if (leaves.length !== observation.evidence.length) return null;
+    sources.push({
+      record_id: '',
+      derived: true,
+      selected_text,
+      leaves: leaves.map((leaf) => ({
+        leaf_id: leaf.fact,
+        text: leaf.text,
+        source_slug: leaf.slug,
+        source_line: leaf.line,
+      })),
+    });
+  }
+  return sources;
 }
 
 function answerLineEligible(line: Line, question: string, memoryView: MemoryView): boolean {
