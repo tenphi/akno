@@ -67,6 +67,119 @@ afterEach(async () => {
 });
 
 describe('grounded answer discovery surface', () => {
+  it.each(['faithful', 'omitted', 'unselected-role'])(
+    'requires a selected source-only reporter even when broad audits approve: %s',
+    async (mode) => {
+      const source = 'Bo Winters reports that silverpine inspection of Zephyr QX-100 is complete.';
+      await seedSourceFrame({
+        text: source,
+        frame: source,
+        kind: 'claim',
+        commitment: 'asserted',
+        polarity: 'affirmed',
+        sourceSpeaker: 'Ada Marlow',
+      });
+      const text = mode === 'faithful' ? source : 'Silverpine inspection of Zephyr QX-100 is complete.';
+      await useAnswerModel({
+        sourceReading: {
+          readings: [
+            {
+              source_id: 'E1',
+              complete: true,
+              predicates: [
+                {
+                  excerpt: source,
+                  predicate: 'Reported inspection completion',
+                  timing: null,
+                  status: 'reported complete',
+                  time_relation: 'occurred',
+                  named_roles: [{ name: 'Bo Winters', role: 'reporter', excerpt: source }],
+                },
+              ],
+            },
+          ],
+        },
+        generation: {
+          record_readings: sourceFrameReading(),
+          blocks: [{ rendering_mode: 'translate', text, evidence_ids: ['E1'] }],
+          missing_concepts: [],
+        },
+        verification: (request: { messages: { content: string }[] }) => {
+          const payload = JSON.parse(request.messages.at(-1)!.content);
+          expect(payload.fixed_source_roles).toMatchObject([
+            { source: { name: 'Bo Winters', role: 'reporter' } },
+          ]);
+          expect(JSON.stringify(payload)).not.toContain('Ada Marlow');
+          const block = payload.blocks[0];
+          const part = {
+            source_anchor: block.cited_evidence[0].retention_source_frame[0].anchor_id,
+            answer_anchor: block.answer_segments[0].anchor_id,
+            detail: 'The broad model mistakenly treats citation as adequate reporting scope.',
+            relation: 'preserved',
+          };
+          return {
+            verdicts: [
+              {
+                ...verdict('B1', true),
+                predicate_time_audit: {
+                  comparisons: [
+                    {
+                      source_predicate_id: 'E1_P1',
+                      candidate: {
+                        excerpt: text,
+                        predicate: 'Inspection completion',
+                        timing: null,
+                        status: 'complete',
+                        time_relation: 'occurred',
+                      },
+                      relation: 'preserved',
+                    },
+                  ],
+                  complete: true,
+                },
+                excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+                source_alignments: [
+                  {
+                    evidence_id: 'E1',
+                    source_context: source,
+                    actor: part,
+                    object_and_operation: mechanismComparison(part),
+                    qualification: part,
+                    tested_property: {
+                      source_anchor: null,
+                      answer_anchor: null,
+                      source_property: null,
+                      answer_property: null,
+                      relation: 'absent_from_both',
+                    },
+                  },
+                ],
+                source_role_audit: {
+                  roles: [
+                    {
+                      source_role_id: 'E1_P1_R1',
+                      candidate_anchors:
+                        mode === 'unselected-role' ? null : [block.answer_segments[0].anchor_id],
+                      candidate_role: mode === 'unselected-role' ? null : 'reporter',
+                      relation: mode === 'unselected-role' ? 'not_selected' : 'preserved',
+                    },
+                  ],
+                },
+              },
+            ],
+          };
+        },
+      });
+      const result = await memory.answer({
+        question: 'What silverpine inspection is reported?',
+        answer_language: 'en',
+        memory_view: 'all',
+        expand: false,
+        graph: false,
+      });
+      expect(result.reason_code).toBe(mode === 'faithful' ? 'answered' : 'verification_rejected');
+    },
+  );
   it.each(['faithful', 'transferred-date', 'invented-date', 'missing-audit', 'unbound', 'incomplete'])(
     'audits each operation independently of broad answer approval: %s',
     async (mode) => {
@@ -4733,10 +4846,147 @@ describe('grounded answer discovery surface', () => {
     });
     expect(result.answer).not.toBeNull();
     expect(JSON.stringify(modelRequests[0])).not.toContain('self_attested');
-    expect(JSON.stringify(modelRequests[0])).toContain('source_speaker');
+    expect(JSON.stringify(modelRequests[0])).not.toContain('source_speaker');
+    expect(JSON.stringify(modelRequests[0])).toContain('named_source_reference');
     expect(JSON.stringify(modelRequests[1])).toContain('self_attested');
     expect(JSON.stringify(result.context)).toContain('self_attested');
   });
+
+  it.each([
+    ['literal copy', 'copy', 'Silverpine inspection of Zephyr QX-100 is complete.', null, true],
+    [
+      'translated copy',
+      'translate',
+      'Silverpine inspection of Zephyr QX-100 is complete.',
+      'Проверка silverpine для Zephyr QX-100 завершена.',
+      true,
+    ],
+    ['focused assertion', 'focused', 'Silverpine inspection of Zephyr QX-100 is complete.', null, true],
+    [
+      'explicit actor',
+      'copy',
+      'Bo Winters completed the silverpine inspection of Zephyr QX-100.',
+      null,
+      true,
+    ],
+    [
+      'explicit reporter differs from author',
+      'copy',
+      'Bo Winters reports that silverpine inspection of Zephyr QX-100 is complete.',
+      null,
+      true,
+    ],
+    ['first person', 'copy', 'I completed the silverpine inspection of Zephyr QX-100.', null, true],
+    [
+      'missing explicit actor',
+      'focused',
+      'Bo Winters completed the silverpine inspection of Zephyr QX-100.',
+      'Silverpine inspection of Zephyr QX-100 is complete.',
+      false,
+    ],
+    [
+      'missing explicit reporter',
+      'focused',
+      'Bo Winters reports that silverpine inspection of Zephyr QX-100 is complete.',
+      'Silverpine inspection of Zephyr QX-100 is complete.',
+      false,
+    ],
+    [
+      'invented author as actor',
+      'focused',
+      'Silverpine inspection of Zephyr QX-100 is complete.',
+      'Ada Marlow completed the silverpine inspection of Zephyr QX-100.',
+      false,
+    ],
+  ] as const)(
+    'separates direct assertion provenance from readable roles: %s',
+    async (_case, mode, source, translation, supported) => {
+      await seedSourceFrame({
+        text: source,
+        frame: source,
+        kind: 'claim',
+        commitment: 'asserted',
+        polarity: 'affirmed',
+        sourceSpeaker: 'Ada Marlow',
+      });
+      const before = fs.readFileSync(path.join(root, 'products/zephyr-qx-100.md'), 'utf8');
+      const text = translation ?? source;
+      await useAnswerModel({
+        generation: {
+          record_readings: sourceFrameReading(),
+          blocks: [
+            mode === 'copy'
+              ? { rendering_mode: 'copy', evidence_ids: ['E1'] }
+              : {
+                  ...(mode === 'translate' ? { rendering_mode: 'translate' } : {}),
+                  text,
+                  evidence_ids: ['E1'],
+                },
+          ],
+          missing_concepts: [],
+        },
+        verification: (request: { messages: { content: string }[] }) => {
+          const payload = JSON.parse(request.messages.at(-1)!.content);
+          const block = payload.blocks[0];
+          expect(block.required_records[0]).toMatchObject({ basis: 'self_attested', kind: 'claim' });
+          expect(block.required_records[0]).not.toHaveProperty('source_speaker');
+          expect(block.required_records[0]).not.toHaveProperty('source_role');
+          expect(JSON.stringify(block.required_records)).not.toContain('Ada Marlow');
+          expect(JSON.stringify(block.cited_evidence)).not.toContain('Ada Marlow');
+          const compared = {
+            source_anchor: block.cited_evidence[0].retention_source_frame[0].anchor_id,
+            answer_anchor: block.answer_segments[0].anchor_id,
+            detail: 'The selected readable content supplies roles; provenance supplies none.',
+            relation: 'preserved',
+          };
+          return {
+            verdicts: [
+              {
+                ...verdict('B1', supported, supported, supported),
+                excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+                source_alignments: [
+                  {
+                    evidence_id: 'E1',
+                    source_context: source,
+                    actor: compared,
+                    object_and_operation: mechanismComparison(compared),
+                    qualification: compared,
+                    tested_property: {
+                      source_anchor: null,
+                      answer_anchor: null,
+                      source_property: null,
+                      answer_property: null,
+                      relation: 'absent_from_both',
+                    },
+                  },
+                ],
+              },
+            ],
+          };
+        },
+      });
+      const result = await memory.answer({
+        question: 'What is established about silverpine inspection of Zephyr QX-100?',
+        ...(mode === 'focused' ? {} : { answer_language: mode === 'translate' ? 'ru' : 'en' }),
+        memory_view: 'all',
+        include_context: true,
+        expand: false,
+        graph: false,
+      });
+      expect(result.reason_code).toBe(supported ? 'answered' : 'verification_rejected');
+      expect(result.answer === null).toBe(!supported);
+      const payload = JSON.parse((modelRequests[0]!.messages as { content: string }[]).at(-1)!.content);
+      expect(payload.evidence[0].excerpt).not.toContain('Ada Marlow');
+      expect(payload.evidence[0].excerpt).not.toContain('source_speaker');
+      for (const request of modelRequests) {
+        const input = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+        if (input.supplied_references)
+          expect(input.supplied_references).not.toContainEqual({ kind: 'name', text: 'Ada Marlow' });
+      }
+      expect(JSON.stringify(result.context)).toContain('Ada Marlow');
+      expect(fs.readFileSync(path.join(root, 'products/zephyr-qx-100.md'), 'utf8')).toBe(before);
+    },
+  );
 
   it('removes a block whose invented exact value does not occur in its citation', async () => {
     await useAnswerModel({
@@ -5738,6 +5988,7 @@ function testAnchorCoordinates(content: unknown, payload: Record<string, unknown
     if (bindings && entry.predicate_time_audit && typeof entry.predicate_time_audit === 'object') {
       const audit = entry.predicate_time_audit as { comparisons?: Array<Record<string, unknown>> };
       for (const part of audit.comparisons ?? []) {
+        if ('source_predicate_id' in part) continue;
         const matched = bindings.find(
           (binding) => JSON.stringify(binding.source) === JSON.stringify(part.source),
         );
@@ -5821,6 +6072,10 @@ async function useAnswerModel(script: {
               ? script.verification
               : script.generation;
         const scripted = typeof configured === 'function' ? configured(body) : configured;
+        if (reading && system.includes('also read named_roles')) {
+          for (const entry of scripted.readings ?? [])
+            for (const predicate of entry.predicates ?? []) predicate.named_roles ??= [];
+        }
         const content = verifying ? testAnchorCoordinates(scripted, payload) : scripted;
         response.writeHead(200, { 'content-type': 'application/json' });
         response.end(
