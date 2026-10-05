@@ -1,0 +1,151 @@
+{
+  "version": "answer-populations-199-v4",
+  "review": "author source review before model egress",
+  "cases": [
+    {
+      "id": "separate-dates",
+      "records": [
+        {
+          "activity": "journey",
+          "pattern": "Silverpine journey preparation completed before its activity in both recorded journey cases.",
+          "leaves": [
+            "Silverpine journey preparation completed before its activity in journey case JRN-1111 on 2039-02-11.",
+            "Silverpine journey preparation completed before its activity in journey case JRN-2222 on 2039-02-22."
+          ]
+        },
+        {
+          "activity": "workshop",
+          "pattern": "Silverpine workshop preparation completed before its activity in both recorded workshop cases.",
+          "leaves": [
+            "Silverpine workshop preparation completed before its activity in workshop case WRK-1111 on 2039-02-11.",
+            "Silverpine workshop preparation completed before its activity in workshop case WRK-2222 on 2039-02-22."
+          ]
+        }
+      ],
+      "good": "Silverpine preparation was completed before its activity in both recorded journey cases, JRN-1111 on 2039-02-11 and JRN-2222 on 2039-02-22; it was also completed before its activity in both recorded workshop cases, WRK-1111 on 2039-02-11 and WRK-2222 on 2039-02-22.",
+      "bad": [
+        {
+          "id": "merged",
+          "text": "Journey and workshop silverpine preparation was completed in both sessions on 2039-02-11 and 2039-02-22."
+        },
+        {
+          "id": "wrong-count",
+          "text": "Silverpine journey preparation was completed in one recorded journey; workshop preparation in both recorded workshops."
+        },
+        {
+          "id": "habit",
+          "text": "Silverpine journey and workshop preparation is an ongoing practice before their activities."
+        },
+        {
+          "id": "universal",
+          "text": "Silverpine journey and workshop preparation precedes every activity."
+        },
+        {
+          "id": "causal",
+          "text": "Silverpine journey and workshop preparation guarantees successful activities."
+        },
+        {
+          "id": "preference",
+          "text": "Silverpine journey and workshop preparation shows a preference for safety over speed."
+        },
+        {
+          "id": "motive",
+          "text": "Silverpine journey and workshop preparation is completed because Ada Marlow dislikes uncertainty."
+        }
+      ]
+    },
+    {
+      "id": "shared-sessions",
+      "records": [
+        {
+          "activity": "journey",
+          "pattern": "Silverpine journey preparation completed in both recorded shared global events SESSION-1111 and SESSION-2222.",
+          "leaves": [
+            "Global event SESSION-1111 includes both journey and workshop silverpine preparation; both preparations were completed in this event.",
+            "Global event SESSION-2222 includes both journey and workshop silverpine preparation; both preparations were completed in this event."
+          ]
+        },
+        {
+          "activity": "workshop",
+          "pattern": "Silverpine workshop preparation completed in both recorded shared global events SESSION-1111 and SESSION-2222.",
+          "leaves": [
+            "Global event SESSION-1111 includes both journey and workshop silverpine preparation; both preparations were completed in this event.",
+            "Global event SESSION-2222 includes both journey and workshop silverpine preparation; both preparations were completed in this event."
+          ]
+        }
+      ],
+      "good": "Silverpine journey and workshop preparation was completed in both shared global events SESSION-1111 and SESSION-2222.",
+      "bad": [
+        {
+          "id": "inflated-total",
+          "text": "Silverpine journey and workshop preparation was completed in four separate sessions."
+        }
+      ]
+    },
+    {
+      "id": "one-event-many-facts",
+      "records": [
+        {
+          "activity": "journey",
+          "pattern": "The one recorded silverpine journey JRN-1111 had preparation completed and tickets checked before departure.",
+          "leaves": [
+            "Journey JRN-1111 silverpine preparation was completed.",
+            "Journey JRN-1111 tickets were checked before departure."
+          ]
+        }
+      ],
+      "good": "The one recorded silverpine journey JRN-1111 had preparation completed and tickets checked before departure.",
+      "bad": [
+        {
+          "id": "facts-as-cases",
+          "text": "Silverpine preparation and tickets were checked for both recorded journeys."
+        }
+      ]
+    },
+    {
+      "id": "one-event-copies",
+      "records": [
+        {
+          "activity": "journey",
+          "pattern": "The copied records concern one silverpine journey with preparation completed.",
+          "leaves": [
+            "Journey JRN-1111 silverpine preparation was completed.",
+            "Journey JRN-1111 silverpine preparation was completed."
+          ]
+        }
+      ],
+      "good": "Both copied records concern the one silverpine journey JRN-1111 with preparation completed.",
+      "bad": [
+        {
+          "id": "copies-as-cases",
+          "text": "Silverpine preparation was completed in both recorded journeys."
+        }
+      ]
+    },
+    {
+      "id": "one-event-competing-dates",
+      "records": [
+        {
+          "activity": "journey",
+          "pattern": "Two reports give different dates for silverpine preparation of one identified journey.",
+          "leaves": [
+            "Vulpine Mutual reports that journey JRN-1111 silverpine preparation completed on 2039-02-11.",
+            "Ada Marlow reports that journey JRN-1111 silverpine preparation completed on 2039-02-22."
+          ]
+        }
+      ],
+      "good": "Vulpine Mutual reports silverpine preparation of journey JRN-1111 completed on 2039-02-11; Ada Marlow reports completion on 2039-02-22. These are competing dates for the one identified journey.",
+      "bad": [
+        {
+          "id": "dates-as-cases",
+          "text": "Silverpine preparation was completed in both recorded journeys on 2039-02-11 and 2039-02-22."
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "invented exact controls; not population accuracy",
+    "scripted composition is reported separately from live composition",
+    "source review is independent of runtime verdict, not a second human reviewer"
+  ]
+}

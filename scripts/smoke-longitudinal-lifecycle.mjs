@@ -65,6 +65,7 @@ for (const split of ['development', 'held-out']) {
   const historicalContract = structuredClone(packet);
   delete historicalContract.contract.conflictVerification;
   delete historicalContract.contract.artifacts['core/dist/maintenance/conflicts.js'];
+  delete historicalContract.contract.artifacts['core/dist/ops/answer-populations.js'];
   assert(
     adjudicateLifecycle(historicalContract, {
       ...review,
@@ -207,6 +208,7 @@ assert(adjudicateLifecycle(native, nativeReview).groups.every((group) => !group.
 for (const mutate of [
   (packet) => {
     delete packet.contract.artifacts['core/dist/maintenance/conflicts.js'];
+    delete packet.contract.artifacts['core/dist/ops/answer-populations.js'];
   },
   (packet) => {
     delete packet.contract.conflictVerification;

@@ -164,6 +164,20 @@ readings constrain the verifier; it cannot rewrite their dates or status to fit 
 not authorize additional facts from the original frame. Complete-record rendering compares every
 selected predicate, while focused answers may omit unrelated neighboring predicates.
 
+For eligible observations and reflected conclusions, Akno expands the exact current support of
+each selected population. A separate source reading fixes the case counts and any explicit shared
+or disjoint identities without seeing the answer. A small comparison checks those populations
+before the ordinary semantic verifier runs. Both must pass. Sharing dates does not combine two
+journeys and two workshops into two shared sessions; multiple facts, copied sources or competing
+dates for one identified event do not add cases. Exact repeated lineage is counted once, including
+when a draft cites both an observation and its raw support.
+
+These checks use the configured answer role and its existing ceiling, without a new search or
+identity store. A source reading or comparison that cannot be grounded returns
+`verification_unavailable`; an established scope mismatch rejects the affected block, preserving
+other verified blocks. Finite examples cannot establish a broader habit, preference, motive or
+causal guarantee. These are source-support checks, not independent verification of reality.
+
 The verifier also compares each selected predicate with its own source date and status. A shared
 subject or sentence cannot transfer one action's date onto another. For example, a dated booking and
 an undated completed payment can answer the booking date and payment completion; they cannot answer

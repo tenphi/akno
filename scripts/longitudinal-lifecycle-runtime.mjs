@@ -351,6 +351,7 @@ export async function runLifecycle(
             'core/dist/recall/assemble.js',
             'protocol/dist/common.js',
             'core/dist/ops/answer.js',
+            'core/dist/ops/answer-populations.js',
             'core/dist/open.js',
             'cli/dist/serve/socket.js',
             'client/dist/index.js',
