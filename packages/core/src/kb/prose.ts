@@ -3,7 +3,7 @@ import { fromMarkdown } from 'mdast-util-from-markdown';
 import { parseFrontmatter } from './frontmatter.ts';
 import { sha256 } from '../store/ids.ts';
 
-export const PROSE_PROJECTION_VERSION = 'prose-v6';
+export const PROSE_PROJECTION_VERSION = 'prose-v7-reflection';
 type Meaning = Pick<ProseQualification, 'view' | 'reason'>;
 const FACTUAL: Meaning = { view: 'factual', reason: 'asserted' };
 const CONDITIONAL =
@@ -239,7 +239,7 @@ function projectProse(
     }
     // Normalizing a list marker cannot manufacture server-owned syntax from literal prose.
     if (/^\s*<!--\s*source\s*-->\s*$/.test(authoredLines[i]!)) source = true;
-    if (/^\s*<!--\s*akno:(?:item|observation)\b/.test(authoredLines[i]!)) {
+    if (/^\s*<!--\s*akno:(?:item|observation|reflection)\b/.test(authoredLines[i]!)) {
       ownedPayload = true;
       i++;
       continue;

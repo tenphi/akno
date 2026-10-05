@@ -432,6 +432,353 @@ describe('reflect', () => {
     ],
   };
 
+  it.each(['wording', 'marker'])('refuses a reflection revision that changes its sealed %s', async (kind) => {
+    await withIndexedObservations();
+    server.reply(REFLECTED);
+    const planned = (await mem.dream({ phase: 'reflect', mode: 'review' })).maintenancePlan!;
+    const item = mem.plan(planned.id).items[0]!;
+    const operation = item.operations[0]!;
+    if (operation.type !== 'create') throw new Error('reflection fixture must create its principles page');
+    const after =
+      kind === 'wording'
+        ? operation.after.replace(PRINCIPLE, 'All activities follow a universal management rule.')
+        : operation.after.replace(/^<!-- akno:reflection.*\n/m, '');
+    await expect(
+      mem.revisePlan(planned.id, item.id, { after, reason: 'Invented revision boundary control.' }),
+    ).rejects.toThrow(/exact sealed observation lineage/);
+    expect(fs.existsSync(path.join(root, 'observations/principles.md'))).toBe(false);
+    expect(mem.plan(planned.id).items[0]?.status).toBe('proposed');
+  });
+
+  it('withdraws reflected prose from current evidence when exact leaves disappear', async () => {
+    await withIndexedObservations();
+    server.reply(REFLECTED);
+    await mem.dream({ phase: 'reflect' });
+    const file = path.join(root, 'observations/principles.md');
+    const before = fs.readFileSync(file, 'utf8');
+    const conclusion = async () =>
+      (await mem.read({ slug: 'observations/principles' })).page!.lines.find((line) =>
+        line.text.includes(PRINCIPLE),
+      )!;
+    expect((await conclusion()).prose?.answer_eligible).toBe(true);
+    const database = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+    expect(
+      database
+        .prepare(
+          "SELECT COUNT(*) AS n FROM facts f JOIN pages p ON p.id=f.page_id WHERE p.slug='observations/principles'",
+        )
+        .get(),
+    ).toEqual({ n: 0 });
+    database.close();
+    const recalled = await mem.recall({
+      query: PRINCIPLE,
+      memory_view: 'factual',
+      depth: 'full',
+      expand: false,
+      rerank: false,
+      graph: false,
+    });
+    expect(JSON.stringify(recalled.results)).toContain(PRINCIPLE);
+    server.answer(
+      { blocks: [{ text: PRINCIPLE, evidence_ids: ['E1'] }], missing_concepts: [] },
+      {
+        verdicts: [
+          {
+            block_id: 'B1',
+            predicate_time_audit: predicateTimeFixture(PRINCIPLE, PRINCIPLE),
+            ...semanticAudit(true, true, true),
+            proposition_supported: true,
+            action_arguments_preserved: true,
+            qualification_scope_preserved: true,
+          },
+        ],
+      },
+    );
+    const supportedAnswer = await mem.answer({
+      question: PRINCIPLE,
+      memory_view: 'factual',
+      filter: { folder: 'observations' },
+      expand: false,
+      graph: false,
+      include_context: true,
+    });
+    expect(supportedAnswer.reason_code).toBe('answered');
+    expect(supportedAnswer.answer).toContain(PRINCIPLE);
+    for (const leaf of ['home/appliances.md', 'home/laundry.md', 'home/kitchen.md'])
+      fs.unlinkSync(path.join(root, leaf));
+    await mem.index({});
+    expect(fs.readFileSync(file, 'utf8')).toBe(before);
+    expect((await conclusion()).prose).toMatchObject({ view: 'history', answer_eligible: false });
+    const current = await mem.recall({
+      query: PRINCIPLE,
+      memory_view: 'factual',
+      depth: 'full',
+      expand: false,
+      rerank: false,
+      graph: true,
+    });
+    expect(JSON.stringify(current.results)).not.toContain(PRINCIPLE);
+    const historical = await mem.recall({
+      query: PRINCIPLE,
+      memory_view: 'history',
+      depth: 'full',
+      expand: false,
+      rerank: false,
+      graph: false,
+    });
+    expect(JSON.stringify(historical.results)).toContain(PRINCIPLE);
+    const context = await mem.context({
+      pinned: ['observations/principles'],
+      memory_view: 'factual',
+      timeline_days: 0,
+      structure: false,
+    });
+    // Pins explicitly inspect a page; their retained history must carry the qualification.
+    expect(context.pinned[0]?.lines.find((line) => line.text.includes(PRINCIPLE))?.prose).toMatchObject({
+      answer_eligible: false,
+      view: 'history',
+    });
+    for (const profile of ['default', 'auto_recall'] as const) {
+      const bundle = await mem.context({
+        profile,
+        query: PRINCIPLE,
+        memory_view: 'factual',
+        timeline_days: 0,
+        structure: false,
+      });
+      if (profile === 'auto_recall') expect(JSON.stringify(bundle.results)).not.toContain(PRINCIPLE);
+      else
+        for (const card of bundle.results)
+          if (card.type === 'page') {
+            for (const line of card.lines.filter((candidate) => candidate.text.includes(PRINCIPLE)))
+              expect(line.prose).toMatchObject({ answer_eligible: false, view: 'history' });
+          }
+    }
+    server.answer({ blocks: [], missing_concepts: ['current reflected support'] }, { verdicts: [] });
+    for (const view of ['factual', 'all', 'history'] as const) {
+      const automatic = await mem.context({ profile: 'auto_recall', query: PRINCIPLE, memory_view: view });
+      expect(JSON.stringify(automatic.results)).not.toContain(PRINCIPLE);
+      const answer = await mem.answer({
+        question: PRINCIPLE,
+        memory_view: view,
+        filter: { folder: 'observations' },
+        expand: false,
+        graph: true,
+        include_context: true,
+      });
+      expect(JSON.stringify(answer.context)).not.toContain(PRINCIPLE);
+      expect(answer.citations).toEqual([]);
+      expect(answer.reason_code).not.toBe('answered');
+    }
+    await mem.close();
+    mem = await openMem({ maintenance: { reflect: { enabled: true } } });
+    await mem.index({ rebuild: true });
+    expect((await conclusion()).prose).toMatchObject({ view: 'history', answer_eligible: false });
+  });
+
+  it('checks changed exact leaves before indexing and after unchanged cycles and rebuild', async () => {
+    await withIndexedObservations();
+    server.reply(REFLECTED);
+    await mem.dream({ phase: 'reflect' });
+    const file = path.join(root, 'observations/principles.md');
+    const bytes = fs.readFileSync(file, 'utf8');
+    const conclusion = async () =>
+      (await mem.read({ slug: 'observations/principles' })).page!.lines.find((line) =>
+        line.text.includes(PRINCIPLE),
+      )!;
+    const leaf = path.join(root, 'home/appliances.md');
+    const original = fs.readFileSync(leaf, 'utf8');
+    fs.writeFileSync(leaf, `${original}\nAn unrelated authored note.\n`);
+    expect((await conclusion()).prose?.answer_eligible).toBe(true);
+    fs.writeFileSync(leaf, original.replace('repaired in March', 'repaired in October'));
+    expect((await conclusion()).prose).toMatchObject({
+      reason: 'reflection_support_stale',
+      answer_eligible: false,
+    });
+    await mem.index({ structuralOnly: true });
+    expect((await conclusion()).prose?.answer_eligible).toBe(false);
+    await mem.dream({ phase: 'reflect' });
+    await mem.index({ structuralOnly: true });
+    expect((await conclusion()).prose?.answer_eligible).toBe(false);
+    expect(fs.readFileSync(file, 'utf8')).toBe(bytes);
+    await mem.close();
+    mem = await openMem({ maintenance: { reflect: { enabled: true } } });
+    await mem.index({ rebuild: true });
+    expect((await conclusion()).prose?.answer_eligible).toBe(false);
+  });
+
+  it.each(['payload', 'version', 'duplicate', 'marker', 'spacing'])(
+    'fails closed for changed reflection %s without rewriting it',
+    async (kind) => {
+      await withIndexedObservations();
+      server.reply(REFLECTED);
+      await mem.dream({ phase: 'reflect' });
+      const file = path.join(root, 'observations/principles.md');
+      const before = fs.readFileSync(file, 'utf8');
+      const block = before.split('\n').slice(-3, -1).join('\n');
+      const changed =
+        kind === 'payload'
+          ? before.replace(PRINCIPLE, 'All activities universally follow the same rule.')
+          : kind === 'version'
+            ? before.replace(' v=1 level=3', ' v=99 level=3')
+            : kind === 'duplicate'
+              ? `${before}\n${block}\n`
+              : kind === 'marker'
+                ? before.replace(/scope=[a-f0-9]+/, 'scope=invalid')
+                : before.replace(' -->\n-', ' -->\n\n-');
+      fs.writeFileSync(file, changed);
+      for (const reindex of [false, true]) {
+        if (reindex) await mem.index({ structuralOnly: true });
+        const read = (await mem.read({ slug: 'observations/principles' })).page!;
+        const conclusions = read.lines.filter((line) => /^- \d{4}-/.test(line.text));
+        expect(conclusions.length).toBeGreaterThan(0);
+        expect(conclusions.every((line) => line.prose?.answer_eligible === false)).toBe(true);
+        expect(fs.readFileSync(file, 'utf8')).toBe(changed);
+      }
+    },
+  );
+
+  it('preserves a separately supported principle on the same page after one leaf changes', async () => {
+    await withIndexedObservations();
+    server.reply(REFLECTED);
+    await mem.dream({ phase: 'reflect' });
+    const facts = { ...SERVICING };
+    for (const name of ['one', 'two', 'three']) {
+      const slug = `home/independent-${name}`;
+      const claim = `The ${name} service check is complete.`;
+      fs.writeFileSync(path.join(root, `${slug}.md`), `# Independent check ${name}\n\n${claim}\n`);
+      facts[slug] = [
+        { claim, subject: 'appliance servicing', attribute: `independent ${name}`, value: 'complete' },
+      ];
+    }
+    server.facts(facts);
+    await mem.index({});
+    const db = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+    const rows = db
+      .prepare(
+        `SELECT f.id,f.page_id,f.source_line_hash,p.slug,g.subject_entity FROM facts f
+      JOIN pages p ON p.id=f.page_id JOIN graph_fact_status g ON g.fact_id=f.id WHERE p.slug LIKE 'home/independent-%' AND g.eligibility='eligible' ORDER BY p.slug`,
+      )
+      .all() as {
+      id: string;
+      page_id: string;
+      source_line_hash: string;
+      slug: string;
+      subject_entity: string;
+    }[];
+    db.close();
+    expect(rows).toHaveLength(3);
+    const ids = ['obs_separate_1111', 'obs_separate_2222', 'obs_separate_3333'];
+    for (let i = 0; i < 3; i++) {
+      const leaves = [rows[i]!, rows[(i + 1) % 3]!];
+      const block = observationBlock(
+        {
+          id: ids[i]!,
+          subject: rows[0]!.subject_entity,
+          disposition: 'active',
+          proofCount: 2,
+          evidence: leaves.map((leaf) => ({
+            factId: leaf.id,
+            sourceLineHash: leaf.source_line_hash,
+            proofGroups: [`page:${leaf.page_id}`],
+          })),
+        },
+        `The recorded ${['one', 'two', 'three'][i]} service checks have explicit completion status.`,
+        leaves.map((leaf) => leaf.slug),
+      );
+      const target = path.join(root, OBSERVE_TARGET);
+      fs.writeFileSync(target, insertObservationBlock(fs.readFileSync(target, 'utf8'), block)!);
+    }
+    await mem.index({ structuralOnly: true });
+    const independent =
+      'Across the separate recorded service checks, completion status is explicitly documented.';
+    server.reply({ observations: [{ pattern: independent, evidence: ids, confidence: 0.9 }] });
+    await mem.dream({ phase: 'reflect' });
+    const file = path.join(root, 'observations/principles.md'),
+      bytes = fs.readFileSync(file, 'utf8');
+    expect(bytes).toContain(independent);
+    fs.unlinkSync(path.join(root, 'home/appliances.md'));
+    await mem.index({});
+    const read = (await mem.read({ slug: 'observations/principles' })).page!;
+    expect(read.lines.find((line) => line.text.includes(PRINCIPLE))?.prose).toMatchObject({
+      reason: 'reflection_support_stale',
+      answer_eligible: false,
+    });
+    expect(read.lines.find((line) => line.text.includes(independent))?.prose).toMatchObject({
+      reason: 'reflection_supported',
+      answer_eligible: true,
+    });
+    expect(read.summary).toBeNull();
+    const recall = await mem.recall({
+      query: independent,
+      memory_view: 'factual',
+      depth: 'full',
+      expand: false,
+      graph: false,
+      rerank: false,
+    });
+    expect(JSON.stringify(recall.results)).toContain(independent);
+    expect(JSON.stringify(recall.results)).not.toContain(PRINCIPLE);
+    expect(fs.readFileSync(file, 'utf8')).toBe(bytes);
+    await mem.close();
+    mem = await openMem({ maintenance: { reflect: { enabled: true } } });
+    await mem.index({ rebuild: true });
+    const rebuilt = (await mem.read({ slug: 'observations/principles' })).page!;
+    expect(rebuilt.lines.find((line) => line.text.includes(PRINCIPLE))?.prose?.answer_eligible).toBe(false);
+    expect(rebuilt.lines.find((line) => line.text.includes(independent))?.prose?.answer_eligible).toBe(true);
+  });
+
+  it.each(['\n', '\r\n'])(
+    'keeps unbound legacy conclusions historical and can append a newly assessed replacement (%j)',
+    async (newline) => {
+      await withIndexedObservations();
+      fs.mkdirSync(path.join(root, 'observations'), { recursive: true });
+      const file = path.join(root, 'observations/principles.md');
+      const legacy =
+        `---\ntitle: Principles\nderived: true\nevidence: [topics/appliance-servicing]\n---\n\n# Principles\n\nPatterns Akno inferred from pages listed as evidence. Not authored claims.\n\n- 2037-04-11 — ${PRINCIPLE} [[topics/appliance-servicing]]\n`.replaceAll(
+          '\n',
+          newline,
+        );
+      fs.writeFileSync(file, legacy);
+      await mem.index({});
+      // Simulate an older derivation left in an upgraded store. A structural pass must remove
+      // this L3-as-L1 row without a model, before it can contribute graph evidence.
+      const oldStore = new Database(path.join(stateDir, 'akno.db'));
+      oldStore
+        .prepare(
+          `INSERT INTO facts(id,page_id,claim,subject,attribute,value,line_start,line_end,source_line_hash,confidence,first_seen,last_seen)
+        SELECT 'fac_legacy_reflection',p.id,?,'appliance servicing','principle',?,11,11,?,0.9,'2037-04-11','2037-04-11'
+        FROM pages p WHERE p.slug='observations/principles'`,
+        )
+        .run(PRINCIPLE, PRINCIPLE, 'a'.repeat(64));
+      oldStore.close();
+      await mem.index({ structuralOnly: true });
+      const upgradedStore = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+      expect(
+        upgradedStore.prepare("SELECT id FROM facts WHERE id='fac_legacy_reflection'").get(),
+      ).toBeUndefined();
+      upgradedStore.close();
+      expect(
+        (await mem.read({ slug: 'observations/principles' })).page!.lines.find((line) =>
+          line.text.includes(PRINCIPLE),
+        )?.prose,
+      ).toMatchObject({ reason: 'reflection_lineage_missing', view: 'history', answer_eligible: false });
+      expect(fs.readFileSync(file, 'utf8')).toBe(legacy);
+      server.reply(REFLECTED);
+      await mem.dream({ phase: 'reflect' });
+      const after = fs.readFileSync(file, 'utf8');
+      if (newline === '\r\n') expect(after.replaceAll('\r\n', '')).not.toContain('\n');
+      expect(after).toContain(legacy.trimEnd());
+      expect(
+        (await mem.read({ slug: 'observations/principles' }))
+          .page!.lines.filter((line) => line.text.includes(PRINCIPLE))
+          .map((line) => line.prose?.answer_eligible),
+      ).toEqual([false, true]);
+      await mem.dream({ phase: 'reflect' });
+      expect(fs.readFileSync(file, 'utf8')).toBe(after);
+    },
+  );
+
   /**
    * The tier reads the folder it writes into, which is how `principles` came to list itself as its
    * own evidence on a real knowledge base. A conclusion offered as its own support reads, later, as

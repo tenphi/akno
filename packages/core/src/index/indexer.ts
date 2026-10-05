@@ -1,5 +1,6 @@
 import { PROSE_PROJECTION_VERSION } from '../kb/prose.ts';
 import { replaceProseEntries } from '../memory/prose-projection.ts';
+import { refreshReflectionProse } from '../observations/reflection.ts';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
@@ -520,6 +521,9 @@ export class Indexer {
     const contextualModelId = this.#config.graph.contextualResolution.enabled
       ? this.#models.derive.modelId
       : null;
+    // A projection upgrade must remove any older L3-as-L1 fact rows before graph construction;
+    // current L2 eligibility is then recomputed and the per-conclusion prose refreshed again.
+    refreshReflectionProse(this.#store, this.#config.aknoPath);
     let graph = rebuildEvidenceGraph(this.#store, {
       conflictModelId: this.#models.derive.modelId,
       contextualModelId,
@@ -563,6 +567,7 @@ export class Indexer {
     const observations = qualifyObservationEntries(this.#store, this.#config.maintenance.observe.minEvidence);
     report.observationsIndexed = observations.indexed;
     report.observationProjectionIssues += observations.issues;
+    refreshReflectionProse(this.#store, this.#config.aknoPath);
     progress({ phase: 'graph', done: 1, total: 1 });
 
     const projectionUpgradeComplete = temporalProjectionPaths.every(

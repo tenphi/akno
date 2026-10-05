@@ -118,6 +118,12 @@ import {
   proofGroupsForFact,
 } from '../observations/projection.ts';
 import {
+  currentReflectionSupport,
+  reflectionId,
+  renderReflectionMarker,
+  reflectionQualifications,
+} from '../observations/reflection.ts';
+import {
   assertProfileAutomaticApplyAvailable,
   configWithMaintenanceRecovery,
   maintenanceRecoveryStatus,
@@ -2596,14 +2602,14 @@ function observationFromPlanItem(item: MaintenanceItem): ObservationWritten {
 }
 
 /** L3 principles retain the legacy inference-page envelope; L2 observations do not use this writer. */
-function newPrinciplesPage(subject: string, observation: ObservationCandidate, today: string): string {
+function newPrinciplesPage(subject: string, observation: ObservationCandidate, block: string): string {
   const title = subject.charAt(0).toUpperCase() + subject.slice(1);
   return (
     `---\ntitle: ${serializeYamlString(title, 'title')}\nderived: true\n` +
     `evidence: ${serializeYamlStringArray(observation.evidence, 'evidence')}\n---\n\n` +
     `# ${title}\n\n` +
     `Patterns Akno inferred from pages listed as evidence. Not authored claims.\n\n` +
-    `- ${today} — ${observation.pattern} ${citation(observation.evidence)}\n`
+    `${block}\n`
   );
 }
 
@@ -2612,7 +2618,7 @@ function appendPrinciple(current: string, line: string, evidence: string[]): str
   const merged = mergeEvidence(current, evidence);
   if (merged === null) return null;
   const newline = current.includes('\r\n') ? '\r\n' : '\n';
-  return `${merged.replace(/\s+$/, '')}${newline}${line}${newline}`;
+  return `${merged.replace(/\s+$/, '')}${newline}${line.replaceAll('\n', newline)}${newline}`;
 }
 
 function mergeEvidence(current: string, evidence: string[]): string | null {
@@ -2842,9 +2848,19 @@ async function recordedPrinciples(ctx: AknoContext): Promise<string[]> {
   const relPath = `${inferenceSlug(ctx, PRINCIPLES_SLUG)}.md`;
   const body = await fsp.readFile(path.join(ctx.config.aknoPath, relPath), 'utf8').catch(() => null);
   if (body === null) return [];
+  const page = ctx.store.db
+    .prepare('SELECT id FROM pages WHERE slug = ?')
+    .get(inferenceSlug(ctx, PRINCIPLES_SLUG)) as { id: string } | undefined;
+  const lines = body.split('\n');
+  const qualifications = page
+    ? reflectionQualifications(ctx.store, page.id, lines, ctx.config.aknoPath)
+    : new Map();
   return body
     .split(/\r?\n/)
-    .filter((line) => /^- \d{4}-\d{2}-\d{2} — /.test(line))
+    .filter(
+      (line, index) =>
+        /^- \d{4}-\d{2}-\d{2} — /.test(line) && qualifications.get(index + 1)?.answer_eligible === true,
+    )
     .map((line) =>
       line
         .replace(/^- \d{4}-\d{2}-\d{2} — /, '')
@@ -2932,32 +2948,25 @@ async function prepareIndexedReflection(
       rejectionReason: 'reflection cited too few eligible level-two observations',
     };
   }
-  if (before?.includes(observation.pattern)) {
+  if ((await recordedPrinciples(ctx)).includes(observation.pattern)) {
     return { written: { ...written, action: 'unchanged' }, draft: null };
   }
   const today = new Date().toISOString().slice(0, 10);
   const line = `- ${today} — ${observation.pattern} ${citation(evidenceSlugs)}`;
-  const pageCandidate = { ...observation, evidence: evidenceSlugs };
-  const after =
-    before === null
-      ? newPrinciplesPage('Principles', pageCandidate, today)
-      : appendPrinciple(before, line, evidenceSlugs);
-  if (after === null) {
-    return {
-      written: { ...written, action: 'rejected' },
-      draft: null,
-      rejectionReason: 'the existing principles page has an unsupported evidence declaration',
-    };
-  }
   const evidence: ObservationPlanDraft['evidence'] = [];
+  const supports = [];
   for (const row of selected) {
     const bytes = await fsp.readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8').catch(() => null);
     if (bytes === null) continue;
+    const support = currentReflectionSupport(ctx.store, row.id, ctx.config.aknoPath);
+    if (!support || support.payloadHash !== row.payload_hash) continue;
+    supports.push(support);
     evidence.push({
       slug: row.slug,
       contentHash: sha256(bytes),
       reflectionObservationId: row.id,
       reflectionPayloadHash: row.payload_hash,
+      reflectionMarkerHash: support.markerHash,
     });
   }
   if (evidence.length !== selected.length) {
@@ -2967,6 +2976,18 @@ async function prepareIndexedReflection(
       rejectionReason: 'a level-two source changed before reflection was sealed',
     };
   }
+  const block = `${renderReflectionMarker({ id: reflectionId(supports, line), payloadHash: sha256(line), scopeAssessment: scopeReceipt.fingerprint, evidence: supports })}\n${line}`;
+  const pageCandidate = { ...observation, evidence: evidenceSlugs };
+  const after =
+    before === null
+      ? newPrinciplesPage('Principles', pageCandidate, block)
+      : appendPrinciple(before, block, evidenceSlugs);
+  if (after === null)
+    return {
+      written: { ...written, action: 'rejected' },
+      draft: null,
+      rejectionReason: 'the existing principles page has an unsupported evidence declaration',
+    };
   const inputHash = sha256(
     JSON.stringify({
       slug,

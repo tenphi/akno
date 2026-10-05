@@ -4,6 +4,7 @@ import path from 'node:path';
 import { annotateLines, LINE_FACT_COLUMNS, type LineFact } from '../kb/line-facts.ts';
 import { qualifyManagedMemoryLines } from '../kb/managed-lines.ts';
 import { qualifyObservationLines } from '../observations/projection.ts';
+import { qualifyReflectionLines } from '../observations/reflection.ts';
 import { AknoError, ReadInput, type PageRole, type ReadOutput, type Line } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { documentAvailability, type AvailabilityPart } from '../ingest/availability.ts';
@@ -97,11 +98,17 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
     )
     .all(row.id) as (LineFact & { claim: string })[];
 
-  const qualified = qualifyObservationLines(
+  const qualified = qualifyReflectionLines(
     ctx.store,
     row.id,
-    qualifyManagedMemoryLines(lines, allLines, { store: ctx.store, pageId: row.id }),
+    qualifyObservationLines(
+      ctx.store,
+      row.id,
+      qualifyManagedMemoryLines(lines, allLines, { store: ctx.store, pageId: row.id }),
+      allLines,
+    ),
     allLines,
+    ctx.config.aknoPath,
   );
   const withConfidence = annotateLines(qualified, facts);
 
@@ -154,7 +161,10 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
       about: JSON.parse(row.about) as string[],
       aliases: JSON.parse(row.aliases) as string[],
       frontmatter: JSON.parse(row.frontmatter) as Record<string, unknown>,
-      summary: hasNonfactualProse(content) ? null : row.summary,
+      summary:
+        hasNonfactualProse(content) || qualified.some((line) => line.prose?.reason.startsWith('reflection_'))
+          ? null
+          : row.summary,
       ...(row.keywords ? { keywords: JSON.parse(row.keywords) as string[] } : {}),
       lines: withConfidence,
       source_fence_line: row.source_fence_line,
