@@ -1,0 +1,151 @@
+{
+  "version": "answer-coverage-205-v2",
+  "review": "author source review before model egress",
+  "cases": [
+    {
+      "id": "separate-dates",
+      "records": [
+        {
+          "activity": "inspection",
+          "pattern": "Copperfern inspection preparation completed before its activity in both recorded inspection cases.",
+          "leaves": [
+            "Copperfern inspection preparation completed ahead of the activity in inspection case INS-3333 on 2041-03-11.",
+            "Copperfern inspection preparation completed ahead of the activity in inspection case INS-4444 on 2041-03-22."
+          ]
+        },
+        {
+          "activity": "handover",
+          "pattern": "Copperfern handover preparation completed before its activity in both recorded handover cases.",
+          "leaves": [
+            "Copperfern handover preparation completed ahead of the activity in handover case HND-3333 on 2041-03-11.",
+            "Copperfern handover preparation completed ahead of the activity in handover case HND-4444 on 2041-03-22."
+          ]
+        }
+      ],
+      "good": "Copperfern preparation was completed before its activity in both recorded inspection cases, INS-3333 on 2041-03-11 and INS-4444 on 2041-03-22; it was also completed before its activity in both recorded handover cases, HND-3333 on 2041-03-11 and HND-4444 on 2041-03-22.",
+      "bad": [
+        {
+          "id": "merged",
+          "text": "Inspection and handover copperfern preparation was completed in both sessions on 2041-03-11 and 2041-03-22."
+        },
+        {
+          "id": "wrong-count",
+          "text": "Copperfern inspection preparation was completed in one recorded inspection; handover preparation in both recorded handovers."
+        },
+        {
+          "id": "habit",
+          "text": "Copperfern inspection and handover preparation is an ongoing practice before their activities."
+        },
+        {
+          "id": "universal",
+          "text": "Copperfern inspection and handover preparation precedes every activity."
+        },
+        {
+          "id": "causal",
+          "text": "Copperfern inspection and handover preparation guarantees successful activities."
+        },
+        {
+          "id": "preference",
+          "text": "Copperfern inspection and handover preparation shows a preference for safety over speed."
+        },
+        {
+          "id": "motive",
+          "text": "Copperfern inspection and handover preparation is completed because Ada Marlow dislikes uncertainty."
+        }
+      ]
+    },
+    {
+      "id": "shared-sessions",
+      "records": [
+        {
+          "activity": "inspection",
+          "pattern": "Copperfern inspection preparation completed in both recorded shared global events SHARED-3333 and SHARED-4444.",
+          "leaves": [
+            "Shared event SHARED-3333 explicitly combines inspection and handover copperfern preparation; both preparations were completed in this event.",
+            "Shared event SHARED-4444 explicitly combines inspection and handover copperfern preparation; both preparations were completed in this event."
+          ]
+        },
+        {
+          "activity": "handover",
+          "pattern": "Copperfern handover preparation completed in both recorded shared global events SHARED-3333 and SHARED-4444.",
+          "leaves": [
+            "Shared event SHARED-3333 explicitly combines inspection and handover copperfern preparation; both preparations were completed in this event.",
+            "Shared event SHARED-4444 explicitly combines inspection and handover copperfern preparation; both preparations were completed in this event."
+          ]
+        }
+      ],
+      "good": "Copperfern inspection and handover preparation was completed in both shared global events SHARED-3333 and SHARED-4444.",
+      "bad": [
+        {
+          "id": "inflated-total",
+          "text": "Copperfern inspection and handover preparation was completed in four separate sessions."
+        }
+      ]
+    },
+    {
+      "id": "one-event-many-facts",
+      "records": [
+        {
+          "activity": "inspection",
+          "pattern": "The one recorded copperfern inspection INS-3333 had preparation completed and documents checked before the appointment.",
+          "leaves": [
+            "Inspection INS-3333 copperfern preparation was completed.",
+            "Inspection INS-3333 documents were checked before the appointment."
+          ]
+        }
+      ],
+      "good": "The one recorded copperfern inspection INS-3333 had preparation completed and documents checked before the appointment.",
+      "bad": [
+        {
+          "id": "facts-as-cases",
+          "text": "Copperfern preparation and documents were checked for both recorded inspections."
+        }
+      ]
+    },
+    {
+      "id": "one-event-copies",
+      "records": [
+        {
+          "activity": "inspection",
+          "pattern": "The copied records concern one copperfern inspection with preparation completed.",
+          "leaves": [
+            "Inspection INS-3333 copperfern preparation was completed.",
+            "Inspection INS-3333 copperfern preparation was completed."
+          ]
+        }
+      ],
+      "good": "Both copied records concern the one copperfern inspection INS-3333 with preparation completed.",
+      "bad": [
+        {
+          "id": "copies-as-cases",
+          "text": "Copperfern preparation was completed in both recorded inspections."
+        }
+      ]
+    },
+    {
+      "id": "one-event-competing-dates",
+      "records": [
+        {
+          "activity": "inspection",
+          "pattern": "Two reports give different dates for copperfern preparation of one identified inspection.",
+          "leaves": [
+            "Vulpine Mutual reports that inspection INS-3333 copperfern preparation completed on 2041-03-11.",
+            "Ada Marlow reports that inspection INS-3333 copperfern preparation completed on 2041-03-22."
+          ]
+        }
+      ],
+      "good": "Vulpine Mutual reports copperfern preparation of inspection INS-3333 completed on 2041-03-11; Ada Marlow reports completion on 2041-03-22. These are competing dates for the one identified inspection.",
+      "bad": [
+        {
+          "id": "dates-as-cases",
+          "text": "Copperfern preparation was completed in both recorded inspections on 2041-03-11 and 2041-03-22."
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "invented exact controls; not population accuracy",
+    "scripted composition is reported separately from live composition",
+    "source review is independent of runtime verdict, not a second human reviewer"
+  ]
+}

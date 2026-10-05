@@ -140,6 +140,8 @@ export const AnswerOutput = ResultEnvelope.extend({
       generated_blocks: z.number().int().nonnegative(),
       passed_guards: z.number().int().nonnegative(),
       verified_blocks: z.number().int().nonnegative().nullable(),
+      /** Blocks whose verification was unavailable; separate from semantic rejection. */
+      unavailable_blocks: z.number().int().nonnegative().optional(),
       rejection_counts: z.partialRecord(AnswerRejectionReason, z.number().int().nonnegative()),
     })
     .optional(),

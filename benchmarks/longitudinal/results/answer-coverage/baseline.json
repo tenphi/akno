@@ -1,0 +1,1713 @@
+{
+  "scope": "Akno #205",
+  "cohort": "baseline",
+  "corpus_sha256": "b25f17fe1763bedde5c48cf6ded6e89b7558a7d2940f98f4c1b94e032c7840e7",
+  "model": {
+    "id": "gpt-6-luna",
+    "timeout_ms": 60000,
+    "max_output_tokens": 1024,
+    "reasoning_effort": "low"
+  },
+  "compiled_sha256": {
+    "ops/answer.js": "d71c2f669f63e9621205c4a6574c049ce4cfaece407cfbbe2c9db803672c8d93",
+    "ops/answer-populations.js": "c7699d942d35f1f8406172d8cb2986b83047756ca19b5c6bb55974305469c4c8",
+    "observations/reflection.js": "dd59f2ef8d3888f7d183de7eea032b5326c11cd19a949e93f64c75b1597cdf46",
+    "observations/projection.js": "746aaf97e8828bbe7bdc15ed8bb6917db915cf8a96150fef7d562331be42fa06",
+    "models/semantic-verdict.js": "753d04f8060f5b1f3bae2cafb4c524399bd65a5b87b831749f3bad342f33699b"
+  },
+  "review": "Source-author review of invented exposed development controls; not independent or held-out accuracy.",
+  "limits": [
+    "Only answer roles are live. Valid observation lineage is seeded through ordinary projection.",
+    "Keyword retrieval disables embedding/expansion only in the isolated fixture; production unchanged.",
+    "Incomplete/held/unavailable results are not useful coverage. All cohorts remain separate.",
+    "Missing usage remains unknown; known subtotals never establish an unknown whole."
+  ],
+  "summary": {
+    "coordinates": 21,
+    "actual_logical_calls": 82,
+    "endpoint_requests": 82,
+    "unknown_endpoint_counts": 0,
+    "unknown_usage_calls": 0,
+    "reported_usage": {
+      "inputTokens": 160738,
+      "outputTokens": 21891,
+      "totalTokens": 182629,
+      "cachedInputTokens": 102266,
+      "reasoningOutputTokens": 8669
+    },
+    "scripted_composition_calls": 16,
+    "outcomes": {
+      "verification_unavailable": 1,
+      "verification_rejected": 11,
+      "answered": 6,
+      "draft_rejected": 3
+    }
+  },
+  "coordinates": [
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "scripted-positive",
+      "expected": "useful",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_unavailable",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": null,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index",
+        "answer_verification_failed"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 4126.641125,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1032,
+            "outputTokens": 523,
+            "totalTokens": 1555,
+            "cachedInputTokens": 1029,
+            "reasoningOutputTokens": 105
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2490.3822500000006,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 353,
+            "outputTokens": 164,
+            "totalTokens": 517,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 40
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2300.9867919999997,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1214,
+            "outputTokens": 210,
+            "totalTokens": 1424,
+            "cachedInputTokens": 1211,
+            "reasoningOutputTokens": 55
+          }
+        },
+        {
+          "role": "ordinary-verification",
+          "ok": true,
+          "latency_ms": 9853.419292,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 8241,
+            "outputTokens": 1013,
+            "totalTokens": 9254,
+            "cachedInputTokens": 8238,
+            "reasoningOutputTokens": 196
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "merged",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 4001.8167090000024,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1032,
+            "outputTokens": 503,
+            "totalTokens": 1535,
+            "cachedInputTokens": 1029,
+            "reasoningOutputTokens": 85
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2076.6630000000005,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 300,
+            "outputTokens": 125,
+            "totalTokens": 425,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 67
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 4162.530666999999,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1095,
+            "outputTokens": 339,
+            "totalTokens": 1434,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 260
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "wrong-count",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 4330.375916999998,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1032,
+            "outputTokens": 569,
+            "totalTokens": 1601,
+            "cachedInputTokens": 1029,
+            "reasoningOutputTokens": 151
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2078.1275419999947,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 291,
+            "outputTokens": 104,
+            "totalTokens": 395,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 42
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2808.2574999999997,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1090,
+            "outputTokens": 190,
+            "totalTokens": 1280,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 97
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "habit",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 4233.539208000002,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1032,
+            "outputTokens": 507,
+            "totalTokens": 1539,
+            "cachedInputTokens": 1029,
+            "reasoningOutputTokens": 89
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2035.0642919999955,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 286,
+            "outputTokens": 87,
+            "totalTokens": 373,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 44
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 4804.223208999996,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1066,
+            "outputTokens": 343,
+            "totalTokens": 1409,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 279
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "universal",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 4228.561999999998,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1032,
+            "outputTokens": 544,
+            "totalTokens": 1576,
+            "cachedInputTokens": 1029,
+            "reasoningOutputTokens": 126
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 1605.564624999999,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 283,
+            "outputTokens": 73,
+            "totalTokens": 356,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 33
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 3535.3153750000056,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1060,
+            "outputTokens": 270,
+            "totalTokens": 1330,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 175
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "causal",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2250.3158750000002,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1032,
+            "outputTokens": 232,
+            "totalTokens": 1264,
+            "cachedInputTokens": 1029,
+            "reasoningOutputTokens": 0
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2919.931500000006,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 282,
+            "outputTokens": 102,
+            "totalTokens": 384,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 63
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 5734.895749999996,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 874,
+            "outputTokens": 388,
+            "totalTokens": 1262,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 295
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "preference",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 4327.760041999994,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1032,
+            "outputTokens": 518,
+            "totalTokens": 1550,
+            "cachedInputTokens": 1029,
+            "reasoningOutputTokens": 100
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 1868.9722080000065,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 286,
+            "outputTokens": 85,
+            "totalTokens": 371,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 42
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 3470.277000000002,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1066,
+            "outputTokens": 210,
+            "totalTokens": 1276,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 146
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "motive",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 4346.892584000001,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1032,
+            "outputTokens": 541,
+            "totalTokens": 1573,
+            "cachedInputTokens": 1029,
+            "reasoningOutputTokens": 123
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 3792.1807499999995,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 287,
+            "outputTokens": 202,
+            "totalTokens": 489,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 168
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 4358.139500000005,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1058,
+            "outputTokens": 376,
+            "totalTokens": 1434,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 273
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "live-composition",
+      "expected": "useful",
+      "scripted_composition": false,
+      "answer": "In handover case HND-3333, Copperfern handover preparation was completed ahead of the activity on 2041-03-11. [sources/handover-1:3]\n\nIn handover case HND-4444, Copperfern handover preparation was completed ahead of the activity on 2041-03-22. [sources/handover-2:3]\n\nIn inspection case INS-3333, Copperfern inspection preparation was completed ahead of the activity on 2041-03-11. [sources/inspection-1:3]\n\nIn inspection case INS-4444, Copperfern inspection preparation was completed ahead of the activity on 2041-03-22. [sources/inspection-2:3]",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason_code": "answered",
+      "validation": {
+        "generated_blocks": 4,
+        "passed_guards": 4,
+        "verified_blocks": 4,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "composition",
+          "ok": true,
+          "latency_ms": 3808.2290420000063,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 5479,
+            "outputTokens": 247,
+            "totalTokens": 5726,
+            "cachedInputTokens": 4169,
+            "reasoningOutputTokens": 72
+          }
+        },
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2088.5963330000086,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 805,
+            "outputTokens": 122,
+            "totalTokens": 927,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 29
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2133.5682090000046,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 301,
+            "outputTokens": 144,
+            "totalTokens": 445,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 85
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 1606.677834000002,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 767,
+            "outputTokens": 102,
+            "totalTokens": 869,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 27
+          }
+        },
+        {
+          "role": "ordinary-verification",
+          "ok": true,
+          "latency_ms": 9758.307,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 7982,
+            "outputTokens": 647,
+            "totalTokens": 8629,
+            "cachedInputTokens": 7842,
+            "reasoningOutputTokens": 275
+          }
+        },
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2285.3064999999915,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 805,
+            "outputTokens": 150,
+            "totalTokens": 955,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 57
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 1908.141042000003,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 301,
+            "outputTokens": 116,
+            "totalTokens": 417,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 57
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2147.8727079999953,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 767,
+            "outputTokens": 102,
+            "totalTokens": 869,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 27
+          }
+        },
+        {
+          "role": "ordinary-verification",
+          "ok": true,
+          "latency_ms": 6025.568667,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 7982,
+            "outputTokens": 462,
+            "totalTokens": 8444,
+            "cachedInputTokens": 7842,
+            "reasoningOutputTokens": 164
+          }
+        },
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2332.6324579999928,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 798,
+            "outputTokens": 149,
+            "totalTokens": 947,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 59
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 1939.2544589999889,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 298,
+            "outputTokens": 117,
+            "totalTokens": 415,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 61
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2019.119749999998,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 758,
+            "outputTokens": 98,
+            "totalTokens": 856,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 26
+          }
+        },
+        {
+          "role": "ordinary-verification",
+          "ok": true,
+          "latency_ms": 8364.354082999998,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 7975,
+            "outputTokens": 655,
+            "totalTokens": 8630,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 296
+          }
+        },
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2500.033792000002,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 798,
+            "outputTokens": 120,
+            "totalTokens": 918,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 30
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2021.7368750000023,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 298,
+            "outputTokens": 119,
+            "totalTokens": 417,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 63
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 1759.8322500000068,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 758,
+            "outputTokens": 101,
+            "totalTokens": 859,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 29
+          }
+        },
+        {
+          "role": "ordinary-verification",
+          "ok": true,
+          "latency_ms": 8211.371165999997,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 7975,
+            "outputTokens": 570,
+            "totalTokens": 8545,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 267
+          }
+        }
+      ],
+      "scripted_calls": 0
+    },
+    {
+      "case": "shared-sessions",
+      "repeat": 1,
+      "variant": "scripted-positive",
+      "expected": "useful",
+      "scripted_composition": true,
+      "answer": "Copperfern inspection and handover preparation was completed in both shared global events SHARED-3333 and SHARED-4444. [sources/handover-1:3] [sources/handover-2:3] [sources/inspection-1:3] [sources/inspection-2:3]",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason_code": "answered",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 4713.620208000008,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1043,
+            "outputTokens": 464,
+            "totalTokens": 1507,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 58
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2647.0269160000025,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 297,
+            "outputTokens": 93,
+            "totalTokens": 390,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 38
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2337.021875000006,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1077,
+            "outputTokens": 137,
+            "totalTokens": 1214,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 62
+          }
+        },
+        {
+          "role": "ordinary-verification",
+          "ok": true,
+          "latency_ms": 10017.449374999997,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 8196,
+            "outputTokens": 941,
+            "totalTokens": 9137,
+            "cachedInputTokens": 7842,
+            "reasoningOutputTokens": 288
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "shared-sessions",
+      "repeat": 1,
+      "variant": "inflated-total",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 3751.1695840000175,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1043,
+            "outputTokens": 436,
+            "totalTokens": 1479,
+            "cachedInputTokens": 1040,
+            "reasoningOutputTokens": 30
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 1725.2466669999994,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 285,
+            "outputTokens": 72,
+            "totalTokens": 357,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 29
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2992.641957999993,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1053,
+            "outputTokens": 206,
+            "totalTokens": 1259,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 143
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "shared-sessions",
+      "repeat": 1,
+      "variant": "live-composition",
+      "expected": "useful",
+      "scripted_composition": false,
+      "answer": "In shared event SHARED-3333, both inspection and handover copperfern preparation were completed. [sources/handover-1:3] [sources/inspection-1:3]\n\nIn shared event SHARED-4444, both inspection and handover copperfern preparation were completed. [sources/handover-2:3] [sources/inspection-2:3]",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason_code": "answered",
+      "validation": {
+        "generated_blocks": 2,
+        "passed_guards": 2,
+        "verified_blocks": 2,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "composition",
+          "ok": true,
+          "latency_ms": 2696.582958999992,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 5483,
+            "outputTokens": 149,
+            "totalTokens": 5632,
+            "cachedInputTokens": 4169,
+            "reasoningOutputTokens": 62
+          }
+        },
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2415.525500000018,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 891,
+            "outputTokens": 252,
+            "totalTokens": 1143,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 0
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 3558.1488339999923,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 291,
+            "outputTokens": 244,
+            "totalTokens": 535,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 195
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2872.084375000006,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 913,
+            "outputTokens": 164,
+            "totalTokens": 1077,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 95
+          }
+        },
+        {
+          "role": "ordinary-verification",
+          "ok": true,
+          "latency_ms": 5591.666750000004,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 8018,
+            "outputTokens": 431,
+            "totalTokens": 8449,
+            "cachedInputTokens": 7842,
+            "reasoningOutputTokens": 199
+          }
+        },
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2403.314792000019,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 891,
+            "outputTokens": 252,
+            "totalTokens": 1143,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 0
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 3042.6996660000004,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 291,
+            "outputTokens": 218,
+            "totalTokens": 509,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 169
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2609.8360410000023,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 913,
+            "outputTokens": 153,
+            "totalTokens": 1066,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 84
+          }
+        },
+        {
+          "role": "ordinary-verification",
+          "ok": true,
+          "latency_ms": 6279.539625000005,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 8018,
+            "outputTokens": 469,
+            "totalTokens": 8487,
+            "cachedInputTokens": 7842,
+            "reasoningOutputTokens": 250
+          }
+        }
+      ],
+      "scripted_calls": 0
+    },
+    {
+      "case": "one-event-many-facts",
+      "repeat": 1,
+      "variant": "scripted-positive",
+      "expected": "useful",
+      "scripted_composition": true,
+      "answer": "The one recorded copperfern inspection INS-3333 had preparation completed and documents checked before the appointment. [sources/inspection-1:3] [sources/inspection-2:3]",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason_code": "answered",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 1947.8911669999943,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 842,
+            "outputTokens": 131,
+            "totalTokens": 973,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 30
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 10407.594207999995,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 291,
+            "outputTokens": 181,
+            "totalTokens": 472,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 132
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2218.361249999987,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 755,
+            "outputTokens": 106,
+            "totalTokens": 861,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 41
+          }
+        },
+        {
+          "role": "ordinary-verification",
+          "ok": true,
+          "latency_ms": 8477.28004100002,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 8022,
+            "outputTokens": 668,
+            "totalTokens": 8690,
+            "cachedInputTokens": 7842,
+            "reasoningOutputTokens": 270
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "one-event-many-facts",
+      "repeat": 1,
+      "variant": "facts-as-cases",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 1918.058291000023,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 842,
+            "outputTokens": 130,
+            "totalTokens": 972,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 29
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 1765.1608750000014,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 283,
+            "outputTokens": 85,
+            "totalTokens": 368,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 44
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 3542.779917000007,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 739,
+            "outputTokens": 247,
+            "totalTokens": 986,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 190
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "one-event-many-facts",
+      "repeat": 1,
+      "variant": "live-composition",
+      "expected": "useful",
+      "scripted_composition": false,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "draft_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 0,
+        "verified_blocks": null,
+        "rejection_counts": {
+          "protected_value": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "composition",
+          "ok": true,
+          "latency_ms": 2978.683417000022,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 4684,
+            "outputTokens": 188,
+            "totalTokens": 4872,
+            "cachedInputTokens": 4157,
+            "reasoningOutputTokens": 115
+          }
+        }
+      ],
+      "scripted_calls": 0
+    },
+    {
+      "case": "one-event-copies",
+      "repeat": 1,
+      "variant": "scripted-positive",
+      "expected": "useful",
+      "scripted_composition": true,
+      "answer": "Both copied records concern the one copperfern inspection INS-3333 with preparation completed. [sources/inspection-1:3] [sources/inspection-2:3]",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason_code": "answered",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2068.569374999992,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 833,
+            "outputTokens": 138,
+            "totalTokens": 971,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 38
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2321.3960829999996,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 288,
+            "outputTokens": 158,
+            "totalTokens": 446,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 119
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2315.184917000006,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 741,
+            "outputTokens": 125,
+            "totalTokens": 866,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 70
+          }
+        },
+        {
+          "role": "ordinary-verification",
+          "ok": true,
+          "latency_ms": 6348.06366699998,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 8010,
+            "outputTokens": 445,
+            "totalTokens": 8455,
+            "cachedInputTokens": 7842,
+            "reasoningOutputTokens": 135
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "one-event-copies",
+      "repeat": 1,
+      "variant": "copies-as-cases",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2354.1202080000076,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 833,
+            "outputTokens": 169,
+            "totalTokens": 1002,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 69
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 1807.1655000000028,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 281,
+            "outputTokens": 71,
+            "totalTokens": 352,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 32
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2364.8152919999557,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 734,
+            "outputTokens": 153,
+            "totalTokens": 887,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 98
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "one-event-copies",
+      "repeat": 1,
+      "variant": "live-composition",
+      "expected": "useful",
+      "scripted_composition": false,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "draft_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 0,
+        "verified_blocks": null,
+        "rejection_counts": {
+          "protected_value": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "composition",
+          "ok": true,
+          "latency_ms": 4003.00104199996,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 4663,
+            "outputTokens": 277,
+            "totalTokens": 4940,
+            "cachedInputTokens": 4157,
+            "reasoningOutputTokens": 210
+          }
+        }
+      ],
+      "scripted_calls": 0
+    },
+    {
+      "case": "one-event-competing-dates",
+      "repeat": 1,
+      "variant": "scripted-positive",
+      "expected": "useful",
+      "scripted_composition": true,
+      "answer": "Vulpine Mutual reports copperfern preparation of inspection INS-3333 completed on 2041-03-11; Ada Marlow reports completion on 2041-03-22. These are competing dates for the one identified inspection. [sources/inspection-1:3] [sources/inspection-2:3]",
+      "status": "degraded",
+      "outcome": "partial",
+      "reason_code": "answered",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2496.34466599999,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 860,
+            "outputTokens": 157,
+            "totalTokens": 1017,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 32
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2316.1757920000236,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 319,
+            "outputTokens": 167,
+            "totalTokens": 486,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 90
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2112.7498749999795,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 835,
+            "outputTokens": 135,
+            "totalTokens": 970,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 42
+          }
+        },
+        {
+          "role": "ordinary-verification",
+          "ok": true,
+          "latency_ms": 6634.700917000009,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 8068,
+            "outputTokens": 513,
+            "totalTokens": 8581,
+            "cachedInputTokens": 7842,
+            "reasoningOutputTokens": 126
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "one-event-competing-dates",
+      "repeat": 1,
+      "variant": "dates-as-cases",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2119.4919999999693,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 860,
+            "outputTokens": 161,
+            "totalTokens": 1021,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 36
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2182.2828750000335,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 297,
+            "outputTokens": 125,
+            "totalTokens": 422,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 70
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2358.5606249999837,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 791,
+            "outputTokens": 133,
+            "totalTokens": 924,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 62
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "one-event-competing-dates",
+      "repeat": 1,
+      "variant": "live-composition",
+      "expected": "useful",
+      "scripted_composition": false,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "draft_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 0,
+        "verified_blocks": null,
+        "rejection_counts": {
+          "protected_value": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "composition",
+          "ok": true,
+          "latency_ms": 4139.038666000008,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 4929,
+            "outputTokens": 308,
+            "totalTokens": 5237,
+            "cachedInputTokens": 4157,
+            "reasoningOutputTokens": 209
+          }
+        }
+      ],
+      "scripted_calls": 0
+    }
+  ],
+  "source_author_review": {
+    "actual_returned_answers_reviewed": 6,
+    "accepted_scope_errors": 0,
+    "accepted_attribution_or_date_errors": 0,
+    "review_is_not_independent_human": true
+  }
+}

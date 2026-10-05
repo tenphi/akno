@@ -90,8 +90,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v72';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v57';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v73';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v58';
 
 function answerDraftSchema(
   evidenceId: z.ZodType<string>,
@@ -466,7 +466,12 @@ to same-language paraphrases as well as translations. Do not repair or retry an 
 
 ${RETENTION_FRAME_CONTRACT}
 
-${SEMANTIC_COMPARISON_CONTRACT}`;
+${SEMANTIC_COMPARISON_CONTRACT}
+
+Keep this private verdict compact: use brief phrases in comparison fields, not restatements of every
+source sentence. Quote only the shortest contiguous predicate/time spans needed for each audit, with
+short predicate and status labels. Still audit every material selected predicate, date, actor and
+qualification. Never omit a required comparison to fit the budget. Return only the required schema.`;
 
 /**
  * Direct answering composes over recall; it never owns a second search path.
@@ -742,11 +747,18 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
           populationSources,
         )
       : null;
+  const supportRejected = verified?.rejectedBlocks ?? 0;
   const validation: NonNullable<AnswerOutput['validation']> = {
     generated_blocks: parsed.data.blocks.length,
     passed_guards: checked.blocks.length,
     verified_blocks: verified?.ok ? verified.blocks.length : null,
-    rejection_counts: { ...checked.rejectionCounts },
+    ...(verified?.unavailableBlocks ? { unavailable_blocks: verified.unavailableBlocks } : {}),
+    rejection_counts: {
+      ...checked.rejectionCounts,
+      ...(supportRejected > 0
+        ? { semantic_support: (checked.rejectionCounts.semantic_support ?? 0) + supportRejected }
+        : {}),
+    },
   };
   const validatedBase = { ...attemptedBase, validation };
   const verifiedBase = verified
@@ -770,8 +782,6 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
   }
 
   const verifiedBlocks = verified?.blocks ?? checked.blocks;
-  const supportRejected = checked.blocks.length - verifiedBlocks.length;
-  if (supportRejected > 0) validation.rejection_counts.semantic_support = supportRejected;
   const citations = citedEvidence(verifiedBlocks, evidence).map(citationFor);
   const rendered = verifiedBlocks.map((block) => renderBlock(block, evidence)).join('\n\n');
   // Generated missing concepts and recall labels are unverified control data. Interpolating them
@@ -784,6 +794,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
   const reasons = dedupeReasons([
     ...(recalled.degraded ?? []),
     ...(correctionPending ? ['pending_memory_correction' as const] : []),
+    ...(verified?.unavailableBlocks ? ['answer_verification_failed' as const] : []),
   ]);
   const generatedBase = {
     ...verifiedBase,
@@ -820,7 +831,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
     };
   }
 
-  const withheld = guardFailed || supportRejected > 0;
+  const withheld = guardFailed || supportRejected > 0 || (verified?.unavailableBlocks ?? 0) > 0;
   return {
     status: reasons.length > 0 ? 'degraded' : 'ok',
     ...(reasons.length > 0 ? { degraded: reasons } : {}),
@@ -891,11 +902,26 @@ async function verifyDraftSupport(
   completeRecord = false,
   populationSources: ReadonlyMap<string, AnswerPopulationSource[]> = new Map(),
 ): Promise<
-  | { ok: true; blocks: AnswerDraft['blocks']; outcome: ModelOutcome<string> }
-  | { ok: false; note: string; outcome: ModelOutcome<string> }
+  | {
+      ok: true;
+      blocks: AnswerDraft['blocks'];
+      unavailableBlocks: number;
+      rejectedBlocks: number;
+      outcome: ModelOutcome<string>;
+    }
+  | {
+      ok: false;
+      note: string;
+      unavailableBlocks: number;
+      rejectedBlocks: number;
+      outcome: ModelOutcome<string>;
+    }
 > {
   const outcomes: ModelOutcome<string>[] = [];
   const supported: AnswerDraft['blocks'] = [];
+  let unavailableBlocks = 0;
+  let rejectedBlocks = 0;
+  let unavailableNote = '';
   // One block per first-pass call bounds audit size; large citations can still exceed the role ceiling.
   // A rejected block is never submitted again; other blocks keep their original ids and citations.
   for (const [index, block] of blocks.entries()) {
@@ -911,10 +937,27 @@ async function verifyDraftSupport(
       populationSources,
     );
     outcomes.push(checked.outcome);
-    if (!checked.ok) return { ...checked, outcome: aggregateSemanticOutcomes(outcomes) };
-    supported.push(...checked.blocks);
+    if (!checked.ok) {
+      unavailableBlocks++;
+      unavailableNote = checked.note;
+      // A provider failure prevents further useful calls. Unattempted blocks remain unavailable;
+      // already verified independent blocks keep their evidence and never borrow from the hold.
+      if (
+        !checked.outcome.ok &&
+        ['unavailable', 'timeout', 'request_failed'].includes(checked.outcome.reason ?? '')
+      ) {
+        unavailableBlocks += blocks.length - index - 1;
+        break;
+      }
+    } else {
+      supported.push(...checked.blocks);
+      rejectedBlocks += checked.blocks.length === 0 ? 1 : 0;
+    }
   }
-  return { ok: true, blocks: supported, outcome: aggregateSemanticOutcomes(outcomes) };
+  const summary = { unavailableBlocks, rejectedBlocks, outcome: aggregateSemanticOutcomes(outcomes) };
+  return unavailableBlocks > 0 && supported.length === 0
+    ? { ok: false, note: unavailableNote, ...summary }
+    : { ok: true, blocks: supported, ...summary };
 }
 
 async function verifyDraftBlock(

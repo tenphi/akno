@@ -185,6 +185,59 @@ describe('grounded answer discovery surface', () => {
     expect(result.validation?.rejection_counts.semantic_support).toBe(1);
     expect(result.model_usage?.verification?.total_tokens).toBe(654);
   });
+  it.each(['source', 'candidate', 'comparison'])(
+    'preserves a separate verified answer when the population %s audit is unavailable',
+    async (stage) => {
+      await seedPopulationObservations();
+      const held = 'Both recorded journeys and both recorded workshops had preparation completed.';
+      await useAnswerModel({
+        populationReading: (body) => (stage === 'source' ? {} : populationFixtureReading(body)),
+        populationClaims: () =>
+          stage === 'candidate'
+            ? { claims: [{ quote: 'Fabricated quote.', scope: 'recorded_cases', case_count: 2 }] }
+            : { claims: [{ quote: held, scope: 'recorded_cases', case_count: 2 }] },
+        generation: (body) => {
+          const evidence = JSON.parse(body.messages.at(-1).content).evidence;
+          return {
+            blocks: [
+              {
+                text: 'The silverpine warranty lasts five years.',
+                evidence_ids: [evidence.find((e) => e.excerpt.includes('warranty lasts')).evidence_id],
+              },
+              {
+                text: held,
+                evidence_ids: evidence
+                  .filter((e) => e.excerpt.includes('**Observation:**'))
+                  .map((e) => e.evidence_id),
+              },
+            ],
+            missing_concepts: [],
+          };
+        },
+        verification: (body) => {
+          const payload = JSON.parse(body.messages.at(-1).content);
+          return payload.answer_text
+            ? { verdicts: [] }
+            : { verdicts: [verdict(payload.blocks[0].block_id, true)] };
+        },
+      });
+      const result = await memory.answer({
+        question: 'Compare silverpine preparation and the warranty.',
+        limit: 20,
+        retrieval_budget: 12000,
+      });
+      expect(result).toMatchObject({
+        outcome: 'partial',
+        reason_code: 'answered',
+        validation: { verified_blocks: 1, unavailable_blocks: 1, rejection_counts: {} },
+      });
+      expect(result.answer).toContain('five years');
+      expect(result.answer).not.toContain(held);
+      expect(result.citations).toHaveLength(1);
+      expect(result.degraded).toContain('answer_verification_failed');
+      expect(populationReadingRequests).toHaveLength(stage === 'source' ? 1 : stage === 'candidate' ? 2 : 3);
+    },
+  );
   it.each(['separate', 'merged', 'wrong-count', 'habit', 'missing-audit', 'invalid-reading'])(
     'preserves observation case populations through the complete answer path: %s',
     async (mode) => {
@@ -5524,6 +5577,130 @@ describe('grounded answer discovery surface', () => {
     expect(result.model_usage.verification?.total_tokens).toBe(255);
   });
 
+  it.each(['first', 'middle', 'last'])(
+    'preserves fully verified blocks around a %s unavailable verdict without relabeling it as rejection',
+    async (position) => {
+      const texts = ['The warranty lasts five years.', 'Replacement shipping is included.'];
+      write(
+        'products/zephyr-qx-100.md',
+        '# Zephyr QX-100\n\nThe silverpine warranty lasts five years. Replacement shipping is included.\n',
+      );
+      await memory.index({ verify: true });
+      const held = 'On-site repair is included.';
+      const order =
+        position === 'first'
+          ? [held, ...texts]
+          : position === 'last'
+            ? [...texts, held]
+            : [texts[0], held, texts[1]];
+      const seen: string[] = [];
+      await useAnswerModel({
+        generation: { blocks: order.map((text) => ({ text, evidence_ids: ['E1'] })), missing_concepts: [] },
+        verification: (body) => {
+          const block = JSON.parse(body.messages.at(-1).content).blocks[0];
+          seen.push(block.block_id);
+          return { verdicts: block.answer_text === held ? [] : [verdict(block.block_id, true)] };
+        },
+      });
+      const result = await memory.answer({
+        question: 'What does the silverpine warranty include?',
+        expand: false,
+        graph: false,
+      });
+      expect(result).toMatchObject({
+        status: 'degraded',
+        outcome: 'partial',
+        reason_code: 'answered',
+        validation: {
+          generated_blocks: 3,
+          passed_guards: 3,
+          verified_blocks: 2,
+          unavailable_blocks: 1,
+          rejection_counts: {},
+        },
+      });
+      expect(result.answer).toContain(texts[0]);
+      expect(result.answer).toContain(texts[1]);
+      expect(result.answer).not.toContain(held);
+      expect(result.degraded).toContain('answer_verification_failed');
+      expect(result.note).toContain('withheld');
+      expect(seen).toEqual(['B1', 'B2', 'B3']);
+      expect(result.model_usage.verification?.total_tokens).toBe(255 * 3);
+      expect(AnswerOutput.safeParse(result).success).toBe(true);
+    },
+  );
+
+  it.each(['B1', 'B2'])(
+    'stops at provider failure %s, preserving only already verified blocks and counting unattempted blocks as unavailable',
+    async (failedId) => {
+      await useAnswerModel({
+        generation: {
+          blocks: [
+            { text: 'The warranty lasts five years.', evidence_ids: ['E1'] },
+            { text: 'Replacement shipping is included.', evidence_ids: ['E1'] },
+            { text: 'On-site repair is included.', evidence_ids: ['E1'] },
+          ],
+          missing_concepts: [],
+        },
+        verification: (body) => ({
+          verdicts: [verdict(JSON.parse(body.messages.at(-1).content).blocks[0].block_id, true)],
+        }),
+        verificationHttpFailure: failedId,
+      });
+      const result = await memory.answer({
+        question: 'What does the silverpine warranty include?',
+        expand: false,
+        graph: false,
+      });
+      expect(result).toMatchObject({
+        outcome: failedId === 'B1' ? 'not_answered' : 'partial',
+        reason_code: failedId === 'B1' ? 'verification_unavailable' : 'answered',
+        validation: { unavailable_blocks: failedId === 'B1' ? 3 : 2, rejection_counts: {} },
+      });
+      if (failedId === 'B1') {
+        expect(result.answer).toBeNull();
+        expect(result.citations).toEqual([]);
+      } else {
+        expect(result.answer).toContain('five years');
+        expect(result.answer).not.toContain('shipping');
+        expect(result.answer).not.toContain('repair');
+        expect(result.validation?.verified_blocks).toBe(1);
+      }
+      expect(result.degraded).toContain('answer_verification_failed');
+      expect(modelRequests).toHaveLength(failedId === 'B1' ? 2 : 3);
+      expect(result.model_usage.verification?.total_tokens).toBeNull();
+    },
+  );
+
+  it('keeps known semantic rejection separate from a subsequent unavailable verdict when no answer survives', async () => {
+    await useAnswerModel({
+      generation: {
+        blocks: [
+          { text: 'Replacement shipping is included.', evidence_ids: ['E1'] },
+          { text: 'On-site repair is included.', evidence_ids: ['E1'] },
+        ],
+        missing_concepts: [],
+      },
+      verification: (body) => {
+        const block = JSON.parse(body.messages.at(-1).content).blocks[0];
+        return { verdicts: block.block_id === 'B1' ? [verdict('B1', false)] : [] };
+      },
+    });
+    const result = await memory.answer({
+      question: 'What does the silverpine warranty include?',
+      expand: false,
+      graph: false,
+    });
+    expect(result).toMatchObject({
+      outcome: 'not_answered',
+      answer: null,
+      reason_code: 'verification_unavailable',
+      validation: { unavailable_blocks: 1, rejection_counts: { semantic_support: 1 } },
+    });
+    expect(result.citations).toEqual([]);
+    expect(result.model_usage.verification?.total_tokens).toBe(255 * 2);
+  });
+
   it('doctor exercises the production generation and verification contracts on invented evidence', async () => {
     await useAnswerModel({
       generation: {
@@ -6333,6 +6510,7 @@ async function useAnswerModel(script: {
   knowledgeLanguage?: 'en';
   languageCheck?: boolean;
   transformResponse?: (content: string, verifying: boolean) => string;
+  verificationHttpFailure?: string;
 }): Promise<void> {
   await memory.close();
   modelServer = http.createServer((request, response) => {
@@ -6360,6 +6538,11 @@ async function useAnswerModel(script: {
             : modelRequests
         ).push(body);
         const payload = JSON.parse((body.messages as { content: string }[]).at(-1)!.content);
+        if (verifying && payload.blocks?.[0]?.block_id === script.verificationHttpFailure) {
+          response.writeHead(503, { 'content-type': 'application/json' });
+          response.end(JSON.stringify({ error: { message: 'Invented provider failure.' } }));
+          return;
+        }
         const configured = populationCandidate
           ? (script.populationClaims?.(body) ?? {
               claims: payload.answer_text.split(';').map((part: string) => ({
