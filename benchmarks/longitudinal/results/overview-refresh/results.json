@@ -1,0 +1,2828 @@
+{
+  "version": "overview-refresh-author-review-v1",
+  "issue": 171,
+  "reviewedAt": "2026-10-05",
+  "reviewer": {
+    "id": "Codex",
+    "sourceBased": true,
+    "independent": false
+  },
+  "corpusFingerprint": "fd734552a7d4810c2e4cc772a15de330c67d465e8cb4bab0d4496c901bd0feca",
+  "inputReviewFingerprint": "11c87de57e11f96e5d4ccdfeba11304945f6e16d176145b38beb6bd8d849cdd4",
+  "baselineCommit": "1d1c103321e1024d788aabcabbb8688cea0a4265",
+  "scope": "Declared overview membership and temporal presentation; no private Brain migration, authority/configuration change, or representative reliability claim.",
+  "finalCompiledArtifactsRawSha256": {
+    "packages/core/dist/write/retain.js": "1d880544417121e4a6635f0ad626810eb9bb8e7e50f2214cc9ec2304d62bc0a3",
+    "packages/core/dist/write/deciding-support.js": "f5f76aaa055e12711a28436c8942dd5db7408c36713bf0fc54ee766b40e28b77",
+    "packages/core/dist/memory/correction-restrictions.js": "644ffc67c6383f9e1c6e7973550811ad8f241657aca60ab25305cb42f5245901",
+    "packages/core/dist/models/predicate-time-audit.js": "98f9caaa1795f9acf7998a4476bbe76cad07ef03698c7ff7845b1d465054ff5a",
+    "packages/core/dist/models/source-role-audit.js": "74e69afcaf2d8eae216f4eec3958ce1dc993810b1a49883b3cf334e7eb9b2023",
+    "packages/core/dist/maintenance/dream.js": "8a4cc0bed5ca4bcbd5cee075d6e93ca2ff70d61fa997dc72fbe629574f90484b",
+    "packages/core/dist/maintenance/observe.js": "8483fef183cb0a978abab5b7ad1d2bff5d9cc15a993d386c4e0a0cc12bbcfe21",
+    "packages/core/dist/maintenance/observation-scope.js": "596ab4fae233218a4da0a76bb81b6ca4fbb12b61f4a709bca929523dd0ef6979",
+    "packages/core/dist/maintenance/curate.js": "a480ef613effa86a68c4983dd4298457d7c4028cbb895445e4b9e3f5f9bf92c4",
+    "packages/core/dist/maintenance/overview.js": "82b43dbc67bb3da956c36a5d3016a7351d2727d6936c61d853429bd6f02d8553",
+    "packages/core/dist/observations/projection.js": "746aaf97e8828bbe7bdc15ed8bb6917db915cf8a96150fef7d562331be42fa06",
+    "packages/core/dist/observations/reflection.js": "dd59f2ef8d3888f7d183de7eea032b5326c11cd19a949e93f64c75b1597cdf46",
+    "packages/core/dist/observations/marker.js": "ab4ac2ec3e9018f61ef5122c3fde78bd4ebdf4e8655bb8b9ed9a46e7819a0c87",
+    "packages/core/dist/kb/prose.js": "96f98c089b686655c9eebba8c885992a2aaac45dd7bea9e18b9f96eb1eaec78c",
+    "packages/core/dist/index/indexer.js": "c11d63299d9fd70db319c604c593db29309ad32082805264b2e842fa6bf14af0",
+    "packages/core/dist/index/derive.js": "a9bd75851c3b54b417b88735ec75df91cd1d06e2461282a9a0449df1d6f1ced2",
+    "packages/core/dist/index/chunk.js": "711147ea54aa9acd73360487f4a3dd0a78a386679d790d8429acf36798fe33c2",
+    "packages/core/dist/maintenance/plans.js": "f73c5648fd8ddf3cfe075b03217c81e92956ecd17364a2c0a954bef5136c03ed",
+    "packages/core/dist/ops/read.js": "40ebdce73143303c04b30241a94ed1765992ded8dd06ad92d34cb00f7e46e8d1",
+    "packages/core/dist/ops/context.js": "ec05c301dc64f3d6d4063faa9335eeb46578ca8150aea634090a9247b0e8d4c7",
+    "packages/core/dist/recall/assemble.js": "a75be8ba720369582e5e5b16fa9cd7a3e08447fb293b79ab72eac484f6273a95",
+    "packages/protocol/dist/common.js": "45c95fab32f16b7738b949b402f2c90b51eab34eb4c4a43ef8a325afb08dba89",
+    "packages/core/dist/ops/answer.js": "cc9b7d915da421c35357a1aa6bbc4fa6802ec20c3387ca912416c6c4db15647e",
+    "packages/core/dist/open.js": "2ea77b12fee67340f34927996af77cd5ff36d9cbf33a2780deda526dfa4e0bb6",
+    "packages/cli/dist/serve/socket.js": "c043b6d61e05813b828cb0b6ca1724994fbc3f4333cb78840d907685efb45615",
+    "packages/client/dist/index.js": "c398e41553be51c55dddb6b9b59745bb19ef127cdcb60ce25bc8181813ea7876",
+    "packages/core/dist/maintenance/qualified-synthesis.js": "2c12eca41f37cf4111bc42a08a091455482ce217ee06bb64766529772be53b69"
+  },
+  "finalContract": {
+    "runtime": "built-core-socket-built-client",
+    "measurement": "socket-scoped-drained-index-v2",
+    "modelSubstitution": "derive_only_couples_fact_extraction_retention_verification_observe_scope_reflect_curator",
+    "retrievalBudget": 6000,
+    "answerOutputTokens": 2400,
+    "cycles": 3,
+    "maxItems": 12,
+    "maxFiles": 12,
+    "maxBytes": 65536,
+    "maxHighRiskItems": 12,
+    "facts": "inference_only",
+    "summaries": false,
+    "expansion": false,
+    "reranker": false,
+    "clock": "fixture_process_Date_fixed_source_clock_explicit_when_available",
+    "seed": null,
+    "cost": null,
+    "indexMode": "live",
+    "inferenceNamespace": null,
+    "models": {
+      "derive": {
+        "id": "gpt-5.6-luna",
+        "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+        "enabled": true,
+        "timeoutMs": 300000,
+        "maxOutputTokens": 16384,
+        "reasoningEffort": null,
+        "dimensions": null,
+        "maxRetries": 2
+      },
+      "answer": {
+        "id": "gpt-5.6-luna",
+        "providerFingerprint": "26e290b3e5716d821c8255a26e93734491faa1f5bb5c7eee35eea9764f62d8cc",
+        "enabled": true,
+        "timeoutMs": 60000,
+        "maxOutputTokens": 1024,
+        "reasoningEffort": "low",
+        "dimensions": null,
+        "maxRetries": 2
+      },
+      "embedding": {
+        "id": "text-embedding-qwen3-embedding-0.6b",
+        "providerFingerprint": "c3d7283ea8fa400741c29bc937e6f3a2011b265b9daaf30d6ca1bb131be1af0c",
+        "enabled": true,
+        "timeoutMs": 60000,
+        "maxOutputTokens": null,
+        "reasoningEffort": null,
+        "dimensions": 1024,
+        "maxRetries": 2
+      }
+    },
+    "artifacts": {
+      "core/dist/write/retain.js": "ca8d04023023e2cae6c6a348236020cc1e7afda1d6b10f14a41cdbea08b835a1",
+      "core/dist/write/deciding-support.js": "d2dee2f6659ee7b0990896660a683a1f2e89b20d3db6d78dc3b8ce998508da89",
+      "core/dist/memory/correction-restrictions.js": "74db479e063b300cbe0b50fc77a9902ceabc75bb54d156d4dd8deef7cf09889f",
+      "core/dist/models/predicate-time-audit.js": "664997bce6ca542435c7dbcc4b461cd615e6d9f3d2a8bbcd2f0c5807396268ec",
+      "core/dist/models/source-role-audit.js": "305e91e6b5cbedf15ede233d026c2903acd1a2930f5806ab83c4b8b6738bb2f4",
+      "core/dist/maintenance/dream.js": "36609de5c11530094d69a5cff828cd12a6d3342795304d8646125cbd2827e14e",
+      "core/dist/maintenance/observe.js": "f994ef975895473326285603678495e49eff28150a75a59bbc7865229a6cdf4c",
+      "core/dist/maintenance/observation-scope.js": "a09fad95f9e7a62a21e14ddedad0af17c4c9df504ed1204b50225a680d8fae77",
+      "core/dist/maintenance/curate.js": "cd08f0a61e3741245977b00c22d8252db8cf9c679977b32e6976b8569d18e6c6",
+      "core/dist/maintenance/overview.js": "8758973d50a825b3ef8d94f6cce7d1c4cd7d880d15c12006e0a7ece1e2cd7bd1",
+      "core/dist/observations/projection.js": "5a64f7acf6ef41e1c2c6ba43e74f3188a869dada10dce5fb37feaf8b0c1fc269",
+      "core/dist/observations/reflection.js": "7c56016b619154d26f8f5c5b9ea5d7ce181bcf22c23e72998c4ce98ae62213ee",
+      "core/dist/observations/marker.js": "558e64e1264523837ec1fead22a21e9dfc61376e2cdff277835b820e35764290",
+      "core/dist/kb/prose.js": "29be05d5deb49b4408877a97e14b869562bc7c6aca3689b2c30b32243eb50fec",
+      "core/dist/index/indexer.js": "d4750ca7ec149c4eb5fa8fa044446fd7ba9196f004e54cd9fd47c3370e54053a",
+      "core/dist/index/derive.js": "69944acda10e3a78f5cef3b5a6ef5cf65fb3bdf12d6d424ee861b2dd6d9fc371",
+      "core/dist/index/chunk.js": "26bb64474e4a0cf52d118c65e77ed1f31b26a13fbf0df1286ea938dd4e6afd88",
+      "core/dist/maintenance/plans.js": "7fb00cfaebe909ac4e1d19e9ff6acf0b81752741210a845d525d336c51e6e9ce",
+      "core/dist/ops/read.js": "1f2952c586cd55c1732d3b1ded0aeff5f1d17d990bf8a89b927f262ee5df93cd",
+      "core/dist/ops/context.js": "9ff65bf1c72d38c829427cf8b7a9d659572f266b6c4c186b33b3a3cae485a7a7",
+      "core/dist/recall/assemble.js": "45707f5791aa30edd9cb0d112970de614ba5a1a237646cc39eed0ec39640695c",
+      "protocol/dist/common.js": "4e27fecceb281ad7ca5aea32036e6d8ced6f07737d1dc13f60b15f073777725c",
+      "core/dist/ops/answer.js": "6cc6909d28e6f2fa47afdb7a26998307a3dcf209c58fd142514176fbe376fe0e",
+      "core/dist/open.js": "c8b9798ec31e9e97e9117bef995fe45a4bd3c55f0a3bb97e94f9fb47e7579018",
+      "cli/dist/serve/socket.js": "e0af79f3a6291274067a48342546039cc92ea6b3754d751d322dfd456fd00100",
+      "client/dist/index.js": "b1296fd23288854db95d3fb29528336ce157b22986c03ed6121cfc221d23f76b"
+    }
+  },
+  "recording": {
+    "mode": "record-only ModelClient.chat wrapper; inputs/results unchanged; lifecycle runner unchanged",
+    "traceModuleRawSha256": "152255137c5222896ffbb74a1d521fcd8daa329371355afaea237c57e7e4370b"
+  },
+  "cohorts": [
+    {
+      "name": "baseline",
+      "checkpoints": 20,
+      "membership": {
+        "covered": 2,
+        "opportunities": 2
+      },
+      "pastHeadingAndMembership": {
+        "covered": 1,
+        "opportunities": 2
+      },
+      "afterRebuild": {
+        "covered": 1,
+        "opportunities": 2
+      },
+      "packets": [
+        {
+          "file": "development-packet.json",
+          "rawSha256": "608b3a9e38fb9fe2afcc0753977651b644c3a71be8ddb36a550d78338085772e",
+          "packetFingerprint": "c7cde8dbf4563154f4fa7dcab853cb29125f39227c9aa1c157980a30431d5b46",
+          "recordedContractFingerprint": "90eb549547a24066a830e599a0a24d5767606fc67b80d13a79e8c01609fd3461",
+          "deriveModel": "gpt-5.6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "development",
+          "runs": 1,
+          "checkpoints": 10,
+          "memory": {
+            "addedMembers": 1,
+            "addedOpportunities": 1,
+            "pastSchedules": 1,
+            "pastOpportunities": 1,
+            "rebuildPastSchedules": 1,
+            "rebuildOpportunities": 1,
+            "rebuildBytesStable": 1,
+            "initialUnchangedBytesStable": 1,
+            "repairedDrafts": 0,
+            "correctionAttempts": 0,
+            "actions": {
+              "rejected": 1,
+              "updated": 2
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 2,
+            "recallUpdatedRows": 0,
+            "contextUpdatedRows": 0,
+            "recallStatus": {
+              "ok": 10
+            },
+            "contextStatus": {
+              "ok": 10
+            }
+          },
+          "answers": {
+            "requests": 8,
+            "produced": 8,
+            "reasonCodes": {
+              "answered": 8
+            },
+            "outcomes": {
+              "complete": 7,
+              "partial": 1
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 105,
+            "calls": 59,
+            "failedCalls": 0,
+            "callsWithoutUsage": 36,
+            "backgroundCalls": 2,
+            "fullyReportedOperations": 69,
+            "reportedTokenSubtotal": 3476,
+            "modelLatencyMs": 170140.28941800003,
+            "operationLatencyMs": 171423.6494539999,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 10,
+          "quoteExact": 10,
+          "coordinates": [
+            {
+              "key": "development-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            }
+          ]
+        },
+        {
+          "file": "held-out-packet.json",
+          "rawSha256": "cdf3cca77461fd7ba57c3aed0b2aa0c5a31a6cf069d4d4d098d416b9fdc800ed",
+          "packetFingerprint": "9f58731bd24540b3ab241acbc3d979250c52a3915b6a0263b7ffd816b7bcac98",
+          "recordedContractFingerprint": "90eb549547a24066a830e599a0a24d5767606fc67b80d13a79e8c01609fd3461",
+          "deriveModel": "gpt-5.6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "held-out",
+          "runs": 1,
+          "checkpoints": 10,
+          "memory": {
+            "addedMembers": 1,
+            "addedOpportunities": 1,
+            "pastSchedules": 0,
+            "pastOpportunities": 1,
+            "rebuildPastSchedules": 0,
+            "rebuildOpportunities": 1,
+            "rebuildBytesStable": 1,
+            "initialUnchangedBytesStable": 1,
+            "repairedDrafts": 0,
+            "correctionAttempts": 0,
+            "actions": {
+              "rejected": 2,
+              "updated": 1
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 2,
+            "recallUpdatedRows": 0,
+            "contextUpdatedRows": 0,
+            "recallStatus": {
+              "ok": 10
+            },
+            "contextStatus": {
+              "ok": 10
+            }
+          },
+          "answers": {
+            "requests": 8,
+            "produced": 8,
+            "reasonCodes": {
+              "answered": 8
+            },
+            "outcomes": {
+              "complete": 8
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 105,
+            "calls": 61,
+            "failedCalls": 0,
+            "callsWithoutUsage": 35,
+            "backgroundCalls": 1,
+            "fullyReportedOperations": 70,
+            "reportedTokenSubtotal": 7604,
+            "modelLatencyMs": 182103.1894569999,
+            "operationLatencyMs": 183286.234832,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 10,
+          "quoteExact": 10,
+          "coordinates": [
+            {
+              "key": "held-out-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "candidate",
+      "checkpoints": 80,
+      "membership": {
+        "covered": 8,
+        "opportunities": 8
+      },
+      "pastHeadingAndMembership": {
+        "covered": 7,
+        "opportunities": 8
+      },
+      "afterRebuild": {
+        "covered": 7,
+        "opportunities": 8
+      },
+      "packets": [
+        {
+          "file": "gpt-5.6-luna-development-packet.json",
+          "rawSha256": "ec0f186d87ed06baa3193cdbdae1bff87396a4feb288936c257a86f2a0cb1f68",
+          "packetFingerprint": "2566ec7ca43cfa5d13b233f98d75977d992d8bd39f23e65ba1988a1ff078f7e7",
+          "recordedContractFingerprint": "4133207666707cd9d1c1c344bb110b0b0fb8213644c9166af2a93ea82bb1b5d6",
+          "deriveModel": "gpt-5.6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "development",
+          "runs": 2,
+          "checkpoints": 20,
+          "memory": {
+            "addedMembers": 2,
+            "addedOpportunities": 2,
+            "pastSchedules": 2,
+            "pastOpportunities": 2,
+            "rebuildPastSchedules": 2,
+            "rebuildOpportunities": 2,
+            "rebuildBytesStable": 2,
+            "initialUnchangedBytesStable": 2,
+            "repairedDrafts": 1,
+            "correctionAttempts": 1,
+            "actions": {
+              "rejected": 2,
+              "updated": 4
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 4,
+            "recallUpdatedRows": 0,
+            "contextUpdatedRows": 0,
+            "recallStatus": {
+              "ok": 20
+            },
+            "contextStatus": {
+              "ok": 20
+            }
+          },
+          "answers": {
+            "requests": 16,
+            "produced": 15,
+            "reasonCodes": {
+              "answered": 15,
+              "verification_unavailable": 1
+            },
+            "outcomes": {
+              "complete": 14,
+              "not_answered": 1,
+              "partial": 1
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 210,
+            "calls": 123,
+            "failedCalls": 0,
+            "callsWithoutUsage": 72,
+            "backgroundCalls": 4,
+            "fullyReportedOperations": 138,
+            "reportedTokenSubtotal": 6905,
+            "modelLatencyMs": 287816.31108099996,
+            "operationLatencyMs": 290011.2295329999,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 20,
+          "quoteExact": 20,
+          "coordinates": [
+            {
+              "key": "development-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/2/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            }
+          ]
+        },
+        {
+          "file": "gpt-5.6-luna-held-out-packet.json",
+          "rawSha256": "a13f53a9839ea97171007e5fd725d80a7cce573d0b506abef13fda8b8dc382bb",
+          "packetFingerprint": "4d18fa2a59b3bc86e004945f64f240e34c04f4bc21cf6c990b6046fbd9711643",
+          "recordedContractFingerprint": "4133207666707cd9d1c1c344bb110b0b0fb8213644c9166af2a93ea82bb1b5d6",
+          "deriveModel": "gpt-5.6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "held-out",
+          "runs": 2,
+          "checkpoints": 20,
+          "memory": {
+            "addedMembers": 2,
+            "addedOpportunities": 2,
+            "pastSchedules": 2,
+            "pastOpportunities": 2,
+            "rebuildPastSchedules": 2,
+            "rebuildOpportunities": 2,
+            "rebuildBytesStable": 2,
+            "initialUnchangedBytesStable": 2,
+            "repairedDrafts": 0,
+            "correctionAttempts": 0,
+            "actions": {
+              "rejected": 2,
+              "updated": 4
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 4,
+            "recallUpdatedRows": 2,
+            "contextUpdatedRows": 2,
+            "recallStatus": {
+              "ok": 20
+            },
+            "contextStatus": {
+              "ok": 20
+            }
+          },
+          "answers": {
+            "requests": 16,
+            "produced": 14,
+            "reasonCodes": {
+              "answered": 14,
+              "verification_unavailable": 2
+            },
+            "outcomes": {
+              "complete": 14,
+              "not_answered": 2
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 210,
+            "calls": 123,
+            "failedCalls": 1,
+            "callsWithoutUsage": 72,
+            "backgroundCalls": 4,
+            "fullyReportedOperations": 138,
+            "reportedTokenSubtotal": 6942,
+            "modelLatencyMs": 283550.0785069999,
+            "operationLatencyMs": 285606.4070060001,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 20,
+          "quoteExact": 20,
+          "coordinates": [
+            {
+              "key": "held-out-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/2/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "verification_unavailable"
+            },
+            {
+              "key": "held-out-overview/maintained/2/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "verification_unavailable"
+            }
+          ]
+        },
+        {
+          "file": "gpt-6-luna-development-packet.json",
+          "rawSha256": "981126a11350a4c95c4a9cba723699a878c49a4f7e259d135a014b5eae4ee539",
+          "packetFingerprint": "00e0db700499582cb968a016c1e737bff4b0d59969e9cb8f4d9905741db4fc86",
+          "recordedContractFingerprint": "54e8ecd02d83965d8a4d30e95d0f429a4bfaa840f6f5b21f7dd8fb6d015517db",
+          "deriveModel": "gpt-6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "development",
+          "runs": 2,
+          "checkpoints": 20,
+          "memory": {
+            "addedMembers": 2,
+            "addedOpportunities": 2,
+            "pastSchedules": 1,
+            "pastOpportunities": 2,
+            "rebuildPastSchedules": 1,
+            "rebuildOpportunities": 2,
+            "rebuildBytesStable": 2,
+            "initialUnchangedBytesStable": 2,
+            "repairedDrafts": 0,
+            "correctionAttempts": 1,
+            "actions": {
+              "rejected": 3,
+              "updated": 3
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 4,
+            "recallUpdatedRows": 0,
+            "contextUpdatedRows": 0,
+            "recallStatus": {
+              "ok": 20
+            },
+            "contextStatus": {
+              "ok": 20
+            }
+          },
+          "answers": {
+            "requests": 16,
+            "produced": 15,
+            "reasonCodes": {
+              "answered": 15,
+              "verification_unavailable": 1
+            },
+            "outcomes": {
+              "complete": 14,
+              "not_answered": 1,
+              "partial": 1
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 210,
+            "calls": 119,
+            "failedCalls": 0,
+            "callsWithoutUsage": 71,
+            "backgroundCalls": 3,
+            "fullyReportedOperations": 139,
+            "reportedTokenSubtotal": 21030,
+            "modelLatencyMs": 322535.12662400014,
+            "operationLatencyMs": 324494.2572899999,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 20,
+          "quoteExact": 20,
+          "coordinates": [
+            {
+              "key": "development-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/2/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            }
+          ]
+        },
+        {
+          "file": "gpt-6-luna-held-out-packet.json",
+          "rawSha256": "19a868ab258e8974d3c33ff7528d360be266194c5a82e3d17d7a4163de82f1d2",
+          "packetFingerprint": "06b1d63f815f6de2c9e17abb3332bed60b22a3e87a1a55747369aaf2326e1c98",
+          "recordedContractFingerprint": "54e8ecd02d83965d8a4d30e95d0f429a4bfaa840f6f5b21f7dd8fb6d015517db",
+          "deriveModel": "gpt-6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "held-out",
+          "runs": 2,
+          "checkpoints": 20,
+          "memory": {
+            "addedMembers": 2,
+            "addedOpportunities": 2,
+            "pastSchedules": 2,
+            "pastOpportunities": 2,
+            "rebuildPastSchedules": 2,
+            "rebuildOpportunities": 2,
+            "rebuildBytesStable": 2,
+            "initialUnchangedBytesStable": 2,
+            "repairedDrafts": 0,
+            "correctionAttempts": 0,
+            "actions": {
+              "rejected": 2,
+              "updated": 4
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 4,
+            "recallUpdatedRows": 4,
+            "contextUpdatedRows": 4,
+            "recallStatus": {
+              "ok": 20
+            },
+            "contextStatus": {
+              "ok": 20
+            }
+          },
+          "answers": {
+            "requests": 16,
+            "produced": 15,
+            "reasonCodes": {
+              "answered": 15,
+              "verification_unavailable": 1
+            },
+            "outcomes": {
+              "complete": 14,
+              "not_answered": 1,
+              "partial": 1
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 210,
+            "calls": 122,
+            "failedCalls": 1,
+            "callsWithoutUsage": 72,
+            "backgroundCalls": 4,
+            "fullyReportedOperations": 138,
+            "reportedTokenSubtotal": 7030,
+            "modelLatencyMs": 296040.1207119997,
+            "operationLatencyMs": 298108.870205,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 20,
+          "quoteExact": 20,
+          "coordinates": [
+            {
+              "key": "held-out-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/2/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "verification_unavailable"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "intermediate",
+      "checkpoints": 80,
+      "membership": {
+        "covered": 8,
+        "opportunities": 8
+      },
+      "pastHeadingAndMembership": {
+        "covered": 7,
+        "opportunities": 8
+      },
+      "afterRebuild": {
+        "covered": 7,
+        "opportunities": 8
+      },
+      "packets": [
+        {
+          "file": "gpt-5.6-luna-development-packet.json",
+          "rawSha256": "2ca0df9a25fa0da254c33b94dbc69bec2ea7145f8ae172968c8c1a556d8745d2",
+          "packetFingerprint": "aec1434b8664eb34e4913d3d15d367e6f1c926a8b8dbe5a48064bb5873ebcad7",
+          "recordedContractFingerprint": "59fef6f84c3320820df6879d2fe65a99d50b4a9309f8ae195b1f29a16a719cc5",
+          "deriveModel": "gpt-5.6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "development",
+          "runs": 2,
+          "checkpoints": 20,
+          "memory": {
+            "addedMembers": 2,
+            "addedOpportunities": 2,
+            "pastSchedules": 1,
+            "pastOpportunities": 2,
+            "rebuildPastSchedules": 1,
+            "rebuildOpportunities": 2,
+            "rebuildBytesStable": 2,
+            "initialUnchangedBytesStable": 2,
+            "repairedDrafts": 0,
+            "correctionAttempts": 1,
+            "actions": {
+              "rejected": 3,
+              "updated": 3
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 4,
+            "recallUpdatedRows": 2,
+            "contextUpdatedRows": 2,
+            "recallStatus": {
+              "ok": 20
+            },
+            "contextStatus": {
+              "ok": 20
+            }
+          },
+          "answers": {
+            "requests": 16,
+            "produced": 14,
+            "reasonCodes": {
+              "answered": 14,
+              "draft_rejected": 1,
+              "verification_rejected": 1
+            },
+            "outcomes": {
+              "complete": 14,
+              "not_answered": 2
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 210,
+            "calls": 123,
+            "failedCalls": 0,
+            "callsWithoutUsage": 71,
+            "backgroundCalls": 3,
+            "fullyReportedOperations": 139,
+            "reportedTokenSubtotal": 15778,
+            "modelLatencyMs": 345191.17370299983,
+            "operationLatencyMs": 347554.16583100014,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 20,
+          "quoteExact": 20,
+          "coordinates": [
+            {
+              "key": "development-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            },
+            {
+              "key": "development-overview/maintained/2/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/2/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "verification_rejected"
+            },
+            {
+              "key": "development-overview/maintained/2/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            }
+          ]
+        },
+        {
+          "file": "gpt-5.6-luna-held-out-packet.json",
+          "rawSha256": "c8e4396f20e457177cfe9c1d64c9fcb1f3dcae0057cb6acaabd4ace154d8faa1",
+          "packetFingerprint": "140b125d98f097c2f4fb961ccc3865d3431ca7c8a45362196824b49cd744a38e",
+          "recordedContractFingerprint": "59fef6f84c3320820df6879d2fe65a99d50b4a9309f8ae195b1f29a16a719cc5",
+          "deriveModel": "gpt-5.6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "held-out",
+          "runs": 2,
+          "checkpoints": 20,
+          "memory": {
+            "addedMembers": 2,
+            "addedOpportunities": 2,
+            "pastSchedules": 2,
+            "pastOpportunities": 2,
+            "rebuildPastSchedules": 2,
+            "rebuildOpportunities": 2,
+            "rebuildBytesStable": 2,
+            "initialUnchangedBytesStable": 2,
+            "repairedDrafts": 0,
+            "correctionAttempts": 0,
+            "actions": {
+              "rejected": 2,
+              "updated": 4
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 4,
+            "recallUpdatedRows": 2,
+            "contextUpdatedRows": 2,
+            "recallStatus": {
+              "ok": 20
+            },
+            "contextStatus": {
+              "ok": 20
+            }
+          },
+          "answers": {
+            "requests": 16,
+            "produced": 14,
+            "reasonCodes": {
+              "answered": 14,
+              "draft_rejected": 2
+            },
+            "outcomes": {
+              "complete": 13,
+              "not_answered": 2,
+              "partial": 1
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 210,
+            "calls": 121,
+            "failedCalls": 0,
+            "callsWithoutUsage": 72,
+            "backgroundCalls": 4,
+            "fullyReportedOperations": 138,
+            "reportedTokenSubtotal": 6887,
+            "modelLatencyMs": 303319.92725,
+            "operationLatencyMs": 305378.22086999984,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 20,
+          "quoteExact": 20,
+          "coordinates": [
+            {
+              "key": "held-out-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            },
+            {
+              "key": "held-out-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            },
+            {
+              "key": "held-out-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/2/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            }
+          ]
+        },
+        {
+          "file": "gpt-6-luna-development-packet.json",
+          "rawSha256": "909d45b7cf071ea5c746a46de969f4de60f296996c049ae91f1ca0d9693eb2c2",
+          "packetFingerprint": "d4c348bbec6cf963ed585c40310eef5e402090f796c8bc9c41911b94d2fe5b51",
+          "recordedContractFingerprint": "de8a2d4749fc929ea24c07bc455f2a3215575b8a4f5d8f1a664b8924d31f281d",
+          "deriveModel": "gpt-6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "development",
+          "runs": 2,
+          "checkpoints": 20,
+          "memory": {
+            "addedMembers": 2,
+            "addedOpportunities": 2,
+            "pastSchedules": 2,
+            "pastOpportunities": 2,
+            "rebuildPastSchedules": 2,
+            "rebuildOpportunities": 2,
+            "rebuildBytesStable": 2,
+            "initialUnchangedBytesStable": 2,
+            "repairedDrafts": 1,
+            "correctionAttempts": 1,
+            "actions": {
+              "rejected": 2,
+              "updated": 4
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 4,
+            "recallUpdatedRows": 0,
+            "contextUpdatedRows": 0,
+            "recallStatus": {
+              "ok": 20
+            },
+            "contextStatus": {
+              "ok": 20
+            }
+          },
+          "answers": {
+            "requests": 16,
+            "produced": 15,
+            "reasonCodes": {
+              "answered": 15,
+              "verification_unavailable": 1
+            },
+            "outcomes": {
+              "complete": 14,
+              "not_answered": 1,
+              "partial": 1
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 210,
+            "calls": 121,
+            "failedCalls": 0,
+            "callsWithoutUsage": 72,
+            "backgroundCalls": 4,
+            "fullyReportedOperations": 138,
+            "reportedTokenSubtotal": 6916,
+            "modelLatencyMs": 343158.974665,
+            "operationLatencyMs": 345430.6143709998,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 20,
+          "quoteExact": 20,
+          "coordinates": [
+            {
+              "key": "development-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/2/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            }
+          ]
+        },
+        {
+          "file": "gpt-6-luna-held-out-packet.json",
+          "rawSha256": "46218ea56a71e52b57ddeafd7520f81587205b4c79ec73b4ee6d396de538c6c7",
+          "packetFingerprint": "e04af75bbc510f7a455252e94a7bd2932555f97736078f4f00c7ce7b242b6138",
+          "recordedContractFingerprint": "de8a2d4749fc929ea24c07bc455f2a3215575b8a4f5d8f1a664b8924d31f281d",
+          "deriveModel": "gpt-6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "held-out",
+          "runs": 2,
+          "checkpoints": 20,
+          "memory": {
+            "addedMembers": 2,
+            "addedOpportunities": 2,
+            "pastSchedules": 2,
+            "pastOpportunities": 2,
+            "rebuildPastSchedules": 2,
+            "rebuildOpportunities": 2,
+            "rebuildBytesStable": 2,
+            "initialUnchangedBytesStable": 2,
+            "repairedDrafts": 1,
+            "correctionAttempts": 1,
+            "actions": {
+              "rejected": 2,
+              "updated": 4
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 4,
+            "recallUpdatedRows": 0,
+            "contextUpdatedRows": 0,
+            "recallStatus": {
+              "ok": 20
+            },
+            "contextStatus": {
+              "ok": 20
+            }
+          },
+          "answers": {
+            "requests": 16,
+            "produced": 13,
+            "reasonCodes": {
+              "answered": 13,
+              "draft_rejected": 2,
+              "verification_unavailable": 1
+            },
+            "outcomes": {
+              "complete": 12,
+              "not_answered": 3,
+              "partial": 1
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 210,
+            "calls": 122,
+            "failedCalls": 0,
+            "callsWithoutUsage": 72,
+            "backgroundCalls": 4,
+            "fullyReportedOperations": 138,
+            "reportedTokenSubtotal": 6833,
+            "modelLatencyMs": 301971.440665,
+            "operationLatencyMs": 304138.3402510002,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 20,
+          "quoteExact": 20,
+          "coordinates": [
+            {
+              "key": "held-out-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            },
+            {
+              "key": "held-out-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            },
+            {
+              "key": "held-out-overview/maintained/2/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/2/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "round-six",
+      "checkpoints": 80,
+      "membership": {
+        "covered": 7,
+        "opportunities": 8
+      },
+      "pastHeadingAndMembership": {
+        "covered": 5,
+        "opportunities": 8
+      },
+      "afterRebuild": {
+        "covered": 5,
+        "opportunities": 8
+      },
+      "packets": [
+        {
+          "file": "gpt-5.6-luna-development-packet.json",
+          "rawSha256": "475bc61786922b7e7fecc77456ce1df21e5215d55fe2e2f298b871b9483e519b",
+          "packetFingerprint": "a4553fd4104a1efc92d1ecb0eabf7027810580d8e531fcd5c25bbe86a19b591d",
+          "recordedContractFingerprint": "c418bbe5910cf633a83a0535f5610c13f571e46b893836f6c3a019086d96d576",
+          "deriveModel": "gpt-5.6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "development",
+          "runs": 2,
+          "checkpoints": 20,
+          "memory": {
+            "addedMembers": 2,
+            "addedOpportunities": 2,
+            "pastSchedules": 1,
+            "pastOpportunities": 2,
+            "rebuildPastSchedules": 1,
+            "rebuildOpportunities": 2,
+            "rebuildBytesStable": 2,
+            "initialUnchangedBytesStable": 2,
+            "repairedDrafts": 1,
+            "correctionAttempts": 2,
+            "actions": {
+              "rejected": 3,
+              "updated": 3
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 4,
+            "recallUpdatedRows": 2,
+            "contextUpdatedRows": 2,
+            "recallStatus": {
+              "ok": 20
+            },
+            "contextStatus": {
+              "ok": 20
+            }
+          },
+          "answers": {
+            "requests": 16,
+            "produced": 13,
+            "reasonCodes": {
+              "answered": 13,
+              "draft_rejected": 1,
+              "verification_unavailable": 2
+            },
+            "outcomes": {
+              "complete": 11,
+              "not_answered": 3,
+              "partial": 2
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 210,
+            "calls": 120,
+            "failedCalls": 0,
+            "callsWithoutUsage": 71,
+            "backgroundCalls": 3,
+            "fullyReportedOperations": 139,
+            "reportedTokenSubtotal": 15998,
+            "modelLatencyMs": 294662.5696689999,
+            "operationLatencyMs": 296796.2405400001,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 20,
+          "quoteExact": 20,
+          "coordinates": [
+            {
+              "key": "development-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            },
+            {
+              "key": "development-overview/maintained/2/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/2/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "verification_unavailable"
+            },
+            {
+              "key": "development-overview/maintained/2/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            }
+          ]
+        },
+        {
+          "file": "gpt-5.6-luna-held-out-packet.json",
+          "rawSha256": "766efad2471b41ffdcac41e94a8007faceded5d0864922d7ce2f86d2668190eb",
+          "packetFingerprint": "4d623adc2e4d95fb315289a645760b6908ed58290fb154d2dd8a03a03f4eb5ab",
+          "recordedContractFingerprint": "c418bbe5910cf633a83a0535f5610c13f571e46b893836f6c3a019086d96d576",
+          "deriveModel": "gpt-5.6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "held-out",
+          "runs": 2,
+          "checkpoints": 20,
+          "memory": {
+            "addedMembers": 2,
+            "addedOpportunities": 2,
+            "pastSchedules": 1,
+            "pastOpportunities": 2,
+            "rebuildPastSchedules": 1,
+            "rebuildOpportunities": 2,
+            "rebuildBytesStable": 2,
+            "initialUnchangedBytesStable": 2,
+            "repairedDrafts": 0,
+            "correctionAttempts": 1,
+            "actions": {
+              "rejected": 2,
+              "updated": 4
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 4,
+            "recallUpdatedRows": 2,
+            "contextUpdatedRows": 2,
+            "recallStatus": {
+              "ok": 20
+            },
+            "contextStatus": {
+              "ok": 20
+            }
+          },
+          "answers": {
+            "requests": 16,
+            "produced": 12,
+            "reasonCodes": {
+              "answered": 12,
+              "draft_rejected": 2,
+              "verification_unavailable": 2
+            },
+            "outcomes": {
+              "complete": 11,
+              "not_answered": 4,
+              "partial": 1
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 210,
+            "calls": 124,
+            "failedCalls": 0,
+            "callsWithoutUsage": 72,
+            "backgroundCalls": 4,
+            "fullyReportedOperations": 138,
+            "reportedTokenSubtotal": 16169,
+            "modelLatencyMs": 315258.5781340001,
+            "operationLatencyMs": 317464.6579210001,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 20,
+          "quoteExact": 20,
+          "coordinates": [
+            {
+              "key": "held-out-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/2/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "verification_unavailable"
+            },
+            {
+              "key": "held-out-overview/maintained/2/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            },
+            {
+              "key": "held-out-overview/maintained/2/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            }
+          ]
+        },
+        {
+          "file": "gpt-6-luna-development-packet.json",
+          "rawSha256": "16643da305b5d37221054a41cf0fa66bfd7a297d055dbebe02215f2bfa588494",
+          "packetFingerprint": "de24cedbb74a8a77eefd6c66aa4d0e596a76a61f98a12f8a763b9186dcc1e772",
+          "recordedContractFingerprint": "bb585dd3f2ba879a126c6428b452a62fd02076696bdc6c2be14058a61ca0b740",
+          "deriveModel": "gpt-6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "development",
+          "runs": 2,
+          "checkpoints": 20,
+          "memory": {
+            "addedMembers": 1,
+            "addedOpportunities": 2,
+            "pastSchedules": 1,
+            "pastOpportunities": 2,
+            "rebuildPastSchedules": 1,
+            "rebuildOpportunities": 2,
+            "rebuildBytesStable": 2,
+            "initialUnchangedBytesStable": 2,
+            "repairedDrafts": 0,
+            "correctionAttempts": 1,
+            "actions": {
+              "rejected": 4,
+              "updated": 2
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 4,
+            "recallUpdatedRows": 2,
+            "contextUpdatedRows": 2,
+            "recallStatus": {
+              "ok": 20
+            },
+            "contextStatus": {
+              "ok": 20
+            }
+          },
+          "answers": {
+            "requests": 16,
+            "produced": 13,
+            "reasonCodes": {
+              "answered": 13,
+              "draft_rejected": 1,
+              "verification_unavailable": 2
+            },
+            "outcomes": {
+              "complete": 12,
+              "not_answered": 3,
+              "partial": 1
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 210,
+            "calls": 119,
+            "failedCalls": 0,
+            "callsWithoutUsage": 70,
+            "backgroundCalls": 2,
+            "fullyReportedOperations": 140,
+            "reportedTokenSubtotal": 44757,
+            "modelLatencyMs": 341361.49058099993,
+            "operationLatencyMs": 343588.1782120002,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 20,
+          "quoteExact": 20,
+          "coordinates": [
+            {
+              "key": "development-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            },
+            {
+              "key": "development-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/2/new-unlinked-qualified-member",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/clock-crosses-departures",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/restart-rebuild",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "verification_unavailable"
+            }
+          ]
+        },
+        {
+          "file": "gpt-6-luna-held-out-packet.json",
+          "rawSha256": "1530958e9b09e2defea96e2f56a9b287a5f2e04d5ab41b03dbf64d694686253a",
+          "packetFingerprint": "cab7a34cfa6ffb395375b96fe4d33b907e10542cd343492c8b188d526da8346f",
+          "recordedContractFingerprint": "bb585dd3f2ba879a126c6428b452a62fd02076696bdc6c2be14058a61ca0b740",
+          "deriveModel": "gpt-6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "held-out",
+          "runs": 2,
+          "checkpoints": 20,
+          "memory": {
+            "addedMembers": 2,
+            "addedOpportunities": 2,
+            "pastSchedules": 2,
+            "pastOpportunities": 2,
+            "rebuildPastSchedules": 2,
+            "rebuildOpportunities": 2,
+            "rebuildBytesStable": 2,
+            "initialUnchangedBytesStable": 2,
+            "repairedDrafts": 0,
+            "correctionAttempts": 0,
+            "actions": {
+              "rejected": 2,
+              "updated": 4
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 4,
+            "recallUpdatedRows": 4,
+            "contextUpdatedRows": 4,
+            "recallStatus": {
+              "ok": 20
+            },
+            "contextStatus": {
+              "ok": 20
+            }
+          },
+          "answers": {
+            "requests": 16,
+            "produced": 14,
+            "reasonCodes": {
+              "answered": 14,
+              "draft_rejected": 1,
+              "verification_rejected": 1
+            },
+            "outcomes": {
+              "complete": 13,
+              "not_answered": 2,
+              "partial": 1
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 210,
+            "calls": 120,
+            "failedCalls": 0,
+            "callsWithoutUsage": 72,
+            "backgroundCalls": 4,
+            "fullyReportedOperations": 138,
+            "reportedTokenSubtotal": 7160,
+            "modelLatencyMs": 293647.842412,
+            "operationLatencyMs": 295792.9369960002,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 20,
+          "quoteExact": 20,
+          "coordinates": [
+            {
+              "key": "held-out-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/2/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "final",
+      "checkpoints": 80,
+      "membership": {
+        "covered": 8,
+        "opportunities": 8
+      },
+      "pastHeadingAndMembership": {
+        "covered": 8,
+        "opportunities": 8
+      },
+      "afterRebuild": {
+        "covered": 8,
+        "opportunities": 8
+      },
+      "packets": [
+        {
+          "file": "gpt-5.6-luna-development-packet.json",
+          "rawSha256": "af2c0dc475e0c373b2f3c9d949df25366285e3b94dab671af6b663b0a848440c",
+          "packetFingerprint": "413c6915f50c166ce232d2193409f3cfb65abf0e80f86a5e0eaa2e2ce599b3c7",
+          "recordedContractFingerprint": "15e4c5b2828939b856b004e6ee8da79a0e2718945aa222fb79cc70b9abeaa1f1",
+          "deriveModel": "gpt-5.6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "development",
+          "runs": 2,
+          "checkpoints": 20,
+          "memory": {
+            "addedMembers": 2,
+            "addedOpportunities": 2,
+            "pastSchedules": 2,
+            "pastOpportunities": 2,
+            "rebuildPastSchedules": 2,
+            "rebuildOpportunities": 2,
+            "rebuildBytesStable": 2,
+            "initialUnchangedBytesStable": 2,
+            "repairedDrafts": 0,
+            "correctionAttempts": 0,
+            "actions": {
+              "rejected": 2,
+              "updated": 4
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 4,
+            "recallUpdatedRows": 4,
+            "contextUpdatedRows": 4,
+            "recallStatus": {
+              "ok": 20
+            },
+            "contextStatus": {
+              "ok": 20
+            }
+          },
+          "answers": {
+            "requests": 16,
+            "produced": 15,
+            "reasonCodes": {
+              "answered": 15,
+              "draft_rejected": 1
+            },
+            "outcomes": {
+              "complete": 15,
+              "not_answered": 1
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 210,
+            "calls": 121,
+            "failedCalls": 0,
+            "callsWithoutUsage": 72,
+            "backgroundCalls": 4,
+            "fullyReportedOperations": 138,
+            "reportedTokenSubtotal": 7232,
+            "modelLatencyMs": 262248.54154699994,
+            "operationLatencyMs": 264413.2731699998,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 20,
+          "quoteExact": 20,
+          "coordinates": [
+            {
+              "key": "development-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/2/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            },
+            {
+              "key": "development-overview/maintained/2/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            }
+          ]
+        },
+        {
+          "file": "gpt-5.6-luna-held-out-packet.json",
+          "rawSha256": "d63ac84fa2ac3e938269566460a0283b08be3b15a12f7644d823d96ad43bf8f8",
+          "packetFingerprint": "30ddea26049af5b057e83deeaac8b0d170cbcec0a4baf0d9680570939bd823c2",
+          "recordedContractFingerprint": "15e4c5b2828939b856b004e6ee8da79a0e2718945aa222fb79cc70b9abeaa1f1",
+          "deriveModel": "gpt-5.6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "held-out",
+          "runs": 2,
+          "checkpoints": 20,
+          "memory": {
+            "addedMembers": 2,
+            "addedOpportunities": 2,
+            "pastSchedules": 2,
+            "pastOpportunities": 2,
+            "rebuildPastSchedules": 2,
+            "rebuildOpportunities": 2,
+            "rebuildBytesStable": 2,
+            "initialUnchangedBytesStable": 2,
+            "repairedDrafts": 0,
+            "correctionAttempts": 0,
+            "actions": {
+              "rejected": 2,
+              "updated": 4
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 4,
+            "recallUpdatedRows": 4,
+            "contextUpdatedRows": 4,
+            "recallStatus": {
+              "ok": 20
+            },
+            "contextStatus": {
+              "ok": 20
+            }
+          },
+          "answers": {
+            "requests": 16,
+            "produced": 16,
+            "reasonCodes": {
+              "answered": 16
+            },
+            "outcomes": {
+              "complete": 15,
+              "partial": 1
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 210,
+            "calls": 119,
+            "failedCalls": 0,
+            "callsWithoutUsage": 72,
+            "backgroundCalls": 4,
+            "fullyReportedOperations": 138,
+            "reportedTokenSubtotal": 7291,
+            "modelLatencyMs": 264352.3311669999,
+            "operationLatencyMs": 266557.888377,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 20,
+          "quoteExact": 20,
+          "coordinates": [
+            {
+              "key": "held-out-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/2/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            }
+          ]
+        },
+        {
+          "file": "gpt-6-luna-development-packet.json",
+          "rawSha256": "a76a6dd5dbd38252c5a973466f936677e3d8b0473aeb1894cbf838a8c16d50c4",
+          "packetFingerprint": "ae2a84fef574a4f625969a940fbf52b156fd45af0ed0add05f11bc190f6213a2",
+          "recordedContractFingerprint": "6298b6e2a48845ac2a95463c3c55738d0cd49c9d3bca7c708a36fb965004503c",
+          "deriveModel": "gpt-6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "development",
+          "runs": 2,
+          "checkpoints": 20,
+          "memory": {
+            "addedMembers": 2,
+            "addedOpportunities": 2,
+            "pastSchedules": 2,
+            "pastOpportunities": 2,
+            "rebuildPastSchedules": 2,
+            "rebuildOpportunities": 2,
+            "rebuildBytesStable": 2,
+            "initialUnchangedBytesStable": 2,
+            "repairedDrafts": 1,
+            "correctionAttempts": 1,
+            "actions": {
+              "rejected": 2,
+              "updated": 4
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 4,
+            "recallUpdatedRows": 4,
+            "contextUpdatedRows": 4,
+            "recallStatus": {
+              "ok": 20
+            },
+            "contextStatus": {
+              "ok": 20
+            }
+          },
+          "answers": {
+            "requests": 16,
+            "produced": 9,
+            "reasonCodes": {
+              "answered": 9,
+              "draft_rejected": 3,
+              "verification_rejected": 2,
+              "verification_unavailable": 2
+            },
+            "outcomes": {
+              "complete": 9,
+              "not_answered": 7
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 210,
+            "calls": 118,
+            "failedCalls": 1,
+            "callsWithoutUsage": 72,
+            "backgroundCalls": 4,
+            "fullyReportedOperations": 138,
+            "reportedTokenSubtotal": 7307,
+            "modelLatencyMs": 313177.59729699977,
+            "operationLatencyMs": 315359.387287,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 20,
+          "quoteExact": 20,
+          "coordinates": [
+            {
+              "key": "development-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            },
+            {
+              "key": "development-overview/maintained/2/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "development-overview/maintained/2/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "development-overview/maintained/2/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "verification_rejected"
+            },
+            {
+              "key": "development-overview/maintained/2/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            },
+            {
+              "key": "development-overview/maintained/2/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            }
+          ]
+        },
+        {
+          "file": "gpt-6-luna-held-out-packet.json",
+          "rawSha256": "0d1f6bb38d6944c16a8f9aa31f105349217d147b9917034be5b5c498d143a3d4",
+          "packetFingerprint": "c961f9b714c670e26a4afa78cd5977605e4b5731e152121898e21e73f03afbef",
+          "recordedContractFingerprint": "6298b6e2a48845ac2a95463c3c55738d0cd49c9d3bca7c708a36fb965004503c",
+          "deriveModel": "gpt-6-luna",
+          "answerModel": "gpt-5.6-luna",
+          "split": "held-out",
+          "runs": 2,
+          "checkpoints": 20,
+          "memory": {
+            "addedMembers": 2,
+            "addedOpportunities": 2,
+            "pastSchedules": 2,
+            "pastOpportunities": 2,
+            "rebuildPastSchedules": 2,
+            "rebuildOpportunities": 2,
+            "rebuildBytesStable": 2,
+            "initialUnchangedBytesStable": 2,
+            "repairedDrafts": 0,
+            "correctionAttempts": 0,
+            "actions": {
+              "rejected": 2,
+              "updated": 4
+            }
+          },
+          "retrieval": {
+            "lateOpportunities": 4,
+            "recallUpdatedRows": 4,
+            "contextUpdatedRows": 4,
+            "recallStatus": {
+              "ok": 20
+            },
+            "contextStatus": {
+              "ok": 20
+            }
+          },
+          "answers": {
+            "requests": 16,
+            "produced": 12,
+            "reasonCodes": {
+              "answered": 12,
+              "draft_rejected": 3,
+              "verification_unavailable": 1
+            },
+            "outcomes": {
+              "complete": 11,
+              "not_answered": 4,
+              "partial": 1
+            },
+            "explicitPastDescriptions": 0
+          },
+          "resources": {
+            "operations": 210,
+            "calls": 120,
+            "failedCalls": 0,
+            "callsWithoutUsage": 72,
+            "backgroundCalls": 4,
+            "fullyReportedOperations": 138,
+            "reportedTokenSubtotal": 7304,
+            "modelLatencyMs": 293158.9689989999,
+            "operationLatencyMs": 295285.687169,
+            "prices": null
+          },
+          "sourceLeavesUnchanged": 20,
+          "quoteExact": 20,
+          "coordinates": [
+            {
+              "key": "held-out-overview/maintained/1/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/1/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/1/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            },
+            {
+              "key": "held-out-overview/maintained/1/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/initial-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/unchanged-overview",
+              "membership": false,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": null
+            },
+            {
+              "key": "held-out-overview/maintained/2/new-unlinked-qualified-member",
+              "membership": true,
+              "pastHeadingAndMembership": false,
+              "explicitPastRowsAndOutcome": false,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "answered"
+            },
+            {
+              "key": "held-out-overview/maintained/2/clock-crosses-departures",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            },
+            {
+              "key": "held-out-overview/maintained/2/restart-rebuild",
+              "membership": true,
+              "pastHeadingAndMembership": true,
+              "explicitPastRowsAndOutcome": true,
+              "sourceLeavesUnchanged": true,
+              "answerReason": "draft_rejected"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "finalSourceReview": {
+    "checkpoints": 80,
+    "maintainedTrajectories": 8,
+    "extractOnlyTrajectories": 8,
+    "unsupportedCompletionClaims": 0,
+    "qualifiedOptionalPlansPromoted": 0,
+    "protectedQuoteExact": 80,
+    "sourceLeavesExact": 80,
+    "duplicateListGrowth": 0,
+    "fullScheduleAndUnknownOutcomeAnswers": 51,
+    "datesOnlyAnswer": 1,
+    "withheldAnswers": 12,
+    "explicitPastPhaseAnswers": 0,
+    "answerPhaseOpportunities": 16,
+    "note": "Actual rendered content reviewed separately from typed model outcomes. No held answer is counted as a useful positive. Answer phase wording remains a limitation; these questions ask for schedules and occurrence."
+  },
+  "limitations": [
+    "author_review_not_independent",
+    "exposed_frozen_sources_not_fresh_held_out_quality",
+    "two_repeats_descriptive_only",
+    "derive_substitution_couples_generation_verification_curator_roles",
+    "fixed_answer_role_and_installed_1024_token_cap",
+    "concurrent_runs_latency_not_controlled_comparison",
+    "missing_usage_and_prices_no_cost_claim",
+    "no_private_Brain_curation_or_migration"
+  ]
+}

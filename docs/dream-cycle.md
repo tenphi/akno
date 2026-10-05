@@ -323,15 +323,24 @@ Completeness refers to this bounded indexed scope, never unindexed files or the 
 Adding, changing, renaming, removing, or changing the authored status of a member invalidates the overview's
 decision. Crossing a member's start/end boundary also invalidates it, using the member timezone and an
 inclusive end date. Successful and unchanged decisions do not trigger repeated model calls on other days.
-A model-dependent rejection of a scoped overview may be retried after 20 hours against the same evidence,
-so one bad draft cannot freeze a stale page indefinitely. Saved plans recheck those same
+A complete catalog that shows a missing member or stale schedule classification permits one immediate
+correction attempt when a draft fails discourse, rewrite, or semantic verification. The curator receives
+the rejected draft and validation feedback alongside the original body and the same evidence. Every guard
+and the ordinary semantic verifier run again; feedback supplies no new facts or write authority.
+`curated[].draftAttempts` and `draftRejections` expose this bounded attempt and its earlier rejection.
+Incomplete catalogs, malformed responses, and unavailable model operations do not receive this immediate retry.
+If correction still fails, a model-dependent rejection of a scoped overview may be retried after 20 hours
+against the same evidence. Successful and unchanged inputs remain settled. Saved plans recheck those same
 dependencies before application, including newly admitted members.
 
 A supported move between temporal sections or a heading-only correction is material. When a past-dated
 entry also appears in a Status/State table, a bare `planning` or `upcoming` cell must be reconciled as well;
 the original planning status can remain as history beside the current past-schedule state. Leaving the cell
 unchanged fails the draft, while elapsed dates alone cannot authorize `completed`. This applies to any
-admitted page type. The curator also checks whether a quick-reference table representing the same cohort
+admitted page type. A prior overview label such as `not stated` may be retained as explicitly attributed
+historical wording alongside the current phase and unknown outcome. It does not establish that a member's
+current record contains no outcome, and it is not that member's authored status. This distinction also
+applies when linked evidence is partial. The curator also checks whether a quick-reference table representing the same cohort
 needs rows for newly admitted members; missing details remain unknown. The deterministic check recognizes
 `Upcoming`/`Future`, `Current`/`Ongoing`, and `Past`, optionally followed by `trips`, `events`,
 or `schedules`. A heading may also end in the overview's authored year, such as `Upcoming Trips (2034)`.
