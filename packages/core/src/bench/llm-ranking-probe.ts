@@ -59,7 +59,7 @@ export async function runLlmRankingProbe(
   options: LlmRankingProbeOptions = {},
 ): Promise<LlmRankingProbeReport> {
   const providerName = options.provider ?? 'openai';
-  const modelId = options.model ?? 'gpt-5.6-luna';
+  const modelId = options.model ?? 'gpt-6-luna';
   const reasoningEffort = options.reasoningEffort ?? 'none';
   const provider = config.providers[providerName] ?? null;
   const base = {

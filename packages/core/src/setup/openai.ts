@@ -5,7 +5,7 @@ import { runLlmRankingProbe, type LlmRankingProbeReport } from '../bench/llm-ran
 export const OPENAI_LUNA_PRESET = 'openai-luna';
 export const OPENAI_LUNA_PRESET_STATUS = 'recommended';
 export const OPENAI_LUNA_EMBEDDING_MODEL = 'text-embedding-3-small';
-export const OPENAI_LUNA_GENERATIVE_MODEL = 'gpt-5.6-luna';
+export const OPENAI_LUNA_GENERATIVE_MODEL = 'gpt-6-luna';
 export const OPENAI_LUNA_EMBEDDING_DIMENSIONS = 1536;
 
 export type SetupMaintenanceMode = 'audit' | 'review' | 'autonomous';
@@ -37,8 +37,9 @@ export interface OpenAiLunaPreflightReport {
 }
 
 /**
- * The minimum is one endpoint and credential, not one model. The exact ranking window is the
- * release-qualified v9 selection; changing it requires new benchmark evidence.
+ * The minimum is one endpoint and credential, not one model. The current language model is
+ * maintainer-selected; historical ranking measurements do not qualify this model automatically.
+ * Preserve the existing ranking window and require the ordinary setup preflight.
  */
 export function openAiLunaPreset(options: OpenAiLunaPresetOptions): ConfigDoc {
   return {

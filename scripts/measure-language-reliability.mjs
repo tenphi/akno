@@ -117,8 +117,8 @@ if (values.prepare) {
     for (const role of ['derive', 'answer']) {
       const model = configured.models[role];
       assert(
-        model.enabled && model.provider && model.id === 'gpt-5.6-luna',
-        `The earlier ${role} model must resolve to gpt-5.6-luna.`,
+        model.enabled && model.provider && model.id === 'gpt-6-luna',
+        `The configured ${role} model must resolve to gpt-6-luna.`,
       );
     }
   } catch (error) {

@@ -89,6 +89,14 @@ matters more than the rewrite.
 
 ---
 
+## Live model verification
+
+Use `gpt-6-luna` for every live generation, derivation and verification role, including benchmark
+answer composition. Do not substitute another language model to reduce cost or work around a failure.
+If this model is unavailable, report the blocker. Keep the configured embedding model unchanged.
+Record the actual role settings and budgets. Existing immutable measurements remain historical evidence;
+they do not authorize using their old model choices in new runs.
+
 ## Other things that are easy to get wrong
 
 These are covered in [CONTRIBUTING.md](CONTRIBUTING.md) under "Things that are load-bearing", and are repeated here because they

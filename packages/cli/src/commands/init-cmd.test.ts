@@ -78,7 +78,7 @@ describe('guided init', () => {
       akno_path: knowledgeBase,
       models: {
         embedding: { id: 'text-embedding-3-small' },
-        reranker: { id: 'gpt-5.6-luna', top_k: 10, reasoning_effort: 'none' },
+        reranker: { id: 'gpt-6-luna', top_k: 10, reasoning_effort: 'none' },
       },
       maintenance: { profile: 'autonomous' },
     });
@@ -116,7 +116,7 @@ describe('guided init', () => {
     expect(written).toMatchObject({
       invented_extension: { keep: true },
       providers: { openai: { base_url: 'https://api.openai.com/v1' } },
-      models: { reranker: { id: 'gpt-5.6-luna', mode: 'llm' } },
+      models: { reranker: { id: 'gpt-6-luna', mode: 'llm' } },
       maintenance: { profile: 'review', policies: { merge: 'audit' } },
     });
     expect(Object.keys(written.providers as Record<string, unknown>)).toEqual(['openai']);
@@ -445,7 +445,7 @@ function failedPreflight(): OpenAiLunaPreflightReport {
     generative: {
       status: 'ok',
       provider: 'openai',
-      model: 'gpt-5.6-luna',
+      model: 'gpt-6-luna',
       promptVersion: 'invented-prompt-v1',
       schemaVersion: 'invented-schema-v1',
       latencyMs: 111,

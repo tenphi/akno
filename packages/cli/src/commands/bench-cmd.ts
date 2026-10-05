@@ -124,7 +124,7 @@ const BENCH_HELP = `akno bench [options]
     --provider <name> Configured provider. Ranking defaults to openai; merge uses
                       the maintenance role; answer and auto-recall-answer use the
                       answer role; auto-recall uses reranker.
-    --model <id>      Generative model. Ranking and merge default to gpt-5.6-luna;
+    --model <id>      Generative model. Ranking and merge default to gpt-6-luna;
                       answer and auto-recall-answer use the answer role;
                       auto-recall uses reranker.
     --embedding-provider <name>
@@ -884,7 +884,7 @@ export async function benchCommand(argv: string[]): Promise<number> {
           (openAiPreset ? 'text-embedding-3-small' : (config.models.embedding.id ?? undefined)),
         embeddingDimensions,
         provider: values.provider ?? selectedVariant?.provider ?? 'openai',
-        model: values.model ?? selectedVariant?.model ?? 'gpt-5.6-luna',
+        model: values.model ?? selectedVariant?.model ?? 'gpt-6-luna',
         reasoningEffort: values.reasoning ? reasoning : (selection?.reasoningEffort ?? reasoning),
         ...(!values.json ? { onProgress: renderRankingEndToEndProgress() } : {}),
       });
