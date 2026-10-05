@@ -62,6 +62,15 @@ for (const split of ['development', 'held-out']) {
     })),
   };
   const report = adjudicateLifecycle(packet, review);
+  const historicalContract = structuredClone(packet);
+  delete historicalContract.contract.conflictVerification;
+  delete historicalContract.contract.artifacts['core/dist/maintenance/conflicts.js'];
+  assert(
+    adjudicateLifecycle(historicalContract, {
+      ...review,
+      packetFingerprint: lifecycleHash(historicalContract),
+    }).groups.every((group) => !group.gates.usefulCoverage),
+  );
   const incompleteArtifacts = structuredClone(packet);
   delete incompleteArtifacts.contract.artifacts['core/dist/write/deciding-support.js'];
   assert.throws(
@@ -149,6 +158,78 @@ for (const split of ['development', 'held-out']) {
 console.log(
   'lifecycle smoke: compiled isolated socket, fixed/restored clocks, complete matrix and failing always-abstain controls',
 );
+
+// A separately authorized native run must disclose verification and cannot masquerade as a
+// frozen policy or scripted extraction control. No model-quality claims come from this smoke.
+const native = await runLifecycle(config, {
+  split: 'development',
+  runs: 1,
+  corpus: 'inference-live-authorized',
+});
+assert.equal(native.checkpoints.length, 12);
+assert.deepEqual(native.contract.conflictVerification, { enabled: true, verify: true, resolve: false });
+assert.equal(native.contract.indexMode, 'live');
+assert(native.checkpoints.flatMap((row) => row.operations).every((op) => op.scriptedIndexCalls === 0));
+const nativeReview = {
+  version: 'lifecycle-review-v1',
+  packetFingerprint: lifecycleHash(native),
+  reviewer: { id: 'deterministic-smoke', sourceBased: true, independent: false },
+  checkpoints: native.checkpoints.map((row) => ({
+    key: row.key,
+    recovery: [],
+    stages: Object.fromEntries(
+      ['memory', 'recall', 'context', 'answer'].map((stage) => [
+        stage,
+        {
+          covered: [],
+          errors: [],
+          triage: ['unknown'],
+          outcome:
+            stage === 'answer' && !row.answer
+              ? 'not_measured'
+              : stage !== 'memory' &&
+                  (!row[stage] ||
+                    row[stage].status === 'unavailable' ||
+                    [
+                      'verification_unavailable',
+                      'generation_unavailable',
+                      'generation_failed',
+                      'evidence_unavailable',
+                    ].includes(row[stage].reason_code))
+                ? 'unavailable'
+                : 'false_hold',
+        },
+      ]),
+    ),
+  })),
+};
+assert(adjudicateLifecycle(native, nativeReview).groups.every((group) => !group.gates.usefulCoverage));
+for (const mutate of [
+  (packet) => {
+    delete packet.contract.artifacts['core/dist/maintenance/conflicts.js'];
+  },
+  (packet) => {
+    delete packet.contract.conflictVerification;
+  },
+  (packet) => {
+    packet.contract.conflictVerification.resolve = true;
+  },
+  (packet) => {
+    packet.contract.indexMode = 'scripted_source_leaves';
+  },
+  (packet) => {
+    packet.checkpoints[0].operations[0].scriptedIndexCalls = 1;
+  },
+]) {
+  const altered = structuredClone(native);
+  mutate(altered);
+  assert.throws(() =>
+    adjudicateLifecycle(altered, {
+      ...nativeReview,
+      packetFingerprint: lifecycleHash(altered),
+    }),
+  );
+}
 
 // A fixed derivation must admit real L2 lineage without masquerading as provider usage.
 let requests = 0;

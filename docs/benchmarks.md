@@ -13,7 +13,7 @@ knowledge base unless the command explicitly says it is measuring that installat
 akno bench --write
 akno bench --retrieval-only
 akno bench graph
-akno bench entities --provider openai --model gpt-5.6-luna --reasoning none
+akno bench entities --provider openai --model gpt-6-luna --reasoning none
 akno bench answer --concurrency 2
 akno bench auto-recall --concurrency 2
 akno bench auto-recall-answer --concurrency 2
@@ -52,15 +52,20 @@ Reports deliberately omit prompts, questions, evidence bodies, answers, source p
 and provider error text. They retain stable invented ids, aggregate judgments, model configuration, latency,
 token receipts, fingerprints, checks, and blockers.
 
-## Qualified OpenAI minimum
+## Current OpenAI minimum and historical qualification
 
-The guided OpenAI setup uses two models through one provider endpoint:
+The guided OpenAI setup now uses `gpt-6-luna` for every generative role and prompted reranking,
+with `text-embedding-3-small` at 1,536 dimensions for embeddings. Existing installation settings are
+not rewritten. Run setup preflight with your configured endpoint before adopting the preset.
+
+The following qualification measurements describe the historical configuration, not the current model.
+That configuration used two models through one provider endpoint:
 
 - `text-embedding-3-small` at 1,536 dimensions for semantic candidates; and
 - `gpt-5.6-luna` with no reasoning for generative roles and prompted reranking.
 
-This is a **single-endpoint** preset, not a single-model preset. It was selected for quality and cost only after
-the ranking and production-path gates passed. The current reranking contract is
+This is a **single-endpoint** preset, not a single-model preset. The historical configuration was selected
+for quality and cost only after the ranking and production-path gates passed. The reranking contract remains
 `akno-judgment-map-v9` / `tuple-judgment-map-v6`, with a ten-candidate window.
 
 The independently reviewed `invented-ranking-v5` held-out release run covered 120 sources and 80 cases. Across

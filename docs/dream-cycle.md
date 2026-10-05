@@ -130,6 +130,11 @@ classifies a candidate as:
 Unverified, unresolved, and pending qualification claims are excluded from inference and current graph edges.
 Conflict status itself does not authorize a write; contradiction changes are high-risk curate items.
 
+The verifier receives current page titles with the claim text, and its cache binds both. Separately
+identified dated sessions can coexist; two competing dates for the same identified event still require
+resolution. Different dates or filenames alone do not establish separate events. This assessment runs
+only when conflict verification is enabled; otherwise structural candidates remain unverified.
+
 Conflict eligibility is also a post-write condition. A successful knowledge-page edit is re-derived before the
 run finishes, then conflict candidates and graph eligibility are rebuilt from the new claims. Until that full
 derivation succeeds, the page's retained pre-write facts are marked stale by its body/derivation hash mismatch
@@ -160,6 +165,17 @@ Before a new or revised conclusion reaches that plan, a separate evidence-scope 
 bounded current fact set for the exact subject, including supplied counterevidence rather than only the facts
 the generator cited. It must preserve population, time, circumstances, attribution, quantifiers, and relevant
 exceptions. Independent-source count and model confidence do not substitute for semantic support. The assessor
+separately classifies the support as finite recorded cases, an explicit general rule, or unclear, and the
+candidate as sample-bounded, general, or unclear. A general-practice claim cannot pass on finite-case support,
+even with an otherwise positive checklist. Two recorded sessions can support a comparison within those
+sessions; they cannot establish an ongoing habit, motive, preference, causal guarantee, or future rule.
+Generation and reflection guidance retain that sample boundary instead of asking for habits from any repetition.
+An explicit total case count must also match the assessor's established support count. Distinct cases sharing
+calendar dates cannot become shared sessions, and duplicated leaf support cannot increase the sample size.
+The established evidence count must remain stable across narrowing. Automatic narrowing also cannot replace
+one explicit sample size with another; that requires a fresh proposal rather than changing the same selected evidence.
+These classifications are semantic model judgments, not a guarantee of model accuracy.
+The assessor
 may admit the exact sentence, propose one narrower exact sentence, or return a typed hold. A narrowing passes
 the deterministic wording guards and a fresh assessment before it can be sealed. If the complete context or
 required assessment is unavailable, the candidate is held. Content-addressed verdicts avoid another assessment

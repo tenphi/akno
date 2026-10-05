@@ -165,7 +165,7 @@ export async function runEntityResolutionBench(
   options: EntityResolutionBenchOptions = {},
 ): Promise<EntityResolutionBenchReport> {
   const providerName = options.provider ?? config.models.derive.provider?.name ?? 'openai';
-  const modelId = options.model ?? config.models.derive.id ?? 'gpt-5.6-luna';
+  const modelId = options.model ?? config.models.derive.id ?? 'gpt-6-luna';
   const reasoningEffort = options.reasoningEffort ?? config.models.derive.reasoningEffort ?? 'none';
   const provider = config.providers[providerName] ?? null;
   const role: ResolvedModelRole = {

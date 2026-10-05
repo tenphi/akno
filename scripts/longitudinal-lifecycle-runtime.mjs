@@ -134,7 +134,7 @@ function fixtureConfiguration(config, arm, track, deriveId, kind) {
       folders: {
         '**': { role: 'knowledge', remember: 'integrate' },
         'copies/**': { role: 'source', remember: 'deny' },
-        ...(['inference-authorized', 'inference-leaf-control'].includes(kind)
+        ...(['inference-authorized', 'inference-leaf-control', 'inference-live-authorized'].includes(kind)
           ? { 'observations/**': { role: 'inference', remember: 'integrate' } }
           : {}),
       },
@@ -173,7 +173,12 @@ function fixtureConfiguration(config, arm, track, deriveId, kind) {
         observe: { enabled: true, max_subjects: 3, min_evidence: 2 },
         reflect: { enabled: true },
         curate: { max_pages: 3 },
-        conflicts: { enabled: false },
+        // Keep the original controls frozen. This separate native path permits semantic
+        // conflict classification without granting contradiction rewrites.
+        conflicts:
+          kind === 'inference-live-authorized'
+            ? { enabled: true, verify: true, resolve: false }
+            : { enabled: false },
       },
     },
   };
@@ -197,6 +202,11 @@ export function lifecycleInputReview(kind = 'lifecycle') {
 }
 
 function experiment(kind) {
+  if (kind === 'inference-live-authorized')
+    return {
+      corpus: INFERENCE_CORPUS,
+      version: 'longitudinal-inference-live-authorized-v1',
+    };
   if (kind === 'discourse')
     return {
       corpus: LIFECYCLE_CORPUS.filter((episode) => episode.track === 'discourse'),
@@ -283,9 +293,17 @@ export async function runLifecycle(
             : ['inference-control', 'inference-authorized'].includes(kind)
               ? 'scripted_positive_control'
               : 'live',
-        inferenceNamespace: ['inference-authorized', 'inference-leaf-control'].includes(kind)
+        inferenceNamespace: [
+          'inference-authorized',
+          'inference-leaf-control',
+          'inference-live-authorized',
+        ].includes(kind)
           ? 'observations'
           : null,
+        conflictVerification:
+          kind === 'inference-live-authorized'
+            ? { enabled: true, verify: true, resolve: false }
+            : { enabled: false },
         models: Object.fromEntries(
           ['derive', 'answer', 'embedding'].map((name) => {
             const model = config.models[name];
@@ -315,6 +333,7 @@ export async function runLifecycle(
             'core/dist/models/predicate-time-audit.js',
             'core/dist/models/source-role-audit.js',
             'core/dist/maintenance/dream.js',
+            'core/dist/maintenance/conflicts.js',
             'core/dist/maintenance/observe.js',
             'core/dist/maintenance/observation-scope.js',
             'core/dist/maintenance/curate.js',

@@ -1,0 +1,286 @@
+{
+  "reviewer": "author source review before outputs",
+  "cases": [
+    {
+      "id": "finite-comparison",
+      "pattern": "In both recorded sessions, equipment preparation preceded operation.",
+      "expect": "bounded",
+      "facts": [
+        {
+          "id": "fact_1111",
+          "claim": "Equipment preparation was completed before operation on 2039-02-11.",
+          "slug": "records/first",
+          "status": "selected_support"
+        },
+        {
+          "id": "fact_2222",
+          "claim": "Equipment preparation was completed before operation on 2039-02-22.",
+          "slug": "records/second",
+          "status": "selected_support"
+        }
+      ]
+    },
+    {
+      "id": "ongoing-practice",
+      "pattern": "Equipment preparation is a recurring pre-operation practice.",
+      "expect": "narrow_or_hold",
+      "facts": [
+        {
+          "id": "fact_1111",
+          "claim": "Equipment preparation was completed before operation on 2039-02-11.",
+          "slug": "records/first",
+          "status": "selected_support"
+        },
+        {
+          "id": "fact_2222",
+          "claim": "Equipment preparation was completed before operation on 2039-02-22.",
+          "slug": "records/second",
+          "status": "selected_support"
+        }
+      ]
+    },
+    {
+      "id": "universal-rule",
+      "pattern": "Equipment preparation precedes every operation.",
+      "expect": "narrow_or_hold",
+      "facts": [
+        {
+          "id": "fact_1111",
+          "claim": "Equipment preparation was completed before operation on 2039-02-11.",
+          "slug": "records/first",
+          "status": "selected_support"
+        },
+        {
+          "id": "fact_2222",
+          "claim": "Equipment preparation was completed before operation on 2039-02-22.",
+          "slug": "records/second",
+          "status": "selected_support"
+        }
+      ]
+    },
+    {
+      "id": "causal-guarantee",
+      "pattern": "Equipment preparation guarantees successful operation.",
+      "expect": "narrow_or_hold",
+      "facts": [
+        {
+          "id": "fact_1111",
+          "claim": "Equipment preparation was completed before operation on 2039-02-11.",
+          "slug": "records/first",
+          "status": "selected_support"
+        },
+        {
+          "id": "fact_2222",
+          "claim": "Equipment preparation was completed before operation on 2039-02-22.",
+          "slug": "records/second",
+          "status": "selected_support"
+        }
+      ]
+    },
+    {
+      "id": "preference",
+      "pattern": "Equipment preparation prioritizes safety over speed.",
+      "expect": "narrow_or_hold",
+      "facts": [
+        {
+          "id": "fact_1111",
+          "claim": "Equipment preparation was completed before operation on 2039-02-11.",
+          "slug": "records/first",
+          "status": "selected_support"
+        },
+        {
+          "id": "fact_2222",
+          "claim": "Equipment preparation was completed before operation on 2039-02-22.",
+          "slug": "records/second",
+          "status": "selected_support"
+        }
+      ]
+    },
+    {
+      "id": "two-copies",
+      "pattern": "Preparation is a recurring pre-operation practice.",
+      "expect": "hold",
+      "facts": [
+        {
+          "id": "fact_3333",
+          "claim": "One preparation session on 2039-02-11 preceded operation; this is a copy of the same original session.",
+          "slug": "records/first",
+          "status": "selected_support"
+        },
+        {
+          "id": "fact_4444",
+          "claim": "One preparation session on 2039-02-11 preceded operation; this is a copy of the same original session.",
+          "slug": "records/second",
+          "status": "selected_support"
+        }
+      ]
+    },
+    {
+      "id": "bounded-variation",
+      "pattern": "Across the two recorded sessions, equipment preparation occurred once before operation and once after operation.",
+      "expect": "bounded",
+      "facts": [
+        {
+          "id": "fact_1111",
+          "claim": "Equipment preparation was completed before operation on 2039-02-11.",
+          "slug": "records/first",
+          "status": "selected_support"
+        },
+        {
+          "id": "fact_2222",
+          "claim": "Equipment preparation was completed after operation on 2039-02-22.",
+          "slug": "records/second",
+          "status": "selected_support"
+        }
+      ]
+    },
+    {
+      "id": "explicit-general-rules",
+      "pattern": "Standing equipment and workshop rules require setup before their respective activities.",
+      "expect": "general",
+      "facts": [
+        {
+          "id": "fact_1111",
+          "claim": "The standing equipment rule requires setup before operation.",
+          "slug": "records/first",
+          "status": "selected_support"
+        },
+        {
+          "id": "fact_2222",
+          "claim": "The standing workshop rule requires setup before assembly.",
+          "slug": "records/second",
+          "status": "selected_support"
+        }
+      ]
+    },
+    {
+      "id": "reflection-bounded",
+      "level": "reflection",
+      "pattern": "Across all six recorded sessions, equipment, journey and workshop preparation preceded their respective activities.",
+      "expect": "bounded",
+      "facts": [
+        {
+          "id": "obs_11111111",
+          "slug": "topics/preparation-1",
+          "status": "selected_support",
+          "claim": "In both recorded sessions, equipment preparation preceded its activity.",
+          "leaves": [
+            {
+              "id": "fact_111111",
+              "slug": "records/preparation-1-1",
+              "claim": "equipment preparation preceded its activity on 2039-02-11."
+            },
+            {
+              "id": "fact_121111",
+              "slug": "records/preparation-1-2",
+              "claim": "equipment preparation preceded its activity on 2039-02-22."
+            }
+          ]
+        },
+        {
+          "id": "obs_21111111",
+          "slug": "topics/preparation-2",
+          "status": "selected_support",
+          "claim": "In both recorded sessions, journey preparation preceded its activity.",
+          "leaves": [
+            {
+              "id": "fact_211111",
+              "slug": "records/preparation-2-1",
+              "claim": "journey preparation preceded its activity on 2039-02-11."
+            },
+            {
+              "id": "fact_221111",
+              "slug": "records/preparation-2-2",
+              "claim": "journey preparation preceded its activity on 2039-02-22."
+            }
+          ]
+        },
+        {
+          "id": "obs_31111111",
+          "slug": "topics/preparation-3",
+          "status": "selected_support",
+          "claim": "In both recorded sessions, workshop preparation preceded its activity.",
+          "leaves": [
+            {
+              "id": "fact_311111",
+              "slug": "records/preparation-3-1",
+              "claim": "workshop preparation preceded its activity on 2039-02-11."
+            },
+            {
+              "id": "fact_321111",
+              "slug": "records/preparation-3-2",
+              "claim": "workshop preparation preceded its activity on 2039-02-22."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reflection-general",
+      "level": "reflection",
+      "pattern": "Preparation is an ongoing practice before all activities.",
+      "expect": "narrow_or_hold",
+      "facts": [
+        {
+          "id": "obs_11111111",
+          "slug": "topics/preparation-1",
+          "status": "selected_support",
+          "claim": "In both recorded sessions, equipment preparation preceded its activity.",
+          "leaves": [
+            {
+              "id": "fact_111111",
+              "slug": "records/preparation-1-1",
+              "claim": "equipment preparation preceded its activity on 2039-02-11."
+            },
+            {
+              "id": "fact_121111",
+              "slug": "records/preparation-1-2",
+              "claim": "equipment preparation preceded its activity on 2039-02-22."
+            }
+          ]
+        },
+        {
+          "id": "obs_21111111",
+          "slug": "topics/preparation-2",
+          "status": "selected_support",
+          "claim": "In both recorded sessions, journey preparation preceded its activity.",
+          "leaves": [
+            {
+              "id": "fact_211111",
+              "slug": "records/preparation-2-1",
+              "claim": "journey preparation preceded its activity on 2039-02-11."
+            },
+            {
+              "id": "fact_221111",
+              "slug": "records/preparation-2-2",
+              "claim": "journey preparation preceded its activity on 2039-02-22."
+            }
+          ]
+        },
+        {
+          "id": "obs_31111111",
+          "slug": "topics/preparation-3",
+          "status": "selected_support",
+          "claim": "In both recorded sessions, workshop preparation preceded its activity.",
+          "leaves": [
+            {
+              "id": "fact_311111",
+              "slug": "records/preparation-3-1",
+              "claim": "workshop preparation preceded its activity on 2039-02-11."
+            },
+            {
+              "id": "fact_321111",
+              "slug": "records/preparation-3-2",
+              "claim": "workshop preparation preceded its activity on 2039-02-22."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "corpusFingerprint": "11808bc62a09c5e177fe7307f28a961db159c60493d1f2cee180a442ddff921d",
+  "limitations": [
+    "injected exact candidates; not natural generation",
+    "semantic model assessment is not ground truth"
+  ]
+}

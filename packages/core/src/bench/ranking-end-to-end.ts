@@ -163,7 +163,7 @@ export async function runRankingEndToEnd(
   const model =
     options.model ??
     (config.models.reranker.rerankerMode === 'llm' ? config.models.reranker.id : null) ??
-    'gpt-5.6-luna';
+    'gpt-6-luna';
   const reasoningEffort = options.reasoningEffort ?? 'none';
   const cases = rankingCorpusCases(split);
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-ranking-e2e-kb-'));

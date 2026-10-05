@@ -35,18 +35,18 @@ describe('recommended OpenAI minimum setup', () => {
       },
       reranker: {
         provider: 'openai',
-        id: 'gpt-5.6-luna',
+        id: 'gpt-6-luna',
         mode: 'llm',
         max_output_tokens: 256,
         reasoning_effort: 'none',
       },
-      expansion: { provider: 'openai', id: 'gpt-5.6-luna', reasoning_effort: 'none' },
-      derive: { provider: 'openai', id: 'gpt-5.6-luna', reasoning_effort: 'low' },
-      answer: { provider: 'openai', id: 'gpt-5.6-luna', reasoning_effort: 'low' },
+      expansion: { provider: 'openai', id: 'gpt-6-luna', reasoning_effort: 'none' },
+      derive: { provider: 'openai', id: 'gpt-6-luna', reasoning_effort: 'low' },
+      answer: { provider: 'openai', id: 'gpt-6-luna', reasoning_effort: 'low' },
     });
     expect(preset.maintenance).toMatchObject({
       profile: 'autonomous',
-      model: { provider: 'openai', id: 'gpt-5.6-luna', reasoning_effort: 'medium' },
+      model: { provider: 'openai', id: 'gpt-6-luna', reasoning_effort: 'medium' },
     });
     expect(JSON.stringify(preset)).not.toContain('sk-');
   });

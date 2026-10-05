@@ -190,7 +190,7 @@ export async function runRankingBench(
 
   if (options.system === 'llm') {
     provider = options.provider ?? 'openai';
-    model = options.model ?? 'gpt-5.6-luna';
+    model = options.model ?? 'gpt-6-luna';
     reasoningEffort = options.reasoningEffort ?? 'none';
     const client = liveClient(config, provider, model, reasoningEffort, candidateCount);
     outcomes = await mapModelCases(cases, concurrency, (benchCase) =>

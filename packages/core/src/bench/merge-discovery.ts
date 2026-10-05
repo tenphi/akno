@@ -399,7 +399,7 @@ function classifierModel(
     ...configured,
     role: 'maintenance',
     provider,
-    id: options.model ?? configured.id ?? 'gpt-5.6-luna',
+    id: options.model ?? configured.id ?? 'gpt-6-luna',
     enabled: provider !== null,
     requested: true,
     maxOutputTokens: 400,

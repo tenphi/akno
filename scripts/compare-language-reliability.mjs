@@ -127,8 +127,8 @@ try {
     }),
   );
   if (values.live) {
-    assert.equal(models.answer.id, 'gpt-5.6-luna');
-    assert.equal(models.reranker.id, 'gpt-5.6-luna');
+    assert.equal(models.answer.id, 'gpt-6-luna');
+    assert.equal(models.reranker.id, 'gpt-6-luna');
     assert.equal(models.answer.reasoningEffort, 'low');
     assert(models.embedding.enabled && models.reranker.enabled);
   }
