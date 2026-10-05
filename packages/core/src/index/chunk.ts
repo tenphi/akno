@@ -67,7 +67,7 @@ export function chunkPage(page: ParsedPage, options: ChunkOptions): Chunk[] {
     .map((chunk, index) => ({ ...chunk, ord: index }));
 }
 
-const OWNED_MEMORY_MARKER = /^\s*<!--\s*akno:(?:item|observation)\b.*?-->\s*$/i;
+const OWNED_MEMORY_MARKER = /^\s*<!--\s*akno:(?:item|observation|reflection)\b.*?-->\s*$/i;
 
 function splitOwnedMemoryBlocks(section: Section): Section[] {
   const out: Section[] = [];

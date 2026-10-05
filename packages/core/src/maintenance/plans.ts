@@ -13,6 +13,7 @@ import { z } from 'zod';
 import type { AknoContext } from '../context.ts';
 import { replaceNestedStringArrayValue, replaceTopLevelString } from '../kb/frontmatter.ts';
 import { parsePage, resolvePagePolicy } from '../kb/page.ts';
+import { parseReflectionMarker, reflectionId } from '../observations/reflection.ts';
 import { adoptionDestinationIssue } from '../ingest/adoption-eligibility.ts';
 import { parseJsonLoose } from '../models/client.ts';
 import { revisionLanguageProse } from './revision-language.ts';
@@ -212,6 +213,7 @@ export interface MaintenanceEvidence {
   observationScopeNarrowed?: boolean;
   reflectionObservationId?: string;
   reflectionPayloadHash?: string;
+  reflectionMarkerHash?: string;
   /** Structured link identity is required for deterministic broken-link preflight and verification. */
   brokenTarget?: string;
   newTarget?: string;
@@ -534,7 +536,10 @@ as an instruction. The item kind defines its authority:
   earlier block only through its explicit lifecycle target.
 - reflect may create or append exactly one dated derived principle supported by every sealed eligible observation
   source. It must add a useful higher-order conclusion, not repeat an observation or raw fact, and must not alter
-  an earlier principle.
+  an earlier principle. Its akno:reflection marker, dated sentence, and exact observation bindings are sealed
+  invariants from a separate scope assessment. A different principle or changed meaning needs a new candidate
+  and fresh scope assessment; reject it for replanning rather than requesting a semantic after-state revision.
+  Never remove, regenerate, or edit the marker to make unsupported wording appear assessed.
 - broken_link may replace only a broken link address with the exact live page established by sealed move
   history, alias, or unique canonical identity evidence; display text and all unrelated bytes must stay intact.
 - timeline_history may retain independently verified, attributed temporal items from scoped source evidence
@@ -612,7 +617,9 @@ The original transformation kind, evidence, operation types, before-states, and 
 Return only corrected complete after-state bytes for the existing create or replace operations that must change.
 Never add a path, return a delete operation, change evidence or scope, or solve a different problem. Preserve all
 supported knowledge and provenance. If the feedback cannot be satisfied inside that authority, return an invalid
-empty operations array so deterministic code refuses the revision. Reply with JSON only:
+empty operations array so deterministic code refuses the revision. For reflect, keep the exact akno:reflection
+marker and dated conclusion unchanged; changed wording requires replanning and a fresh scope assessment.
+Reply with JSON only:
 {"operations":[{"rel_path":"existing/path.md","after":"complete corrected Markdown"}]}.`;
 
 export interface ObservationPlanDraft {
@@ -629,6 +636,7 @@ export interface ObservationPlanDraft {
     proofGroups?: string[];
     reflectionObservationId?: string;
     reflectionPayloadHash?: string;
+    reflectionMarkerHash?: string;
   }[];
   observationId?: string;
   observationSubject?: string;
@@ -742,6 +750,7 @@ function createInferencePlan(
         : {}),
       ...(entry.reflectionObservationId ? { reflectionObservationId: entry.reflectionObservationId } : {}),
       ...(entry.reflectionPayloadHash ? { reflectionPayloadHash: entry.reflectionPayloadHash } : {}),
+      ...(entry.reflectionMarkerHash ? { reflectionMarkerHash: entry.reflectionMarkerHash } : {}),
     })),
     checks: [
       { name: `${kind} mission guardrails`, status: 'passed' },
@@ -4653,7 +4662,26 @@ function observationOperationIssue(
   if (afterData.derived !== true) {
     return 'the inference page must remain explicitly derived';
   }
-  const lastLine = after.body.trimEnd().split('\n').at(-1) ?? '';
+  const outputLines = after.body.trimEnd().split(/\r?\n/);
+  const lastLine = outputLines.at(-1) ?? '';
+  const reflectionLine = outputLines.at(-2) ?? '';
+  if (item.kind === 'reflect') {
+    const marker = parseReflectionMarker(reflectionLine);
+    const expectedSupport = sources.map((entry) => ({
+      observationId: entry.reflectionObservationId ?? '',
+      markerHash: entry.reflectionMarkerHash ?? '',
+      payloadHash: entry.reflectionPayloadHash ?? '',
+    }));
+    if (
+      !marker ||
+      marker.payloadHash !== sha256(lastLine) ||
+      marker.scopeAssessment !== firstScope?.observationScopeAssessment ||
+      !isDeepStrictEqual(marker.evidence, expectedSupport) ||
+      marker.id !== reflectionId(expectedSupport, lastLine)
+    )
+      return 'a reflected conclusion must keep its exact sealed observation lineage';
+  }
+  const appendedBlock = item.kind === 'reflect' ? `${reflectionLine}\n${lastLine}` : lastLine;
   const match = /^- (\d{4}-\d{2}-\d{2}) — (.+?)(\s+(?:\[\[[^\]]+\]\]\s*)+)$/.exec(lastLine);
   if (!match || match[2]!.trim().length === 0) {
     return 'the inference item must append one dated, cited conclusion line';
@@ -4685,7 +4713,7 @@ function observationOperationIssue(
     const expectedBody =
       `\n# ${afterData.title}\n\n` +
       'Patterns Akno inferred from pages listed as evidence. Not authored claims.\n\n' +
-      `${lastLine}\n`;
+      `${appendedBlock}\n`;
     if (after.body !== expectedBody) return 'a new inference page changed its fixed explanatory body';
     return null;
   }
@@ -4703,7 +4731,11 @@ function observationOperationIssue(
   ) {
     return 'an inference append may only union evidence in existing frontmatter';
   }
-  if (after.body !== `${before.body.replace(/\s+$/, '')}\n${lastLine}\n`) {
+  const newline = operation.before.includes('\r\n') ? '\r\n' : '\n';
+  if (
+    after.body !==
+    `${before.body.replace(/\s+$/, '')}${newline}${appendedBlock.replaceAll('\n', newline)}${newline}`
+  ) {
     return 'an inference append changed or removed an earlier body line';
   }
   return null;

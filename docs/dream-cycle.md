@@ -178,6 +178,18 @@ because small corpora make “patterns of patterns” especially fragile. Its sc
 sources back to their current leaf facts and also sees the other supplied eligible observations; a principle
 cannot silently broaden their time, population, circumstances, exceptions, association, or attribution.
 
+Each new dated conclusion has its own `akno:reflection` marker sealing the selected observation ids,
+canonical marker hashes, payload hashes, and scope-assessment fingerprint. Read and recall check that exact
+support through the current L2 projection and leaf source bytes. Changed or missing support makes that
+conclusion historical without rewriting it or withdrawing independently supported conclusions on the same
+page. Unchanged indexing and restart/rebuild preserve this boundary even when the L3 page has no indexed
+fact rows. Whole-page summaries are withheld because they cannot carry per-conclusion eligibility.
+
+Older generated dated principles with no exact marker remain readable as history with
+`reflection_lineage_missing`; page citations alone cannot establish exact support. Reflect can append a
+newly assessed replacement when current eligible observations support it. Existing unbound pending reflection
+plans need replanning; Akno does not invent missing lineage or rewrite legacy conclusions automatically.
+
 ### 4. Curate
 
 Curate has two authority boundaries. Whole-page transformations consider only pages whose own policy permits

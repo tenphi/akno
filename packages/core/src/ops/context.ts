@@ -887,6 +887,7 @@ function temporallyEligibleResult(
   if (intent.current && result.superseded) return null;
 
   const lines = result.lines.filter((line) => {
+    if (line.prose?.reason.startsWith('reflection_') && !line.prose.answer_eligible) return false;
     if (
       line.prose &&
       (['heading', 'comment'].includes(line.prose.reason) || !proseEligibleForView(line.prose, memoryView))

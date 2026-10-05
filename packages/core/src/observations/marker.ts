@@ -180,9 +180,19 @@ export function structuralObservationMarkerIndexes(
   includesFrontmatter = false,
   stopAtSourceFence = true,
 ): Set<number> {
+  return structuralOwnedMarkerIndexes(lines, 'observation', includesFrontmatter, stopAtSourceFence);
+}
+
+export function structuralOwnedMarkerIndexes(
+  lines: string[],
+  kind: 'observation' | 'reflection',
+  includesFrontmatter = false,
+  stopAtSourceFence = true,
+): Set<number> {
   const indexes = new Set<number>();
   let frontmatter = includesFrontmatter && lines[0]?.replace(/\r$/, '') === '---';
   let fence: { character: '`' | '~'; length: number } | null = null;
+  const ownedMarker = new RegExp(`^\\s*<!--\\s*akno:${kind}\\b`, 'i');
   for (let index = 0; index < lines.length; index++) {
     const raw = lines[index]!;
     if (frontmatter) {
@@ -200,7 +210,7 @@ export function structuralObservationMarkerIndexes(
       continue;
     }
     if (stopAtSourceFence && /^\s*<!--\s*source\s*-->\s*$/i.test(raw)) break;
-    if (/^\s*<!--\s*akno:observation\b/i.test(raw)) indexes.add(index);
+    if (ownedMarker.test(raw)) indexes.add(index);
   }
   return indexes;
 }

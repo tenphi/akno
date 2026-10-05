@@ -1268,6 +1268,8 @@ function buildEvidence(
 }
 
 function answerLineEligible(line: Line, question: string, memoryView: MemoryView): boolean {
+  // `all` allows inspecting historical records; it cannot restore missing derived support.
+  if (line.prose?.reason.startsWith('reflection_') && !line.prose.answer_eligible) return false;
   if (
     line.prose &&
     (['heading', 'comment'].includes(line.prose.reason) ||

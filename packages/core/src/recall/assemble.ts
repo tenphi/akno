@@ -4,6 +4,7 @@ import path from 'node:path';
 import { annotateLines, LINE_FACT_COLUMNS, type LineFact } from '../kb/line-facts.ts';
 import { qualifyManagedMemoryLines } from '../kb/managed-lines.ts';
 import { qualifyObservationLines } from '../observations/projection.ts';
+import { qualifyReflectionLines, reflectionQualifications } from '../observations/reflection.ts';
 import type {
   Card,
   Depth,
@@ -319,7 +320,9 @@ export class Assembler {
 
   private safeSummary(page: PageRow): string | null {
     try {
-      return hasNonfactualProse(fs.readFileSync(path.join(this.#config.aknoPath, page.rel_path), 'utf8'))
+      const content = fs.readFileSync(path.join(this.#config.aknoPath, page.rel_path), 'utf8');
+      return hasNonfactualProse(content) ||
+        reflectionQualifications(this.#store, page.id, content.split('\n'), this.#config.aknoPath).size > 0
         ? null
         : page.summary;
     } catch {
@@ -444,9 +447,13 @@ export class Assembler {
   }
 
   private qualifyObservationLines(pageId: string, lines: Line[], allLines: string[]): Line[] {
-    return qualifyObservationLines(this.#store, pageId, lines, allLines).filter(
-      (line) => !line.observation || line.observation.status === 'eligible',
-    );
+    return qualifyReflectionLines(
+      this.#store,
+      pageId,
+      qualifyObservationLines(this.#store, pageId, lines, allLines),
+      allLines,
+      this.#config.aknoPath,
+    ).filter((line) => !line.observation || line.observation.status === 'eligible');
   }
 
   private factsFor(pageId: string): FactRow[] {

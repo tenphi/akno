@@ -336,7 +336,7 @@ export type ObservationQualification = z.infer<typeof ObservationQualification>;
  * that the line states a well-formed durable claim, not how sure it is the claim
  * is true.
  */
-/** A bounded reading of authored prose, never managed-memory authorship or a truth certificate. */
+/** A bounded reading of readable prose, never managed-memory authorship or a truth certificate. */
 export const ProseQualification = z.object({
   status: z.enum(['qualified', 'unresolved']),
   view: z.enum(['factual', 'reports', 'discussion', 'planning', 'questions', 'history']),
@@ -354,6 +354,9 @@ export const ProseQualification = z.object({
     'rejected',
     'example',
     'context_limit',
+    'reflection_supported',
+    'reflection_support_stale',
+    'reflection_lineage_missing',
   ]),
   answer_eligible: z.boolean(),
   source_hash: z.string(),

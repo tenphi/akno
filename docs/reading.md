@@ -128,6 +128,15 @@ bounded evidence context, prompt, and configured model; it is not a probability 
 Legacy observations omit this field and are never relabeled as having passed a check that did not exist when
 they were created.
 
+Reflected L3 conclusions carry `prose` qualification independently of indexed fact rows:
+`reflection_supported` is factual and answer eligible; `reflection_support_stale` or
+`reflection_lineage_missing` is history and not eligible for a current factual answer. Explicit reads and pins
+keep that qualified history inspectable. Recall can return it as accurately qualified contextual evidence
+when no current evidence is available; automatic context and answers exclude unsupported reflection prose,
+including in the `all` view. A history recall query
+can inspect the old conclusion without claiming it remains supported. Other supported conclusions on the same
+page retain their eligibility. These bindings describe derived support, not authored claims or world truth.
+
 ### Reranking also qualifies
 
 A successful reranker may remove judged-irrelevant candidates. Candidates outside its bounded window are

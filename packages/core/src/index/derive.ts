@@ -4,7 +4,8 @@ import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 import { sha256 } from '../store/ids.ts';
 import { aknoItemId, type ParsedPage } from '../kb/page.ts';
 import { managedMemoryFactEligible, parseManagedMemoryMarker } from '../write/managed-memory.ts';
-import { structuralObservationMarkerIndexes } from '../observations/marker.ts';
+import { structuralObservationMarkerIndexes, structuralOwnedMarkerIndexes } from '../observations/marker.ts';
+import { legacyReflectionLineIndexes } from '../observations/reflection.ts';
 
 /**
  * Deriving structure from text already in the knowledge base — facts,
@@ -217,11 +218,17 @@ function mineableLines(
   let pendingFactEligible = true;
   let pendingObservation = false;
   const observationMarkers = structuralObservationMarkerIndexes(page.lines);
+  const legacyReflections = legacyReflectionLineIndexes(page.content.split('\n'));
+  for (const index of structuralOwnedMarkerIndexes(page.lines, 'reflection')) observationMarkers.add(index);
   for (let i = 0; i < page.lines.length; i++) {
     const line = page.bodyLine + i;
     if (fence !== null && line >= fence) break;
     const text = page.lines[i]!.trim();
     if (text.length === 0) continue;
+    if (legacyReflections.has(line - 1)) {
+      out.push({ line, text, itemId: null, factEligible: false });
+      continue;
+    }
     if (observationMarkers.has(i)) {
       // Unknown versions fail closed too. The next readable line remains searchable but can
       // never be re-imported as an authored level-one fact.

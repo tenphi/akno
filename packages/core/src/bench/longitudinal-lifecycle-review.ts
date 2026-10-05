@@ -209,7 +209,21 @@ const contractSchema = z
       ];
       const temporalNames = [...decidingNames, 'core/dist/models/predicate-time-audit.js'];
       const roleNames = [...temporalNames, 'core/dist/models/source-role-audit.js'];
-      return [names, decidingNames, temporalNames, roleNames].some(
+      const reflectionNames = [
+        ...roleNames,
+        'core/dist/observations/reflection.js',
+        'core/dist/observations/marker.js',
+        'core/dist/kb/prose.js',
+        'core/dist/index/indexer.js',
+        'core/dist/index/derive.js',
+        'core/dist/index/chunk.js',
+        'core/dist/maintenance/plans.js',
+        'core/dist/ops/read.js',
+        'core/dist/ops/context.js',
+        'core/dist/recall/assemble.js',
+        'protocol/dist/common.js',
+      ];
+      return [names, decidingNames, temporalNames, roleNames, reflectionNames].some(
         (inventory) =>
           Object.keys(value).length === inventory.length && inventory.every((name) => name in value),
       );
