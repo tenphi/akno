@@ -1,0 +1,19 @@
+{
+  "corpusHash": "b25f17fe1763bedde5c48cf6ded6e89b7558a7d2940f98f4c1b94e032c7840e7",
+  "review": "source-author invented input review before egress; development controls, not held-out",
+  "useful_coverage_target": {
+    "scripted_per_repeat": 4,
+    "native_per_repeat": 3,
+    "denominator": 5
+  },
+  "accepted_scope_error_target": 0,
+  "negative_return_target": 0,
+  "final_repetitions": 2,
+  "baseline_repetitions": 1,
+  "model": "gpt-6-luna",
+  "max_output_tokens": 1024,
+  "reasoning_effort": "low",
+  "timeout_ms": 60000,
+  "budgets_changes_allowed": false,
+  "prior_input_review": "v1 was stopped and excluded after finding a capitalized activity name missed by fixture renaming; no model or product change"
+}

@@ -1,0 +1,792 @@
+{
+  "scope": "Akno #205",
+  "cohort": "legacy-negatives",
+  "corpus_sha256": "21a39e2d906c53fac53e86969cdf55fd5b53eb5b8c0272ea52e4e8da437bb7ff",
+  "model": {
+    "id": "gpt-6-luna",
+    "timeout_ms": 60000,
+    "max_output_tokens": 1024,
+    "reasoning_effort": "low"
+  },
+  "compiled_sha256": {
+    "ops/answer.js": "6b19983d7291687ced67e0ef8c26a13933d25d7374d4da6705df74fbc59acd0b",
+    "ops/answer-populations.js": "c76c0ff80eb4f8c8c2661076e06f8e67ca74348c9abeef1e10ea5c7144fcedd0",
+    "observations/reflection.js": "dd59f2ef8d3888f7d183de7eea032b5326c11cd19a949e93f64c75b1597cdf46",
+    "observations/projection.js": "746aaf97e8828bbe7bdc15ed8bb6917db915cf8a96150fef7d562331be42fa06",
+    "models/semantic-verdict.js": "753d04f8060f5b1f3bae2cafb4c524399bd65a5b87b831749f3bad342f33699b"
+  },
+  "review": "Source-author review of invented exposed development controls; not independent or held-out accuracy.",
+  "limits": [
+    "Only answer roles are live. Valid observation lineage is seeded through ordinary projection.",
+    "Keyword retrieval disables embedding/expansion only in the isolated fixture; production unchanged.",
+    "Incomplete/held/unavailable results are not useful coverage. All cohorts remain separate.",
+    "Missing usage remains unknown; known subtotals never establish an unknown whole."
+  ],
+  "summary": {
+    "coordinates": 11,
+    "actual_logical_calls": 33,
+    "endpoint_requests": 33,
+    "unknown_endpoint_counts": 0,
+    "unknown_usage_calls": 0,
+    "reported_usage": {
+      "inputTokens": 26018,
+      "outputTokens": 7506,
+      "totalTokens": 33524,
+      "cachedInputTokens": 0,
+      "reasoningOutputTokens": 2850
+    },
+    "scripted_composition_calls": 11,
+    "outcomes": {
+      "verification_rejected": 11
+    }
+  },
+  "coordinates": [
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "merged",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 3974.892083,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1020,
+            "outputTokens": 404,
+            "totalTokens": 1424,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 0
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2203.603333,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 389,
+            "outputTokens": 119,
+            "totalTokens": 508,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 62
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 5172.294207999999,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1140,
+            "outputTokens": 426,
+            "totalTokens": 1566,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 348
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "wrong-count",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2439.660749999999,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1020,
+            "outputTokens": 226,
+            "totalTokens": 1246,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 0
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2284.7858749999996,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 379,
+            "outputTokens": 117,
+            "totalTokens": 496,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 56
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 4325.216791999999,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 956,
+            "outputTokens": 200,
+            "totalTokens": 1156,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 108
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "habit",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 3807.968334000001,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1020,
+            "outputTokens": 404,
+            "totalTokens": 1424,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 0
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 3109.094250000002,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 375,
+            "outputTokens": 83,
+            "totalTokens": 458,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 41
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 4912.481709,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1111,
+            "outputTokens": 308,
+            "totalTokens": 1419,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 245
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "universal",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 5589.353333999999,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1020,
+            "outputTokens": 563,
+            "totalTokens": 1583,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 157
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2359.454417000001,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 372,
+            "outputTokens": 101,
+            "totalTokens": 473,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 62
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 3433.7390000000014,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1105,
+            "outputTokens": 248,
+            "totalTokens": 1353,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 188
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "causal",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 3400.879415999996,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1020,
+            "outputTokens": 404,
+            "totalTokens": 1424,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 0
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 1978.0201670000024,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 371,
+            "outputTokens": 36,
+            "totalTokens": 407,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 0
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 3499.8142920000028,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1103,
+            "outputTokens": 263,
+            "totalTokens": 1366,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 172
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "preference",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 4232.459416999998,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1020,
+            "outputTokens": 486,
+            "totalTokens": 1506,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 80
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2206.8207919999986,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 375,
+            "outputTokens": 110,
+            "totalTokens": 485,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 68
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 3666.7582909999983,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1111,
+            "outputTokens": 245,
+            "totalTokens": 1356,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 182
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "motive",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 4853.010582999996,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1020,
+            "outputTokens": 510,
+            "totalTokens": 1530,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 104
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 3178.2224579999893,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 376,
+            "outputTokens": 180,
+            "totalTokens": 556,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 146
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 4057.1348330000037,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1104,
+            "outputTokens": 342,
+            "totalTokens": 1446,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 241
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "shared-sessions",
+      "repeat": 1,
+      "variant": "inflated-total",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 4076.1345830000064,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1026,
+            "outputTokens": 438,
+            "totalTokens": 1464,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 48
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2011.943333999996,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 374,
+            "outputTokens": 98,
+            "totalTokens": 472,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 56
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 3328.095499999996,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1094,
+            "outputTokens": 191,
+            "totalTokens": 1285,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 129
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "one-event-many-facts",
+      "repeat": 1,
+      "variant": "facts-as-cases",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2631.1760829999985,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 843,
+            "outputTokens": 139,
+            "totalTokens": 982,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 37
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 1693.4645830000081,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 373,
+            "outputTokens": 81,
+            "totalTokens": 454,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 40
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2481.4905,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 799,
+            "outputTokens": 110,
+            "totalTokens": 909,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 53
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "one-event-copies",
+      "repeat": 1,
+      "variant": "copies-as-cases",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2547.617333000002,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 835,
+            "outputTokens": 135,
+            "totalTokens": 970,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 33
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 1880.5836670000135,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 371,
+            "outputTokens": 90,
+            "totalTokens": 461,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 51
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 1553.50108300001,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 795,
+            "outputTokens": 53,
+            "totalTokens": 848,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 0
+          }
+        }
+      ],
+      "scripted_calls": 1
+    },
+    {
+      "case": "one-event-competing-dates",
+      "repeat": 1,
+      "variant": "dates-as-cases",
+      "expected": "hold",
+      "scripted_composition": true,
+      "answer": null,
+      "status": "degraded",
+      "outcome": "not_answered",
+      "reason_code": "verification_rejected",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 0,
+        "rejection_counts": {
+          "semantic_support": 1
+        }
+      },
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "actual_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2169.832374999998,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 862,
+            "outputTokens": 160,
+            "totalTokens": 1022,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 33
+          }
+        },
+        {
+          "role": "candidate-populations",
+          "ok": true,
+          "latency_ms": 2242.4204579999932,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 387,
+            "outputTokens": 96,
+            "totalTokens": 483,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 41
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2644.071624999997,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 852,
+            "outputTokens": 140,
+            "totalTokens": 992,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 69
+          }
+        }
+      ],
+      "scripted_calls": 1
+    }
+  ]
+}

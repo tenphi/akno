@@ -179,6 +179,15 @@ identity store. A source reading or comparison that cannot be grounded returns
 other verified blocks. Finite examples cannot establish a broader habit, preference, motive or
 causal guarantee. These are source-support checks, not independent verification of reality.
 
+An unavailable audit holds only its own block. Independently verified blocks may still be returned
+with `partial` coverage and `answer_verification_failed` degradation. Optional
+`validation.unavailable_blocks` counts blocks without trustworthy verification, separately from
+semantic rejection; this includes remaining unattempted blocks after a provider failure. If none
+survive, the result remains `verification_unavailable` with no answer or citations. The verifier
+does not retry or repair held blocks, reuse another block's evidence, or label partial text complete.
+Private verdicts use concise wording under the caller's unchanged model budget; every required
+predicate, role, scope and exact-quotation check still applies.
+
 The verifier also compares each selected predicate with its own source date and status. A shared
 subject or sentence cannot transfer one action's date onto another. For example, a dated booking and
 an undated completed payment can answer the booking date and payment completion; they cannot answer
