@@ -1,5 +1,11 @@
 # @tenphi/akno-protocol
 
+## 0.18.8
+
+### Patch Changes
+
+- [#206](https://github.com/tenphi/akno/pull/206) [`df57dcb`](https://github.com/tenphi/akno/commit/df57dcb6945f65ea5cca5a36b99a795615a5cf12) Thanks [@tenphi](https://github.com/tenphi)! - Preserve independently verified answer blocks when another block's audit is unavailable, reporting partial coverage and unavailable block counts separately from semantic rejection. Keep population readings literal and private verdict wording concise under existing model budgets.
+
 ## 0.18.7
 
 ## 0.18.6
