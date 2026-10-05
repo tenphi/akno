@@ -30,6 +30,7 @@ if (
     'inference-control',
     'inference-authorized',
     'inference-leaf-control',
+    'inference-live-authorized',
     'overview-authorized',
   ].includes(values.corpus)
 )

@@ -187,6 +187,12 @@ const contractSchema = z
     cost: z.null(),
     indexMode: z.enum(['live', 'scripted_positive_control', 'scripted_source_leaves']).default('live'),
     inferenceNamespace: z.union([z.literal('observations'), z.null()]).default(null),
+    conflictVerification: z
+      .union([
+        z.object({ enabled: z.literal(false) }).strict(),
+        z.object({ enabled: z.literal(true), verify: z.literal(true), resolve: z.literal(false) }).strict(),
+      ])
+      .default({ enabled: false }),
     models: z.object({ derive: modelSchema, answer: modelSchema, embedding: modelSchema }).strict(),
     artifacts: z.record(z.string(), z.string().regex(/^[a-f0-9]{64}$/)).refine((value) => {
       const names = [
@@ -223,7 +229,8 @@ const contractSchema = z
         'core/dist/recall/assemble.js',
         'protocol/dist/common.js',
       ];
-      return [names, decidingNames, temporalNames, roleNames, reflectionNames].some(
+      const eventContextNames = [...reflectionNames, 'core/dist/maintenance/conflicts.js'];
+      return [names, decidingNames, temporalNames, roleNames, reflectionNames, eventContextNames].some(
         (inventory) =>
           Object.keys(value).length === inventory.length && inventory.every((name) => name in value),
       );
@@ -287,6 +294,7 @@ export function adjudicateLifecycle(packet: Packet, judgments: unknown) {
       'longitudinal-inference-control-v1',
       'longitudinal-inference-authorized-v1',
       'longitudinal-inference-leaf-control-v1',
+      'longitudinal-inference-live-authorized-v1',
       'longitudinal-overview-authorized-v1',
       'longitudinal-discourse-v1',
     ].includes(packet.version) ||
@@ -318,14 +326,23 @@ export function adjudicateLifecycle(packet: Packet, judgments: unknown) {
     throw new Error('Invalid split/repeats.');
   const contract = contractSchema.parse(packet.contract);
   if (
+    packet.version === 'longitudinal-inference-live-authorized-v1' &&
+    !('core/dist/maintenance/conflicts.js' in contract.artifacts)
+  )
+    throw new Error('The native verification contract must bind the conflict assessor artifact.');
+  if (
     ['longitudinal-inference-control-v1', 'longitudinal-inference-authorized-v1'].includes(packet.version) !==
       (contract.indexMode === 'scripted_positive_control') ||
     (packet.version === 'longitudinal-inference-leaf-control-v1') !==
       (contract.indexMode === 'scripted_source_leaves') ||
-    ['longitudinal-inference-authorized-v1', 'longitudinal-inference-leaf-control-v1'].includes(
-      packet.version,
-    ) !==
+    [
+      'longitudinal-inference-authorized-v1',
+      'longitudinal-inference-leaf-control-v1',
+      'longitudinal-inference-live-authorized-v1',
+    ].includes(packet.version) !==
       (contract.inferenceNamespace === 'observations') ||
+    (packet.version === 'longitudinal-inference-live-authorized-v1') !==
+      contract.conflictVerification.enabled ||
     (packet.version === 'longitudinal-overview-authorized-v1') !== (contract.maxHighRiskItems === 12)
   )
     throw new Error('Scripted index controls cannot be relabeled as natural extraction.');

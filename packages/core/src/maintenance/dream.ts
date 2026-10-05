@@ -2773,7 +2773,7 @@ async function collectPreparedReflections(
     model: ctx.models.derive,
     mission:
       ctx.config.maintenance.reflect.mission ??
-      'State durable decision principles and long-term tendencies, not individual patterns.',
+      'Combine supported relationships across the recorded cases, retaining their sample limits. Do not turn finite observations into a long-term tendency or general decision rule.',
     // A tier further from the evidence needs more of it.
     minEvidence: Math.max(3, ctx.config.maintenance.observe.minEvidence),
     // This tier appends to one page every night from observations that rarely change, so without

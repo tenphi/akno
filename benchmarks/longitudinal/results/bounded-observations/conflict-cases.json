@@ -1,0 +1,151 @@
+{
+  "reviewer": "author source review before model calls",
+  "cases": [
+    {
+      "id": "separate-completed-sessions",
+      "expected": "compatible",
+      "claims": [
+        {
+          "title": "Operation session 1",
+          "claim": "Equipment preparation was completed before operation on 2039-02-11.",
+          "slug": "records/session-1",
+          "line": 9,
+          "value": "1",
+          "confidence": 0.9,
+          "seen": "2039-03-01"
+        },
+        {
+          "title": "Operation session 2",
+          "claim": "Equipment preparation was completed before operation on 2039-02-22.",
+          "slug": "records/session-2",
+          "line": 9,
+          "value": "2",
+          "confidence": 0.9,
+          "seen": "2039-03-01"
+        }
+      ]
+    },
+    {
+      "id": "separate-opposite-sessions",
+      "expected": "compatible",
+      "claims": [
+        {
+          "title": "Operation session 1",
+          "claim": "Equipment preparation was completed before operation on 2039-02-11.",
+          "slug": "records/session-1",
+          "line": 9,
+          "value": "1",
+          "confidence": 0.9,
+          "seen": "2039-03-01"
+        },
+        {
+          "title": "Operation session 2",
+          "claim": "Equipment preparation was completed after operation on 2039-02-22.",
+          "slug": "records/session-2",
+          "line": 9,
+          "value": "2",
+          "confidence": 0.9,
+          "seen": "2039-03-01"
+        }
+      ]
+    },
+    {
+      "id": "same-hearing-proposed-dates",
+      "expected": "unresolved",
+      "claims": [
+        {
+          "title": "Hearing ZX-111",
+          "claim": "The hearing ZX-111 is scheduled for 2039-02-11.",
+          "slug": "records/session-1",
+          "line": 9,
+          "value": "1",
+          "confidence": 0.9,
+          "seen": "2039-03-01"
+        },
+        {
+          "title": "Hearing ZX-111",
+          "claim": "The hearing ZX-111 is scheduled for 2039-02-22.",
+          "slug": "records/session-2",
+          "line": 9,
+          "value": "2",
+          "confidence": 0.9,
+          "seen": "2039-03-01"
+        }
+      ]
+    },
+    {
+      "id": "same-booking-proposed-dates",
+      "expected": "unresolved",
+      "claims": [
+        {
+          "title": "Booking ZX-111",
+          "claim": "Booking ZX-111 is planned for 2039-02-11.",
+          "slug": "records/session-1",
+          "line": 9,
+          "value": "1",
+          "confidence": 0.9,
+          "seen": "2039-03-01"
+        },
+        {
+          "title": "Booking ZX-111",
+          "claim": "Booking ZX-111 is planned for 2039-02-22.",
+          "slug": "records/session-2",
+          "line": 9,
+          "value": "2",
+          "confidence": 0.9,
+          "seen": "2039-03-01"
+        }
+      ]
+    },
+    {
+      "id": "same-session-opposite-order",
+      "expected": "unresolved",
+      "claims": [
+        {
+          "title": "Operation session ZX-111",
+          "claim": "In operation session ZX-111 on 2039-02-11, preparation was completed before operation.",
+          "slug": "records/session-1",
+          "line": 9,
+          "value": "1",
+          "confidence": 0.9,
+          "seen": "2039-03-01"
+        },
+        {
+          "title": "Operation session ZX-111",
+          "claim": "In operation session ZX-111 on 2039-02-11, preparation was completed after operation.",
+          "slug": "records/session-2",
+          "line": 9,
+          "value": "2",
+          "confidence": 0.9,
+          "seen": "2039-03-01"
+        }
+      ]
+    },
+    {
+      "id": "incompatible-standing-rules",
+      "expected": "unresolved",
+      "claims": [
+        {
+          "title": "Equipment rule",
+          "claim": "Equipment preparation always occurs before operation.",
+          "slug": "records/session-1",
+          "line": 9,
+          "value": "1",
+          "confidence": 0.9,
+          "seen": "2039-03-01"
+        },
+        {
+          "title": "Equipment rule",
+          "claim": "Equipment preparation always occurs after operation.",
+          "slug": "records/session-2",
+          "line": 9,
+          "value": "2",
+          "confidence": 0.9,
+          "seen": "2039-03-01"
+        }
+      ]
+    }
+  ],
+  "corpusFingerprint": "dede304085764ba72fdf06e779c0b26c8a21ef62534a31ba7d65c03fe601899b",
+  "limit": "exact classifier controls, not native extraction or independent adjudication"
+}

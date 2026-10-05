@@ -63,6 +63,10 @@ async function startStubChat(): Promise<StubServer> {
   let scopeScripted: unknown | ((input: string) => unknown) = {
     outcome: 'supported',
     reason_code: 'other',
+    support_scope: 'recorded_cases',
+    candidate_scope: 'recorded_cases',
+    supported_case_count: null,
+    candidate_case_count: null,
     subject_preserved: true,
     time_scope_preserved: true,
     circumstances_preserved: true,
@@ -98,7 +102,7 @@ async function startStubChat(): Promise<StubServer> {
       const system = body.messages?.[0]?.content ?? '';
       if (system.startsWith('You classify structurally incompatible claims')) classified += 1;
       const observeRequest = system.startsWith(
-        'You look for stable patterns across facts already recorded in a personal knowledge base.',
+        'You look for evidence-bounded patterns across facts already recorded in a personal knowledge base.',
       );
       const scopeRequest = system.startsWith(
         'You independently assess whether one proposed observation or reflected principle',
@@ -850,6 +854,10 @@ describe('reflect', () => {
     server.scope({
       outcome: 'hold',
       reason_code: 'quantifier_scope',
+      support_scope: 'recorded_cases',
+      candidate_scope: 'general_rule',
+      supported_case_count: null,
+      candidate_case_count: null,
       subject_preserved: true,
       time_scope_preserved: true,
       circumstances_preserved: true,
@@ -1992,6 +2000,10 @@ describe('observe', () => {
     server.scope({
       outcome: 'hold',
       reason_code: 'unsupported_preference',
+      support_scope: 'recorded_cases',
+      candidate_scope: 'general_rule',
+      supported_case_count: null,
+      candidate_case_count: null,
       subject_preserved: true,
       time_scope_preserved: true,
       circumstances_preserved: false,
@@ -2008,6 +2020,38 @@ describe('observe', () => {
     expect(report.observations).toContainEqual(expect.objectContaining({ pattern, action: 'rejected' }));
     expect(report.rejected).toContainEqual(
       expect.objectContaining({ pattern, code: 'unsupported_preference' }),
+    );
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toBe(before);
+    expect(server.requestKinds()).toEqual(['observe', 'scope']);
+  });
+
+  it('does not seal an ongoing practice from recorded cases despite an all-true scope checklist', async () => {
+    const before = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+    const pattern = 'Appliance servicing follows a recurring seasonal practice.';
+    server.reply({
+      observations: [{ pattern, evidence: ['home/appliances', 'home/laundry'], confidence: 0.99 }],
+    });
+    server.scope({
+      outcome: 'supported',
+      reason_code: 'other',
+      support_scope: 'recorded_cases',
+      candidate_scope: 'general_rule',
+      supported_case_count: null,
+      candidate_case_count: null,
+      subject_preserved: true,
+      time_scope_preserved: true,
+      circumstances_preserved: true,
+      attribution_preserved: true,
+      quantifier_supported: true,
+      exceptions_preserved: true,
+      inference_supported: true,
+      narrowed_pattern: null,
+    });
+
+    const report = await mem.dream({ phase: 'observe' });
+    expect(report.maintenancePlan).toBeNull();
+    expect(report.rejected).toContainEqual(
+      expect.objectContaining({ pattern, code: 'scope_assessment_invalid' }),
     );
     expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toBe(before);
     expect(server.requestKinds()).toEqual(['observe', 'scope']);
@@ -2032,6 +2076,10 @@ describe('observe', () => {
       return {
         outcome: supported ? 'supported' : 'narrow',
         reason_code: supported ? 'other' : 'quantifier_scope',
+        support_scope: 'recorded_cases',
+        candidate_scope: supported ? 'recorded_cases' : 'general_rule',
+        supported_case_count: null,
+        candidate_case_count: null,
         subject_preserved: true,
         time_scope_preserved: supported,
         circumstances_preserved: supported,
@@ -2888,6 +2936,29 @@ describe('the thorough conflict pass', () => {
     await mem.dream({ phase: 'conflicts' });
 
     expect(server.conflictCalls()).toBe(1);
+  });
+
+  it('binds current page titles into conflict context and invalidates an unchanged-claim verdict', async () => {
+    server.facts(DISAGREEING);
+    await mem.index({ rederive: true });
+    server.conflict({ outcome: 'unresolved', current: null, reason: 'The scope is ambiguous.' });
+    const first = await mem.dream({ phase: 'conflicts' });
+    await mem.dream({ phase: 'conflicts' });
+    expect(server.conflictCalls()).toBe(1);
+    expect(first.conflicts[0]!.claims.every((claim) => typeof claim.title === 'string')).toBe(true);
+
+    const file = path.join(root, 'home/kitchen.md');
+    fs.writeFileSync(
+      file,
+      fs.readFileSync(file, 'utf8').replace('title: Kitchen', 'title: Separate service session'),
+    );
+    await mem.index({ rederive: true });
+    const changed = await mem.dream({ phase: 'conflicts' });
+    expect(changed.conflicts[0]!.claims.find((claim) => claim.slug === 'home/kitchen')!.title).toBe(
+      'Separate service session',
+    );
+    expect(changed.conflicts[0]!.fingerprint).not.toBe(first.conflicts[0]!.fingerprint);
+    expect(server.conflictCalls()).toBe(2);
   });
 
   it('inspects before observe and excludes unresolved claims from inference', async () => {

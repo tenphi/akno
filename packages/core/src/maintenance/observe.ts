@@ -3,7 +3,7 @@ import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 import { contentWords } from '../kb/words.ts';
 
 /**
- * **Observe: combine repeated facts into stable patterns and habits. Never restate the
+ * **Observe: combine independent facts into evidence-bounded patterns. Never restate the
  * facts.**
  *
  * This tier is an inference engine writing prose into a knowledge base, and in a prose
@@ -31,13 +31,13 @@ import { contentWords } from '../kb/words.ts';
  * and no observation as same-level evidence.
  */
 
-const SYSTEM = `You look for stable patterns across facts already recorded in a personal knowledge base.
+const SYSTEM = `You look for evidence-bounded patterns across facts already recorded in a personal knowledge base.
 
 You are given facts grouped by subject. Each has an exact evidence id and its source page. Reply with JSON only:
 
 {
   "observations": [
-    { "pattern": "one sentence stating a stable pattern, habit, or tendency",
+    { "pattern": "one sentence combining the supplied independent cases within their exact scope",
       "evidence": ["exact-fact-id", "another-exact-fact-id"],
       "outcome": "create | reinforce | refine | split",
       "target_id": "existing observation id, or null for create",
@@ -47,16 +47,22 @@ You are given facts grouped by subject. Each has an exact evidence id and its so
 }
 
 What counts as a pattern:
-- A habit visible across several separate records: a recurring choice, a repeated interval, a consistent preference.
-- A tendency the facts agree on: how something is usually done, what is usually chosen, what keeps happening.
+- A useful relationship across distinct recorded cases: their common timing, a repeated choice within those
+  cases, or a difference between them. Preserve the recorded sample in the sentence itself.
+- Two dated sessions can support "In both recorded sessions, preparation preceded the activity." They do
+  not establish an ongoing habit, recurring practice, preference, typical behaviour, or future rule.
+- A general rule is admissible only when the evidence explicitly states that same rule, with its limits.
+  More independent cases alone do not establish representativeness or a continuing practice.
 
 Hard rules:
 - Every observation needs 2 to 12 independent evidence ids, quoting their ids exactly as given.
-- Never restate a fact. If your sentence is one of the facts reworded, drop it.
+- Never restate one fact. A bounded comparison across two genuinely distinct cases can be useful even
+  when it shares their subject and action words. Merely citing another fact does not make a restatement useful.
 - Never hedge. No "might", "seems", "possibly", "appears to", "probably". If you are not sure, leave it out.
 - Never infer about someone's health, finances, beliefs, relationships or character. Patterns about
-  practices and preferences only.
-- State the pattern, not the reasoning, and never mention "the facts" or "the pages".
+  relationships between recorded actions only; preferences require explicit source support.
+- State the pattern, not the reasoning. "In the two recorded sessions" is a scope qualification, not a
+  description of record formatting. Never infer what happens outside the supplied sample.
 - Fewer, better. An empty list is the correct answer for facts that share only a subject, and is much
   better than a vague pattern nobody can act on.
 - You may be shown patterns already recorded for this subject. Never repeat one, and never reword one.

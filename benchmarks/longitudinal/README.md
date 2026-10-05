@@ -146,6 +146,10 @@ These are calibration controls on exposed sources, not fresh held-out quality me
 `inference-authorized` adds the required `observations/**` inference role to that control.
 `inference-leaf-control` scripts only the six designated leaf pages, leaves generated-page fact
 derivation live, and includes that inference role. This separates leaf admission from live L3 indexing.
+`inference-live-authorized` uses the same reviewed sources with entirely live fact extraction and the
+inference namespace. It enables semantic conflict verification while leaving contradiction rewrites off.
+Its version and strict contract record that policy change; it must not be relabeled as a frozen
+conflicts-disabled natural run or a scripted leaf control.
 `overview-authorized` runs the overview episodes with a twelve-item high-risk write allowance.
 Freeze each selection in its own output directory. Never pool these authority/index interventions
 with the original natural-extraction results.
