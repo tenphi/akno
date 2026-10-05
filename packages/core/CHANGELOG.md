@@ -1,5 +1,18 @@
 # @tenphi/akno-core
 
+## 0.18.6
+
+### Patch Changes
+
+- [#200](https://github.com/tenphi/akno/pull/200) [`c3be7fe`](https://github.com/tenphi/akno/commit/c3be7fe3db71588610807ebff9eb75dd5bcfdc91) Thanks [@tenphi](https://github.com/tenphi)! - Preserve recorded-sample limits when generating and assessing observations and reflected principles. A general-practice claim now requires explicit general-rule support rather than an all-positive checklist over finite recorded cases; useful bounded comparisons remain eligible under the existing evidence, verification and write policies.
+
+  Include current page titles in semantic conflict assessment and its cache so separately recorded dated sessions can coexist without treating competing dates for one event as compatible by default.
+
+  Use `gpt-6-luna` in guided setup and live benchmark defaults. Existing installation settings and historical measurement records are preserved.
+
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.18.6
+
 ## 0.18.5
 
 ### Patch Changes
