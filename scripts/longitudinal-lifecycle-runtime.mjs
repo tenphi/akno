@@ -313,6 +313,7 @@ export async function runLifecycle(
             'core/dist/write/deciding-support.js',
             'core/dist/memory/correction-restrictions.js',
             'core/dist/models/predicate-time-audit.js',
+            'core/dist/models/source-role-audit.js',
             'core/dist/maintenance/dream.js',
             'core/dist/maintenance/observe.js',
             'core/dist/maintenance/observation-scope.js',

@@ -27,6 +27,59 @@ const bindings = [
 ];
 
 describe('independent temporal source reading', () => {
+  it.each(['readable-role', 'frame-only-name', 'ungrounded-role', 'ungrounded-name'])(
+    'binds named roles without exposing a draft or provenance author: %s',
+    async (mode) => {
+      const text = 'Bo Winters reports that inspection of Zephyr QX-100 is complete.';
+      const chat = vi.fn(async (messages) => {
+        expect(messages[0].content).toContain('No answer or candidate is supplied');
+        expect(messages[0].content).toContain('No provenance metadata is supplied');
+        return {
+          ok: true,
+          latencyMs: 1,
+          value: JSON.stringify({
+            readings: [
+              {
+                source_id: 'E1',
+                complete: true,
+                predicates: [
+                  {
+                    ...payment,
+                    excerpt: text,
+                    predicate: 'Reported inspection completion',
+                    named_roles: [
+                      {
+                        name: mode === 'ungrounded-name' ? 'Ada Marlow' : 'Bo Winters',
+                        role: 'reporter',
+                        excerpt: mode === 'ungrounded-role' ? 'Bo Winters reports an absent claim.' : text,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          }),
+        };
+      });
+      const result = await readPredicateTimes(
+        { chat } as unknown as ModelClient,
+        [
+          {
+            id: 'E1',
+            text,
+            selection: mode === 'frame-only-name' ? 'Inspection of Zephyr QX-100 is complete.' : text,
+          },
+        ],
+        true,
+      );
+      expect(result.bindings === null).toBe(mode.startsWith('ungrounded'));
+      if (mode === 'readable-role')
+        expect(result.roles).toMatchObject([
+          { id: 'E1_P1_R1', predicate_id: 'E1_P1', source: { name: 'Bo Winters', role: 'reporter' } },
+        ]);
+      if (mode === 'frame-only-name') expect(result.roles).toEqual([]);
+    },
+  );
   it.each(['complete', 'missing', 'duplicate-source', 'unbound-quote', 'unbound-time', 'incomplete'])(
     'never turns an unavailable or ungrounded source reading into permission: %s',
     async (mode) => {

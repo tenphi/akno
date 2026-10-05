@@ -379,7 +379,7 @@ semantic correctness. Generated answers keep each selected proposition's coupled
 preserving already-target-language content closely and translating the same meaning otherwise; independent
 neighboring private details need not be included.
 
-The answer role's default output ceiling is 2,400 tokens to accommodate these audits. Ordinary generation
+The answer role's default output ceiling is 4,096 tokens to accommodate these audits. Ordinary generation
 still requests 1,024; framed generation reserves additional space, and verification can emit a longer
 comparison. This can increase latency and output cost. Explicit caller/provider limits remain authoritative;
 large or verbose audits may still exceed the ceiling and withhold an answer. Akno never truncates the
@@ -424,12 +424,27 @@ still requires the full citation-scoped semantic verifier, which receives a chec
 typed constraints. Mixed or untyped evidence retains the conservative lexical comparison. Named report sources use a bounded grammatical reporting relation. Tentative modifiers and report ownership
 can express that relation; recording an unrelated object cannot. Spaced Russian passive uncertainty must
 qualify an epistemic noun rather than deny an unrelated action. Direct user
-provenance (`self_attested`) does not require adding a claim of self-attestation to the answer. The generator
-receives the source identity and qualifications without this internal basis label; the verifier and public
-evidence retain the complete metadata. This avoids introducing verification disclaimers absent from the source. Closed plans
+provenance (`self_attested`) does not require adding a claim of self-attestation or naming the author in the answer.
+For direct assertions, author identity is excluded from the generator's and verifier's qualification checklists;
+public evidence retains the complete provenance metadata. The generator also omits the internal basis label.
+Readable actors, pronouns and explicit reporters remain content constraints, including a reporter different
+from the author. An unspecified actor stays unspecified. Source-report records still require their outer
+source and reporting scope; a direct assertion containing a report still preserves that readable attribution.
+Private source frames constrain selected meaning without supplying an additional display name. These boundaries
+avoid both invented attribution requirements and promotion of reports to unqualified facts. Closed plans
 must preserve their rejected/cancelled/completed/superseded status, without redundant planning wording.
 Competing unconfirmed hypotheses retain tentative or hypothetical commitment even when their discussion
 is established; they do not gain ordinary factual eligibility from the certainty of that outer discussion.
+
+When an answer receives an independent predicate reading of its original frame or typed temporal record,
+that same source-only pass reads explicitly named reporters governing each selected predicate. The answer and
+provenance author are absent from this reading. An explicitly named reporting source is bound
+to its reported predicate with exact source quotations; a frame-only name absent from the readable record cannot become
+a display requirement. Verification compares the reporter's exact name and the candidate's actual role against this fixed
+reading. Citation metadata cannot replace an absent reporter. Complete-record copies preserve every bound reporter;
+focused answers can omit only roles whose governing predicates are also unselected. Invalid readings or verdicts
+withhold the answer. This adds no model call beyond the existing source-reading pass and leaves the independent
+date, excerpt-selection, action and qualification checks required. Semantic interpretation remains fallible.
 
 When extracted candidates fail structural validation, retention permits one repair transaction using the
 complete original source and validation issues. Repairs target only failed original candidate positions;
