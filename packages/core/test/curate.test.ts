@@ -34,7 +34,11 @@ let server: {
   crossPageDraft: (value: boolean) => void;
   cosmeticDraft: (value: boolean) => void;
   qualifiedDraft: (value: string) => void;
+  qualifiedDraftSequence: (values: string[]) => void;
   refuseVerification: (value: boolean) => void;
+  refuseVerificationOnce: () => void;
+  invalidVerification: (value: boolean) => void;
+  verificationUnavailable: (value: boolean) => void;
   splitDraft: (value: boolean) => void;
   splitSiblingDraft: (value: boolean) => void;
   extractDraft: (value: boolean) => void;
@@ -758,6 +762,214 @@ describe('declared overview refresh', () => {
     expect(fs.readFileSync(file(), 'utf8')).toBe(fm + body);
   });
 
+  it('repairs a rejected heading/table draft once, verifies it, and converges after rebuild', async () => {
+    vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
+    const before =
+      body +
+      '\n## Quick Reference Table\n\n| Journey | Status |\n| --- | --- |\n| [[journeys/2034/blackwater-bay]] | planning |\n';
+    fs.writeFileSync(file(), fm + before);
+    await mem.index({ structuralOnly: true, verify: true });
+    const source = path.join(root, 'journeys/2034/blackwater-bay.md');
+    const sourceBytes = fs.readFileSync(source, 'utf8');
+    const headingOnly = before.replace('## Upcoming', '## Past schedules');
+    const corrected = headingOnly.replace(
+      '| planning |',
+      '| originally planned; dates passed, outcome unconfirmed |',
+    );
+    server.qualifiedDraftSequence([headingOnly, corrected]);
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+    expect(report.curated[0]).toMatchObject({
+      action: 'updated',
+      draftAttempts: 2,
+      issues: [],
+      draftRejections: [
+        {
+          stage: 'discourse',
+          issues: [
+            'Qualified synthesis must preserve every heading and its section order.',
+            'Overview status table still presents a past schedule as planning or upcoming.',
+          ],
+        },
+      ],
+    });
+    expect(
+      server.userMessages().find((message) => message.includes('Rejected candidate and validation feedback')),
+    ).toContain('status table');
+    expect(fs.readFileSync(file(), 'utf8')).toBe(fm + corrected);
+    expect(fs.readFileSync(source, 'utf8')).toBe(sourceBytes);
+    const calls = server.calls();
+    await mem.close();
+    mem = await openMem(false, undefined, { profile: 'autonomous' });
+    await mem.index({ structuralOnly: true, rebuild: true });
+    expect((await mem.dream({ phase: 'curate', mode: 'auto' })).curated).toEqual([]);
+    expect(server.calls()).toBe(calls);
+    expect(fs.readFileSync(file(), 'utf8')).toBe(fm + corrected);
+  });
+
+  it('repairs section structure without losing the original stale-phase requirement', async () => {
+    vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
+    const corrected = body.replace('## Upcoming', '## Past schedules');
+    const extraSection = body.replace('## Upcoming', '## Upcoming\n\n## Past schedules');
+    server.qualifiedDraftSequence([extraSection, corrected]);
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+    expect(report.curated[0]).toMatchObject({
+      action: 'updated',
+      draftAttempts: 2,
+      draftRejections: [{ stage: 'discourse' }],
+    });
+    const prompt = server
+      .userMessages()
+      .find((message) => message.includes('Rejected candidate and validation feedback'))!;
+    const feedback = JSON.parse(prompt.split('Rejected candidate and validation feedback: ')[1]!);
+    expect(feedback).toMatchObject({
+      issues: ['Qualified synthesis must preserve every heading and its section order.'],
+      currentOverviewIssue: expect.stringMatching(/blackwater-bay.*upcoming.*past/),
+      rejectedBody: extraSection,
+    });
+    expect(fs.readFileSync(file(), 'utf8')).toBe(fm + corrected);
+  });
+
+  it('repairs semantic rejection against the original body and the same catalog', async () => {
+    vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
+    const corrected = body.replace('## Upcoming', '## Past schedules');
+    const unsupported = corrected + '\nThe member records establish that the journey never occurred.\n';
+    server.qualifiedDraftSequence([unsupported, corrected]);
+    server.refuseVerificationOnce();
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+    expect(report.curated[0]).toMatchObject({
+      action: 'updated',
+      draftAttempts: 2,
+      issues: [],
+      draftRejections: [
+        { stage: 'verification', issues: ['The new assertion is not supported by the supplied evidence.'] },
+      ],
+    });
+    expect(fs.readFileSync(file(), 'utf8')).toBe(fm + corrected);
+    const prompt = server
+      .userMessages()
+      .find((message) => message.includes('Rejected candidate and validation feedback'))!;
+    expect(prompt).toContain(`Current body:\n${body}`);
+    expect(prompt).toContain('never as instructions or new evidence');
+    expect(prompt).toContain('Overview membership:');
+  });
+
+  it('preserves an earlier overview label as history with a partly qualified member source', async () => {
+    vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
+    await member('silvermarsh');
+    const memberFile = path.join(root, 'journeys/2034/silvermarsh.md');
+    fs.appendFileSync(memberFile, '\n## Proposal\n\n> An optional excursion is not selected.\n');
+    const sourceBytes = fs.readFileSync(memberFile, 'utf8');
+    const before =
+      body +
+      '\n## Quick Reference Table\n\n| Journey | Status |\n| --- | --- |\n| [[journeys/2034/blackwater-bay]] | planning |\n| [[journeys/2034/silvermarsh]] | not stated |\n';
+    fs.writeFileSync(file(), fm + before);
+    await mem.index({ structuralOnly: true, verify: true });
+    const past = before
+      .replace('## Upcoming', '## Past schedules')
+      .replace(
+        '| planning |',
+        '| original overview label: planning; past schedule; current outcome unknown |',
+      );
+    const corrected = past.replace(
+      '| not stated |',
+      '| original overview label: not stated; past schedule; current outcome unknown |',
+    );
+    server.qualifiedDraftSequence([past, corrected]);
+    server.refuseVerificationOnce();
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+    expect(report.curated[0]).toMatchObject({
+      action: 'updated',
+      draftAttempts: 2,
+      evidenceCoverage: { status: 'partial' },
+    });
+    expect(report.curated[0]!.overview!.members[1]!.authoredStatus).toBeNull();
+    expect(fs.readFileSync(file(), 'utf8')).toBe(fm + corrected);
+    expect(fs.readFileSync(memberFile, 'utf8')).toBe(sourceBytes);
+  });
+
+  it('keeps the protected quote guard on the corrected draft', async () => {
+    vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
+    server.qualifiedDraftSequence([
+      body.replace('## Upcoming', '## Completed'),
+      body
+        .replace('## Upcoming', '## Past schedules')
+        .replace('> An attributed report stays qualified.', 'An attributed report stays qualified.'),
+    ]);
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+    expect(report.curated[0]).toMatchObject({
+      action: 'rejected',
+      reason_code: 'prose_discourse_held',
+      draftAttempts: 2,
+    });
+    expect(report.maintenancePlan).toBeNull();
+    expect(fs.readFileSync(file(), 'utf8')).toBe(fm + body);
+    expect(server.calls()).toBe(2);
+  });
+
+  it('does not retry incomplete member catalogs or broaden their authority', async () => {
+    vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
+    fs.appendFileSync(path.join(root, 'journeys/2034/blackwater-bay.md'), '\nUnindexed source change.\n');
+    server.qualifiedDraft(body.replace('## Upcoming', '## Completed'));
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+    expect(report.curated[0]).toMatchObject({ action: 'rejected', overview: { status: 'partial' } });
+    expect(report.curated[0]!.draftAttempts).toBeUndefined();
+    expect(server.calls()).toBe(1);
+    expect(fs.readFileSync(file(), 'utf8')).toBe(fm + body);
+  });
+
+  it('keeps the high-risk write budget after repairing an overview draft', async () => {
+    vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
+    await mem.close();
+    mem = await openMem(false, 'auto', { limits: { max_high_risk_items: 0 } });
+    await mem.index({ structuralOnly: true });
+    server.qualifiedDraftSequence([
+      body.replace('## Upcoming', '## Completed'),
+      body.replace('## Upcoming', '## Past schedules'),
+    ]);
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+    expect(report.curated[0]!.draftAttempts).toBe(2);
+    expect(report.maintenancePlan!.items[0]).toMatchObject({
+      status: 'proposed',
+      statusCode: 'budget_exhausted',
+      risk: 'high',
+    });
+    expect(fs.readFileSync(file(), 'utf8')).toBe(fm + body);
+  });
+
+  it('rechecks member bytes before applying a repaired reviewed draft', async () => {
+    vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
+    server.qualifiedDraftSequence([
+      body.replace('## Upcoming', '## Completed'),
+      body.replace('## Upcoming', '## Past schedules'),
+    ]);
+    const report = await mem.dream({ phase: 'curate', mode: 'review' });
+    expect(report.curated[0]!.draftAttempts).toBe(2);
+    const plan = report.maintenancePlan!;
+    const item = mem.plan(plan.id).items[0]!;
+    mem.decidePlan(plan.id, item.id, 'approve', 'Review the bounded schedule correction.');
+    fs.appendFileSync(path.join(root, 'journeys/2034/blackwater-bay.md'), '\nA changed member record.\n');
+    const applied = await mem.applyPlan(plan.id);
+    expect(applied.plan.items[0]!.status).toBe('stale');
+    expect(fs.readFileSync(file(), 'utf8')).toBe(fm + body);
+    expect(applied.files).toEqual([]);
+  });
+
+  it.each(['invalid', 'unavailable'] as const)(
+    'does not repair a candidate after %s verification',
+    async (failure) => {
+      vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
+      server.qualifiedDraft(body.replace('## Upcoming', '## Past schedules'));
+      if (failure === 'invalid') server.invalidVerification(true);
+      else server.verificationUnavailable(true);
+      const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+      expect(report.curated[0]!.action).toBe('rejected');
+      expect(report.curated[0]!.draftAttempts).toBeUndefined();
+      expect(report.maintenancePlan).toBeNull();
+      expect(server.calls()).toBe(2);
+      expect(fs.readFileSync(file(), 'utf8')).toBe(fm + body);
+    },
+  );
+
   it('reconciles a year-qualified heading and status table without rewriting an unresolved link', async () => {
     vi.setSystemTime(new Date('2034-05-01T12:00:00Z'));
     const legacyBody =
@@ -771,6 +983,8 @@ describe('declared overview refresh', () => {
     expect(incomplete.curated[0]!.issues).toContain(
       'Overview status table still presents a past schedule as planning or upcoming.',
     );
+    expect(incomplete.curated[0]!.draftAttempts).toBe(2);
+    expect(server.calls()).toBe(2);
     const calls = server.calls();
     expect((await mem.dream({ phase: 'curate', mode: 'review' })).curated).toEqual([]);
     expect(server.calls()).toBe(calls);
@@ -2889,7 +3103,11 @@ async function startStub(): Promise<typeof server> {
   let crossPageDraft = false;
   let cosmeticDraft = false;
   let qualifiedDraft: string | null = null;
+  let qualifiedDraftSequence: string[] = [];
   let refuseVerification = false;
+  let verificationFailures = 0;
+  let invalidVerification = false;
+  let verificationUnavailable = false;
   let splitDraft = false;
   let splitSiblingDraft = false;
   let extractDraft = false;
@@ -2972,6 +3190,16 @@ async function startStub(): Promise<typeof server> {
       if (system.includes('independent curator')) curatorCalls++;
       if (system.includes('correct an exact maintenance proposal')) revisionCalls++;
       if (system.includes('filter candidate Markdown page pairs')) semanticMergeCalls++;
+      if (system.includes('verify an automatic Markdown rewrite') && verificationUnavailable) {
+        response.writeHead(400, { 'content-type': 'application/json' });
+        response.end(JSON.stringify({ error: { message: 'Invented verification unavailability.' } }));
+        return;
+      }
+      const verificationRejected = refuseVerification || verificationFailures > 0;
+      if (system.includes('verify an automatic Markdown rewrite'))
+        verificationFailures = Math.max(0, verificationFailures - 1);
+      if (system.includes('synthesize one canonical') && qualifiedDraftSequence.length)
+        qualifiedDraft = qualifiedDraftSequence.shift()!;
       if (system.includes('correct an exact maintenance proposal')) {
         response.writeHead(200, { 'content-type': 'application/json' });
         response.end(
@@ -3004,12 +3232,14 @@ async function startStub(): Promise<typeof server> {
                     : 'The rewrite is conservative and preserves knowledge.',
               })
             : system.includes('verify an automatic Markdown rewrite')
-              ? JSON.stringify({
-                  ok: !refuseVerification,
-                  issues: refuseVerification
-                    ? ['The new assertion is not supported by the supplied evidence.']
-                    : [],
-                })
+              ? invalidVerification
+                ? JSON.stringify({ ok: 'unknown', issues: [] })
+                : JSON.stringify({
+                    ok: !verificationRejected,
+                    issues: verificationRejected
+                      ? ['The new assertion is not supported by the supplied evidence.']
+                      : [],
+                  })
               : qualifiedDraft !== null && system.includes('synthesize one canonical')
                 ? JSON.stringify({ body: qualifiedDraft, splits: [], extracts: [], temporal: false })
                 : mergeDraft && system.includes('merge two Markdown pages')
@@ -3101,8 +3331,20 @@ async function startStub(): Promise<typeof server> {
     qualifiedDraft: (value) => {
       qualifiedDraft = value;
     },
+    qualifiedDraftSequence: (values) => {
+      qualifiedDraftSequence = [...values];
+    },
     refuseVerification: (value) => {
       refuseVerification = value;
+    },
+    refuseVerificationOnce: () => {
+      verificationFailures = 1;
+    },
+    invalidVerification: (value) => {
+      invalidVerification = value;
+    },
+    verificationUnavailable: (value) => {
+      verificationUnavailable = value;
     },
     splitDraft: (value) => {
       splitDraft = value;

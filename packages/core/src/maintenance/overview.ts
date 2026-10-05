@@ -319,12 +319,19 @@ same entry across lists, tables, and prose when its schedule phase changes. A ba
 or "upcoming" cell in a current status table is misleading after the dates pass: retain the original plan
 status as historical context and make the current past-schedule state explicit. If a table serves as a quick
 reference for the linked cohort, include newly admitted members there when supported by the catalog;
-leave unavailable details unknown. Preserve authored status, tentative or
+leave unavailable details unknown. Distinguish the member's authored status from a label in the existing
+overview. An earlier overview label such as "not stated" describes that earlier presentation, not the
+completeness of the member record. Retain it as explicitly attributed historical wording (for example,
+"Original overview label: not stated; past schedule; current outcome unknown") when needed to preserve
+context. This does not assert that the current source lacks an outcome. Preserve authored status, tentative or
 cancelled plans, attribution, exact dates, and unknown outcomes. A past schedule does not prove occurrence
 or completion. A supported move between temporal sections or a temporal heading correction is material
-even without new facts. For declared overviews only, unprotected temporal headings may be reclassified
-while keeping section order and all protected headings verbatim. Use headings such as Upcoming, Current,
-and Past schedules for time classification; never
+even without new facts. For declared overviews only, rename an existing unprotected temporal heading
+in place while keeping heading count, depth, section order and all protected headings verbatim.
+Preserve the schedule list and reference table as separate presentations; do not empty the list,
+fold it into the table or add an empty temporal section. When every listed member's schedule is past,
+rename Upcoming to Past schedules in its existing position rather than retaining the obsolete name.
+Use headings such as Upcoming, Current, and Past schedules for time classification; never
 rename a past schedule Completed. Qualified members authorize a neutral link only, unless their explicit
 schedule metadata supplies a boundary. Missing, unavailable or omitted members do not establish absence;
 an unresolved link with a complete authored date range and page year may be reclassified as a schedule
@@ -335,7 +342,11 @@ export const OVERVIEW_VERIFY_GUIDANCE = `For a dated overview, inspect every rep
 Reject a rewrite that moves it out of an upcoming section but leaves a bare prospective status in a table
 after its dates have passed. The draft may preserve "planned" as historical context only when it also says
 the schedule is past or the outcome is unknown. Check whether a reference table that summarizes the linked
-cohort omits newly added members. Do not treat elapsed dates as evidence of completion.`;
+cohort omits newly added members. Historical overview wording is supported by the before body,
+even when member evidence is partial. Do not reject an explicitly attributed original overview label
+as a new assertion about the completeness of the member's current record; also do not promote that
+label to the member's authored status. Unknown outcome must remain scoped to the supplied schedule
+evidence. Do not treat elapsed dates as evidence of completion.`;
 
 interface OverviewStatusRow {
   line: number;
@@ -530,7 +541,7 @@ export function overviewRewriteCheck(
       ['upcoming', 'current', 'past'].includes(entry.bucket) &&
       entry.bucket !== expectedPhase
     ) {
-      result.issue = 'Overview section still presents a member in the wrong schedule phase.';
+      result.issue = `Overview section still presents a member in the wrong schedule phase: [[${entry.slug}]] is under ${entry.bucket}; current schedule phase is ${expectedPhase}.`;
       return result;
     }
     const old = prior.placements.find(
