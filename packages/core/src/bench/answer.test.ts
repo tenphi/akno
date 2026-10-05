@@ -36,7 +36,7 @@ describe('grounded-answer benchmark', () => {
       answerModel: {
         available: true,
         generationPromptVersion: 'answer-generation-v72',
-        verifierPromptVersion: 'answer-verifier-v56',
+        verifierPromptVersion: 'answer-verifier-v57',
       },
       metrics: {
         executionRate: 1,

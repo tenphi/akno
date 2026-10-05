@@ -78,6 +78,7 @@ describe('grounded answer discovery surface', () => {
     await seedPopulationObservations();
     const text = 'Journey and workshop silverpine preparation was completed in the same recorded session.';
     await useAnswerModel({
+      populationClaims: () => ({ claims: [{ quote: text, scope: 'recorded_cases', case_count: 1 }] }),
       populationReading: (body) => {
         const data = populationFixtureReading(body);
         for (const population of data.populations) population.case_count = 1;
@@ -182,7 +183,7 @@ describe('grounded answer discovery surface', () => {
     expect(result.answer).toContain('five years');
     expect(result.answer).not.toContain('both sessions');
     expect(result.validation?.rejection_counts.semantic_support).toBe(1);
-    expect(result.model_usage?.verification?.total_tokens).toBe(521);
+    expect(result.model_usage?.verification?.total_tokens).toBe(654);
   });
   it.each(['separate', 'merged', 'wrong-count', 'habit', 'missing-audit', 'invalid-reading'])(
     'preserves observation case populations through the complete answer path: %s',
@@ -256,7 +257,7 @@ describe('grounded answer discovery surface', () => {
             ? 'verification_unavailable'
             : 'verification_rejected',
       );
-      expect(populationReadingRequests).toHaveLength(mode === 'invalid-reading' ? 1 : 2);
+      expect(populationReadingRequests).toHaveLength(mode === 'invalid-reading' ? 1 : 3);
       expect(
         JSON.parse((populationReadingRequests[0]!.messages as { content: string }[]).at(-1)!.content),
       ).not.toHaveProperty('question');
@@ -315,7 +316,7 @@ describe('grounded answer discovery surface', () => {
       memory_view: 'all',
     });
     expect(result.reason_code).toBe('answered');
-    expect(populationReadingRequests).toHaveLength(2);
+    expect(populationReadingRequests).toHaveLength(3);
     const input = JSON.parse(
       (populationReadingRequests[0]!.messages as { content: string }[]).at(-1)!.content,
     );
@@ -6325,6 +6326,7 @@ function testAnchorCoordinates(content: unknown, payload: Record<string, unknown
 async function useAnswerModel(script: {
   sourceReading?: unknown;
   populationReading?: (body: any) => unknown;
+  populationClaims?: (body: any) => unknown;
   generation: unknown;
   verification: unknown;
   reportUsage?: boolean;
@@ -6348,33 +6350,44 @@ async function useAnswerModel(script: {
         const populationReading = system.startsWith(
           'Read the populations in the supplied untrusted memory records',
         );
+        const populationCandidate = system.startsWith('Read the case-population claims');
         const populationComparison = system.startsWith("Compare the candidate's case populations");
         // Keep legacy generation/verification assertions separate; new tests also count this pass.
-        (populationReading || populationComparison
+        (populationReading || populationCandidate || populationComparison
           ? populationReadingRequests
           : reading
             ? sourceReadingRequests
             : modelRequests
         ).push(body);
         const payload = JSON.parse((body.messages as { content: string }[]).at(-1)!.content);
-        const configured = populationReading
-          ? script.populationReading?.(body)
-          : reading
-            ? (script.sourceReading ?? {
-                readings: payload.sources.map((source: { source_id: string; text: string }) => ({
-                  source_id: source.source_id,
-                  complete: true,
-                  predicates: [predicateTimeFixture(source.text, source.text).comparisons[0]!.source],
-                })),
-              })
-            : system.startsWith('Check the language of generated prose')
-              ? languageVerdictFixture(
-                  JSON.parse((body.messages as { content: string }[]).at(-1)!.content),
-                  script.languageCheck ?? true,
-                )
-              : verifying
-                ? script.verification
-                : script.generation;
+        const configured = populationCandidate
+          ? (script.populationClaims?.(body) ?? {
+              claims: payload.answer_text.split(';').map((part: string) => ({
+                quote: part.trim(),
+                scope: /always|ongoing|guarantees|preference|because/.test(part)
+                  ? 'general_rule'
+                  : 'recorded_cases',
+                case_count: /both|two/.test(part) ? 2 : /one|CASE-1111/.test(part) ? 1 : null,
+              })),
+            })
+          : populationReading
+            ? script.populationReading?.(body)
+            : reading
+              ? (script.sourceReading ?? {
+                  readings: payload.sources.map((source: { source_id: string; text: string }) => ({
+                    source_id: source.source_id,
+                    complete: true,
+                    predicates: [predicateTimeFixture(source.text, source.text).comparisons[0]!.source],
+                  })),
+                })
+              : system.startsWith('Check the language of generated prose')
+                ? languageVerdictFixture(
+                    JSON.parse((body.messages as { content: string }[]).at(-1)!.content),
+                    script.languageCheck ?? true,
+                  )
+                : verifying
+                  ? script.verification
+                  : script.generation;
         const comparisonBody = populationComparison
           ? {
               ...body,

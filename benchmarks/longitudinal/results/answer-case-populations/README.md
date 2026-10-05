@@ -6,16 +6,22 @@ All cases in this report are invented. This is source-author review, not indepen
 a population accuracy estimate; the development cases were exposed during iteration.
 
 The answer path now expands only exact current observation/reflection support, reads each
-population without seeing the candidate, and compares a candidate's counts and shared identities
+population without seeing the candidate, separately fixes the candidate's own count/scope without
+source records, and compares a candidate's counts and shared identities
 in a small separate call. The ordinary semantic verifier must also pass. Explicitly shared events
 remain shared; dates, repeated facts and copies cannot establish common identity or inflate counts.
+Exact candidate quotations, counts and scope are checked in code against the independent candidate
+reading. The comparison cannot revise “both sessions” into four cases to fit source totals.
 A malformed or unavailable audit is a typed hold. Composition prefers concise per-case blocks
 when dates and operations differ, keeping each case's source attached.
 
 Review/fix rounds addressed raw-citation bypass, repeated/subset lineage, oversized combined
 verdicts under the installed output ceiling, overlapping counted clauses mislabeled as separate
-populations, stale reflected support, and confusing cases within one record with comparisons
-between records. Positive controls were revised to retain their sources' temporal qualifications;
+populations, stale reflected support, confusing cases within one record with comparisons
+between records, and count repair when the comparison saw source and candidate together.
+The latter was discovered before publication: the prior round withheld the merged proposal only
+in ordinary verification, while its population audit rewrote two sessions into four. The prior
+receipt is retained separately in [prior-v6-results.json](prior-v6-results.json). Positive controls were revised to retain their sources' temporal qualifications;
 guards and installed budgets were not weakened. Earlier debugging cohorts use different code or
 fixtures and are excluded from the final cohort's utility and usage totals.
 
@@ -42,26 +48,29 @@ the new guard while retaining historical inventory support; frozen evidence byte
 ## Final prepublication cohort
 
 The final fixed-code/fixed-corpus round contains **21 coordinates**: five scripted faithful candidates,
-eleven scripted unsupported candidates, and five actual live compositions. All **5/5** faithful
-scripted candidates return useful text. Actual composition returns useful text in **2/5** controls;
-its separate-case comparison returns three of four identified cases, while another block is held.
-Shared-event native composition is `verification_unavailable`; copied-event and competing-date
-native drafts are rejected before semantic verification. These missing answers are utility limits.
+eleven scripted unsupported candidates, and five actual live compositions. The population boundary
+passes **5/5** faithful scripted candidates, but only **3/5** return useful text after ordinary verification.
+Actual composition returns useful text in **1/5** controls; its separate-case comparison returns two
+of four identified cases, with two blocks rejected. The compound faithful comparison and native shared
+and multiple-fact answers are `verification_unavailable`; the faithful shared-event candidate fails
+ordinary semantic verification. Copied-event and competing-date native drafts are rejected before
+semantic verification. These missing answers are utility limits, not useful coverage.
 
-All **11/11** unsupported candidates are withheld: ten `verification_rejected` and one
-`verification_unavailable`. No scope error appears in the **7** source-reviewed returned answers.
-Every returned protocol outcome is `partial`/`degraded`; none is labeled complete.
-The deliberately disabled expansion/embedding roles and incomplete seeded index contribute
-retrieval degradation; the exact `degraded` values are retained per coordinate. Exact validation
-counts are retained in the receipt. This does not assert that the broader answer coverage gate passes.
+All **11/11** unsupported candidates are `verification_rejected` by the population boundary before
+ordinary semantic verification. The merged-session candidate is independently read as two, then
+compared against the four distinct source cases without repairing its count. No scope error appears
+in the **4** source-reviewed returned answers. Every returned protocol outcome is `partial`/`degraded`;
+none is labeled complete. Deliberately disabled expansion/embedding roles and the incomplete seeded
+index contribute retrieval degradation; exact values and validation counts are retained per coordinate.
+This does not assert that the broader answer availability gate passes.
 
-The cohort accounts for **61** actual logical model calls, **61** endpoint requests,
-**0** calls without reported token usage, and **181208** reported chat tokens.
-There are **16** separately reported scripted generation calls; these do not count as native model
-composition. Missing usage and unmeasured prices are not imputed. Totals describe this cohort only,
-not all debugging attempts. Model/provider agreement is not the source review criterion.
+The cohort accounts for **80** actual logical model calls, **80** endpoint requests,
+**0** calls without reported token usage, and **173010** reported chat tokens.
+There are **16** separately reported scripted generation calls. Totals describe this cohort only,
+not all debugging attempts or the prior v6 receipt. Missing usage and prices are not imputed.
+Model/provider agreement is not the source review criterion.
 
-Build, lint, dead-code checks, **4,807 tests**, model-free and installed-package smoke checks,
+Build, lint, dead-code checks, **4,815 tests**, model-free and installed-package smoke checks,
 documentation, formatting and repository safety pass. Publication and production adoption are
-verified separately before #199 closes; released verification repeats this same frozen corpus
-against the published compiled artifacts, without pooling the two cohorts.
+verified separately before #199 closes. Released verification repeats this same frozen corpus
+against the published compiled artifacts without pooling the two cohorts.
