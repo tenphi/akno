@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.18.5
+
+### Patch Changes
+
+- [#197](https://github.com/tenphi/akno/pull/197) [`157b08f`](https://github.com/tenphi/akno/commit/157b08fe7cbecbb7fb9e70f6761740e4256347c2) Thanks [@tenphi](https://github.com/tenphi)! - Give a stale declared overview one bounded draft correction attempt using its validation feedback and unchanged evidence. Repaired drafts still pass every protection, semantic verification, review, and write-budget check; failed attempts remain inspectable and retain normal retry backoff.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.18.5
+
 ## 0.18.4
 
 ### Patch Changes
