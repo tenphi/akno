@@ -1,5 +1,15 @@
 # @tenphi/akno-core
 
+## 0.18.7
+
+### Patch Changes
+
+- [#204](https://github.com/tenphi/akno/pull/204) [`a5dafe7`](https://github.com/tenphi/akno/commit/a5dafe74d22b99d0569252a5497383e4f9124dcc) Thanks [@tenphi](https://github.com/tenphi)! - Read candidate case counts and scope without source records before comparing populations, so a verifier cannot reinterpret an asserted two-session sample as four to fit source totals. Keep exact candidate quotations, typed holds and complete model-call accounting.
+
+- [#202](https://github.com/tenphi/akno/pull/202) [`d7e5f98`](https://github.com/tenphi/akno/commit/d7e5f988f0ae3f7ab3c69095ac49ccbf2ea44f16) Thanks [@tenphi](https://github.com/tenphi)! - Preserve distinct case populations when answering from observations and reflected conclusions. Read exact current support independently, compare counts and explicit shared identities in a bounded separate check, and require the ordinary semantic verifier too. Repeated lineage and raw citations cannot inflate or merge the sample; unavailable audits remain typed holds.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.18.7
+
 ## 0.18.6
 
 ### Patch Changes
