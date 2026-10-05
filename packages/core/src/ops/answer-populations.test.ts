@@ -165,9 +165,19 @@ describe('fixed population constraints on a verdict', () => {
       const audit = { comparisons: reading.populations.map((p) => comparison(p.record_id)) };
       if (mode === 'changed') audit.comparisons[0]!.case_count = 1;
       if (mode === 'missing') audit.comparisons.pop();
+      const claims = reading.populations.map((p) => ({
+        quote: comparison(p.record_id).quote,
+        scope: 'recorded_cases',
+        case_count: 2,
+      }));
       const chat = vi.fn(async (messages, options) => {
+        if (messages[0].content.startsWith('Read the case-population claims')) {
+          expect(JSON.parse(messages.at(-1).content)).toEqual({ answer_text: text });
+          return { ok: true, value: JSON.stringify({ claims }), latencyMs: 11 };
+        }
         expect(JSON.parse(messages.at(-1).content)).toEqual({
           fixed_case_populations: reading,
+          fixed_candidate_claims: claims,
           answer_text: text,
         });
         expect(options.maxTokens).toBeLessThanOrEqual(1024);
@@ -179,11 +189,118 @@ describe('fixed population constraints on a verdict', () => {
         };
       });
       const result = await verifyAnswerPopulations({ chat } as unknown as ModelClient, reading, text);
-      expect(result.supported).toBe(mode === 'supported' ? true : mode === 'changed' ? false : null);
-      expect(chat).toHaveBeenCalledTimes(1);
-      expect(result.outcome.usage).toBeUndefined();
+      expect(result.supported).toBe(mode === 'supported' ? true : null);
+      expect(chat).toHaveBeenCalledTimes(2);
+      expect(result.outcome.usage?.totalTokens).toBeNull();
     },
   );
+  it.each(['missing', 'unbound', 'truncated', 'unavailable'])(
+    'holds invalid candidate-only reading without a comparison: %s',
+    async (mode) => {
+      const candidate = {
+        claims: [
+          { quote: mode === 'unbound' ? 'Absent sentence.' : text, scope: 'recorded_cases', case_count: 2 },
+        ],
+      };
+      const value = mode === 'missing' ? '{}' : JSON.stringify(candidate);
+      const chat = vi.fn(async (messages) => {
+        expect(JSON.parse(messages.at(-1).content)).toEqual({ answer_text: text });
+        return {
+          ok: mode !== 'unavailable',
+          value: mode === 'unavailable' ? null : mode === 'truncated' ? value.slice(0, -1) : value,
+          latencyMs: 11,
+        };
+      });
+      const result = await verifyAnswerPopulations({ chat } as unknown as ModelClient, reading, text);
+      expect(result.supported).toBeNull();
+      expect(chat).toHaveBeenCalledTimes(1);
+    },
+  );
+  it.each(['identical', 'conflicting'])('handles repeated candidate quotation readings: %s', async (mode) => {
+    const fixed = { ...reading, populations: reading.populations.slice(0, 1) };
+    const clause = 'Both recorded journeys had preparation completed.';
+    const claim = { quote: clause, scope: 'recorded_cases', case_count: 2 };
+    const chat = vi.fn(async (messages) => {
+      if (messages[0].content.startsWith('Read the case-population claims'))
+        return {
+          ok: true,
+          value: JSON.stringify({ claims: [claim, { ...claim, case_count: mode === 'identical' ? 2 : 4 }] }),
+          latencyMs: 11,
+        };
+      const data = JSON.parse(messages.at(-1).content);
+      expect(data.fixed_candidate_claims).toEqual([claim]);
+      return {
+        ok: true,
+        value: JSON.stringify({
+          comparisons: [{ record_ids: ['E1:S1'], ...claim, relation: 'separate_record' }],
+        }),
+        latencyMs: 11,
+      };
+    });
+    const result = await verifyAnswerPopulations({ chat } as unknown as ModelClient, fixed, clause);
+    expect(result.supported).toBe(mode === 'identical' ? true : null);
+    expect(chat).toHaveBeenCalledTimes(mode === 'identical' ? 2 : 1);
+  });
+  it('allows a longer exact audit quote without revising the independent population count', () => {
+    const sentence = 'Both copied records concern the one journey JRN-1111 with preparation completed.';
+    const fixed = { ...reading, populations: [{ ...reading.populations[0]!, case_count: 1 }] };
+    const claims = [
+      {
+        quote: 'Both copied records concern the one journey JRN-1111',
+        scope: 'recorded_cases' as const,
+        case_count: 1,
+      },
+    ];
+    const audit = {
+      comparisons: [
+        {
+          record_ids: ['E1:S1'],
+          quote: sentence,
+          scope: 'recorded_cases',
+          case_count: 1,
+          relation: 'separate_record',
+        },
+      ],
+    };
+    expect(answerPopulationAuditGrounded(audit, fixed, sentence, claims)).toBe(true);
+    expect(answerPopulationAuditSupported(audit, fixed, sentence, claims)).toBe(true);
+    audit.comparisons[0]!.case_count = 2;
+    expect(answerPopulationAuditGrounded(audit, fixed, sentence, claims)).toBe(false);
+  });
+  it('cannot rewrite the candidate two-session count as four to match disjoint sources', async () => {
+    const joint = 'Journey and workshop preparation was completed in both sessions.';
+    const fixed = {
+      ...reading,
+      disjoint_populations: [{ record_ids: ['E1:S1', 'E2:S1'], case_count: 4, identity_evidence: quotes }],
+    };
+    const claims = [{ quote: joint, scope: 'recorded_cases', case_count: 2 }];
+    const chat = vi.fn(async (messages) => {
+      const input = JSON.parse(messages.at(-1).content);
+      if (messages[0].content.startsWith('Read the case-population claims')) {
+        expect(input).toEqual({ answer_text: joint });
+        return { ok: true, value: JSON.stringify({ claims }), latencyMs: 11 };
+      }
+      expect(input.fixed_candidate_claims).toEqual(claims);
+      return {
+        ok: true,
+        value: JSON.stringify({
+          comparisons: [
+            {
+              record_ids: ['E1:S1', 'E2:S1'],
+              quote: joint,
+              scope: 'recorded_cases',
+              relation: 'separate_cases',
+              case_count: 4,
+            },
+          ],
+        }),
+        latencyMs: 11,
+      };
+    });
+    const result = await verifyAnswerPopulations({ chat } as unknown as ModelClient, fixed, joint);
+    expect(result.supported).toBeNull();
+    expect(chat).toHaveBeenCalledTimes(2);
+  });
   it.each([
     'shared',
     'invented-total',

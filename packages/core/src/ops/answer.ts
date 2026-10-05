@@ -91,7 +91,7 @@ import {
 } from '../models/semantic-verdict.ts';
 
 export const ANSWER_PROMPT_VERSION = 'answer-generation-v72';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v56';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v57';
 
 function answerDraftSchema(
   evidenceId: z.ZodType<string>,

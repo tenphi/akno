@@ -124,51 +124,53 @@ async function startStubChat(): Promise<StubServer> {
         system.startsWith("Compare the candidate's case populations")
           ? JSON.parse(user)
           : null;
-      const answer = system.startsWith('Read the populations in the supplied untrusted memory records')
-        ? {
-            populations: populationInput.records.map((record) => ({
-              record_id: record.record_id,
-              scope: 'recorded_cases',
-              case_count: null,
-              support_quotes: record.leaves.map((leaf) => ({ leaf_id: leaf.leaf_id, quote: leaf.text })),
-            })),
-            shared_populations: [],
-            disjoint_populations: [],
-          }
-        : system.startsWith("Compare the candidate's case populations")
+      const answer = system.startsWith('Read the case-population claims')
+        ? { claims: [{ quote: JSON.parse(user).answer_text, scope: 'recorded_cases', case_count: null }] }
+        : system.startsWith('Read the populations in the supplied untrusted memory records')
           ? {
-              comparisons: populationInput.fixed_case_populations.populations.map((population) => ({
-                record_ids: [population.record_id],
-                quote: populationInput.answer_text,
+              populations: populationInput.records.map((record) => ({
+                record_id: record.record_id,
                 scope: 'recorded_cases',
-                relation: 'separate_record',
                 case_count: null,
+                support_quotes: record.leaves.map((leaf) => ({ leaf_id: leaf.leaf_id, quote: leaf.text })),
               })),
+              shared_populations: [],
+              disjoint_populations: [],
             }
-          : user.startsWith('Page: ')
-            ? derive(user, byPage)
-            : system.startsWith('You independently verify whether drafted answer blocks')
-              ? (answerScripted?.verification ?? { verdicts: [] })
-              : system.startsWith('You answer a question using only supplied memory evidence')
-                ? (answerScripted?.generation ?? { blocks: [], missing_concepts: [] })
-                : system.startsWith('You classify structurally incompatible claims')
-                  ? conflictScripted
-                  : scopeRequest
-                    ? typeof scopeScripted === 'function'
-                      ? scopeScripted(user)
-                      : scopeScripted
-                    : system.startsWith('You are the independent curator for an autonomous memory system')
-                      ? {
-                          outcome: 'approve',
-                          reason: 'The sealed contradiction item preserves authored knowledge.',
-                        }
-                      : system.startsWith('A personal knowledge base holds two claims')
-                        ? { line: 'Before 2002-02-02, the Zephyr QX-100 warranty was 1111 days.' }
-                        : observeRequest &&
-                            user.startsWith('Subject: decision principles') &&
-                            reflectionScripted !== null
-                          ? reflectionScripted
-                          : scripted;
+          : system.startsWith("Compare the candidate's case populations")
+            ? {
+                comparisons: populationInput.fixed_case_populations.populations.map((population) => ({
+                  record_ids: [population.record_id],
+                  quote: populationInput.answer_text,
+                  scope: 'recorded_cases',
+                  relation: 'separate_record',
+                  case_count: null,
+                })),
+              }
+            : user.startsWith('Page: ')
+              ? derive(user, byPage)
+              : system.startsWith('You independently verify whether drafted answer blocks')
+                ? (answerScripted?.verification ?? { verdicts: [] })
+                : system.startsWith('You answer a question using only supplied memory evidence')
+                  ? (answerScripted?.generation ?? { blocks: [], missing_concepts: [] })
+                  : system.startsWith('You classify structurally incompatible claims')
+                    ? conflictScripted
+                    : scopeRequest
+                      ? typeof scopeScripted === 'function'
+                        ? scopeScripted(user)
+                        : scopeScripted
+                      : system.startsWith('You are the independent curator for an autonomous memory system')
+                        ? {
+                            outcome: 'approve',
+                            reason: 'The sealed contradiction item preserves authored knowledge.',
+                          }
+                        : system.startsWith('A personal knowledge base holds two claims')
+                          ? { line: 'Before 2002-02-02, the Zephyr QX-100 warranty was 1111 days.' }
+                          : observeRequest &&
+                              user.startsWith('Subject: decision principles') &&
+                              reflectionScripted !== null
+                            ? reflectionScripted
+                            : scripted;
 
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(

@@ -166,7 +166,8 @@ selected predicate, while focused answers may omit unrelated neighboring predica
 
 For eligible observations and reflected conclusions, Akno expands the exact current support of
 each selected population. A separate source reading fixes the case counts and any explicit shared
-or disjoint identities without seeing the answer. A small comparison checks those populations
+or disjoint identities without seeing the answer. Another reading fixes the answer’s own case
+counts and scope without seeing source records. A small comparison checks both fixed readings
 before the ordinary semantic verifier runs. Both must pass. Sharing dates does not combine two
 journeys and two workshops into two shared sessions; multiple facts, copied sources or competing
 dates for one identified event do not add cases. Exact repeated lineage is counted once, including

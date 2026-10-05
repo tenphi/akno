@@ -1,6 +1,6 @@
 {
   "scope": "Akno #199",
-  "cohort": "prepublication final-v8",
+  "cohort": "prepublication final-v6",
   "corpus_sha256": "21a39e2d906c53fac53e86969cdf55fd5b53eb5b8c0272ea52e4e8da437bb7ff",
   "review": {
     "reviewer": "source author; not independent",
@@ -19,8 +19,8 @@
     "embedding": "disabled only in isolated keyword fixture; production configuration unchanged"
   },
   "compiled_sha256": {
-    "ops/answer.js": "d71c2f669f63e9621205c4a6574c049ce4cfaece407cfbbe2c9db803672c8d93",
-    "ops/answer-populations.js": "c7699d942d35f1f8406172d8cb2986b83047756ca19b5c6bb55974305469c4c8",
+    "ops/answer.js": "887854fe2b1bf91da35b0d43a6274b4e4e44fac006edbca93d82bbc9d5bc4999",
+    "ops/answer-populations.js": "85a8258cc337d9b8938d4e1828e0c1b9193606b8f9123c60e1f5ca9a14bb0bce",
     "observations/reflection.js": "dd59f2ef8d3888f7d183de7eea032b5326c11cd19a949e93f64c75b1597cdf46",
     "observations/projection.js": "746aaf97e8828bbe7bdc15ed8bb6917db915cf8a96150fef7d562331be42fa06",
     "models/semantic-verdict.js": "753d04f8060f5b1f3bae2cafb4c524399bd65a5b87b831749f3bad342f33699b"
@@ -40,6 +40,77 @@
       "scripted_composition": true,
       "expected": "useful",
       "status": "degraded",
+      "outcome": "partial",
+      "reason_code": "answered",
+      "answer": "Silverpine preparation was completed before its activity in both recorded journey cases, JRN-1111 on 2039-02-11 and JRN-2222 on 2039-02-22; it was also completed before its activity in both recorded workshop cases, WRK-1111 on 2039-02-11 and WRK-2222 on 2039-02-22. [sources/journey-1:3] [sources/journey-2:3] [sources/workshop-1:3] [sources/workshop-2:3]",
+      "validation": {
+        "generated_blocks": 1,
+        "passed_guards": 1,
+        "verified_blocks": 1,
+        "rejection_counts": {}
+      },
+      "source_author_review": {
+        "returned_scope_error": false,
+        "useful_returned_text": true,
+        "hold_is_not_useful_coverage": true
+      },
+      "physical_calls": [
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 3180.032917,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1020,
+            "outputTokens": 405,
+            "totalTokens": 1425,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 0
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 8044.361458000001,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 1022,
+            "outputTokens": 707,
+            "totalTokens": 1729,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 435
+          }
+        },
+        {
+          "role": "ordinary-verification",
+          "ok": true,
+          "latency_ms": 7709.837417000001,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 8230,
+            "outputTokens": 911,
+            "totalTokens": 9141,
+            "cachedInputTokens": 7842,
+            "reasoningOutputTokens": 212
+          }
+        }
+      ],
+      "scripted_calls": 1,
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
+    },
+    {
+      "case": "separate-dates",
+      "repeat": 1,
+      "variant": "merged",
+      "scripted_composition": true,
+      "expected": "hold",
+      "status": "degraded",
       "outcome": "not_answered",
       "reason_code": "verification_unavailable",
       "answer": null,
@@ -49,14 +120,6 @@
         "verified_blocks": null,
         "rejection_counts": {}
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index",
-        "answer_verification_failed"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": false,
@@ -66,7 +129,7 @@
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 2779.199125,
+          "latency_ms": 3127.058541000002,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 1020,
@@ -77,121 +140,41 @@
           }
         },
         {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 4438.949375,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 354,
-            "outputTokens": 181,
-            "totalTokens": 535,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 56
-          }
-        },
-        {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 1838.2943329999998,
+          "latency_ms": 5794.095584000002,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 1204,
-            "outputTokens": 154,
-            "totalTokens": 1358,
+            "inputTokens": 967,
+            "outputTokens": 452,
+            "totalTokens": 1419,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 0
+            "reasoningOutputTokens": 374
           }
         },
         {
           "role": "ordinary-verification",
           "ok": false,
-          "latency_ms": 10315.892124999998,
+          "latency_ms": 9636.902083,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 8230,
+            "inputTokens": 8175,
             "outputTokens": 1024,
-            "totalTokens": 9254,
-            "cachedInputTokens": 8227,
-            "reasoningOutputTokens": 382
+            "totalTokens": 9199,
+            "cachedInputTokens": 7842,
+            "reasoningOutputTokens": 431
           }
         }
       ],
       "scripted_calls": 1,
-      "population_boundary_passed": true
-    },
-    {
-      "case": "separate-dates",
-      "repeat": 1,
-      "variant": "merged",
-      "scripted_composition": true,
-      "expected": "hold",
-      "status": "degraded",
-      "outcome": "not_answered",
-      "reason_code": "verification_rejected",
-      "answer": null,
-      "validation": {
-        "generated_blocks": 1,
-        "passed_guards": 1,
-        "verified_blocks": 0,
-        "rejection_counts": {
-          "semantic_support": 1
-        }
-      },
       "degraded": [
         "no_expansion_model",
         "no_embedding_model",
         "partial_graph_index",
         "partial_index",
-        "no_vector_index"
-      ],
-      "source_author_review": {
-        "returned_scope_error": false,
-        "useful_returned_text": false,
-        "hold_is_not_useful_coverage": true
-      },
-      "physical_calls": [
-        {
-          "role": "source-populations",
-          "ok": true,
-          "latency_ms": 3423.969083,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 1020,
-            "outputTokens": 480,
-            "totalTokens": 1500,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 74
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 2529.5309579999994,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 299,
-            "outputTokens": 158,
-            "totalTokens": 457,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 101
-          }
-        },
-        {
-          "role": "population-comparison",
-          "ok": true,
-          "latency_ms": 3030.141499999998,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 1081,
-            "outputTokens": 287,
-            "totalTokens": 1368,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 209
-          }
-        }
-      ],
-      "scripted_calls": 1,
-      "population_boundary_passed": false
+        "no_vector_index",
+        "answer_verification_failed"
+      ]
     },
     {
       "case": "separate-dates",
@@ -211,13 +194,6 @@
           "semantic_support": 1
         }
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": false,
@@ -227,45 +203,38 @@
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 3611.480707999999,
+          "latency_ms": 3782.9293749999997,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 1020,
-            "outputTokens": 404,
-            "totalTokens": 1424,
+            "outputTokens": 505,
+            "totalTokens": 1525,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 0
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 1923.482833999995,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 289,
-            "outputTokens": 96,
-            "totalTokens": 385,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 35
+            "reasoningOutputTokens": 99
           }
         },
         {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 2088.188875,
+          "latency_ms": 3408.5746660000004,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 1075,
-            "outputTokens": 165,
-            "totalTokens": 1240,
+            "inputTokens": 957,
+            "outputTokens": 223,
+            "totalTokens": 1180,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 73
+            "reasoningOutputTokens": 131
           }
         }
       ],
       "scripted_calls": 1,
-      "population_boundary_passed": false
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "separate-dates",
@@ -285,13 +254,6 @@
           "semantic_support": 1
         }
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": false,
@@ -301,45 +263,38 @@
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 3020.795416000001,
+          "latency_ms": 3166.9064169999983,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 1020,
-            "outputTokens": 404,
-            "totalTokens": 1424,
+            "outputTokens": 405,
+            "totalTokens": 1425,
             "cachedInputTokens": 0,
             "reasoningOutputTokens": 0
           }
         },
         {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 1768.5555420000019,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 285,
-            "outputTokens": 82,
-            "totalTokens": 367,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 40
-          }
-        },
-        {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 4686.449874999998,
+          "latency_ms": 4119.118042000002,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 1052,
-            "outputTokens": 223,
-            "totalTokens": 1275,
+            "inputTokens": 953,
+            "outputTokens": 261,
+            "totalTokens": 1214,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 160
+            "reasoningOutputTokens": 198
           }
         }
       ],
       "scripted_calls": 1,
-      "population_boundary_passed": false
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "separate-dates",
@@ -359,13 +314,6 @@
           "semantic_support": 1
         }
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": false,
@@ -375,45 +323,38 @@
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 2766.383167,
+          "latency_ms": 4031.0827500000014,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 1020,
-            "outputTokens": 404,
-            "totalTokens": 1424,
+            "outputTokens": 471,
+            "totalTokens": 1491,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 0
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 1822.2937080000047,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 282,
-            "outputTokens": 98,
-            "totalTokens": 380,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 59
+            "reasoningOutputTokens": 65
           }
         },
         {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 3187.223582999999,
+          "latency_ms": 4792.296750000001,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 1046,
-            "outputTokens": 284,
-            "totalTokens": 1330,
+            "inputTokens": 950,
+            "outputTokens": 367,
+            "totalTokens": 1317,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 224
+            "reasoningOutputTokens": 307
           }
         }
       ],
       "scripted_calls": 1,
-      "population_boundary_passed": false
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "separate-dates",
@@ -433,13 +374,6 @@
           "semantic_support": 1
         }
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": false,
@@ -449,45 +383,38 @@
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 3997.0778750000027,
+          "latency_ms": 2846.898957999998,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 1020,
-            "outputTokens": 528,
-            "totalTokens": 1548,
+            "outputTokens": 404,
+            "totalTokens": 1424,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 122
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 1951.0561249999955,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 281,
-            "outputTokens": 107,
-            "totalTokens": 388,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 69
+            "reasoningOutputTokens": 0
           }
         },
         {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 3428.038249999998,
+          "latency_ms": 4212.918957999995,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 1044,
-            "outputTokens": 300,
-            "totalTokens": 1344,
+            "inputTokens": 949,
+            "outputTokens": 250,
+            "totalTokens": 1199,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 209
+            "reasoningOutputTokens": 191
           }
         }
       ],
       "scripted_calls": 1,
-      "population_boundary_passed": false
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "separate-dates",
@@ -507,13 +434,6 @@
           "semantic_support": 1
         }
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": false,
@@ -523,45 +443,38 @@
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 2707.1448330000057,
+          "latency_ms": 3811.0137499999983,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 1020,
-            "outputTokens": 404,
-            "totalTokens": 1424,
+            "outputTokens": 496,
+            "totalTokens": 1516,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 0
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 2085.4825830000045,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 285,
-            "outputTokens": 127,
-            "totalTokens": 412,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 85
+            "reasoningOutputTokens": 90
           }
         },
         {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 3314.991083000001,
+          "latency_ms": 4590.872833000001,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 1052,
-            "outputTokens": 268,
-            "totalTokens": 1320,
+            "inputTokens": 953,
+            "outputTokens": 313,
+            "totalTokens": 1266,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 205
+            "reasoningOutputTokens": 250
           }
         }
       ],
       "scripted_calls": 1,
-      "population_boundary_passed": false
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "separate-dates",
@@ -581,13 +494,6 @@
           "semantic_support": 1
         }
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": false,
@@ -597,45 +503,38 @@
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 3391.1790829999954,
+          "latency_ms": 3681.747875000001,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 1020,
-            "outputTokens": 404,
-            "totalTokens": 1424,
+            "outputTokens": 496,
+            "totalTokens": 1516,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 0
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 6222.234666999997,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 286,
-            "outputTokens": 511,
-            "totalTokens": 797,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 445
+            "reasoningOutputTokens": 90
           }
         },
         {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 7545.724000000002,
+          "latency_ms": 5132.411332999996,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 1077,
-            "outputTokens": 737,
-            "totalTokens": 1814,
+            "inputTokens": 954,
+            "outputTokens": 379,
+            "totalTokens": 1333,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 620
+            "reasoningOutputTokens": 315
           }
         }
       ],
       "scripted_calls": 1,
-      "population_boundary_passed": false
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "separate-dates",
@@ -646,22 +545,15 @@
       "status": "degraded",
       "outcome": "partial",
       "reason_code": "answered",
-      "answer": "In journey case JRN-2222, Silverpine preparation was completed before the activity on 2039-02-22. [sources/journey-2:3]\n\nIn workshop case WRK-1111, Silverpine preparation was completed before the activity on 2039-02-11. [sources/workshop-1:3]",
+      "answer": "In journey case JRN-1111, Silverpine preparation was completed before the activity on 2039-02-11. [sources/journey-1:3]\n\nIn journey case JRN-2222, Silverpine preparation was completed before the activity on 2039-02-22. [sources/journey-2:3]\n\nIn workshop case WRK-1111, Silverpine preparation was completed before the activity on 2039-02-11. [sources/workshop-1:3]",
       "validation": {
         "generated_blocks": 4,
         "passed_guards": 4,
-        "verified_blocks": 2,
+        "verified_blocks": 3,
         "rejection_counts": {
-          "semantic_support": 2
+          "semantic_support": 1
         }
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": true,
@@ -671,227 +563,181 @@
         {
           "role": "composition",
           "ok": true,
-          "latency_ms": 3497.044624999995,
+          "latency_ms": 3401.069583999997,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 5432,
-            "outputTokens": 260,
-            "totalTokens": 5692,
+            "outputTokens": 238,
+            "totalTokens": 5670,
             "cachedInputTokens": 4169,
-            "reasoningOutputTokens": 95
+            "reasoningOutputTokens": 73
           }
         },
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 1700.2207500000077,
+          "latency_ms": 1664.5465410000033,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 798,
-            "outputTokens": 113,
-            "totalTokens": 911,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 23
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 2151.804708999989,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 297,
-            "outputTokens": 149,
-            "totalTokens": 446,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 94
-          }
-        },
-        {
-          "role": "population-comparison",
-          "ok": true,
-          "latency_ms": 1639.8464999999997,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 756,
-            "outputTokens": 101,
-            "totalTokens": 857,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 30
-          }
-        },
-        {
-          "role": "ordinary-verification",
-          "ok": true,
-          "latency_ms": 4511.543583999999,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 7974,
-            "outputTokens": 453,
-            "totalTokens": 8427,
-            "cachedInputTokens": 7842,
-            "reasoningOutputTokens": 0
-          }
-        },
-        {
-          "role": "source-populations",
-          "ok": true,
-          "latency_ms": 1568.4850830000069,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 798,
-            "outputTokens": 120,
-            "totalTokens": 918,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 30
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 2322.0916670000006,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 297,
-            "outputTokens": 160,
-            "totalTokens": 457,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 105
-          }
-        },
-        {
-          "role": "population-comparison",
-          "ok": true,
-          "latency_ms": 1952.1852500000095,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 756,
-            "outputTokens": 104,
-            "totalTokens": 860,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 33
-          }
-        },
-        {
-          "role": "ordinary-verification",
-          "ok": true,
-          "latency_ms": 8304.54116600001,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 7974,
-            "outputTokens": 622,
-            "totalTokens": 8596,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 295
-          }
-        },
-        {
-          "role": "source-populations",
-          "ok": true,
-          "latency_ms": 1502.856541999994,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 798,
-            "outputTokens": 88,
-            "totalTokens": 886,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 0
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 1905.6658330000064,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 297,
-            "outputTokens": 119,
-            "totalTokens": 416,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 64
-          }
-        },
-        {
-          "role": "population-comparison",
-          "ok": true,
-          "latency_ms": 1914.7861669999984,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 756,
-            "outputTokens": 98,
-            "totalTokens": 854,
+            "outputTokens": 117,
+            "totalTokens": 915,
             "cachedInputTokens": 0,
             "reasoningOutputTokens": 27
           }
         },
         {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 1981.2649999999994,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 644,
+            "outputTokens": 117,
+            "totalTokens": 761,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 46
+          }
+        },
+        {
           "role": "ordinary-verification",
           "ok": true,
-          "latency_ms": 7232.081624999992,
+          "latency_ms": 7393.826209000006,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 7974,
-            "outputTokens": 639,
-            "totalTokens": 8613,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 289
+            "outputTokens": 638,
+            "totalTokens": 8612,
+            "cachedInputTokens": 7971,
+            "reasoningOutputTokens": 284
           }
         },
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 1682.6671659999993,
+          "latency_ms": 1900.5169590000005,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 798,
-            "outputTokens": 116,
-            "totalTokens": 914,
+            "outputTokens": 117,
+            "totalTokens": 915,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 26
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 2052.9152500000055,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 297,
-            "outputTokens": 116,
-            "totalTokens": 413,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 61
+            "reasoningOutputTokens": 27
           }
         },
         {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 1525.521000000008,
+          "latency_ms": 1880.600959000003,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 756,
-            "outputTokens": 100,
-            "totalTokens": 856,
+            "inputTokens": 644,
+            "outputTokens": 131,
+            "totalTokens": 775,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 29
+            "reasoningOutputTokens": 60
           }
         },
         {
           "role": "ordinary-verification",
           "ok": true,
-          "latency_ms": 11274.011666000006,
+          "latency_ms": 8263.201375000004,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 7974,
-            "outputTokens": 832,
-            "totalTokens": 8806,
+            "outputTokens": 503,
+            "totalTokens": 8477,
+            "cachedInputTokens": 7971,
+            "reasoningOutputTokens": 228
+          }
+        },
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2164.985167000006,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 798,
+            "outputTokens": 121,
+            "totalTokens": 919,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 453
+            "reasoningOutputTokens": 31
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2612.9999170000083,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 644,
+            "outputTokens": 187,
+            "totalTokens": 831,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 116
+          }
+        },
+        {
+          "role": "ordinary-verification",
+          "ok": true,
+          "latency_ms": 7413.325792000003,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 7974,
+            "outputTokens": 625,
+            "totalTokens": 8599,
+            "cachedInputTokens": 7842,
+            "reasoningOutputTokens": 281
+          }
+        },
+        {
+          "role": "source-populations",
+          "ok": true,
+          "latency_ms": 2067.4035830000066,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 798,
+            "outputTokens": 112,
+            "totalTokens": 910,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 22
+          }
+        },
+        {
+          "role": "population-comparison",
+          "ok": true,
+          "latency_ms": 2858.1357090000092,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 644,
+            "outputTokens": 134,
+            "totalTokens": 778,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 63
+          }
+        },
+        {
+          "role": "ordinary-verification",
+          "ok": true,
+          "latency_ms": 13054.386333000017,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 7974,
+            "outputTokens": 858,
+            "totalTokens": 8832,
+            "cachedInputTokens": 7842,
+            "reasoningOutputTokens": 422
           }
         }
       ],
       "scripted_calls": 0,
-      "population_boundary_passed": true
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "shared-sessions",
@@ -900,52 +746,30 @@
       "scripted_composition": true,
       "expected": "useful",
       "status": "degraded",
-      "outcome": "not_answered",
-      "reason_code": "verification_rejected",
-      "answer": null,
+      "outcome": "partial",
+      "reason_code": "answered",
+      "answer": "Silverpine journey and workshop preparation was completed in both shared global events SESSION-1111 and SESSION-2222. [sources/journey-1:3] [sources/journey-2:3] [sources/workshop-1:3] [sources/workshop-2:3]",
       "validation": {
         "generated_blocks": 1,
         "passed_guards": 1,
-        "verified_blocks": 0,
-        "rejection_counts": {
-          "semantic_support": 1
-        }
+        "verified_blocks": 1,
+        "rejection_counts": {}
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
-        "useful_returned_text": false,
+        "useful_returned_text": true,
         "hold_is_not_useful_coverage": true
       },
       "physical_calls": [
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 3240.586333000014,
+          "latency_ms": 2839.0171669999836,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 1026,
-            "outputTokens": 464,
-            "totalTokens": 1490,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 74
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 1536.510249999992,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 294,
-            "outputTokens": 42,
-            "totalTokens": 336,
+            "outputTokens": 388,
+            "totalTokens": 1414,
             "cachedInputTokens": 0,
             "reasoningOutputTokens": 0
           }
@@ -953,32 +777,38 @@
         {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 2464.6734579999757,
+          "latency_ms": 1851.9590000000026,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 1047,
-            "outputTokens": 181,
-            "totalTokens": 1228,
+            "inputTokens": 946,
+            "outputTokens": 107,
+            "totalTokens": 1053,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 109
+            "reasoningOutputTokens": 35
           }
         },
         {
           "role": "ordinary-verification",
           "ok": true,
-          "latency_ms": 6352.891457999998,
+          "latency_ms": 6458.192999999999,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 8176,
-            "outputTokens": 590,
-            "totalTokens": 8766,
+            "outputTokens": 587,
+            "totalTokens": 8763,
             "cachedInputTokens": 8173,
-            "reasoningOutputTokens": 219
+            "reasoningOutputTokens": 235
           }
         }
       ],
       "scripted_calls": 1,
-      "population_boundary_passed": true
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "shared-sessions",
@@ -998,13 +828,6 @@
           "semantic_support": 1
         }
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": false,
@@ -1014,45 +837,38 @@
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 3466.6754170000204,
+          "latency_ms": 3649.9359160000167,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 1026,
-            "outputTokens": 439,
-            "totalTokens": 1465,
+            "outputTokens": 452,
+            "totalTokens": 1478,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 49
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 1601.1509160000132,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 284,
-            "outputTokens": 73,
-            "totalTokens": 357,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 31
+            "reasoningOutputTokens": 62
           }
         },
         {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 2598.961834000016,
+          "latency_ms": 3140.181750000018,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 1035,
-            "outputTokens": 184,
-            "totalTokens": 1219,
+            "inputTokens": 936,
+            "outputTokens": 208,
+            "totalTokens": 1144,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 122
+            "reasoningOutputTokens": 146
           }
         }
       ],
       "scripted_calls": 1,
-      "population_boundary_passed": false
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "shared-sessions",
@@ -1065,19 +881,11 @@
       "reason_code": "verification_unavailable",
       "answer": null,
       "validation": {
-        "generated_blocks": 2,
-        "passed_guards": 2,
+        "generated_blocks": 1,
+        "passed_guards": 1,
         "verified_blocks": null,
         "rejection_counts": {}
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index",
-        "answer_verification_failed"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": false,
@@ -1087,45 +895,65 @@
         {
           "role": "composition",
           "ok": true,
-          "latency_ms": 3200.320416999981,
+          "latency_ms": 3368.457041000016,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 5420,
-            "outputTokens": 242,
-            "totalTokens": 5662,
-            "cachedInputTokens": 4169,
-            "reasoningOutputTokens": 147
+            "outputTokens": 175,
+            "totalTokens": 5595,
+            "cachedInputTokens": 5417,
+            "reasoningOutputTokens": 111
           }
         },
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 3146.973208999989,
+          "latency_ms": 3127.0350830000243,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 882,
-            "outputTokens": 329,
-            "totalTokens": 1211,
+            "inputTokens": 1026,
+            "outputTokens": 434,
+            "totalTokens": 1460,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 83
+            "reasoningOutputTokens": 44
           }
         },
         {
-          "role": "candidate-populations",
+          "role": "population-comparison",
           "ok": true,
-          "latency_ms": 3741.873707999999,
+          "latency_ms": 2726.652457999997,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 295,
-            "outputTokens": 242,
-            "totalTokens": 537,
+            "inputTokens": 953,
+            "outputTokens": 166,
+            "totalTokens": 1119,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 164
+            "reasoningOutputTokens": 87
+          }
+        },
+        {
+          "role": "ordinary-verification",
+          "ok": true,
+          "latency_ms": 8338.619250000018,
+          "endpoint_requests": 1,
+          "usage": {
+            "inputTokens": 8183,
+            "outputTokens": 907,
+            "totalTokens": 9090,
+            "cachedInputTokens": 7842,
+            "reasoningOutputTokens": 254
           }
         }
       ],
       "scripted_calls": 0,
-      "population_boundary_passed": false
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index",
+        "answer_verification_failed"
+      ]
     },
     {
       "case": "one-event-many-facts",
@@ -1143,13 +971,6 @@
         "verified_blocks": 1,
         "rejection_counts": {}
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": true,
@@ -1159,58 +980,51 @@
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 1886.5275419999962,
+          "latency_ms": 2152.155457999994,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 843,
-            "outputTokens": 130,
-            "totalTokens": 973,
+            "outputTokens": 142,
+            "totalTokens": 985,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 28
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 1240.4934170000197,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 291,
-            "outputTokens": 39,
-            "totalTokens": 330,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 0
+            "reasoningOutputTokens": 40
           }
         },
         {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 2300.7334169999813,
+          "latency_ms": 3163.751833999995,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 748,
-            "outputTokens": 111,
-            "totalTokens": 859,
+            "inputTokens": 650,
+            "outputTokens": 121,
+            "totalTokens": 771,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 46
+            "reasoningOutputTokens": 56
           }
         },
         {
           "role": "ordinary-verification",
           "ok": true,
-          "latency_ms": 5146.607875000016,
+          "latency_ms": 7869.929207999987,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 8023,
-            "outputTokens": 476,
-            "totalTokens": 8499,
+            "outputTokens": 654,
+            "totalTokens": 8677,
             "cachedInputTokens": 8020,
-            "reasoningOutputTokens": 175
+            "reasoningOutputTokens": 370
           }
         }
       ],
       "scripted_calls": 1,
-      "population_boundary_passed": true
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "one-event-many-facts",
@@ -1230,13 +1044,6 @@
           "semantic_support": 1
         }
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": false,
@@ -1246,7 +1053,7 @@
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 1635.037249999994,
+          "latency_ms": 1624.4706669999869,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 843,
@@ -1257,34 +1064,27 @@
           }
         },
         {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 1649.801374999981,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 283,
-            "outputTokens": 80,
-            "totalTokens": 363,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 39
-          }
-        },
-        {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 2288.4016669999983,
+          "latency_ms": 5139.402124999993,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 740,
-            "outputTokens": 137,
-            "totalTokens": 877,
+            "inputTokens": 642,
+            "outputTokens": 341,
+            "totalTokens": 983,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 80
+            "reasoningOutputTokens": 284
           }
         }
       ],
       "scripted_calls": 1,
-      "population_boundary_passed": false
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "one-event-many-facts",
@@ -1293,97 +1093,82 @@
       "scripted_composition": false,
       "expected": "useful",
       "status": "degraded",
-      "outcome": "not_answered",
-      "reason_code": "verification_unavailable",
-      "answer": null,
+      "outcome": "partial",
+      "reason_code": "answered",
+      "answer": "In the one recorded Silverpine journey, JRN-1111, preparation was completed and tickets were checked before departure. [sources/journey-1:3] [sources/journey-2:3]",
       "validation": {
         "generated_blocks": 1,
         "passed_guards": 1,
-        "verified_blocks": null,
+        "verified_blocks": 1,
         "rejection_counts": {}
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index",
-        "answer_verification_failed"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
-        "useful_returned_text": false,
+        "useful_returned_text": true,
         "hold_is_not_useful_coverage": true
       },
       "physical_calls": [
         {
           "role": "composition",
           "ok": true,
-          "latency_ms": 3322.8395420000015,
+          "latency_ms": 3591.7047080000048,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 4689,
-            "outputTokens": 177,
-            "totalTokens": 4866,
+            "outputTokens": 233,
+            "totalTokens": 4922,
             "cachedInputTokens": 4686,
-            "reasoningOutputTokens": 95
+            "reasoningOutputTokens": 160
           }
         },
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 1666.085916000011,
+          "latency_ms": 1807.2278329999826,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 843,
-            "outputTokens": 136,
-            "totalTokens": 979,
+            "outputTokens": 130,
+            "totalTokens": 973,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 34
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 2945.0408330000064,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 300,
-            "outputTokens": 173,
-            "totalTokens": 473,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 133
+            "reasoningOutputTokens": 28
           }
         },
         {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 3280.2544580000103,
+          "latency_ms": 2611.216625000001,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 756,
-            "outputTokens": 206,
-            "totalTokens": 962,
+            "inputTokens": 654,
+            "outputTokens": 143,
+            "totalTokens": 797,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 147
+            "reasoningOutputTokens": 74
           }
         },
         {
           "role": "ordinary-verification",
-          "ok": false,
-          "latency_ms": 10259.329375000001,
+          "ok": true,
+          "latency_ms": 5066.833249999996,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 8104,
-            "outputTokens": 1024,
-            "totalTokens": 9128,
+            "inputTokens": 8027,
+            "outputTokens": 416,
+            "totalTokens": 8443,
             "cachedInputTokens": 7842,
-            "reasoningOutputTokens": 711
+            "reasoningOutputTokens": 125
           }
         }
       ],
       "scripted_calls": 0,
-      "population_boundary_passed": true
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "one-event-copies",
@@ -1401,13 +1186,6 @@
         "verified_blocks": 1,
         "rejection_counts": {}
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": true,
@@ -1417,58 +1195,51 @@
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 1786.430874999991,
+          "latency_ms": 2164.661207999976,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 835,
-            "outputTokens": 144,
-            "totalTokens": 979,
+            "outputTokens": 152,
+            "totalTokens": 987,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 42
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 2632.714584000001,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 289,
-            "outputTokens": 150,
-            "totalTokens": 439,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 110
+            "reasoningOutputTokens": 50
           }
         },
         {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 2662.959332999977,
+          "latency_ms": 2290.805249999976,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 745,
-            "outputTokens": 231,
-            "totalTokens": 976,
+            "inputTokens": 648,
+            "outputTokens": 180,
+            "totalTokens": 828,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 175
+            "reasoningOutputTokens": 117
           }
         },
         {
           "role": "ordinary-verification",
           "ok": true,
-          "latency_ms": 5759.986959000002,
+          "latency_ms": 5323.790166999999,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 8013,
-            "outputTokens": 449,
-            "totalTokens": 8462,
-            "cachedInputTokens": 7842,
-            "reasoningOutputTokens": 135
+            "outputTokens": 511,
+            "totalTokens": 8524,
+            "cachedInputTokens": 8010,
+            "reasoningOutputTokens": 195
           }
         }
       ],
       "scripted_calls": 1,
-      "population_boundary_passed": true
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "one-event-copies",
@@ -1488,13 +1259,6 @@
           "semantic_support": 1
         }
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": false,
@@ -1504,45 +1268,38 @@
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 2003.3579999999783,
+          "latency_ms": 2160.720499999996,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 835,
-            "outputTokens": 157,
-            "totalTokens": 992,
+            "outputTokens": 138,
+            "totalTokens": 973,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 55
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 2060.9097499999916,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 281,
-            "outputTokens": 71,
-            "totalTokens": 352,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 32
+            "reasoningOutputTokens": 36
           }
         },
         {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 1974.378040999989,
+          "latency_ms": 1879.04795800001,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 736,
-            "outputTokens": 133,
-            "totalTokens": 869,
+            "inputTokens": 640,
+            "outputTokens": 145,
+            "totalTokens": 785,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 78
+            "reasoningOutputTokens": 90
           }
         }
       ],
       "scripted_calls": 1,
-      "population_boundary_passed": false
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "one-event-copies",
@@ -1562,13 +1319,6 @@
           "protected_value": 1
         }
       },
-      "degraded": [
-        "no_expansion_model",
-        "no_embedding_model",
-        "partial_graph_index",
-        "partial_index",
-        "no_vector_index"
-      ],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": false,
@@ -1578,19 +1328,25 @@
         {
           "role": "composition",
           "ok": true,
-          "latency_ms": 3300.507332999987,
+          "latency_ms": 2746.225833000004,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 4673,
-            "outputTokens": 201,
-            "totalTokens": 4874,
-            "cachedInputTokens": 4157,
-            "reasoningOutputTokens": 135
+            "outputTokens": 156,
+            "totalTokens": 4829,
+            "cachedInputTokens": 4670,
+            "reasoningOutputTokens": 89
           }
         }
       ],
       "scripted_calls": 0,
-      "population_boundary_passed": false
+      "degraded": [
+        "no_expansion_model",
+        "no_embedding_model",
+        "partial_graph_index",
+        "partial_index",
+        "no_vector_index"
+      ]
     },
     {
       "case": "one-event-competing-dates",
@@ -1608,7 +1364,6 @@
         "verified_blocks": 1,
         "rejection_counts": {}
       },
-      "degraded": ["no_expansion_model", "no_embedding_model", "partial_index", "no_vector_index"],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": true,
@@ -1618,58 +1373,45 @@
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 1679.529750000016,
+          "latency_ms": 2007.4949579999957,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 862,
-            "outputTokens": 160,
-            "totalTokens": 1022,
+            "outputTokens": 161,
+            "totalTokens": 1023,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 33
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 2846.0118340000045,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 320,
-            "outputTokens": 199,
-            "totalTokens": 519,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 126
+            "reasoningOutputTokens": 34
           }
         },
         {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 2996.055250000005,
+          "latency_ms": 3965.0734999999986,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 834,
-            "outputTokens": 265,
-            "totalTokens": 1099,
+            "inputTokens": 704,
+            "outputTokens": 332,
+            "totalTokens": 1036,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 176
+            "reasoningOutputTokens": 277
           }
         },
         {
           "role": "ordinary-verification",
           "ok": true,
-          "latency_ms": 6862.630792000011,
+          "latency_ms": 5267.247875000001,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 8071,
-            "outputTokens": 702,
-            "totalTokens": 8773,
+            "outputTokens": 547,
+            "totalTokens": 8618,
             "cachedInputTokens": 8068,
-            "reasoningOutputTokens": 191
+            "reasoningOutputTokens": 153
           }
         }
       ],
       "scripted_calls": 1,
-      "population_boundary_passed": true
+      "degraded": ["no_expansion_model", "no_embedding_model", "partial_index", "no_vector_index"]
     },
     {
       "case": "one-event-competing-dates",
@@ -1689,7 +1431,6 @@
           "semantic_support": 1
         }
       },
-      "degraded": ["no_expansion_model", "no_embedding_model", "partial_index", "no_vector_index"],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": false,
@@ -1699,45 +1440,32 @@
         {
           "role": "source-populations",
           "ok": true,
-          "latency_ms": 1882.9024590000045,
+          "latency_ms": 2012.654125000001,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 862,
-            "outputTokens": 171,
-            "totalTokens": 1033,
+            "outputTokens": 164,
+            "totalTokens": 1026,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 44
-          }
-        },
-        {
-          "role": "candidate-populations",
-          "ok": true,
-          "latency_ms": 1774.3551670000015,
-          "endpoint_requests": 1,
-          "usage": {
-            "inputTokens": 297,
-            "outputTokens": 98,
-            "totalTokens": 395,
-            "cachedInputTokens": 0,
-            "reasoningOutputTokens": 49
+            "reasoningOutputTokens": 37
           }
         },
         {
           "role": "population-comparison",
           "ok": true,
-          "latency_ms": 2023.2363339999865,
+          "latency_ms": 2703.218833000021,
           "endpoint_requests": 1,
           "usage": {
-            "inputTokens": 787,
-            "outputTokens": 153,
-            "totalTokens": 940,
+            "inputTokens": 681,
+            "outputTokens": 201,
+            "totalTokens": 882,
             "cachedInputTokens": 0,
-            "reasoningOutputTokens": 88
+            "reasoningOutputTokens": 130
           }
         }
       ],
       "scripted_calls": 1,
-      "population_boundary_passed": false
+      "degraded": ["no_expansion_model", "no_embedding_model", "partial_index", "no_vector_index"]
     },
     {
       "case": "one-event-competing-dates",
@@ -1754,10 +1482,9 @@
         "passed_guards": 0,
         "verified_blocks": null,
         "rejection_counts": {
-          "discourse": 1
+          "protected_value": 1
         }
       },
-      "degraded": ["no_expansion_model", "no_embedding_model", "partial_index", "no_vector_index"],
       "source_author_review": {
         "returned_scope_error": false,
         "useful_returned_text": false,
@@ -1767,19 +1494,19 @@
         {
           "role": "composition",
           "ok": true,
-          "latency_ms": 4188.431500000006,
+          "latency_ms": 5473.725584,
           "endpoint_requests": 1,
           "usage": {
             "inputTokens": 4941,
-            "outputTokens": 253,
-            "totalTokens": 5194,
+            "outputTokens": 378,
+            "totalTokens": 5319,
             "cachedInputTokens": 4938,
-            "reasoningOutputTokens": 158
+            "reasoningOutputTokens": 260
           }
         }
       ],
       "scripted_calls": 0,
-      "population_boundary_passed": false
+      "degraded": ["no_expansion_model", "no_embedding_model", "partial_index", "no_vector_index"]
     }
   ]
 }
