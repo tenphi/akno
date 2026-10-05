@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.18.3
+
+### Patch Changes
+
+- [#193](https://github.com/tenphi/akno/pull/193) [`a890709`](https://github.com/tenphi/akno/commit/a8907093d4e434e0755965a03b5cc78e563011cf) Thanks [@tenphi](https://github.com/tenphi)! - Keep a direct assertion's provenance author separate from its readable actors and reporters when generating and verifying answers. Faithful copies no longer receive a metadata-only requirement to name the author. The independent source reading also binds explicitly named reporters to their reported predicates, so a positive broad verdict cannot excuse an answer-absent reporter or a changed role; source selection, qualification and predicate timing remain required.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.18.3
+
 ## 0.18.2
 
 ### Patch Changes
