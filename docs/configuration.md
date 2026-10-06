@@ -248,6 +248,16 @@ existing candidates. Without any authorized destination, `remember` returns a ty
 managed-item curation the fallback is a queue, not a canonical home: an item moves to one unambiguous supplied
 existing page or remains held.
 
+`maintenance.retain.model_timeout_ms` optionally sets the per-attempt deadline for retention model calls,
+including extraction, structural repair, verification and support comparison. Null inherits the maintenance
+or derive model deadline. It does not change reasoning effort or other workflows.
+`generation_max_output_tokens` overrides extraction and structural-repair output allowances; null keeps
+each phase’s allowance, and the model role’s hard ceiling still wins. A larger allowance costs more tokens and allows
+complete structured records to fit alongside hidden reasoning. `verification_concurrency` defaults to `1`. Independent two-candidate verifier batches may run in parallel
+(up to `16`), with identical source frames, prompts, budgets and result ordering. Any failed batch still
+withholds the complete candidate transaction; already launched calls are included in usage accounting.
+These settings do not change admission checks.
+
 `evidence_grace_days` defaults to `30`. It applies only after retained support becomes inactive through exact
 retraction or user forget; active support has no age limit. Nonterminal maintenance work that still names the
 managed item also blocks pruning. A value of `0` permits immediate secure pruning once those dependencies are

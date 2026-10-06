@@ -253,6 +253,8 @@ export const RetainInput = z.object({
     .min(1)
     .max(20),
   dry_run: z.boolean().optional(),
+  /** Retry only a typed extraction transport failure with no candidates or writes. */
+  retry_failed: z.boolean().optional(),
 });
 export type RetainInput = z.infer<typeof RetainInput>;
 
@@ -319,6 +321,8 @@ export const RetainSourceResult = z.object({
   revision: z.string(),
   outcome: z.enum(['ok', 'replayed', 'noop', 'held', 'revision_conflict']),
   change_id: z.string().optional(),
+  /** Exact-source retry is safe; extraction failed before producing any candidate. */
+  retryable: z.literal(true).optional(),
   candidates: z.array(RetainCandidateResult),
   /** Source-level hold when no safe candidate boundary exists yet. */
   reason_code: RetainHoldReason.optional(),

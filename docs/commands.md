@@ -91,6 +91,10 @@ See [Reading memory](reading.md) for ranking, qualification, citations, and resu
   `retracts` can replace exact prior support atomically. Every mode validates byte-exact source spans, preserves
   discourse and attribution, suppresses identical revision replays, and retracts only explicitly addressed
   source support.
+- A source receipt with `retryable: true` failed during extraction before producing candidates or writes.
+  Replay normally to reconcile an uncertain socket result; send `retry_failed: true` only when explicitly
+  retrying that exact source and revision. Semantic holds, corrections, and confirmed support are never
+  retried this way. Changed source bytes or processing instructions still produce `revision_conflict`.
 - Treat `no_writable_destination` as an authorization hold, not an empty memory result: inspect the typed
   approval reason and name or admit a destination. `requires_folder` instead asks the caller to declare taxonomy.
 - `maintenance.retain.fallback_page` can provide one exact last-resort destination. It is used only after

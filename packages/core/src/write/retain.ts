@@ -625,6 +625,7 @@ export interface RetainResult {
   held: RetainHeldCandidate[];
   events: { date: string; summary: string }[];
   error: string | null;
+  retryable?: true;
   sourceHold: { reason_code: RetainHoldReason; reason: string } | null;
   degradedReason: DegradedReason | null;
   modelUsage: {
@@ -658,6 +659,9 @@ export async function runRetain(
     sourceItems?: readonly RetainSourceItem[];
     sourceId?: string;
     revision?: string;
+    extractionTimeoutMs?: number;
+    generationMaxOutputTokens?: number;
+    verificationConcurrency?: number;
   } = {},
 ): Promise<RetainResult> {
   const empty = emptyResult();
@@ -677,6 +681,7 @@ export async function runRetain(
   if (!model.available) {
     return {
       ...empty,
+      retryable: true,
       error: model.unavailableReason ?? 'derive model unavailable',
       degradedReason: 'no_derive_model',
     };
@@ -705,12 +710,20 @@ export async function runRetain(
     // attribution and temporal fields. Reasoning shares this allowance with that structured
     // output; the former 3,200 cap could exhaust even its one retry before finishing a digest.
     // Keep the call bounded, and let ModelClient enforce any smaller configured role ceiling.
-    { schema: RETAIN_SCHEMA, maxTokens: 16_384, languageReferences },
+    {
+      schema: RETAIN_SCHEMA,
+      maxTokens: options.generationMaxOutputTokens ?? 16_384,
+      languageReferences,
+      ...(options.extractionTimeoutMs ? { timeoutMs: options.extractionTimeoutMs } : {}),
+    },
   );
   const extractionReceipt = modelCallReceipt(model, extraction);
   if (!extraction.ok || !extraction.value) {
     return {
       ...empty,
+      ...(['timeout', 'request_failed', 'unavailable'].includes(extraction.reason ?? '')
+        ? { retryable: true as const }
+        : {}),
       error: extraction.error ?? 'retain extraction failed',
       degradedReason: model.degradedReason(extraction),
       modelUsage: { extraction: extractionReceipt, verification: null },
@@ -858,10 +871,9 @@ export async function runRetain(
         // Full repairs repeat evidence and metadata for every failed record. A single-record
         // allowance can truncate a multi-record transaction even when extraction completed.
         // Compact clock deltas cost less; the role ceiling remains enforced by ModelClient.
-        maxTokens: Math.min(
-          16_384,
-          Math.max(3_200, fullPositions.length * 3_200 + clockPositions.length * 800),
-        ),
+        maxTokens:
+          options.generationMaxOutputTokens ??
+          Math.min(16_384, Math.max(3_200, fullPositions.length * 3_200 + clockPositions.length * 800)),
         languageReferences,
         ...(hasTextRepairs
           ? {
@@ -1002,6 +1014,7 @@ export async function runRetain(
       return original === undefined ? [] : [{ candidate_id: candidate.candidate_id, original }];
     }),
     cleaned.reportLimitConcerns,
+    options.verificationConcurrency,
   );
   if (verified.error) {
     return {
@@ -1135,6 +1148,7 @@ async function verifyCandidates(
   candidates: readonly RetainCandidate[],
   repairObligations: readonly { candidate_id: string; original: unknown }[],
   reportLimitConcerns: ReadonlySet<string>,
+  concurrency = 1,
 ): Promise<{
   accepted: Set<string>;
   reasons: Map<string, RetainHoldReason>;
@@ -1148,29 +1162,40 @@ async function verifyCandidates(
   const scopes = new Map<string, RetentionScope>();
   // Two disjoint candidates fit the default derive-role ceiling without truncating a large batch.
   // Relations still see the complete candidate context; candidates themselves are never evidence.
-  for (let start = 0; start < candidates.length; start += 2) {
-    const batch = candidates.slice(start, start + 2);
-    const checked = await verifyCandidateBatch(
-      model,
-      source,
-      referenceClock,
-      batch,
-      repairObligations,
-      candidates,
-      reportLimitConcerns,
-    );
-    outcomes.push(checked.outcome);
-    if (checked.error)
+  const width = Math.max(1, Math.min(16, Math.floor(concurrency))) * 2;
+  for (let start = 0; start < candidates.length; start += width) {
+    const work = [];
+    for (let offset = start; offset < Math.min(candidates.length, start + width); offset += 2) {
+      work.push(
+        verifyCandidateBatch(
+          model,
+          source,
+          referenceClock,
+          candidates.slice(offset, offset + 2),
+          repairObligations,
+          candidates,
+          reportLimitConcerns,
+        ),
+      );
+    }
+    // Every batch sees exactly the same complete source and relation context. Aggregate in
+    // candidate order, and account for every call already launched even when one fails closed.
+    const checkedBatches = await Promise.all(work);
+    outcomes.push(...checkedBatches.map((checked) => checked.outcome));
+    const failed = checkedBatches.find((checked) => checked.error);
+    if (failed)
       return {
         accepted: new Set(),
         reasons: new Map(),
         scopes: new Map(),
-        error: checked.error,
+        error: failed.error,
         receipt: modelCallReceipt(model, aggregateSemanticOutcomes(outcomes)),
       };
-    for (const id of checked.accepted) accepted.add(id);
-    for (const [id, reason] of checked.reasons) reasons.set(id, reason);
-    for (const [id, scope] of checked.scopes) scopes.set(id, scope);
+    for (const checked of checkedBatches) {
+      for (const id of checked.accepted) accepted.add(id);
+      for (const [id, reason] of checked.reasons) reasons.set(id, reason);
+      for (const [id, scope] of checked.scopes) scopes.set(id, scope);
+    }
   }
   // A source-supported relation still cannot persist when its target record was withheld.
   // Iterate because a rejected target may invalidate a chain spanning several verification batches.

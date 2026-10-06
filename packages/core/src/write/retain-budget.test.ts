@@ -36,6 +36,8 @@ function reportModel(maxOutputTokens?: number) {
       },
     },
   });
+  // The uncapped case mirrors a maintenance role, independent of the derive default.
+  if (maxOutputTokens === undefined) delete config.models.derive.maxOutputTokens;
   return new ModelClient(config.models.derive);
 }
 
@@ -74,6 +76,52 @@ const candidates = statements.map((quote, i) => ({
 }));
 
 describe('structured retention output allowance', () => {
+  it('enforces an extraction-only deadline without changing the output ceiling', async () => {
+    const budgets: number[] = [];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (_url, init) => {
+      budgets.push(JSON.parse(init!.body as string).max_output_tokens);
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(resolve, 200);
+        init!.signal!.addEventListener(
+          'abort',
+          () => {
+            clearTimeout(timer);
+            reject(init!.signal!.reason);
+          },
+          { once: true },
+        );
+      });
+      throw new Error('deadline was not enforced');
+    });
+    const result = await runRetain(report, reportModel(), { sourceItems, extractionTimeoutMs: 20 });
+    expect(budgets).toEqual([16384]);
+    expect(result.retryable).toBe(true);
+    expect(result.error).toContain('20ms');
+    expect(result.candidates).toEqual([]);
+  });
+
+  it.each([undefined, 3200])(
+    'permits a larger extraction allowance while honoring the role ceiling (%s)',
+    async (cap) => {
+      const budgets: number[] = [];
+      vi.spyOn(globalThis, 'fetch').mockImplementation(async (_url, init) => {
+        budgets.push(JSON.parse(init!.body as string).max_output_tokens);
+        return Response.json({
+          status: 'completed',
+          output: [
+            { type: 'message', content: [{ type: 'output_text', text: '{"candidates":[],"events":[]}' }] },
+          ],
+        });
+      });
+      const result = await runRetain(report, reportModel(cap), {
+        sourceItems,
+        generationMaxOutputTokens: 32768,
+      });
+      expect(budgets).toEqual([cap ?? 32768]);
+      expect(result.error).toBeNull();
+    },
+  );
+
   it.each([undefined, 3200])(
     'keeps a complete report or explicitly degrades at the role cap (%s)',
     async (cap) => {
@@ -147,9 +195,15 @@ describe('structured retention output allowance', () => {
 });
 
 describe('complete repair output allowance', () => {
-  it.each([3, 12].flatMap((count) => [undefined, 3200].map((cap) => [count, cap] as const)))(
+  it.each(
+    [3, 12].flatMap((count) =>
+      [undefined, 3200].flatMap((cap) =>
+        [undefined, 32768].map((allowance) => [count, cap, allowance] as const),
+      ),
+    ),
+  )(
     'repairs a multi-record report or explicitly holds at the role cap (%i records; cap %s)',
-    async (count, cap) => {
+    async (count, cap, allowance) => {
       const selected = candidates.slice(0, count);
       const requests: Array<{ budget: number; phase: string }> = [];
       const drafts = selected.map((candidate) => ({
@@ -195,7 +249,10 @@ describe('complete repair output allowance', () => {
           })),
         });
       });
-      const result = await runRetain(report, reportModel(cap), { sourceItems });
+      const result = await runRetain(report, reportModel(cap), {
+        sourceItems,
+        generationMaxOutputTokens: allowance,
+      });
       expect(requests.filter((request) => request.phase === 'repair')).toHaveLength(1);
       if (cap) {
         expect(result.error).toContain('output token budget');
@@ -206,7 +263,7 @@ describe('complete repair output allowance', () => {
         expect(requests.at(-1)).toEqual({ budget: cap, phase: 'repair' });
       } else {
         expect(requests.find((request) => request.phase === 'repair')?.budget).toBe(
-          count === 3 ? 9600 : 16384,
+          allowance ?? (count === 3 ? 9600 : 16384),
         );
         expect(result.error).toBeNull();
         expect(result.held).toEqual([]);
@@ -273,6 +330,86 @@ describe('complete repair output allowance', () => {
         expect(result.degradedReason).toBe('derive_failed');
         expect(result.held[0]?.hold_stage).toBe('validation');
         expect(verificationInputs.map((candidate) => candidate.text)).toEqual([sibling.text]);
+      }
+    },
+  );
+});
+
+describe('independent verifier concurrency', () => {
+  it.each([false, true])(
+    'preserves prompts, ordering and fail-closed accounting (failure %s)',
+    async (failure) => {
+      async function exercise(concurrency: number) {
+        let active = 0;
+        let maxActive = 0;
+        let completed = 0;
+        const prompts: string[] = [];
+        vi.spyOn(globalThis, 'fetch').mockImplementation(async (_url, init) => {
+          const body = JSON.parse(init!.body as string);
+          const payload = JSON.parse(body.input.at(-1).content);
+          const verification = Array.isArray(payload.candidates);
+          if (verification) {
+            const index = prompts.length;
+            prompts.push(init!.body as string);
+            active += 1;
+            maxActive = Math.max(maxActive, active);
+            await new Promise((resolve) => setTimeout(resolve, (4 - (index % 4)) * 5));
+            active -= 1;
+            completed += 1;
+            if (failure && index === 1)
+              return Response.json({
+                status: 'completed',
+                output: [
+                  { type: 'message', content: [{ type: 'output_text', text: 'invalid verification' }] },
+                ],
+                usage: { input_tokens: 10, output_tokens: 5, total_tokens: 15 },
+              });
+          }
+          const value = verification
+            ? {
+                verdicts: payload.candidates.map((candidate: any) => ({
+                  candidate_id: candidate.candidate_id,
+                  source_selected_polarity: candidate.polarity,
+                  ...retentionAudit(candidate),
+                  ...frameAuditFields(candidate),
+                  proposition_supported: true,
+                  action_arguments_preserved: true,
+                  qualification_scope_preserved: true,
+                  reason_code: null,
+                })),
+              }
+            : { candidates, events: [] };
+          return Response.json({
+            status: 'completed',
+            output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify(value) }] }],
+            usage: { input_tokens: 10, output_tokens: 5, total_tokens: 15 },
+          });
+        });
+        const result = await runRetain(report, reportModel(), {
+          sourceItems,
+          verificationConcurrency: concurrency,
+        });
+        vi.restoreAllMocks();
+        return { result, prompts, maxActive, completed };
+      }
+      const serial = await exercise(1);
+      const parallel = await exercise(4);
+      expect(serial.maxActive).toBe(1);
+      expect(parallel.maxActive).toBe(4);
+      expect(parallel.prompts.slice(0, serial.prompts.length)).toEqual(serial.prompts);
+      expect(parallel.result.candidates).toEqual(serial.result.candidates);
+      expect(parallel.result.held).toEqual(serial.result.held);
+      expect(parallel.result.error).toEqual(serial.result.error);
+      expect(parallel.completed).toBe(parallel.prompts.length);
+      expect(parallel.result.modelUsage.verification?.input_tokens).toBe(parallel.completed * 10);
+      if (failure) {
+        expect(serial.completed).toBe(2);
+        expect(parallel.completed).toBe(4);
+        expect(parallel.result.candidates).toEqual([]);
+        expect(parallel.result.held).toHaveLength(candidates.length);
+      } else {
+        expect(parallel.completed).toBe(6);
+        expect(parallel.result.candidates).toHaveLength(candidates.length);
       }
     },
   );

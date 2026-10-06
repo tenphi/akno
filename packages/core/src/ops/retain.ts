@@ -84,6 +84,8 @@ interface ReceiptRow {
   source_hash: string;
   source_group: string | null;
   receipt_fingerprint: string;
+  mode: string;
+  change_id: string | null;
   result: string;
 }
 
@@ -167,7 +169,7 @@ export async function retain(ctx: AknoContext, rawInput: unknown): Promise<Retai
       }
       results.push(
         source.retention.mode === 'extract'
-          ? await retainExtracted(ctx, resolved, input.dry_run ?? false)
+          ? await retainExtracted(ctx, resolved, input.dry_run ?? false, input.retry_failed ?? false)
           : await retainCandidates(ctx, resolved, source.retention.candidates, {
               dryRun: input.dry_run ?? false,
               selection: 'provided',
@@ -426,16 +428,50 @@ function sourceResultBinding(binding: RetainSourceBinding): NonNullable<RetainSo
   };
 }
 
+const extractionLocks = new WeakMap<object, Map<string, Promise<void>>>();
+
 async function retainExtracted(
   ctx: AknoContext,
   resolved: ResolvedRetainSource,
   dryRun: boolean,
+  retryFailed: boolean,
+): Promise<RetainSourceResult> {
+  const locks = extractionLocks.get(ctx.store.db) ?? new Map<string, Promise<void>>();
+  extractionLocks.set(ctx.store.db, locks);
+  const key = JSON.stringify([resolved.source.source_id, resolved.source.revision]);
+  const prior = locks.get(key) ?? Promise.resolve();
+  let release!: () => void;
+  const current = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  locks.set(key, current);
+  await prior;
+  try {
+    return await retainExtractedOnce(ctx, resolved, dryRun, retryFailed);
+  } finally {
+    release();
+    if (locks.get(key) === current) locks.delete(key);
+  }
+}
+
+async function retainExtractedOnce(
+  ctx: AknoContext,
+  resolved: ResolvedRetainSource,
+  dryRun: boolean,
+  retryFailed: boolean,
 ): Promise<RetainSourceResult> {
   const source = resolved.source;
   if (source.retention.mode !== 'extract') throw new Error('retain extract received a provided source');
   const sourceHash = resolved.sourceHash;
   const requestHash = sha256(JSON.stringify(resolved.requested));
-  const replay = replayResult(ctx, source.source_id, source.revision, requestHash, sourceHash);
+  const replay = replayResult(
+    ctx,
+    source.source_id,
+    source.revision,
+    requestHash,
+    sourceHash,
+    retryFailed && !dryRun,
+  );
   if (replay) return replay;
   const groupIssue = sourceGroupIssue(ctx, source.source_id, source.source_group);
   if (groupIssue) return conflictResult(source.source_id, source.revision, groupIssue);
@@ -450,6 +486,8 @@ async function retainExtracted(
     ...(source.timezone ? { timezone: source.timezone } : {}),
     ...(source.retention.mission ? { mission: source.retention.mission } : {}),
     ...('items' in source.input ? { sourceItems: source.input.items } : {}),
+    generationMaxOutputTokens: ctx.config.maintenance.retain.generationMaxOutputTokens,
+    verificationConcurrency: ctx.config.maintenance.retain.verificationConcurrency,
     folders: folderCatalog(ctx.config, ctx.store),
     sourceId: source.source_id,
     revision: source.revision,
@@ -472,6 +510,7 @@ async function retainExtracted(
       placement: 'automatic',
       initialResults,
       modelUsage: { ...extracted.modelUsage, placement: [] },
+      retryable: extracted.retryable && !source.retracts && initialResults.length === 0 ? true : undefined,
       additionalDegraded: [extracted.degradedReason ?? 'derive_failed'],
       sourceHold: {
         reason_code: initialResults[0]?.reason_code ?? 'apply_failed',
@@ -506,6 +545,7 @@ async function retainCandidates(
       placement: RetainModelCallReceipt[];
     };
     sourceHold?: { reason_code: RetainHoldReason; reason: string };
+    retryable?: true;
     additionalDegraded?: DegradedReason[];
     skipAutomaticRouting?: boolean;
     journalOp?: 'retain' | 'remember';
@@ -1106,6 +1146,12 @@ async function retainCandidates(
           ? 'held'
           : 'noop',
     candidates: candidateResults,
+    ...(options.retryable &&
+    candidateResults.length === 0 &&
+    changed.length === 0 &&
+    pendingSupports.length === 0
+      ? { retryable: true as const }
+      : {}),
     source: sourceResultBinding(effectiveBinding),
     ...(options.sourceHold ? { reason_code: options.sourceHold.reason_code } : {}),
     status:
@@ -1654,6 +1700,9 @@ function admittedAutomaticSlug(catalog: ReturnType<typeof folderCatalog>, slug: 
 }
 
 function retentionModel(ctx: AknoContext): ModelClient {
+  const timeoutMs = ctx.config.maintenance.retain.modelTimeoutMs;
+  if (timeoutMs)
+    return new ModelClient({ ...(ctx.config.maintenance.model ?? ctx.config.models.derive), timeoutMs });
   return ctx.config.maintenance.model ? new ModelClient(ctx.config.maintenance.model) : ctx.models.derive;
 }
 
@@ -1879,6 +1928,7 @@ function replayResult(
   revision: string,
   requestHash: string,
   sourceHash: string,
+  retryFailed = false,
 ): RetainSourceResult | null {
   const row = ctx.store.db
     .prepare('SELECT * FROM retain_receipts WHERE source_id = ? AND revision = ?')
@@ -1889,6 +1939,27 @@ function replayResult(
   }
   try {
     const stored = JSON.parse(row.result) as RetainSourceResult;
+    // Never repeat a semantic hold or an attempt that could have committed support. A lost
+    // socket still replays normally; only an explicit retry may replace this zero-progress receipt.
+    if (
+      retryFailed &&
+      row.mode === 'extract_automatic' &&
+      row.change_id === null &&
+      stored.retryable === true &&
+      stored.candidates.length === 0 &&
+      !stored.change_id &&
+      !stored.current_hold &&
+      !ctx.store.db
+        .prepare('SELECT 1 FROM retain_supports WHERE receipt_fingerprint = ? LIMIT 1')
+        .get(row.receipt_fingerprint)
+    ) {
+      ctx.store.db
+        .prepare(
+          'DELETE FROM retain_receipts WHERE source_id = ? AND revision = ? AND request_hash = ? AND source_hash = ?',
+        )
+        .run(sourceId, revision, requestHash, sourceHash);
+      return null;
+    }
     const retired = new Set(
       (
         ctx.store.db
