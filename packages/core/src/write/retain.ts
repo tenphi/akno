@@ -662,6 +662,7 @@ export async function runRetain(
     extractionTimeoutMs?: number;
     generationMaxOutputTokens?: number;
     verificationConcurrency?: number;
+    verificationFailureScope?: 'source' | 'batch';
   } = {},
 ): Promise<RetainResult> {
   const empty = emptyResult();
@@ -1016,6 +1017,7 @@ export async function runRetain(
     cleaned.reportLimitConcerns,
     options.verificationConcurrency,
     options.generationMaxOutputTokens,
+    options.verificationFailureScope,
   );
   if (verified.error) {
     return {
@@ -1048,7 +1050,9 @@ export async function runRetain(
     .map((candidate) => ({
       candidate_id: candidate.candidate_id,
       reason_code: verified.reasons.get(candidate.candidate_id) ?? ('discourse_uncertain' as const),
-      reason: 'the independent semantic verifier did not confirm the complete retained representation',
+      reason: verified.unavailable.has(candidate.candidate_id)
+        ? 'independent semantic verification was unavailable or invalid'
+        : 'the independent semantic verifier did not confirm the complete retained representation',
       hold_stage: 'verification' as const,
     }));
 
@@ -1058,7 +1062,7 @@ export async function runRetain(
     events: cleanEvents(parsed.events),
     error: null,
     sourceHold: null,
-    degradedReason: repairDegraded,
+    degradedReason: verified.unavailable.size ? 'retain_verification_failed' : repairDegraded,
     modelUsage: { extraction: extractionReceipt, ...repairUsage, verification: verified.receipt },
   };
 }
@@ -1151,8 +1155,10 @@ async function verifyCandidates(
   reportLimitConcerns: ReadonlySet<string>,
   concurrency = 1,
   maxOutputTokens?: number,
+  failureScope: 'source' | 'batch' = 'source',
 ): Promise<{
   accepted: Set<string>;
+  unavailable: Set<string>;
   reasons: Map<string, RetainHoldReason>;
   scopes: Map<string, RetentionScope>;
   receipt: RetainModelCallReceipt;
@@ -1160,6 +1166,7 @@ async function verifyCandidates(
 }> {
   const outcomes: ModelOutcome<string>[] = [];
   const accepted = new Set<string>();
+  const unavailable = new Set<string>();
   const reasons = new Map<string, RetainHoldReason>();
   const scopes = new Map<string, RetentionScope>();
   // Two disjoint candidates fit the default derive-role ceiling without truncating a large batch.
@@ -1186,15 +1193,25 @@ async function verifyCandidates(
     const checkedBatches = await Promise.all(work);
     outcomes.push(...checkedBatches.map((checked) => checked.outcome));
     const failed = checkedBatches.find((checked) => checked.error);
-    if (failed)
+    if (failed && failureScope === 'source')
       return {
         accepted: new Set(),
+        unavailable: new Set(),
         reasons: new Map(),
         scopes: new Map(),
         error: failed.error,
         receipt: modelCallReceipt(model, aggregateSemanticOutcomes(outcomes)),
       };
-    for (const checked of checkedBatches) {
+    for (const [index, checked] of checkedBatches.entries()) {
+      if (checked.error) {
+        // Only opt-in partial retention reaches here. No decision from this atomic batch
+        // survives; global relation closure below also withholds its dependent records.
+        for (const candidate of candidates.slice(start + index * 2, start + index * 2 + 2)) {
+          unavailable.add(candidate.candidate_id);
+          reasons.set(candidate.candidate_id, 'discourse_uncertain');
+        }
+        continue;
+      }
       for (const id of checked.accepted) accepted.add(id);
       for (const [id, reason] of checked.reasons) reasons.set(id, reason);
       for (const [id, scope] of checked.scopes) scopes.set(id, scope);
@@ -1220,6 +1237,7 @@ async function verifyCandidates(
   }
   return {
     accepted,
+    unavailable,
     reasons,
     scopes,
     error: null,

@@ -388,12 +388,15 @@
       // Null inherits the model deadline. Increasing this permits large retention extraction,
       // repair and verification calls more time per attempt, without changing other workflows.
       "model_timeout_ms": null,
-      // Null keeps each extraction/repair phase allowance. Increasing this permits more qualified records
+      // Null keeps each structured retention phase allowance. Increasing this permits more qualified records
       // and hidden reasoning, at higher token cost; the configured model ceiling still wins.
       "generation_max_output_tokens": null,
       // Independent verifier batches keep identical evidence and verdict rules. Higher values
       // reduce wall time but increase simultaneous provider load; 1 keeps sequential execution.
       "verification_concurrency": 1,
+      // Default source-wide failure. Batch mode holds failed atomic batches and all dependents,
+      // while keeping independent verified records. Replacement corrections always stay source-wide.
+      "verification_failure_scope": "source",
       // Private exact source frames are kept while live memory or maintenance work needs them.
       // Once those dependencies are gone, this grace preserves short-term undo/recovery value.
       "evidence_grace_days": 30

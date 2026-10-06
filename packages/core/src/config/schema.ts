@@ -429,6 +429,8 @@ const MaintenanceDoc = z.object({
     generation_max_output_tokens: z.number().int().positive().nullable().optional(),
     /** Independent two-candidate verifier batches; one preserves sequential execution. */
     verification_concurrency: z.number().int().min(1).max(16).optional(),
+    /** Source-wide holds are default; batch keeps independently verified records. */
+    verification_failure_scope: z.enum(['source', 'batch']).optional(),
     /** Grace before unneeded private source frames are securely pruned. */
     evidence_grace_days: z.number().int().nonnegative().optional(),
   }).optional(),
@@ -696,6 +698,7 @@ export interface AknoConfig {
       modelTimeoutMs?: number;
       generationMaxOutputTokens?: number;
       verificationConcurrency?: number;
+      verificationFailureScope?: 'source' | 'batch';
       evidenceGraceDays: number;
     };
     observe: {

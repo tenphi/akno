@@ -375,9 +375,13 @@ describe('retention verification output allowance', () => {
 });
 
 describe('independent verifier concurrency', () => {
-  it.each([false, true])(
-    'preserves prompts, ordering and fail-closed accounting (failure %s)',
-    async (failure) => {
+  it.each(
+    [false, true].flatMap((failure) =>
+      (['source', 'batch'] as const).map((scope) => [failure, scope] as const),
+    ),
+  )(
+    'preserves prompts, ordering and fail-closed accounting (failure %s; scope %s)',
+    async (failure, scope) => {
       async function exercise(concurrency: number) {
         let active = 0;
         let maxActive = 0;
@@ -427,6 +431,7 @@ describe('independent verifier concurrency', () => {
         const result = await runRetain(report, reportModel(), {
           sourceItems,
           verificationConcurrency: concurrency,
+          verificationFailureScope: scope,
         });
         vi.restoreAllMocks();
         return { result, prompts, maxActive, completed };
@@ -441,14 +446,19 @@ describe('independent verifier concurrency', () => {
       expect(parallel.result.error).toEqual(serial.result.error);
       expect(parallel.completed).toBe(parallel.prompts.length);
       expect(parallel.result.modelUsage.verification?.input_tokens).toBe(parallel.completed * 10);
-      if (failure) {
+      if (failure && scope === 'source') {
         expect(serial.completed).toBe(2);
         expect(parallel.completed).toBe(4);
         expect(parallel.result.candidates).toEqual([]);
         expect(parallel.result.held).toHaveLength(candidates.length);
       } else {
         expect(parallel.completed).toBe(6);
-        expect(parallel.result.candidates).toHaveLength(candidates.length);
+        expect(parallel.result.candidates).toHaveLength(candidates.length - (failure ? 2 : 0));
+        if (failure) {
+          expect(parallel.result.held).toHaveLength(2);
+          expect(parallel.result.error).toBeNull();
+          expect(parallel.result.degradedReason).toBe('retain_verification_failed');
+        }
       }
     },
   );
