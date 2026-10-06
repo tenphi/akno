@@ -488,6 +488,9 @@ async function retainExtractedOnce(
     ...('items' in source.input ? { sourceItems: source.input.items } : {}),
     generationMaxOutputTokens: ctx.config.maintenance.retain.generationMaxOutputTokens,
     verificationConcurrency: ctx.config.maintenance.retain.verificationConcurrency,
+    verificationFailureScope: source.retracts
+      ? 'source'
+      : ctx.config.maintenance.retain.verificationFailureScope,
     folders: folderCatalog(ctx.config, ctx.store),
     sourceId: source.source_id,
     revision: source.revision,

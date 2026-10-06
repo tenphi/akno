@@ -664,6 +664,7 @@ function resolve(
           ? { generationMaxOutputTokens: doc.maintenance.retain.generation_max_output_tokens }
           : {}),
         verificationConcurrency: doc.maintenance?.retain?.verification_concurrency ?? 1,
+        verificationFailureScope: doc.maintenance?.retain?.verification_failure_scope ?? 'source',
         evidenceGraceDays: doc.maintenance?.retain?.evidence_grace_days ?? 30,
       },
       observe: {

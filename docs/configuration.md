@@ -251,12 +251,16 @@ existing page or remains held.
 `maintenance.retain.model_timeout_ms` optionally sets the per-attempt deadline for retention model calls,
 including extraction, structural repair, verification and support comparison. Null inherits the maintenance
 or derive model deadline. It does not change reasoning effort or other workflows.
-`generation_max_output_tokens` overrides extraction and structural-repair output allowances; null keeps
+`generation_max_output_tokens` overrides extraction, structural-repair and verification output allowances; null keeps
 each phase’s allowance, and the model role’s hard ceiling still wins. A larger allowance costs more tokens and allows
 complete structured records to fit alongside hidden reasoning. `verification_concurrency` defaults to `1`. Independent two-candidate verifier batches may run in parallel
-(up to `16`), with identical source frames, prompts, budgets and result ordering. Any failed batch still
-withholds the complete candidate transaction; already launched calls are included in usage accounting.
-These settings do not change admission checks.
+(up to `16`), with identical source frames, prompts, budgets and result ordering. With the default failure scope,
+any failed batch withholds the complete candidate transaction; already launched calls are included in usage accounting.
+`verification_failure_scope` defaults to `source`, preserving whole-source holds on a failed batch.
+Opt-in `batch` mode keeps independently verified records, holds every record in a failed atomic batch,
+and withholds all transitive relation dependents. Failure remains typed as `retain_verification_failed`;
+all launched calls remain in usage accounting. Replacement corrections always retain source-wide failure.
+These settings do not change evidence, admission or semantic acceptance checks.
 
 `evidence_grace_days` defaults to `30`. It applies only after retained support becomes inactive through exact
 retraction or user forget; active support has no age limit. Nonterminal maintenance work that still names the

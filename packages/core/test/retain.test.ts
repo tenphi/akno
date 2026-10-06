@@ -45,6 +45,7 @@ interface AutomaticRetainStub {
   setCandidate: (candidate: Record<string, unknown>) => void;
   setCandidates: (candidates: Record<string, unknown>[]) => void;
   setVerification: (supported: boolean) => void;
+  setVerificationFailure: (text: string | null) => void;
   setRetention: (decision: {
     durability: 'durable' | 'task_only' | 'transient' | 'uncertain';
     source_scope: 'global' | 'entity' | 'document' | 'event' | 'task' | 'unknown';
@@ -67,6 +68,7 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
   let failure: 'transport' | 'invalid' | null = null;
   let candidates: Record<string, unknown>[] = [];
   let verificationSupported = true;
+  let verificationFailure: string | null = null;
   let retention: Parameters<AutomaticRetainStub['setRetention']>[0] = {
     durability: 'durable',
     source_scope: 'entity',
@@ -93,12 +95,21 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
       } else if (system.includes('independently verify proposed retained memories')) {
         counts.verification++;
         const payload = JSON.parse(user) as {
-          candidates?: { candidate_id: string; kind: string; polarity: 'affirmed' | 'negated' }[];
+          candidates?: {
+            candidate_id: string;
+            kind: string;
+            polarity: 'affirmed' | 'negated';
+            text: string;
+          }[];
           reference_clock?: { mentioned_at: string; timezone: string | null } | null;
         };
         verificationClocks.push(payload.reference_clock ?? null);
         content = {
-          verdicts: (payload.candidates ?? []).map((item) => ({
+          verdicts: (verificationFailure &&
+          payload.candidates?.some((item) => item.text === verificationFailure)
+            ? []
+            : (payload.candidates ?? [])
+          ).map((item) => ({
             candidate_id: item.candidate_id,
             source_selected_polarity: item.polarity,
             ...retentionAudit(item, verificationSupported, true, true),
@@ -177,6 +188,9 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
     setCandidates: (next) => {
       candidates = next;
     },
+    setVerificationFailure: (text) => {
+      verificationFailure = text;
+    },
     setVerification: (supported) => {
       verificationSupported = supported;
     },
@@ -199,7 +213,11 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
   };
 }
 
-async function openAutomaticMem(url: string, fallbackPage?: string): Promise<Akno> {
+async function openAutomaticMem(
+  url: string,
+  fallbackPage?: string,
+  verificationScope?: 'source' | 'batch',
+): Promise<Akno> {
   return open({
     aknoPath: root,
     stateDir,
@@ -216,7 +234,16 @@ async function openAutomaticMem(url: string, fallbackPage?: string): Promise<Akn
         expansion: { id: null },
       },
       folders: { 'memory/**': { role: 'knowledge', remember: 'integrate' } },
-      ...(fallbackPage ? { maintenance: { retain: { fallback_page: fallbackPage } } } : {}),
+      ...(fallbackPage || verificationScope
+        ? {
+            maintenance: {
+              retain: {
+                ...(fallbackPage ? { fallback_page: fallbackPage } : {}),
+                ...(verificationScope ? { verification_failure_scope: verificationScope } : {}),
+              },
+            },
+          }
+        : {}),
     },
   });
 }
@@ -3074,3 +3101,78 @@ describe('folder-owned timeline retention', () => {
     }
   });
 });
+
+it.each([undefined, 'batch'] as const)(
+  'persists only independently verified records with the configured failure scope (%s)',
+  async (scope) => {
+    const stub = await startAutomaticRetainStub();
+    const mem = await openAutomaticMem(stub.url, undefined, scope);
+    const facts = [
+      'The Zephyr QX-100 inspection costs 1111 EUR.',
+      'The Zephyr QX-100 warranty lasts five years.',
+      'The Zephyr QX-100 replacement costs 2222 EUR.',
+    ];
+    stub.setCandidates(
+      facts.map((text) => ({
+        text,
+        kind: 'claim',
+        subject: 'Zephyr QX-100',
+        attribution: { source_role: 'user', source_speaker: 'Ada Marlow', chain: [] },
+        discourse: { commitment: 'asserted', disposition: 'active' },
+        epistemic: { basis: 'self_attested' },
+        polarity: 'affirmed',
+        relations: [],
+        time: null,
+        page: 'memory/equipment',
+        support: [{ item_id: 'mail-1111', quote: text }],
+        discourse_frame: [{ item_id: 'mail-1111', quote: text }],
+      })),
+    );
+    stub.setVerificationFailure(facts[2]!);
+    const source = {
+      source_id: 'mail:partial-1111',
+      revision: '1',
+      input: {
+        items: [
+          { item_id: 'mail-1111', role: 'user' as const, speaker: 'Ada Marlow', text: facts.join('\n') },
+        ],
+      },
+      retention: { mode: 'extract' as const },
+    };
+    try {
+      const result = await mem.retain({ sources: [source] });
+      expect(result.sources[0]?.degraded).toContain('retain_verification_failed');
+      const written =
+        result.sources[0]?.candidates.filter((candidate) => candidate.outcome === 'written') ?? [];
+      expect(written).toHaveLength(scope === 'batch' ? 2 : 0);
+      const body = fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8');
+      expect(body.includes(facts[0]!)).toBe(scope === 'batch');
+      expect(body.includes(facts[1]!)).toBe(scope === 'batch');
+      expect(body).not.toContain(facts[2]!);
+      const calls = stub.calls();
+      expect((await mem.retain({ sources: [source] })).sources[0]?.outcome).toBe('replayed');
+      expect(stub.calls()).toEqual(calls);
+      if (scope === 'batch') {
+        const old = upsert('mail:replacement-1111', '1');
+        await mem.retain({ sources: [old] });
+        const replacement = await mem.retain({
+          sources: [
+            {
+              ...source,
+              source_id: old.source_id,
+              revision: '2',
+              retracts: { target_revision: '1', candidate_ids: ['warranty-selection'] },
+            },
+          ],
+        });
+        expect(replacement.sources[0]?.outcome).toBe('held');
+        expect(replacement.sources[0]?.change_id).toBeUndefined();
+        const preserved = fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8');
+        expect(preserved).toContain(old.retention.candidates[0]!.text);
+      }
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  },
+);

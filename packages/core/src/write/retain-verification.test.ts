@@ -171,62 +171,70 @@ describe('bounded first-pass retention verification', () => {
     },
   );
 
-  it('holds cross-batch and transitive dependents of a semantically rejected target', async () => {
-    const texts = [
-      'The silverpine inspection conclusion supersedes the earlier recommendation.',
-      'The silverpine inspection recommendation supersedes the initial proposal.',
-      'The silverpine initial proposal calls for an inspection.',
-    ];
-    const completeSource = texts.join(' ');
-    const records = texts.map((text, index) => ({
-      ...candidate,
-      text,
-      subject: 'silverpine',
-      support: [{ quote: text }],
-      discourse_frame: [{ quote: completeSource }],
-      relations:
-        index < 2 ? [{ type: 'supersedes', target_candidate: index + 1, support: [{ quote: text }] }] : [],
-    }));
-    const checkedIds: string[] = [];
-    const chat = vi.fn(async (messages: { content: string }[]) => {
-      if (chat.mock.calls.length === 1)
-        return { ok: true, value: JSON.stringify({ candidates: records }), latencyMs: 11 };
-      const payload = JSON.parse(messages.at(-1)!.content);
-      return {
-        ok: true,
-        latencyMs: 22,
-        value: JSON.stringify({
-          verdicts: payload.candidates.map(
-            (record: { polarity: 'affirmed' | 'negated'; candidate_id: string; text: string }) => {
-              checkedIds.push(record.candidate_id);
-              const supported = record.text !== texts[2];
-              return {
-                candidate_id: record.candidate_id,
-                source_selected_polarity: record.polarity,
-                ...retentionAudit(record, supported),
-                ...dimensions,
-                proposition_supported: supported,
-                reason_code: supported ? null : 'discourse_uncertain',
-              };
-            },
-          ),
-        }),
-      };
-    });
-    const model = {
-      available: true,
-      chat,
-      modelId: 'invented-verifier',
-      reportInvalidResponse: vi.fn(),
-    } as unknown as ModelClient;
-    const result = await runRetain(completeSource, model);
-    expect(chat).toHaveBeenCalledTimes(3);
-    expect(checkedIds).toHaveLength(3);
-    expect(result.candidates).toEqual([]);
-    expect(result.held).toHaveLength(3);
-    expect(result.held.every((held) => held.hold_stage === 'verification')).toBe(true);
-    expect(result.degradedReason).toBeNull();
-  });
+  it.each(['rejected', 'unavailable'] as const)(
+    'holds cross-batch and transitive dependents of a %s target',
+    async (mode) => {
+      const texts = [
+        'The silverpine inspection conclusion supersedes the earlier recommendation.',
+        'The silverpine inspection recommendation supersedes the initial proposal.',
+        'The silverpine initial proposal calls for an inspection.',
+      ];
+      const completeSource = texts.join(' ');
+      const records = texts.map((text, index) => ({
+        ...candidate,
+        text,
+        subject: 'silverpine',
+        support: [{ quote: text }],
+        discourse_frame: [{ quote: completeSource }],
+        relations:
+          index < 2 ? [{ type: 'supersedes', target_candidate: index + 1, support: [{ quote: text }] }] : [],
+      }));
+      const checkedIds: string[] = [];
+      const chat = vi.fn(async (messages: { content: string }[]) => {
+        if (chat.mock.calls.length === 1)
+          return { ok: true, value: JSON.stringify({ candidates: records }), latencyMs: 11 };
+        const payload = JSON.parse(messages.at(-1)!.content);
+        if (mode === 'unavailable' && payload.candidates.some((record: any) => record.text === texts[2])) {
+          checkedIds.push(...payload.candidates.map((record: any) => record.candidate_id));
+          return { ok: false, value: null, reason: 'timeout', latencyMs: 22 };
+        }
+        return {
+          ok: true,
+          latencyMs: 22,
+          value: JSON.stringify({
+            verdicts: payload.candidates.map(
+              (record: { polarity: 'affirmed' | 'negated'; candidate_id: string; text: string }) => {
+                checkedIds.push(record.candidate_id);
+                const supported = record.text !== texts[2];
+                return {
+                  candidate_id: record.candidate_id,
+                  source_selected_polarity: record.polarity,
+                  ...retentionAudit(record, supported),
+                  ...dimensions,
+                  proposition_supported: supported,
+                  reason_code: supported ? null : 'discourse_uncertain',
+                };
+              },
+            ),
+          }),
+        };
+      });
+      const model = {
+        available: true,
+        chat,
+        modelId: 'invented-verifier',
+        reportInvalidResponse: vi.fn(),
+      } as unknown as ModelClient;
+      const result = await runRetain(completeSource, model, { verificationFailureScope: 'batch' });
+      expect(chat).toHaveBeenCalledTimes(3);
+      expect(checkedIds).toHaveLength(3);
+      expect(result.candidates).toEqual([]);
+      expect(result.held).toHaveLength(3);
+      expect(result.held.every((held) => held.hold_stage === 'verification')).toBe(true);
+      expect(result.degradedReason).toBe(mode === 'unavailable' ? 'retain_verification_failed' : null);
+      expect(result.error).toBeNull();
+    },
+  );
 });
 
 const report = 'Bo Winters сказал, что осмотр silverpine включён. Я, Ada Marlow, только передаю его слова.';
@@ -314,6 +322,56 @@ describe('structured outer recorder and generated inner reporter', () => {
     const result = cleanCandidateBatch([reportCandidate(chain, text)], options(text));
     expect(result.candidates).toEqual([]);
     expect(result.held).toHaveLength(1);
+  });
+});
+
+describe('exact structured sender labels', () => {
+  const sender = 'Bo Winters <bo_winters@example.test>';
+  const quote = 'The inspection fee is EUR 1111.';
+  const readable = `${sender} reports that the inspection fee is EUR 1111.`;
+  const senderOptions = {
+    generated: true as const,
+    sourceItems: [{ item_id: 'mail-1111', role: 'external' as const, speaker: sender, text: quote }],
+  };
+  const record = (speaker: string, chain: unknown[] = []) => ({
+    kind: 'claim',
+    text: readable,
+    subject: 'inspection fee',
+    attribution: { source_role: 'external', source_speaker: speaker, chain },
+    discourse: { commitment: 'asserted', disposition: 'active' },
+    epistemic: { basis: 'source_report' },
+    polarity: 'affirmed',
+    relations: [],
+    support: [{ item_id: 'mail-1111', quote }],
+    discourse_frame: [{ item_id: 'mail-1111', quote }],
+    time: null,
+    page: null,
+  });
+  it.each([[], [{ speaker: sender, role: 'external' }]])(
+    'keeps an exact original sender without manufacturing a chain (%j)',
+    (chain) => {
+      const result = cleanCandidateBatch([record(sender, chain)], senderOptions);
+      expect(result.held).toEqual([]);
+      expect(result.candidates).toHaveLength(1);
+      expect(result.candidates[0]?.attribution).toEqual({ source_role: 'external', source_speaker: sender });
+      expect(result.candidates[0]?.text).toBe(readable);
+    },
+  );
+  it.each(['Bo Winters', 'Bo Winters bo winters@example.test', 'Ada Marlow'])(
+    'still holds an unsupported different label (%s)',
+    (label) => {
+      const result = cleanCandidateBatch([record(label)], senderOptions);
+      expect(result.candidates).toEqual([]);
+      expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
+    },
+  );
+  it('still requires support for an explicitly supplied inner reporter', () => {
+    const result = cleanCandidateBatch(
+      [record(sender, [{ speaker: 'Ada Marlow', role: 'external' }])],
+      senderOptions,
+    );
+    expect(result.candidates).toEqual([]);
+    expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
   });
 });
 
