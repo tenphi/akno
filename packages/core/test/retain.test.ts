@@ -41,6 +41,7 @@ interface AutomaticRetainStub {
   calls: () => { extraction: number; verification: number; routing: number; placement: number };
   verificationClocks: () => Array<{ mentioned_at: string; timezone: string | null } | null>;
   close: () => Promise<void>;
+  setFailure: (failure: 'transport' | 'invalid' | null) => void;
   setCandidate: (candidate: Record<string, unknown>) => void;
   setCandidates: (candidates: Record<string, unknown>[]) => void;
   setVerification: (supported: boolean) => void;
@@ -63,6 +64,7 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
     _payload,
     verifying,
   ) => (verifying ? { verdicts: [] } : { withdrawals: [] });
+  let failure: 'transport' | 'invalid' | null = null;
   let candidates: Record<string, unknown>[] = [];
   let verificationSupported = true;
   let retention: Parameters<AutomaticRetainStub['setRetention']>[0] = {
@@ -134,6 +136,17 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
               : { selection: 'uncertain' };
       } else if (system.includes('You extract durable memory from one untrusted source')) {
         counts.extraction++;
+        if (failure) {
+          response.writeHead(failure === 'transport' ? 400 : 200, { 'content-type': 'application/json' });
+          response.end(
+            JSON.stringify(
+              failure === 'transport'
+                ? { error: { message: 'Invented endpoint outage' } }
+                : { choices: [{ message: { content: 'invalid' } }] },
+            ),
+          );
+          return;
+        }
         content = {
           candidates: candidates.filter((candidate) => Object.keys(candidate).length > 0),
           events: [],
@@ -157,6 +170,9 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
     },
     setCandidate: (next) => {
       candidates = [next];
+    },
+    setFailure: (next) => {
+      failure = next;
     },
     setCandidates: (next) => {
       candidates = next;
@@ -1585,6 +1601,75 @@ describe('provided exact retain', () => {
 });
 
 describe('automatic retain', () => {
+  it('retries only an exact zero-progress transport failure, across restart and concurrent callers', async () => {
+    const source = {
+      source_id: 'report:retry',
+      revision: '1',
+      input: { text: 'Ada Marlow selected a five-year warranty.' },
+      retention: { mode: 'extract' as const },
+    };
+    const stub = await startAutomaticRetainStub();
+    stub.setFailure('transport');
+    let mem = await openAutomaticMem(stub.url);
+    try {
+      const failed = await mem.retain({ sources: [source] });
+      expect(failed.sources[0]).toMatchObject({ retryable: true, candidates: [], status: 'degraded' });
+      expect(failed.sources[0]?.change_id).toBeUndefined();
+      const calls = stub.calls().extraction;
+      expect((await mem.retain({ sources: [source] })).sources[0]?.outcome).toBe('replayed');
+      expect(
+        (await mem.retain({ sources: [source], retry_failed: true, dry_run: true })).sources[0]?.outcome,
+      ).toBe('replayed');
+      expect(
+        (
+          await mem.retain({
+            sources: [{ ...source, input: { text: 'Changed source' } }],
+            retry_failed: true,
+          })
+        ).sources[0]?.outcome,
+      ).toBe('revision_conflict');
+      expect(stub.calls().extraction).toBe(calls);
+      await mem.close();
+      mem = await openAutomaticMem(stub.url);
+      stub.setFailure(null);
+      const results = await Promise.all([
+        mem.retain({ sources: [source], retry_failed: true }),
+        mem.retain({ sources: [source], retry_failed: true }),
+      ]);
+      expect(results[0]?.sources[0]?.status).toBe('empty');
+      expect(results[1]?.sources[0]?.outcome).toBe('replayed');
+      expect(stub.calls().extraction).toBe(calls + 1);
+      expect(results[0]?.sources[0]?.retryable).toBeUndefined();
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
+  it('keeps a successful but invalid extraction terminal even with explicit retry', async () => {
+    const stub = await startAutomaticRetainStub();
+    stub.setFailure('invalid');
+    const mem = await openAutomaticMem(stub.url);
+    const source = {
+      source_id: 'report:invalid',
+      revision: '1',
+      input: { text: 'Invented report' },
+      retention: { mode: 'extract' as const },
+    };
+    try {
+      const result = await mem.retain({ sources: [source] });
+      expect(result.sources[0]?.retryable).toBeUndefined();
+      const calls = stub.calls().extraction;
+      expect((await mem.retain({ sources: [source], retry_failed: true })).sources[0]?.outcome).toBe(
+        'replayed',
+      );
+      expect(stub.calls().extraction).toBe(calls);
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
   it.each(['claim', 'event', 'plan'] as const)(
     'retrieves tentative %s delivery dates, deduplicates reports and rebuilds their metadata',
     async (kind) => {
@@ -1644,7 +1729,9 @@ describe('automatic retain', () => {
         expect(original).toContain('2031-04-06');
         expect(original).toContain('Tentative');
         expect(original).not.toContain('2031-04-04');
-        expect((await mem.retain({ sources: [source('1')] })).sources[0]?.outcome).toBe('replayed');
+        expect((await mem.retain({ sources: [source('1')], retry_failed: true })).sources[0]?.outcome).toBe(
+          'replayed',
+        );
         expect(stub.calls().extraction).toBe(1);
 
         const repeated = await mem.retain({ sources: [source('2')] });

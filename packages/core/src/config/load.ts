@@ -657,6 +657,12 @@ function resolve(
         enabled: doc.maintenance?.retain?.enabled ?? true,
         mission: doc.maintenance?.retain?.mission ?? null,
         fallbackPage: doc.maintenance?.retain?.fallback_page ?? null,
+        ...(doc.maintenance?.retain?.model_timeout_ms != null
+          ? { modelTimeoutMs: doc.maintenance.retain.model_timeout_ms }
+          : {}),
+        ...(doc.maintenance?.retain?.extraction_max_output_tokens != null
+          ? { extractionMaxOutputTokens: doc.maintenance.retain.extraction_max_output_tokens }
+          : {}),
         evidenceGraceDays: doc.maintenance?.retain?.evidence_grace_days ?? 30,
       },
       observe: {

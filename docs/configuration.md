@@ -248,6 +248,13 @@ existing candidates. Without any authorized destination, `remember` returns a ty
 managed-item curation the fallback is a queue, not a canonical home: an item moves to one unambiguous supplied
 existing page or remains held.
 
+`maintenance.retain.model_timeout_ms` optionally sets the per-attempt deadline for retention model calls,
+including extraction, structural repair, verification and support comparison. Null inherits the maintenance
+or derive model deadline. It does not change reasoning effort or other workflows.
+`extraction_max_output_tokens` independently overrides the 16,384 extraction allowance; null keeps that
+allowance, and the model role’s hard ceiling still wins. A larger allowance costs more tokens and allows
+complete structured records to fit alongside hidden reasoning. Neither setting changes admission checks.
+
 `evidence_grace_days` defaults to `30`. It applies only after retained support becomes inactive through exact
 retraction or user forget; active support has no age limit. Nonterminal maintenance work that still names the
 managed item also blocks pruning. A value of `0` permits immediate secure pruning once those dependencies are

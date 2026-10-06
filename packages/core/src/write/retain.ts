@@ -625,6 +625,7 @@ export interface RetainResult {
   held: RetainHeldCandidate[];
   events: { date: string; summary: string }[];
   error: string | null;
+  retryable?: true;
   sourceHold: { reason_code: RetainHoldReason; reason: string } | null;
   degradedReason: DegradedReason | null;
   modelUsage: {
@@ -658,6 +659,8 @@ export async function runRetain(
     sourceItems?: readonly RetainSourceItem[];
     sourceId?: string;
     revision?: string;
+    extractionTimeoutMs?: number;
+    extractionMaxOutputTokens?: number;
   } = {},
 ): Promise<RetainResult> {
   const empty = emptyResult();
@@ -677,6 +680,7 @@ export async function runRetain(
   if (!model.available) {
     return {
       ...empty,
+      retryable: true,
       error: model.unavailableReason ?? 'derive model unavailable',
       degradedReason: 'no_derive_model',
     };
@@ -705,12 +709,20 @@ export async function runRetain(
     // attribution and temporal fields. Reasoning shares this allowance with that structured
     // output; the former 3,200 cap could exhaust even its one retry before finishing a digest.
     // Keep the call bounded, and let ModelClient enforce any smaller configured role ceiling.
-    { schema: RETAIN_SCHEMA, maxTokens: 16_384, languageReferences },
+    {
+      schema: RETAIN_SCHEMA,
+      maxTokens: options.extractionMaxOutputTokens ?? 16_384,
+      languageReferences,
+      ...(options.extractionTimeoutMs ? { timeoutMs: options.extractionTimeoutMs } : {}),
+    },
   );
   const extractionReceipt = modelCallReceipt(model, extraction);
   if (!extraction.ok || !extraction.value) {
     return {
       ...empty,
+      ...(['timeout', 'request_failed', 'unavailable'].includes(extraction.reason ?? '')
+        ? { retryable: true as const }
+        : {}),
       error: extraction.error ?? 'retain extraction failed',
       degradedReason: model.degradedReason(extraction),
       modelUsage: { extraction: extractionReceipt, verification: null },

@@ -36,6 +36,8 @@ function reportModel(maxOutputTokens?: number) {
       },
     },
   });
+  // The uncapped case mirrors a maintenance role, independent of the derive default.
+  if (maxOutputTokens === undefined) delete config.models.derive.maxOutputTokens;
   return new ModelClient(config.models.derive);
 }
 
@@ -74,6 +76,52 @@ const candidates = statements.map((quote, i) => ({
 }));
 
 describe('structured retention output allowance', () => {
+  it('enforces an extraction-only deadline without changing the output ceiling', async () => {
+    const budgets: number[] = [];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (_url, init) => {
+      budgets.push(JSON.parse(init!.body as string).max_output_tokens);
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(resolve, 200);
+        init!.signal!.addEventListener(
+          'abort',
+          () => {
+            clearTimeout(timer);
+            reject(init!.signal!.reason);
+          },
+          { once: true },
+        );
+      });
+      throw new Error('deadline was not enforced');
+    });
+    const result = await runRetain(report, reportModel(), { sourceItems, extractionTimeoutMs: 20 });
+    expect(budgets).toEqual([16384]);
+    expect(result.retryable).toBe(true);
+    expect(result.error).toContain('20ms');
+    expect(result.candidates).toEqual([]);
+  });
+
+  it.each([undefined, 3200])(
+    'permits a larger extraction allowance while honoring the role ceiling (%s)',
+    async (cap) => {
+      const budgets: number[] = [];
+      vi.spyOn(globalThis, 'fetch').mockImplementation(async (_url, init) => {
+        budgets.push(JSON.parse(init!.body as string).max_output_tokens);
+        return Response.json({
+          status: 'completed',
+          output: [
+            { type: 'message', content: [{ type: 'output_text', text: '{"candidates":[],"events":[]}' }] },
+          ],
+        });
+      });
+      const result = await runRetain(report, reportModel(cap), {
+        sourceItems,
+        extractionMaxOutputTokens: 32768,
+      });
+      expect(budgets).toEqual([cap ?? 32768]);
+      expect(result.error).toBeNull();
+    },
+  );
+
   it.each([undefined, 3200])(
     'keeps a complete report or explicitly degrades at the role cap (%s)',
     async (cap) => {

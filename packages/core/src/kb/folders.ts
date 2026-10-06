@@ -91,6 +91,17 @@ export function folderCatalog(config: AknoConfig, store: Store): FolderCatalogEn
     frontmatter: string;
   }[];
 
+  // Group once instead of scanning every page again for every read-only folder. Keep row
+  // order so model-visible taxonomy and admitted destinations remain byte-for-byte identical.
+  const admittedByFolder = new Map<string, string[]>();
+  for (const row of rows) {
+    if (row.role !== 'knowledge' || !declaresRememberIntegration(row.frontmatter)) continue;
+    const folder = parentFolder(row.slug);
+    const admitted = admittedByFolder.get(folder) ?? [];
+    admitted.push(row.slug);
+    admittedByFolder.set(folder, admitted);
+  }
+
   for (const { slug } of rows) {
     const segments = slug.split('/');
     for (let depth = 1; depth < segments.length; depth++) {
@@ -116,16 +127,7 @@ export function folderCatalog(config: AknoConfig, store: Store): FolderCatalogEn
       // `akno folder` writes an explicit value; handwritten rules that omit it stay read-only.
       const remember = rule.remember ?? 'deny';
       const creatable = role === 'knowledge' && remember === 'integrate';
-      const admittedPages = creatable
-        ? []
-        : rows
-            .filter(
-              (row) =>
-                row.role === 'knowledge' &&
-                parentFolder(row.slug) === folderPath &&
-                declaresRememberIntegration(row.frontmatter),
-            )
-            .map((row) => row.slug);
+      const admittedPages = creatable ? [] : (admittedByFolder.get(folderPath) ?? []);
       const timeline = owningTimeline(timelines, `${folderPath}/x`);
       return {
         timeline: { slug: timeline.slug, description: timeline.description, status: timeline.status },
