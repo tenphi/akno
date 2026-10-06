@@ -317,6 +317,56 @@ describe('structured outer recorder and generated inner reporter', () => {
   });
 });
 
+describe('exact structured sender labels', () => {
+  const sender = 'Bo Winters <bo_winters@example.test>';
+  const quote = 'The inspection fee is EUR 1111.';
+  const readable = `${sender} reports that the inspection fee is EUR 1111.`;
+  const senderOptions = {
+    generated: true as const,
+    sourceItems: [{ item_id: 'mail-1111', role: 'external' as const, speaker: sender, text: quote }],
+  };
+  const record = (speaker: string, chain: unknown[] = []) => ({
+    kind: 'claim',
+    text: readable,
+    subject: 'inspection fee',
+    attribution: { source_role: 'external', source_speaker: speaker, chain },
+    discourse: { commitment: 'asserted', disposition: 'active' },
+    epistemic: { basis: 'source_report' },
+    polarity: 'affirmed',
+    relations: [],
+    support: [{ item_id: 'mail-1111', quote }],
+    discourse_frame: [{ item_id: 'mail-1111', quote }],
+    time: null,
+    page: null,
+  });
+  it.each([[], [{ speaker: sender, role: 'external' }]])(
+    'keeps an exact original sender without manufacturing a chain (%j)',
+    (chain) => {
+      const result = cleanCandidateBatch([record(sender, chain)], senderOptions);
+      expect(result.held).toEqual([]);
+      expect(result.candidates).toHaveLength(1);
+      expect(result.candidates[0]?.attribution).toEqual({ source_role: 'external', source_speaker: sender });
+      expect(result.candidates[0]?.text).toBe(readable);
+    },
+  );
+  it.each(['Bo Winters', 'Bo Winters bo winters@example.test', 'Ada Marlow'])(
+    'still holds an unsupported different label (%s)',
+    (label) => {
+      const result = cleanCandidateBatch([record(label)], senderOptions);
+      expect(result.candidates).toEqual([]);
+      expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
+    },
+  );
+  it('still requires support for an explicitly supplied inner reporter', () => {
+    const result = cleanCandidateBatch(
+      [record(sender, [{ speaker: 'Ada Marlow', role: 'external' }])],
+      senderOptions,
+    );
+    expect(result.candidates).toEqual([]);
+    expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
+  });
+});
+
 describe('record-local tentative scope in retention verification', () => {
   const items = [
     {

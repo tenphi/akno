@@ -425,7 +425,7 @@ const MaintenanceDoc = z.object({
     fallback_page: ManagedFallbackSlug.nullable().optional(),
     /** Per-attempt deadline for retention model calls; null inherits the model deadline. */
     model_timeout_ms: z.number().int().positive().nullable().optional(),
-    /** Structured output plus hidden reasoning; null keeps the extraction/repair allowances. */
+    /** Structured output plus hidden reasoning; null keeps the phase-specific output allowances. */
     generation_max_output_tokens: z.number().int().positive().nullable().optional(),
     /** Independent two-candidate verifier batches; one preserves sequential execution. */
     verification_concurrency: z.number().int().min(1).max(16).optional(),

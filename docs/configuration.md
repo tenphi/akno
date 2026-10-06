@@ -251,7 +251,7 @@ existing page or remains held.
 `maintenance.retain.model_timeout_ms` optionally sets the per-attempt deadline for retention model calls,
 including extraction, structural repair, verification and support comparison. Null inherits the maintenance
 or derive model deadline. It does not change reasoning effort or other workflows.
-`generation_max_output_tokens` overrides extraction and structural-repair output allowances; null keeps
+`generation_max_output_tokens` overrides extraction, structural-repair and verification output allowances; null keeps
 each phase’s allowance, and the model role’s hard ceiling still wins. A larger allowance costs more tokens and allows
 complete structured records to fit alongside hidden reasoning. `verification_concurrency` defaults to `1`. Independent two-candidate verifier batches may run in parallel
 (up to `16`), with identical source frames, prompts, budgets and result ordering. Any failed batch still

@@ -335,6 +335,45 @@ describe('complete repair output allowance', () => {
   );
 });
 
+describe('retention verification output allowance', () => {
+  it.each([undefined, 3200])(
+    'allows complete verification while honoring the role ceiling (%s)',
+    async (cap) => {
+      const budgets: number[] = [];
+      vi.spyOn(globalThis, 'fetch').mockImplementation(async (_url, init) => {
+        const body = JSON.parse(init!.body as string);
+        const payload = JSON.parse(body.input.at(-1).content);
+        budgets.push(body.max_output_tokens);
+        const value = payload.candidates
+          ? {
+              verdicts: payload.candidates.map((candidate: any) => ({
+                candidate_id: candidate.candidate_id,
+                source_selected_polarity: candidate.polarity,
+                ...retentionAudit(candidate),
+                ...frameAuditFields(candidate),
+                proposition_supported: true,
+                action_arguments_preserved: true,
+                qualification_scope_preserved: true,
+                reason_code: null,
+              })),
+            }
+          : { candidates: candidates.slice(0, 2), events: [] };
+        return Response.json({
+          status: 'completed',
+          output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify(value) }] }],
+        });
+      });
+      const result = await runRetain(report, reportModel(cap), {
+        sourceItems,
+        generationMaxOutputTokens: 32768,
+      });
+      expect(budgets).toEqual([cap ?? 32768, cap ?? 32768]);
+      expect(result.error).toBeNull();
+      expect(result.candidates).toHaveLength(2);
+    },
+  );
+});
+
 describe('independent verifier concurrency', () => {
   it.each([false, true])(
     'preserves prompts, ordering and fail-closed accounting (failure %s)',

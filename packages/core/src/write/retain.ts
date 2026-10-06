@@ -1015,6 +1015,7 @@ export async function runRetain(
     }),
     cleaned.reportLimitConcerns,
     options.verificationConcurrency,
+    options.generationMaxOutputTokens,
   );
   if (verified.error) {
     return {
@@ -1149,6 +1150,7 @@ async function verifyCandidates(
   repairObligations: readonly { candidate_id: string; original: unknown }[],
   reportLimitConcerns: ReadonlySet<string>,
   concurrency = 1,
+  maxOutputTokens?: number,
 ): Promise<{
   accepted: Set<string>;
   reasons: Map<string, RetainHoldReason>;
@@ -1175,6 +1177,7 @@ async function verifyCandidates(
           repairObligations,
           candidates,
           reportLimitConcerns,
+          maxOutputTokens,
         ),
       );
     }
@@ -1232,6 +1235,7 @@ async function verifyCandidateBatch(
   repairObligations: readonly { candidate_id: string; original: unknown }[],
   allCandidates: readonly RetainCandidate[],
   reportLimitConcerns: ReadonlySet<string>,
+  maxOutputTokens?: number,
 ): Promise<{
   accepted: Set<string>;
   reasons: Map<string, RetainHoldReason>;
@@ -1363,13 +1367,14 @@ async function verifyCandidateBatch(
     {
       schema,
       maxTokens:
+        maxOutputTokens ??
         1_024 +
-        candidates.length * 2_000 +
-        [...attributionAudits.values()].reduce(
-          (sum, audit) => sum + (audit?.coordinates.reporters.length ?? 0) * 400,
-          0,
-        ) +
-        [...frameAudits.values()].reduce((sum, audit) => sum + (audit?.spans.length ?? 0) * 160, 0),
+          candidates.length * 2_000 +
+          [...attributionAudits.values()].reduce(
+            (sum, audit) => sum + (audit?.coordinates.reporters.length ?? 0) * 400,
+            0,
+          ) +
+          [...frameAudits.values()].reduce((sum, audit) => sum + (audit?.spans.length ?? 0) * 160, 0),
     },
   );
   if (!outcome.ok || !outcome.value) {
@@ -2475,6 +2480,9 @@ function cleanAttribution(
     ? raw.chain.flatMap((entry): NonNullable<RetainCandidate['attribution']['chain']> => {
         if (!entry || typeof entry !== 'object') return [];
         const reporter = entry as Record<string, unknown>;
+        // An exact owned recorder is not an inner reporter, even when its display label
+        // contains punctuation removed by safeLabel. Do not treat aliases as exact matches.
+        if (options.generated && options.sourceItems && reporter.speaker === sourceSpeaker) return [];
         const speaker = safeLabel(reporter.speaker);
         if (!speaker) return [];
         const role = cleanRole(reporter.role);
@@ -2487,7 +2495,7 @@ function cleanAttribution(
     // Structured turns establish the outer recorder. Moving a model-supplied inner reporter
     // into the chain preserves that provenance instead of erasing it when correcting the outer.
     chain = chain.filter((reporter) => identity(reporter.speaker) !== outer);
-    if (rawSpeaker && identity(rawSpeaker) !== outer) {
+    if (rawSpeaker && raw?.source_speaker !== sourceSpeaker && identity(rawSpeaker) !== outer) {
       if (
         !hasExplicitReporter(rawSpeaker, frame, false) &&
         !(semanticAttribution && hasReporterName(rawSpeaker, frame))
