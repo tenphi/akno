@@ -388,9 +388,12 @@
       // Null inherits the model deadline. Increasing this permits large retention extraction,
       // repair and verification calls more time per attempt, without changing other workflows.
       "model_timeout_ms": null,
-      // Null keeps 16,384 tokens. Increasing this permits more fully qualified records
+      // Null keeps each extraction/repair phase allowance. Increasing this permits more qualified records
       // and hidden reasoning, at higher token cost; the configured model ceiling still wins.
-      "extraction_max_output_tokens": null,
+      "generation_max_output_tokens": null,
+      // Independent verifier batches keep identical evidence and verdict rules. Higher values
+      // reduce wall time but increase simultaneous provider load; 1 keeps sequential execution.
+      "verification_concurrency": 1,
       // Private exact source frames are kept while live memory or maintenance work needs them.
       // Once those dependencies are gone, this grace preserves short-term undo/recovery value.
       "evidence_grace_days": 30

@@ -660,9 +660,10 @@ function resolve(
         ...(doc.maintenance?.retain?.model_timeout_ms != null
           ? { modelTimeoutMs: doc.maintenance.retain.model_timeout_ms }
           : {}),
-        ...(doc.maintenance?.retain?.extraction_max_output_tokens != null
-          ? { extractionMaxOutputTokens: doc.maintenance.retain.extraction_max_output_tokens }
+        ...(doc.maintenance?.retain?.generation_max_output_tokens != null
+          ? { generationMaxOutputTokens: doc.maintenance.retain.generation_max_output_tokens }
           : {}),
+        verificationConcurrency: doc.maintenance?.retain?.verification_concurrency ?? 1,
         evidenceGraceDays: doc.maintenance?.retain?.evidence_grace_days ?? 30,
       },
       observe: {

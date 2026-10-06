@@ -425,8 +425,10 @@ const MaintenanceDoc = z.object({
     fallback_page: ManagedFallbackSlug.nullable().optional(),
     /** Per-attempt deadline for retention model calls; null inherits the model deadline. */
     model_timeout_ms: z.number().int().positive().nullable().optional(),
-    /** Structured output plus hidden reasoning; null keeps the 16,384 extraction allowance. */
-    extraction_max_output_tokens: z.number().int().positive().nullable().optional(),
+    /** Structured output plus hidden reasoning; null keeps the extraction/repair allowances. */
+    generation_max_output_tokens: z.number().int().positive().nullable().optional(),
+    /** Independent two-candidate verifier batches; one preserves sequential execution. */
+    verification_concurrency: z.number().int().min(1).max(16).optional(),
     /** Grace before unneeded private source frames are securely pruned. */
     evidence_grace_days: z.number().int().nonnegative().optional(),
   }).optional(),
@@ -692,7 +694,8 @@ export interface AknoConfig {
       mission: string | null;
       fallbackPage: string | null;
       modelTimeoutMs?: number;
-      extractionMaxOutputTokens?: number;
+      generationMaxOutputTokens?: number;
+      verificationConcurrency?: number;
       evidenceGraceDays: number;
     };
     observe: {
