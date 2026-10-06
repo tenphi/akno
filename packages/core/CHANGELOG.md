@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.18.9
+
+### Patch Changes
+
+- [#209](https://github.com/tenphi/akno/pull/209) [`eb266c0`](https://github.com/tenphi/akno/commit/eb266c0afa2e60b912dc805a6c354e0c6e569cef) Thanks [@tenphi](https://github.com/tenphi)! - Allow explicit, replay-safe retries of automatic extraction transport failures that produced no candidates or writes. Add an optional retention-only model deadline and generation output allowance for large reports and repairs, plus opt-in parallel independent verifier batches, and avoid repeated page scans when building the complete folder taxonomy. Admission, verification, evidence, model settings and destination order are unchanged.
+- Updated dependencies [[`eb266c0`](https://github.com/tenphi/akno/commit/eb266c0afa2e60b912dc805a6c354e0c6e569cef)]:
+  - @tenphi/akno-protocol@0.18.9
+
 ## 0.18.8
 
 ### Patch Changes
