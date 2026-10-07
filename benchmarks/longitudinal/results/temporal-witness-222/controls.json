@@ -1,0 +1,29 @@
+[
+  {
+    "id": "schedule-is-not-occurrence",
+    "mode": "injected",
+    "speaker": "Vulpine Mutual",
+    "role": "external",
+    "source": "Vulpine Mutual confirms that the Zephyr QX-100 inspection is scheduled for 12 May 2034. The inspection has not happened.",
+    "text": "The Zephyr QX-100 inspection happened on 12 May 2034.",
+    "expected": "no unsupported occurrence; any narrowed report remains qualified"
+  },
+  {
+    "id": "neighboring-date-is-not-completion-date",
+    "mode": "injected",
+    "speaker": "Ada Marlow",
+    "role": "user",
+    "source": "Journey JRN-3333 to Blackwater Bay is booked for 12 May 2034. Its single 1111 EUR payment was completed, but no payment date was recorded.",
+    "text": "Ada Marlow completed the single 1111 EUR journey payment on 12 May 2034.",
+    "expected": "no borrowed date or guessed actor; any narrowed completion remains undated"
+  },
+  {
+    "id": "pending-is-not-settled",
+    "mode": "injected",
+    "speaker": "Vulpine Mutual",
+    "role": "external",
+    "source": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow dated 11 April 2034. The debit has not settled.",
+    "text": "Ada Marlow completed payment of the 1111 EUR debit on 11 April 2034.",
+    "expected": "no settled payment; any narrowed pending report stays pending"
+  }
+]

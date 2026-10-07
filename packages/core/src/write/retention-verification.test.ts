@@ -122,7 +122,7 @@ describe('content-safe verifier failure diagnostics', () => {
       if (code === 'duplicate_verdict') return { verdicts: [v, v] };
       if (code === 'foreign_verdict') v.candidate_id = sentinel;
       if (code === 'semantic_inconsistent') v.proposition_supported = false;
-      if (code === 'time_witness_invalid') v.predicate_time_audit.comparisons[0].source.excerpt = sentinel;
+      if (code === 'time_witness_invalid') v.predicate_time_audit.comparisons[0].source.timing = sentinel;
       if (code === 'context_witness_invalid') v.knowledge_context.witness.exact_excerpt = sentinel;
       if (code === 'hold_reason_inconsistent') v.reason_code = 'time_unresolved';
       return { verdicts };
