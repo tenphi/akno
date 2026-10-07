@@ -82,6 +82,21 @@ export function retentionAudit(
       source_scope: 'entity' as const,
       candidate_scope: 'entity' as const,
     },
+    knowledge_context: {
+      source_use: 'lasting_knowledge' as const,
+      standalone_context: 'self_contained' as const,
+      references: [],
+      references_complete: true,
+      witness: {
+        frame_id: 'F1',
+        exact_excerpt: (
+          candidate.discourse_frame?.[0]?.quote ??
+          candidate.text ??
+          'Invented source predicate.'
+        ).slice(0, 400),
+      },
+      explanation: 'This invented mechanical fixture represents lasting, independently readable knowledge.',
+    },
     comparison: audit.comparison,
     predicate_time_audit: predicateTimeFixture(
       candidate.discourse_frame?.[0]?.quote ?? candidate.text ?? 'Invented source predicate.',

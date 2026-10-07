@@ -1,0 +1,946 @@
+{
+  "role": {
+    "id": "gpt-6-luna",
+    "maxOutputTokens": 16384,
+    "timeoutMs": 300000
+  },
+  "corpusHash": "6c77a5a99bc4bbeebf6d055b0b334e9a525e79231a91ebf997c18a47e3c9bcd0",
+  "runnerHash": "3ee99bec9c9f3f0135afda11be69ac351ad90ebf7c1efac1eb17612b6e3a3778",
+  "coordinates": 20,
+  "usage": {
+    "logicalModelCalls": 30,
+    "scriptedExtractionCalls": 8,
+    "endpointRequests": 30,
+    "outcomesWithUnknownRequestCount": 0,
+    "outcomesWithKnownUsage": 30,
+    "outcomesWithUnknownUsage": 0,
+    "inputTokens": 267772,
+    "outputTokens": 28143,
+    "cachedInputTokens": 206506,
+    "reasoningOutputTokens": 19030
+  },
+  "rows": [
+    {
+      "id": "one-off-correction",
+      "repetition": 1,
+      "mode": "native",
+      "expected": "omit",
+      "scriptedExtractionCalls": 0,
+      "accepted": [],
+      "held": [],
+      "error": null,
+      "sourceReview": {
+        "status": "omitted",
+        "note": "Interaction-only source omitted in native extraction."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7422,
+            "outputTokens": 89,
+            "totalTokens": 7511,
+            "cachedInputTokens": 7419,
+            "reasoningOutputTokens": 70
+          }
+        }
+      ]
+    },
+    {
+      "id": "rerun-request-ru",
+      "repetition": 1,
+      "mode": "native",
+      "expected": "omit",
+      "scriptedExtractionCalls": 0,
+      "accepted": [],
+      "held": [],
+      "error": null,
+      "sourceReview": {
+        "status": "omitted",
+        "note": "Interaction-only source omitted in native extraction."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7432,
+            "outputTokens": 46,
+            "totalTokens": 7478,
+            "cachedInputTokens": 7429,
+            "reasoningOutputTokens": 27
+          }
+        }
+      ]
+    },
+    {
+      "id": "standing-preference",
+      "repetition": 1,
+      "mode": "native",
+      "expected": "retain",
+      "scriptedExtractionCalls": 0,
+      "accepted": [
+        {
+          "text": "Ada Marlow prefers every future weekly summary to include a short equipment section with any inspection deadlines.",
+          "kind": "preference",
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "self_attested"
+          },
+          "polarity": "affirmed"
+        }
+      ],
+      "held": [],
+      "error": null,
+      "sourceReview": {
+        "status": "preserved",
+        "note": "Readable wording preserves the selected source proposition, established participants and roles, qualification and scope."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7430,
+            "outputTokens": 355,
+            "totalTokens": 7785,
+            "cachedInputTokens": 7427,
+            "reasoningOutputTokens": 177
+          }
+        },
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 10006,
+            "outputTokens": 1043,
+            "totalTokens": 11049,
+            "cachedInputTokens": 10003,
+            "reasoningOutputTokens": 619
+          }
+        }
+      ]
+    },
+    {
+      "id": "ongoing-plan",
+      "repetition": 1,
+      "mode": "native",
+      "expected": "retain",
+      "scriptedExtractionCalls": 0,
+      "accepted": [
+        {
+          "text": "Ada Marlow is committed to maintaining the Zephyr QX-100 service register throughout 2034.",
+          "kind": "plan",
+          "time": {
+            "start": "2034",
+            "until": "2034",
+            "precision": "year",
+            "relation": "scheduled",
+            "status": "planned",
+            "timezone": "UTC",
+            "mentioned_at": "2034-04-22T09:00:00Z"
+          },
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "accepted"
+          },
+          "epistemic": {
+            "basis": "self_attested"
+          },
+          "polarity": "affirmed"
+        }
+      ],
+      "held": [],
+      "error": null,
+      "sourceReview": {
+        "status": "preserved",
+        "note": "Readable wording preserves the selected source proposition, established participants and roles, qualification and scope."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7432,
+            "outputTokens": 373,
+            "totalTokens": 7805,
+            "cachedInputTokens": 7429,
+            "reasoningOutputTokens": 138
+          }
+        },
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 10269,
+            "outputTokens": 1513,
+            "totalTokens": 11782,
+            "cachedInputTokens": 10266,
+            "reasoningOutputTokens": 1118
+          }
+        }
+      ]
+    },
+    {
+      "id": "addressed-report",
+      "repetition": 1,
+      "mode": "native",
+      "expected": "retain",
+      "scriptedExtractionCalls": 0,
+      "accepted": [
+        {
+          "text": "Bo Winters told Ada Marlow that a Zephyr QX-100 inspection was scheduled for 12 May 2034; Ada Marlow has not independently checked the booking.",
+          "kind": "event",
+          "time": {
+            "start": "2034-05-12",
+            "precision": "day",
+            "relation": "scheduled",
+            "status": "scheduled",
+            "timezone": "UTC",
+            "mentioned_at": "2034-04-22T09:00:00Z"
+          },
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "chain": [
+              {
+                "speaker": "Bo Winters",
+                "role": "external"
+              }
+            ]
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed"
+        }
+      ],
+      "held": [],
+      "error": null,
+      "sourceReview": {
+        "status": "material_context_loss",
+        "note": "The recipient was retained but the established booking holder was omitted."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7448,
+            "outputTokens": 908,
+            "totalTokens": 8356,
+            "cachedInputTokens": 7445,
+            "reasoningOutputTokens": 616
+          }
+        },
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 10222,
+            "outputTokens": 1330,
+            "totalTokens": 11552,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 818
+          }
+        }
+      ]
+    },
+    {
+      "id": "mixed-task-and-fact",
+      "repetition": 1,
+      "mode": "native",
+      "expected": "retain_only_warranty",
+      "scriptedExtractionCalls": 0,
+      "accepted": [
+        {
+          "text": "Ada Marlow states that her Zephyr QX-100 warranty lasts five years.",
+          "kind": "claim",
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "self_attested"
+          },
+          "polarity": "affirmed"
+        }
+      ],
+      "held": [],
+      "error": null,
+      "sourceReview": {
+        "status": "preserved",
+        "note": "Readable wording preserves the selected source proposition, established participants and roles, qualification and scope."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7434,
+            "outputTokens": 255,
+            "totalTokens": 7689,
+            "cachedInputTokens": 7431,
+            "reasoningOutputTokens": 79
+          }
+        },
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 10006,
+            "outputTokens": 701,
+            "totalTokens": 10707,
+            "cachedInputTokens": 10003,
+            "reasoningOutputTokens": 423
+          }
+        }
+      ]
+    },
+    {
+      "id": "injected-task-quote",
+      "repetition": 1,
+      "mode": "injected",
+      "expected": "hold",
+      "scriptedExtractionCalls": 1,
+      "accepted": [],
+      "held": [
+        {
+          "reason": "not_durable",
+          "stage": "verification"
+        }
+      ],
+      "error": null,
+      "sourceReview": {
+        "status": "held",
+        "note": "No candidate was returned; typed hold is preserved separately."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 9983,
+            "outputTokens": 775,
+            "totalTokens": 10758,
+            "cachedInputTokens": 9980,
+            "reasoningOutputTokens": 468
+          }
+        }
+      ]
+    },
+    {
+      "id": "injected-preference-promotion",
+      "repetition": 1,
+      "mode": "injected",
+      "expected": "hold",
+      "scriptedExtractionCalls": 1,
+      "accepted": [],
+      "held": [
+        {
+          "reason": "discourse_uncertain",
+          "stage": "verification"
+        }
+      ],
+      "error": null,
+      "sourceReview": {
+        "status": "held",
+        "note": "No candidate was returned; typed hold is preserved separately."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 9977,
+            "outputTokens": 1839,
+            "totalTokens": 11816,
+            "cachedInputTokens": 9974,
+            "reasoningOutputTokens": 1357
+          }
+        }
+      ]
+    },
+    {
+      "id": "injected-unresolved-addressee",
+      "repetition": 1,
+      "mode": "injected",
+      "expected": "hold_or_contextualize",
+      "scriptedExtractionCalls": 1,
+      "accepted": [
+        {
+          "text": "Ada Marlow reports that Bo Winters wrote that an inspection was booked for the Zephyr QX-100. The excerpt does not identify the recipient.",
+          "kind": "claim",
+          "time": {
+            "precision": "unknown",
+            "relation": "scheduled",
+            "status": "scheduled",
+            "timezone": "UTC",
+            "mentioned_at": "2034-04-22T09:00:00Z"
+          },
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "chain": [
+              {
+                "speaker": "Bo Winters",
+                "role": "external"
+              }
+            ]
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed"
+        }
+      ],
+      "held": [],
+      "error": null,
+      "sourceReview": {
+        "status": "qualified_context_preserved",
+        "note": "A pre-verification structural repair explicitly preserved the unidentified recipient. This is not acceptance of the original bare-reference candidate."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 8346,
+            "outputTokens": 490,
+            "totalTokens": 8836,
+            "cachedInputTokens": 8343,
+            "reasoningOutputTokens": 233
+          }
+        },
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 10404,
+            "outputTokens": 1979,
+            "totalTokens": 12383,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 1474
+          }
+        }
+      ]
+    },
+    {
+      "id": "injected-contextless-report",
+      "repetition": 1,
+      "mode": "injected",
+      "expected": "hold",
+      "scriptedExtractionCalls": 1,
+      "accepted": [],
+      "held": [
+        {
+          "reason": "discourse_uncertain",
+          "stage": "verification"
+        }
+      ],
+      "error": null,
+      "sourceReview": {
+        "status": "held",
+        "note": "No candidate was returned; typed hold is preserved separately."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 10085,
+            "outputTokens": 2876,
+            "totalTokens": 12961,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 2398
+          }
+        }
+      ]
+    },
+    {
+      "id": "one-off-correction",
+      "repetition": 2,
+      "mode": "native",
+      "expected": "omit",
+      "scriptedExtractionCalls": 0,
+      "accepted": [],
+      "held": [],
+      "error": null,
+      "sourceReview": {
+        "status": "omitted",
+        "note": "Interaction-only source omitted in native extraction."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7422,
+            "outputTokens": 66,
+            "totalTokens": 7488,
+            "cachedInputTokens": 7419,
+            "reasoningOutputTokens": 47
+          }
+        }
+      ]
+    },
+    {
+      "id": "rerun-request-ru",
+      "repetition": 2,
+      "mode": "native",
+      "expected": "omit",
+      "scriptedExtractionCalls": 0,
+      "accepted": [],
+      "held": [],
+      "error": null,
+      "sourceReview": {
+        "status": "omitted",
+        "note": "Interaction-only source omitted in native extraction."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7432,
+            "outputTokens": 44,
+            "totalTokens": 7476,
+            "cachedInputTokens": 7429,
+            "reasoningOutputTokens": 25
+          }
+        }
+      ]
+    },
+    {
+      "id": "standing-preference",
+      "repetition": 2,
+      "mode": "native",
+      "expected": "retain",
+      "scriptedExtractionCalls": 0,
+      "accepted": [
+        {
+          "text": "Ada Marlow prefers every future weekly summary to include a short equipment section with any inspection deadlines.",
+          "kind": "preference",
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "self_attested"
+          },
+          "polarity": "affirmed"
+        }
+      ],
+      "held": [],
+      "error": null,
+      "sourceReview": {
+        "status": "preserved",
+        "note": "Readable wording preserves the selected source proposition, established participants and roles, qualification and scope."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7430,
+            "outputTokens": 262,
+            "totalTokens": 7692,
+            "cachedInputTokens": 7427,
+            "reasoningOutputTokens": 84
+          }
+        },
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 10006,
+            "outputTokens": 895,
+            "totalTokens": 10901,
+            "cachedInputTokens": 10003,
+            "reasoningOutputTokens": 577
+          }
+        }
+      ]
+    },
+    {
+      "id": "ongoing-plan",
+      "repetition": 2,
+      "mode": "native",
+      "expected": "retain",
+      "scriptedExtractionCalls": 0,
+      "accepted": [
+        {
+          "text": "Ada Marlow has committed to maintaining the Zephyr QX-100 service register throughout 2034.",
+          "kind": "plan",
+          "time": {
+            "start": "2034",
+            "until": "2034",
+            "precision": "year",
+            "relation": "scheduled",
+            "status": "planned",
+            "timezone": "UTC",
+            "mentioned_at": "2034-04-22T09:00:00Z"
+          },
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "accepted"
+          },
+          "epistemic": {
+            "basis": "self_attested"
+          },
+          "polarity": "affirmed"
+        }
+      ],
+      "held": [],
+      "error": null,
+      "sourceReview": {
+        "status": "preserved",
+        "note": "Readable wording preserves the selected source proposition, established participants and roles, qualification and scope."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7432,
+            "outputTokens": 510,
+            "totalTokens": 7942,
+            "cachedInputTokens": 7429,
+            "reasoningOutputTokens": 287
+          }
+        },
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 10254,
+            "outputTokens": 921,
+            "totalTokens": 11175,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 516
+          }
+        }
+      ]
+    },
+    {
+      "id": "addressed-report",
+      "repetition": 2,
+      "mode": "native",
+      "expected": "retain",
+      "scriptedExtractionCalls": 0,
+      "accepted": [
+        {
+          "text": "Bo Winters told Ada Marlow that a Zephyr QX-100 inspection was scheduled for 12 May 2034. Ada Marlow has not independently checked the booking.",
+          "kind": "event",
+          "time": {
+            "start": "2034-05-12",
+            "precision": "day",
+            "relation": "scheduled",
+            "status": "scheduled",
+            "timezone": "UTC",
+            "mentioned_at": "2034-04-22T09:00:00Z"
+          },
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "chain": [
+              {
+                "speaker": "Bo Winters",
+                "role": "external"
+              }
+            ]
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed"
+        }
+      ],
+      "held": [],
+      "error": null,
+      "sourceReview": {
+        "status": "material_context_loss",
+        "note": "The recipient was retained but the established booking holder was omitted."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7448,
+            "outputTokens": 847,
+            "totalTokens": 8295,
+            "cachedInputTokens": 7445,
+            "reasoningOutputTokens": 516
+          }
+        },
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 10225,
+            "outputTokens": 972,
+            "totalTokens": 11197,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 446
+          }
+        }
+      ]
+    },
+    {
+      "id": "mixed-task-and-fact",
+      "repetition": 2,
+      "mode": "native",
+      "expected": "retain_only_warranty",
+      "scriptedExtractionCalls": 0,
+      "accepted": [
+        {
+          "text": "Ada Marlow states that her Zephyr QX-100 warranty lasts five years.",
+          "kind": "claim",
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "self_attested"
+          },
+          "polarity": "affirmed"
+        }
+      ],
+      "held": [],
+      "error": null,
+      "sourceReview": {
+        "status": "preserved",
+        "note": "Readable wording preserves the selected source proposition, established participants and roles, qualification and scope."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7434,
+            "outputTokens": 454,
+            "totalTokens": 7888,
+            "cachedInputTokens": 7431,
+            "reasoningOutputTokens": 276
+          }
+        },
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 10004,
+            "outputTokens": 666,
+            "totalTokens": 10670,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 371
+          }
+        }
+      ]
+    },
+    {
+      "id": "injected-task-quote",
+      "repetition": 2,
+      "mode": "injected",
+      "expected": "hold",
+      "scriptedExtractionCalls": 1,
+      "accepted": [],
+      "held": [
+        {
+          "reason": "not_durable",
+          "stage": "verification"
+        }
+      ],
+      "error": null,
+      "sourceReview": {
+        "status": "held",
+        "note": "No candidate was returned; typed hold is preserved separately."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 9983,
+            "outputTokens": 681,
+            "totalTokens": 10664,
+            "cachedInputTokens": 9980,
+            "reasoningOutputTokens": 402
+          }
+        }
+      ]
+    },
+    {
+      "id": "injected-preference-promotion",
+      "repetition": 2,
+      "mode": "injected",
+      "expected": "hold",
+      "scriptedExtractionCalls": 1,
+      "accepted": [],
+      "held": [
+        {
+          "reason": "discourse_uncertain",
+          "stage": "verification"
+        }
+      ],
+      "error": null,
+      "sourceReview": {
+        "status": "held",
+        "note": "No candidate was returned; typed hold is preserved separately."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 9977,
+            "outputTokens": 2388,
+            "totalTokens": 12365,
+            "cachedInputTokens": 9974,
+            "reasoningOutputTokens": 1867
+          }
+        }
+      ]
+    },
+    {
+      "id": "injected-unresolved-addressee",
+      "repetition": 2,
+      "mode": "injected",
+      "expected": "hold_or_contextualize",
+      "scriptedExtractionCalls": 1,
+      "accepted": [
+        {
+          "text": "Ada Marlow reports that Bo Winters wrote, ‘You have an inspection booked for your Zephyr QX-100.’ The excerpt does not identify who “you” refers to.",
+          "kind": "claim",
+          "time": {
+            "precision": "unknown",
+            "relation": "scheduled",
+            "status": "scheduled",
+            "timezone": "UTC",
+            "mentioned_at": "2034-04-22T09:00:00Z"
+          },
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "chain": [
+              {
+                "speaker": "Bo Winters",
+                "role": "external"
+              }
+            ]
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed"
+        }
+      ],
+      "held": [],
+      "error": null,
+      "sourceReview": {
+        "status": "qualified_context_preserved",
+        "note": "A pre-verification structural repair explicitly preserved the unidentified recipient. This is not acceptance of the original bare-reference candidate."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 8346,
+            "outputTokens": 891,
+            "totalTokens": 9237,
+            "cachedInputTokens": 8343,
+            "reasoningOutputTokens": 628
+          }
+        },
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 10398,
+            "outputTokens": 1396,
+            "totalTokens": 11794,
+            "cachedInputTokens": 10395,
+            "reasoningOutputTokens": 961
+          }
+        }
+      ]
+    },
+    {
+      "id": "injected-contextless-report",
+      "repetition": 2,
+      "mode": "injected",
+      "expected": "hold",
+      "scriptedExtractionCalls": 1,
+      "accepted": [],
+      "held": [
+        {
+          "reason": "discourse_uncertain",
+          "stage": "verification"
+        }
+      ],
+      "error": null,
+      "sourceReview": {
+        "status": "held",
+        "note": "No candidate was returned; typed hold is preserved separately."
+      },
+      "calls": [
+        {
+          "ok": true,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 10085,
+            "outputTokens": 2578,
+            "totalTokens": 12663,
+            "cachedInputTokens": 10082,
+            "reasoningOutputTokens": 2012
+          }
+        }
+      ]
+    }
+  ]
+}

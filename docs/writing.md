@@ -285,6 +285,20 @@ uses the deterministic `## Unsorted` fallback. Reports, hypotheses, proposals, p
 options stay searchable with visible status and typed line qualification but are excluded from ordinary derived
 facts and factual `answer` evidence. Automatic retention verifies durability and source scope before routing:
 a one-task instruction is not promoted to a standing preference, while a useful open question can remain.
+It separately checks the selected source's purpose and the retained wording's standalone context, with
+an exact witness in the deciding frame. A complaint about the assistant's missed check or a request to
+rerun the current task is interaction management, even when a faithful paraphrase is possible. Such
+material is omitted or held as `not_durable`; it is not automatically converted into a preference or
+ongoing plan. Independently useful facts stated alongside the request remain eligible. A genuine
+standing expectation or ongoing undertaking can also remain.
+Readable knowledge must preserve material subjects, addressees and reference context without relying
+on a page title or speaker metadata. Unresolved conversational references are held as
+`noncanonical_without_context`; explicit uncertainty about an unidentified recipient can instead remain
+in a useful self-contained report. A separate reference comparison binds source-established participants
+to their actual roles and exact excerpts in the retained text: a report recipient cannot silently replace
+a booking holder or an item's owner. Structured speaker labels bind only their own source frames.
+Source bytes, caller-trusted provided-exact retention, support
+lineage and the existing managed-item format are unchanged by these admission checks.
 Routing can write only to an existing admitted knowledge page, a new managed page under an exactly admitted
 folder, or a configured admitted fallback when no semantic home was nominated. An uncertain ownership choice
 is held rather than buried in the fallback. Recall candidates are globally nominated and then qualified for

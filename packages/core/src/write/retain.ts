@@ -45,6 +45,12 @@ import {
 } from './retain-clock-repair.ts';
 import { retentionFrameAudit, RETENTION_FRAME_AUDIT_CONTRACT } from './retention-frame-audit.ts';
 import {
+  retentionContextSchema,
+  retentionContextGrounded,
+  retentionContextHold,
+  RETENTION_CONTEXT_CONTRACT,
+} from './retention-context.ts';
+import {
   predicateTimeAuditSchema,
   predicateTimeAuditGrounded,
   predicateTimeAuditSupported,
@@ -69,8 +75,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v63';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v47';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v64';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v48';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
 const RETRIEVAL_UNIT_CONTRACT = `A retained record is one independently retrievable semantic unit:
@@ -295,6 +301,15 @@ Keep durable facts, accepted decisions, stated preferences, active plans, actual
 questions, and proven experience. A command to finish or clean up this one document or task is not
 a standing preference, even when phrased in the first person. A question asked only to complete the
 current task is not automatically a durable open question; an unresolved question worth returning to is.
+Omit one-off corrections or complaints about the assistant's missed check and requests to rerun a task.
+Do not transform them into standing preferences, ongoing plans or historical facts merely to retain them.
+An explicit recurring preference or ongoing undertaking is different. Preserve independently useful
+knowledge supplied alongside a task request. Readable retained text must make sense outside this exchange:
+resolve material speaker/addressee/actor/object references only from supplied source context, or preserve
+their explicit unresolved scope. Speaker metadata and the destination page cannot supply an addressee.
+When quoted you/your has an established addressee, preserve that person's substantive role too: being
+the recipient of a report is different from holding its booking or owning its object. Naming who was
+told about an inspection does not by itself preserve whose inspection the source describes.
 Keep the original document, person, project, trip, or event scope in the readable record. Do not turn
 an advertisement, quotation, or nearby project mention into a fact about that project. Keep a
 considered, rejected, tentative, hypothetical, cancelled,
@@ -399,6 +414,7 @@ Rules:
 - Fewer, better. An empty candidates list is correct when nothing safely qualifies.`;
 
 const VERIFY_SYSTEM = `${RETENTION_FRAME_AUDIT_CONTRACT}
+${RETENTION_CONTEXT_CONTRACT}
 ${PREDICATE_TIME_AUDIT_CONTRACT}
 ${RETRIEVAL_UNIT_CONTRACT}
 ${QUALIFICATION_CONTRACT}
@@ -502,7 +518,9 @@ Then return three separately assessed booleans:
   epistemic basis, time and every relation remain supported and attached to the appropriate proposition.
 All three must be true to accept a candidate. Do not infer one dimension from another. A faithful
 qualified record of an uncertain claim is supported without establishing that claim in the world.
-An accepted candidate must have reason_code=null; a hold reason contradicts an all-true verdict.
+A semantically all-true verdict may carry only a reason_code matching its separately assessed admission
+hold (not_durable, noncanonical_without_context or scope_mismatch); otherwise it must use null. Admission
+can reject a faithful sentence without inventing a semantic mismatch. A genuinely accepted candidate uses null.
 Reject omission of a coupled corrective contrast or scope restriction, even if
 what remains would be entailed in isolation. Unrelated adjacent details may be omitted. Exact quotes existing
 in the source is necessary but not sufficient. A proposal,
@@ -1287,6 +1305,8 @@ async function verifyCandidateBatch(
     'discourse_uncertain',
     'time_unresolved',
     'noncanonical_without_context',
+    'not_durable',
+    'scope_mismatch',
   ]);
   const verdictShapes = candidates.map((candidate) => {
     const audit = frameAudits.get(candidate.candidate_id);
@@ -1324,6 +1344,7 @@ async function verifyCandidateBatch(
         source_scope: z.enum(['global', 'entity', 'document', 'event', 'task', 'unknown']),
         candidate_scope: z.enum(['global', 'entity', 'document', 'event', 'task', 'unknown']),
       }),
+      knowledge_context: retentionContextSchema,
       reason_code: reason.nullable(),
     });
   });
@@ -1387,7 +1408,7 @@ async function verifyCandidateBatch(
       maxTokens:
         maxOutputTokens ??
         1_024 +
-          candidates.length * 2_000 +
+          candidates.length * 3_000 +
           [...attributionAudits.values()].reduce(
             (sum, audit) => sum + (audit?.coordinates.reporters.length ?? 0) * 400,
             0,
@@ -1425,6 +1446,17 @@ async function verifyCandidateBatch(
             .discourse_frame.map((span) => span.quote),
           candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.text,
         ) &&
+        retentionContextGrounded(
+          verdict.knowledge_context,
+          candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.discourse_frame,
+          candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.text,
+          candidates
+            .find((candidate) => candidate.candidate_id === verdict.candidate_id)!
+            .discourse_frame.flatMap((span, index) => {
+              const speaker = source.items?.find((item) => item.item_id === span.item_id)?.speaker;
+              return speaker ? [{ frame_id: `F${index + 1}`, speaker }] : [];
+            }),
+        ) &&
         negativeEvidence.get(verdict.candidate_id)!.consistent(verdict) &&
         (!attributionAudits.get(verdict.candidate_id) ||
           attributionAudits
@@ -1442,7 +1474,9 @@ async function verifyCandidateBatch(
           verdict.action_arguments_preserved &&
           verdict.qualification_scope_preserved
         ) ||
-          verdict.reason_code === null),
+          verdict.reason_code === null ||
+          verdict.reason_code ===
+            (retentionContextHold(verdict.knowledge_context) ?? admissionReason(verdict.retention))),
     )
   ) {
     model.reportInvalidResponse();
@@ -1493,7 +1527,8 @@ async function verifyCandidateBatch(
             verdict.source_selected_plan_disposition ===
               candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.discourse
                 .disposition) &&
-          admissionReason(verdict.retention) === null,
+          admissionReason(verdict.retention) === null &&
+          retentionContextHold(verdict.knowledge_context) === null,
       )
       .map((verdict) => verdict.candidate_id),
   );
@@ -1519,9 +1554,10 @@ async function verifyCandidateBatch(
               .disposition);
       reasons.set(
         verdict.candidate_id,
-        semanticFailure
-          ? (verdict.reason_code ?? 'discourse_uncertain')
-          : (verdict.reason_code ?? admissionReason(verdict.retention) ?? 'discourse_uncertain'),
+        retentionContextHold(verdict.knowledge_context) ??
+          (semanticFailure
+            ? (verdict.reason_code ?? 'discourse_uncertain')
+            : (verdict.reason_code ?? admissionReason(verdict.retention) ?? 'discourse_uncertain')),
       );
     }
   }

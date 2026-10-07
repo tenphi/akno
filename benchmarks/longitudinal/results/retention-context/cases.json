@@ -1,0 +1,96 @@
+[
+  {
+    "id": "one-off-correction",
+    "mode": "native",
+    "speaker": "Ada Marlow",
+    "source": "You were meant to check the weekly summary.",
+    "expected": "omit"
+  },
+  {
+    "id": "rerun-request-ru",
+    "mode": "native",
+    "speaker": "Ada Marlow",
+    "source": "Ты пропустил проверку сводки. Пожалуйста, повтори её сейчас.",
+    "expected": "omit"
+  },
+  {
+    "id": "standing-preference",
+    "mode": "native",
+    "speaker": "Ada Marlow",
+    "source": "For every future weekly summary, I prefer a short equipment section with any inspection deadlines.",
+    "expected": "retain"
+  },
+  {
+    "id": "ongoing-plan",
+    "mode": "native",
+    "speaker": "Ada Marlow",
+    "source": "I have committed to maintaining the Zephyr QX-100 service register throughout 2034.",
+    "expected": "retain"
+  },
+  {
+    "id": "addressed-report",
+    "mode": "native",
+    "speaker": "Ada Marlow",
+    "source": "Bo Winters told Ada Marlow: ‘You have a Zephyr QX-100 inspection scheduled for 12 May 2034.’ Ada has not independently checked the booking.",
+    "expected": "retain"
+  },
+  {
+    "id": "mixed-task-and-fact",
+    "mode": "native",
+    "speaker": "Ada Marlow",
+    "source": "Repeat the summary check now. Separately, my Zephyr QX-100 warranty lasts five years.",
+    "expected": "retain_only_warranty"
+  },
+  {
+    "id": "injected-task-quote",
+    "mode": "injected",
+    "speaker": "Ada Marlow",
+    "source": "You were meant to check the weekly summary.",
+    "text": "You were meant to check the weekly summary.",
+    "subject": null,
+    "kind": "claim",
+    "expected": "hold"
+  },
+  {
+    "id": "injected-preference-promotion",
+    "mode": "injected",
+    "speaker": "Ada Marlow",
+    "source": "You were meant to check the weekly summary.",
+    "text": "Ada Marlow prefers that the assistant check every weekly summary.",
+    "subject": "Ada Marlow",
+    "kind": "preference",
+    "expected": "hold"
+  },
+  {
+    "id": "injected-unresolved-addressee",
+    "mode": "injected",
+    "speaker": "Ada Marlow",
+    "source": "Bo Winters wrote: ‘You have an inspection booked for your Zephyr QX-100.’ The excerpt does not identify the recipient.",
+    "text": "Bo Winters said you have an inspection booked for your Zephyr QX-100.",
+    "subject": "Zephyr QX-100",
+    "kind": "claim",
+    "chain": [
+      {
+        "speaker": "Bo Winters",
+        "role": "external"
+      }
+    ],
+    "expected": "hold_or_contextualize"
+  },
+  {
+    "id": "injected-contextless-report",
+    "mode": "injected",
+    "speaker": "Ada Marlow",
+    "source": "Bo Winters wrote: ‘You have an inspection booked for your Zephyr QX-100.’ The excerpt does not identify the recipient.",
+    "text": "Ada Marlow reports that Bo Winters wrote that you have an inspection booked for your Zephyr QX-100.",
+    "subject": "Zephyr QX-100",
+    "kind": "claim",
+    "chain": [
+      {
+        "speaker": "Bo Winters",
+        "role": "external"
+      }
+    ],
+    "expected": "hold"
+  }
+]
