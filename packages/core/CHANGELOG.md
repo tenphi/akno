@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.18.15
+
+### Patch Changes
+
+- [#229](https://github.com/tenphi/akno/pull/229) [`71580b2`](https://github.com/tenphi/akno/commit/71580b235dc0ba61d0e0ab176fca9ce8ca5364d0) Thanks [@tenphi](https://github.com/tenphi)! - Verify every inner reporter against the selected proposition using unchanged source frames and same-source name anchors. Unambiguous short names no longer require reconstructed full-name excerpts; unrelated reports, ambiguous aliases and changed readable reporting roles remain withheld.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.18.15
+
 ## 0.18.14
 
 ### Patch Changes
