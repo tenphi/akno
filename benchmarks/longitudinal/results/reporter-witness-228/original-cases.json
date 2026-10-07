@@ -1,0 +1,68 @@
+[
+  {
+    "id": "long-receipt",
+    "mode": "native",
+    "speaker": "Vulpine Mutual",
+    "role": "external",
+    "source": "Vulpine Mutual confirms Ada Marlow purchased Zephyr QX-100 under reference ORDER-1111 for 1111 EUR on 11 April 2034. Its warranty lasts five years. Administrative receipt key KEY-1111: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1112: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1113: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1114: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1115: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1116: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1117: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1118: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1119: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1120: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1121: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1122: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1123: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1124: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1125: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1126: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1127: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1128: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1129: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1130: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1131: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1132: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1133: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1134: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1135: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1136: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1137: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1138: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1139: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1140: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1141: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1142: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1143: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1144: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1145: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1146: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1147: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1148: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1149: opaque archive value; no event or personal instruction.\nAdministrative receipt key KEY-1150: opaque archive value; no event or personal instruction.",
+    "expected": "useful qualified records; complete source retained"
+  },
+  {
+    "id": "travel-rebooking",
+    "mode": "native",
+    "speaker": "Bo Winters",
+    "role": "external",
+    "source": "Bo Winters sent Ada Marlow this corrected schedule for booking JRN-3333 to Blackwater Bay: the departure is now 12 May 2034, replacing the earlier 11 May 2034 estimate. This is a schedule confirmation, not confirmation that the journey took place.",
+    "expected": "named reporter and schedule versus occurrence preserved"
+  },
+  {
+    "id": "pending-debit",
+    "mode": "native",
+    "speaker": "Vulpine Mutual",
+    "role": "external",
+    "source": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow, reference PAY-2222, dated 11 April 2034. The debit has not settled; this listing does not confirm completed payment.",
+    "expected": "pending debit does not become completed payment"
+  },
+  {
+    "id": "tentative-delivery",
+    "mode": "native",
+    "speaker": "Vulpine Mutual",
+    "role": "external",
+    "source": "Vulpine Mutual tells Ada Marlow that estimated delivery for Zephyr QX-100 order ORDER-3333 is 12–14 May 2034. It has not confirmed an arrival or a fixed delivery date.",
+    "expected": "estimate range and unconfirmed arrival preserved"
+  },
+  {
+    "id": "forwarded-disputed",
+    "mode": "native",
+    "speaker": "Ada Marlow",
+    "role": "user",
+    "source": "Ada Marlow records a forwarded statement from Bo Winters: «Осмотр Zephyr QX-100 назначен на 12 мая 2034 года». Ada has not independently verified this schedule and disputes Bo’s separate claim that the inspection has already happened.",
+    "expected": "original exact quote, reporter and personal nonverification preserved without completion"
+  },
+  {
+    "id": "one-off-rerun",
+    "mode": "native",
+    "speaker": "Ada Marlow",
+    "role": "user",
+    "source": "Please run the daily summary check again now; you missed it this morning.",
+    "expected": "empty task-only retention"
+  },
+  {
+    "id": "unsupported-completion",
+    "mode": "injected",
+    "speaker": "Vulpine Mutual",
+    "role": "external",
+    "source": "Vulpine Mutual tells Ada Marlow that estimated delivery for order ORDER-3333 is 12–14 May 2034. The parcel has not arrived.",
+    "text": "Ada Marlow received order ORDER-3333 on 12 May 2034.",
+    "expected": "semantic hold, never delivered fact"
+  },
+  {
+    "id": "unrelated-owner",
+    "mode": "injected",
+    "speaker": "Ada Marlow",
+    "role": "user",
+    "source": "Ada Marlow saved an anonymous warranty notice for Zephyr QX-100. It says the warranty lasts five years. The notice does not identify its owner or purchaser.",
+    "text": "Ada Marlow owns Zephyr QX-100 with a five-year warranty.",
+    "expected": "semantic hold, no owner inference from author"
+  }
+]

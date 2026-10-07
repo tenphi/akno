@@ -63,6 +63,7 @@ export function retentionAudit(
     discourse?: { disposition: string };
     text?: string;
     discourse_frame?: readonly { quote: string }[];
+    attribution_concern?: { reporters: readonly { reporter_id: string; speaker: string }[] };
   },
   proposition = true,
   action = true,
@@ -71,6 +72,28 @@ export function retentionAudit(
 ) {
   const audit = semanticAudit(proposition, action, qualification);
   return {
+    ...(candidate.attribution_concern
+      ? {
+          attribution_audit: candidate.attribution_concern.reporters.map((reporter) => {
+            // Mechanical fixtures nominate an explicit source frame. Semantic/alias tests override it.
+            const index =
+              candidate.discourse_frame?.findIndex((frame) =>
+                frame.quote.toLowerCase().includes(reporter.speaker.toLowerCase()),
+              ) ?? -1;
+            const anchor = { frame_id: `F${index + 1}` };
+            return {
+              reporter_id: reporter.reporter_id,
+              relation: 'reports_selected_proposition' as const,
+              source: anchor,
+              name_origin: anchor,
+              resolution: 'explicit' as const,
+              candidate_relation: 'preserved' as const,
+              explanation:
+                'This invented mechanical fixture supplies the explicitly named reporting relation.',
+            };
+          }),
+        }
+      : {}),
     ...(candidate.kind === 'plan'
       ? {
           source_selected_plan_disposition: candidate.discourse?.disposition,

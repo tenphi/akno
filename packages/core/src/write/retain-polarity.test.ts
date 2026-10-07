@@ -121,7 +121,7 @@ describe('independent retention source-polarity comparison', () => {
           expect(payload.candidates[0].polarity).toBe(submitted.polarity);
           expect(payload.candidates[0].discourse_frame[0].quote).toBe(record.text);
           expect(messages[0]!.content).toContain('value to compare, never evidence');
-          expect(options.maxTokens).toBe(4024);
+          expect(options.maxTokens).toBe(record.attribution.chain?.length ? 4424 : 4024);
           return {
             ok: true,
             latencyMs: 22,

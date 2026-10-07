@@ -1,0 +1,2018 @@
+{
+  "corpusHash": "d03bebe7724ccefe1e1ad4a46f8402aa1c0af5081d3a6dbe75d374b192d58e69",
+  "runnerHash": "f80d79038b19e4d32eb1ed4866c5a49ab046992b58110b20d7ad9c1f43d9b32b",
+  "role": {
+    "id": "gpt-6-luna",
+    "maxOutputTokens": null,
+    "timeoutMs": 600000,
+    "reasoningEffort": null
+  },
+  "retentionSettings": {
+    "generationMaxOutputTokens": 32768,
+    "verificationConcurrency": 4,
+    "verificationFailureScope": "batch"
+  },
+  "summary": {
+    "coordinates": 16,
+    "logicalCalls": 29,
+    "scripted": 4,
+    "endpointRequests": 29,
+    "unknownRequests": 0,
+    "knownUsage": 29,
+    "unknownUsage": 0,
+    "inputTokens": 302052,
+    "outputTokens": 61402,
+    "totalTokens": 363454,
+    "cachedInputTokens": 114512,
+    "reasoningOutputTokens": 43375,
+    "unknownCacheDetails": 0,
+    "unknownReasoningDetails": 0,
+    "failureBatches": {
+      "time_witness_invalid": 1,
+      "semantic_inconsistent": 1
+    },
+    "holds": {
+      "verification:noncanonical_without_context:rejected": 3,
+      "verification:discourse_uncertain:failed": 3,
+      "verification:discourse_uncertain:rejected": 1
+    }
+  },
+  "rows": [
+    {
+      "id": "long-receipt",
+      "mode": "native",
+      "expected": "useful qualified records; complete source retained",
+      "repetition": 1,
+      "scripted": 0,
+      "wallMs": 44719.634583,
+      "candidates": [
+        {
+          "candidate_id": "cand_3ea7dcac9d935fb3ae29ff2f",
+          "kind": "event",
+          "text": "Vulpine Mutual confirms Ada Marlow purchased Zephyr QX-100 for 1111 EUR under reference ORDER-1111 on 11 April 2034.",
+          "subject": "Zephyr QX-100",
+          "attribution": {
+            "source_role": "external",
+            "source_speaker": "Vulpine Mutual"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Vulpine Mutual confirms Ada Marlow purchased Zephyr QX-100 under reference ORDER-1111 for 1111 EUR on 11 April 2034.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Vulpine Mutual confirms Ada Marlow purchased Zephyr QX-100 under reference ORDER-1111 for 1111 EUR on 11 April 2034.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "time": {
+            "start": "2034-04-11",
+            "precision": "day",
+            "relation": "occurred",
+            "status": "actual",
+            "timezone": "UTC",
+            "mentioned_at": "2034-04-22T09:00:00Z"
+          },
+          "evidence": "Vulpine Mutual confirms Ada Marlow purchased Zephyr QX-100 under reference ORDER-1111 for 1111 EUR on 11 April 2034.",
+          "retention_scope": "event"
+        },
+        {
+          "candidate_id": "cand_31ea71f66ff2ac2c217a040c",
+          "kind": "claim",
+          "text": "Vulpine Mutual states that the Zephyr QX-100 warranty lasts five years.",
+          "subject": "Zephyr QX-100",
+          "attribution": {
+            "source_role": "external",
+            "source_speaker": "Vulpine Mutual"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Its warranty lasts five years.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Vulpine Mutual confirms Ada Marlow purchased Zephyr QX-100 under reference ORDER-1111 for 1111 EUR on 11 April 2034.",
+              "item_id": "source-1111"
+            },
+            {
+              "quote": "Its warranty lasts five years.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "evidence": "Vulpine Mutual confirms Ada Marlow purchased Zephyr QX-100 under reference ORDER-1111 for 1111 EUR on 11 April 2034.\n…\nIts warranty lasts five years.",
+          "retention_scope": "entity"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 33600,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": [
+              "cand_3ea7dcac9d935fb3ae29ff2f",
+              "cand_31ea71f66ff2ac2c217a040c"
+            ],
+            "outcome": "verified",
+            "accepted_count": 2,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 33576,
+              "input_tokens": 14609,
+              "output_tokens": 3776,
+              "total_tokens": 18385,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 2588
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 10986,
+          "input_tokens": 8527,
+          "output_tokens": 1143,
+          "total_tokens": 9670,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 681
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 33576,
+          "input_tokens": 14609,
+          "output_tokens": 3776,
+          "total_tokens": 18385,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 2588
+        }
+      },
+      "calls": [
+        {
+          "phase": "extraction",
+          "wallMs": 10986.602875,
+          "sourceIncluded": true,
+          "serializedInputChars": 41337,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 10986.363208,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 8527,
+            "outputTokens": 1143,
+            "totalTokens": 9670,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 681
+          }
+        },
+        {
+          "phase": "verification",
+          "wallMs": 33576.418459,
+          "sourceIncluded": true,
+          "serializedInputChars": 63281,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 33576.301125,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 14609,
+            "outputTokens": 3776,
+            "totalTokens": 18385,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 2588
+          }
+        }
+      ]
+    },
+    {
+      "id": "travel-rebooking",
+      "mode": "native",
+      "expected": "named reporter and schedule versus occurrence preserved",
+      "repetition": 1,
+      "scripted": 0,
+      "wallMs": 37424.859166999995,
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_1d269bdbecf669f254b0690a",
+          "hold_stage": "verification",
+          "reason_code": "noncanonical_without_context",
+          "verification": {
+            "outcome": "rejected"
+          }
+        }
+      ],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 27994,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": [
+              "cand_1d269bdbecf669f254b0690a"
+            ],
+            "outcome": "verified",
+            "accepted_count": 0,
+            "held_count": 1,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 27973,
+              "input_tokens": 12057,
+              "output_tokens": 3295,
+              "total_tokens": 15352,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 2553
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 9366,
+          "input_tokens": 7783,
+          "output_tokens": 804,
+          "total_tokens": 8587,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 7663,
+          "reasoning_output_tokens": 469
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 27973,
+          "input_tokens": 12057,
+          "output_tokens": 3295,
+          "total_tokens": 15352,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 2553
+        }
+      },
+      "calls": [
+        {
+          "phase": "extraction",
+          "wallMs": 9366.504666,
+          "sourceIncluded": true,
+          "serializedInputChars": 37674,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 9366.471416,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7783,
+            "outputTokens": 804,
+            "totalTokens": 8587,
+            "cachedInputTokens": 7663,
+            "reasoningOutputTokens": 469
+          }
+        },
+        {
+          "phase": "verification",
+          "wallMs": 27973.072375000003,
+          "sourceIncluded": true,
+          "serializedInputChars": 57875,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 27973.039999999994,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12057,
+            "outputTokens": 3295,
+            "totalTokens": 15352,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 2553
+          }
+        }
+      ]
+    },
+    {
+      "id": "pending-debit",
+      "mode": "native",
+      "expected": "pending debit does not become completed payment",
+      "repetition": 1,
+      "scripted": 0,
+      "wallMs": 26768.3205,
+      "candidates": [
+        {
+          "candidate_id": "cand_e1bc6b5f65ff271c4d655f85",
+          "kind": "claim",
+          "text": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow, reference PAY-2222, dated 11 April 2034. It has not settled, and the listing does not confirm completed payment.",
+          "subject": "Ada Marlow",
+          "attribution": {
+            "source_role": "external",
+            "source_speaker": "Vulpine Mutual"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow, reference PAY-2222, dated 11 April 2034. The debit has not settled; this listing does not confirm completed payment.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow, reference PAY-2222, dated 11 April 2034. The debit has not settled; this listing does not confirm completed payment.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "evidence": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow, reference PAY-2222, dated 11 April 2034. The debit has not settled; this listing does not confirm completed payment.",
+          "retention_scope": "event"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 15922,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": [
+              "cand_e1bc6b5f65ff271c4d655f85"
+            ],
+            "outcome": "verified",
+            "accepted_count": 1,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 15916,
+              "input_tokens": 11925,
+              "output_tokens": 2033,
+              "total_tokens": 13958,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 1319
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 10788,
+          "input_tokens": 7773,
+          "output_tokens": 1064,
+          "total_tokens": 8837,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 7663,
+          "reasoning_output_tokens": 804
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 15916,
+          "input_tokens": 11925,
+          "output_tokens": 2033,
+          "total_tokens": 13958,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 1319
+        }
+      },
+      "calls": [
+        {
+          "phase": "extraction",
+          "wallMs": 10788.154500000004,
+          "sourceIncluded": true,
+          "serializedInputChars": 37609,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 10788.061875,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7773,
+            "outputTokens": 1064,
+            "totalTokens": 8837,
+            "cachedInputTokens": 7663,
+            "reasoningOutputTokens": 804
+          }
+        },
+        {
+          "phase": "verification",
+          "wallMs": 15916.518584000005,
+          "sourceIncluded": true,
+          "serializedInputChars": 57329,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 15916.433999999994,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 11925,
+            "outputTokens": 2033,
+            "totalTokens": 13958,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 1319
+          }
+        }
+      ]
+    },
+    {
+      "id": "tentative-delivery",
+      "mode": "native",
+      "expected": "estimate range and unconfirmed arrival preserved",
+      "repetition": 1,
+      "scripted": 0,
+      "wallMs": 33544.85008299998,
+      "candidates": [
+        {
+          "candidate_id": "cand_ad1e85c532cd046226ea5f9d",
+          "kind": "claim",
+          "text": "Vulpine Mutual told Ada Marlow that estimated delivery for Zephyr QX-100 order ORDER-3333 is 12–14 May 2034; Vulpine Mutual has not confirmed an arrival or a fixed delivery date.",
+          "subject": "ORDER-3333",
+          "attribution": {
+            "source_role": "external",
+            "source_speaker": "Vulpine Mutual"
+          },
+          "discourse": {
+            "commitment": "tentative",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Vulpine Mutual tells Ada Marlow that estimated delivery for Zephyr QX-100 order ORDER-3333 is 12–14 May 2034. It has not confirmed an arrival or a fixed delivery date.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Vulpine Mutual tells Ada Marlow that estimated delivery for Zephyr QX-100 order ORDER-3333 is 12–14 May 2034. It has not confirmed an arrival or a fixed delivery date.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "time": {
+            "start": "2034-05-12",
+            "until": "2034-05-14",
+            "precision": "day",
+            "relation": "scheduled",
+            "status": "tentative",
+            "timezone": "UTC",
+            "mentioned_at": "2034-04-22T09:00:00Z"
+          },
+          "evidence": "Vulpine Mutual tells Ada Marlow that estimated delivery for Zephyr QX-100 order ORDER-3333 is 12–14 May 2034. It has not confirmed an arrival or a fixed delivery date.",
+          "retention_scope": "entity"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 24510,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": [
+              "cand_ad1e85c532cd046226ea5f9d"
+            ],
+            "outcome": "verified",
+            "accepted_count": 1,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 24498,
+              "input_tokens": 12137,
+              "output_tokens": 2659,
+              "total_tokens": 14796,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 1820
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 9003,
+          "input_tokens": 7773,
+          "output_tokens": 913,
+          "total_tokens": 8686,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 7663,
+          "reasoning_output_tokens": 594
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 24498,
+          "input_tokens": 12137,
+          "output_tokens": 2659,
+          "total_tokens": 14796,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 1820
+        }
+      },
+      "calls": [
+        {
+          "phase": "extraction",
+          "wallMs": 9002.920209000004,
+          "sourceIncluded": true,
+          "serializedInputChars": 37598,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 9002.880917000002,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7773,
+            "outputTokens": 913,
+            "totalTokens": 8686,
+            "cachedInputTokens": 7663,
+            "reasoningOutputTokens": 594
+          }
+        },
+        {
+          "phase": "verification",
+          "wallMs": 24497.729999999996,
+          "sourceIncluded": true,
+          "serializedInputChars": 58243,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 24497.679374999992,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12137,
+            "outputTokens": 2659,
+            "totalTokens": 14796,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 1820
+          }
+        }
+      ]
+    },
+    {
+      "id": "forwarded-disputed",
+      "mode": "native",
+      "expected": "original exact quote, reporter and personal nonverification preserved without completion",
+      "repetition": 1,
+      "scripted": 0,
+      "wallMs": 64558.13954199999,
+      "candidates": [
+        {
+          "candidate_id": "cand_315310cfece37cc5f728a11e",
+          "kind": "event",
+          "text": "Bo Winters’s forwarded statement says the Zephyr QX-100 inspection is scheduled for 12 May 2034; Ada Marlow has not independently verified this schedule.",
+          "subject": "Zephyr QX-100 inspection",
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "chain": [
+              {
+                "speaker": "Bo Winters",
+                "role": "external"
+              }
+            ]
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Ada Marlow records a forwarded statement from Bo Winters: «Осмотр Zephyr QX-100 назначен на 12 мая 2034 года».",
+              "item_id": "source-1111"
+            },
+            {
+              "quote": "Ada has not independently verified this schedule",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Ada Marlow records a forwarded statement from Bo Winters: «Осмотр Zephyr QX-100 назначен на 12 мая 2034 года».",
+              "item_id": "source-1111"
+            },
+            {
+              "quote": "Ada has not independently verified this schedule",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "time": {
+            "start": "2034-05-12",
+            "precision": "day",
+            "relation": "scheduled",
+            "status": "scheduled",
+            "timezone": "UTC",
+            "mentioned_at": "2034-04-22T09:00:00Z"
+          },
+          "origin": "user",
+          "evidence": "Ada Marlow records a forwarded statement from Bo Winters: «Осмотр Zephyr QX-100 назначен на 12 мая 2034 года».\n…\nAda has not independently verified this schedule",
+          "retention_scope": "event"
+        },
+        {
+          "candidate_id": "cand_a66156493e8124b61ec237c3",
+          "kind": "claim",
+          "text": "Bo Winters separately claimed that the Zephyr QX-100 inspection had already happened; Ada Marlow disputes that claim.",
+          "subject": "Zephyr QX-100 inspection",
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "chain": [
+              {
+                "speaker": "Bo Winters",
+                "role": "external"
+              }
+            ]
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Ada Marlow records a forwarded statement from Bo Winters: «Осмотр Zephyr QX-100 назначен на 12 мая 2034 года».",
+              "item_id": "source-1111"
+            },
+            {
+              "quote": "disputes Bo’s separate claim that the inspection has already happened.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Ada Marlow records a forwarded statement from Bo Winters: «Осмотр Zephyr QX-100 назначен на 12 мая 2034 года».",
+              "item_id": "source-1111"
+            },
+            {
+              "quote": "disputes Bo’s separate claim that the inspection has already happened.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "origin": "user",
+          "evidence": "Ada Marlow records a forwarded statement from Bo Winters: «Осмотр Zephyr QX-100 назначен на 12 мая 2034 года».\n…\ndisputes Bo’s separate claim that the inspection has already happened.",
+          "retention_scope": "event"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 41324,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": [
+              "cand_315310cfece37cc5f728a11e",
+              "cand_a66156493e8124b61ec237c3"
+            ],
+            "outcome": "verified",
+            "accepted_count": 2,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 41288,
+              "input_tokens": 15187,
+              "output_tokens": 4659,
+              "total_tokens": 19846,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 3023
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 23111,
+          "input_tokens": 7778,
+          "output_tokens": 2294,
+          "total_tokens": 10072,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 7663,
+          "reasoning_output_tokens": 1719
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 41288,
+          "input_tokens": 15187,
+          "output_tokens": 4659,
+          "total_tokens": 19846,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 3023
+        }
+      },
+      "calls": [
+        {
+          "phase": "extraction",
+          "wallMs": 23111.484375,
+          "sourceIncluded": true,
+          "serializedInputChars": 37657,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 23111.369749999983,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7778,
+            "outputTokens": 2294,
+            "totalTokens": 10072,
+            "cachedInputTokens": 7663,
+            "reasoningOutputTokens": 1719
+          }
+        },
+        {
+          "phase": "verification",
+          "wallMs": 41288.34625,
+          "sourceIncluded": true,
+          "serializedInputChars": 63853,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 41288.254625,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 15187,
+            "outputTokens": 4659,
+            "totalTokens": 19846,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 3023
+          }
+        }
+      ]
+    },
+    {
+      "id": "one-off-rerun",
+      "mode": "native",
+      "expected": "empty task-only retention",
+      "repetition": 1,
+      "scripted": 0,
+      "wallMs": 3060.475375000009,
+      "candidates": [],
+      "held": [],
+      "hasError": false,
+      "verification": null,
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 3060,
+          "input_tokens": 7742,
+          "output_tokens": 46,
+          "total_tokens": 7788,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 7663,
+          "reasoning_output_tokens": 27
+        },
+        "verification": null
+      },
+      "calls": [
+        {
+          "phase": "extraction",
+          "wallMs": 3060.331833000004,
+          "sourceIncluded": true,
+          "serializedInputChars": 37496,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 3060.3022919999785,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7742,
+            "outputTokens": 46,
+            "totalTokens": 7788,
+            "cachedInputTokens": 7663,
+            "reasoningOutputTokens": 27
+          }
+        }
+      ]
+    },
+    {
+      "id": "unsupported-completion",
+      "mode": "injected",
+      "expected": "semantic hold, never delivered fact",
+      "repetition": 1,
+      "scripted": 1,
+      "wallMs": 37340.16662500001,
+      "candidates": [
+        {
+          "candidate_id": "cand_b603f183fb9b49de59091435",
+          "kind": "event",
+          "text": "Vulpine Mutual told Ada Marlow that estimated delivery for order ORDER-3333 was 12–14 May 2034.",
+          "subject": "order ORDER-3333",
+          "attribution": {
+            "source_role": "external",
+            "source_speaker": "Vulpine Mutual"
+          },
+          "discourse": {
+            "commitment": "tentative",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Vulpine Mutual tells Ada Marlow that estimated delivery for order ORDER-3333 is 12–14 May 2034.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Vulpine Mutual tells Ada Marlow that estimated delivery for order ORDER-3333 is 12–14 May 2034.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "time": {
+            "start": "2034-05-12",
+            "until": "2034-05-14",
+            "precision": "day",
+            "relation": "scheduled",
+            "status": "tentative",
+            "timezone": "UTC",
+            "mentioned_at": "2034-04-22T09:00:00Z"
+          },
+          "evidence": "Vulpine Mutual tells Ada Marlow that estimated delivery for order ORDER-3333 is 12–14 May 2034.",
+          "retention_scope": "entity"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 28718,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": [
+              "cand_b603f183fb9b49de59091435"
+            ],
+            "outcome": "verified",
+            "accepted_count": 1,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 28698,
+              "input_tokens": 12283,
+              "output_tokens": 2804,
+              "total_tokens": 15087,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 2204
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "repair": {
+          "model": "gpt-6-luna",
+          "latency_ms": 8345,
+          "input_tokens": 8670,
+          "output_tokens": 998,
+          "total_tokens": 9668,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 8313,
+          "reasoning_output_tokens": 731
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 28698,
+          "input_tokens": 12283,
+          "output_tokens": 2804,
+          "total_tokens": 15087,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 2204
+        }
+      },
+      "calls": [
+        {
+          "phase": "repair",
+          "wallMs": 8345.297541999986,
+          "sourceIncluded": true,
+          "serializedInputChars": 42186,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 8345.242375000002,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 8670,
+            "outputTokens": 998,
+            "totalTokens": 9668,
+            "cachedInputTokens": 8313,
+            "reasoningOutputTokens": 731
+          }
+        },
+        {
+          "phase": "verification",
+          "wallMs": 28698.593792,
+          "sourceIncluded": true,
+          "serializedInputChars": 58746,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 28698.469792000018,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12283,
+            "outputTokens": 2804,
+            "totalTokens": 15087,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 2204
+          }
+        }
+      ]
+    },
+    {
+      "id": "unrelated-owner",
+      "mode": "injected",
+      "expected": "semantic hold, no owner inference from author",
+      "repetition": 1,
+      "scripted": 1,
+      "wallMs": 35424.90400000004,
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_48e1dd062bca4ca6684692dd",
+          "hold_stage": "verification",
+          "reason_code": "noncanonical_without_context",
+          "verification": {
+            "outcome": "rejected"
+          }
+        }
+      ],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 35413,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": [
+              "cand_48e1dd062bca4ca6684692dd"
+            ],
+            "outcome": "verified",
+            "accepted_count": 0,
+            "held_count": 1,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 35404,
+              "input_tokens": 11862,
+              "output_tokens": 3863,
+              "total_tokens": 15725,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 2985
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 35404,
+          "input_tokens": 11862,
+          "output_tokens": 3863,
+          "total_tokens": 15725,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 2985
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 35403.555082999985,
+          "sourceIncluded": true,
+          "serializedInputChars": 57127,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 35403.51312500003,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 11862,
+            "outputTokens": 3863,
+            "totalTokens": 15725,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 2985
+          }
+        }
+      ]
+    },
+    {
+      "id": "long-receipt",
+      "mode": "native",
+      "expected": "useful qualified records; complete source retained",
+      "repetition": 2,
+      "scripted": 0,
+      "wallMs": 34714.72445900005,
+      "candidates": [
+        {
+          "candidate_id": "cand_99466c5a9ef9533716619cf5",
+          "kind": "event",
+          "text": "Vulpine Mutual reports that Ada Marlow purchased Zephyr QX-100 for 1111 EUR under reference ORDER-1111 on 11 April 2034.",
+          "subject": "Zephyr QX-100 purchase by Ada Marlow",
+          "attribution": {
+            "source_role": "external",
+            "source_speaker": "Vulpine Mutual"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Vulpine Mutual confirms Ada Marlow purchased Zephyr QX-100 under reference ORDER-1111 for 1111 EUR on 11 April 2034.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Vulpine Mutual confirms Ada Marlow purchased Zephyr QX-100 under reference ORDER-1111 for 1111 EUR on 11 April 2034.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "time": {
+            "start": "2034-04-11",
+            "precision": "day",
+            "relation": "occurred",
+            "status": "actual",
+            "timezone": "UTC",
+            "mentioned_at": "2034-04-22T09:00:00Z"
+          },
+          "evidence": "Vulpine Mutual confirms Ada Marlow purchased Zephyr QX-100 under reference ORDER-1111 for 1111 EUR on 11 April 2034.",
+          "retention_scope": "event"
+        },
+        {
+          "candidate_id": "cand_25ff1d043073e5f636fc2503",
+          "kind": "claim",
+          "text": "Vulpine Mutual reports that Zephyr QX-100 has a warranty lasting five years.",
+          "subject": "Zephyr QX-100 warranty",
+          "attribution": {
+            "source_role": "external",
+            "source_speaker": "Vulpine Mutual"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Its warranty lasts five years.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Vulpine Mutual confirms Ada Marlow purchased Zephyr QX-100 under reference ORDER-1111 for 1111 EUR on 11 April 2034.",
+              "item_id": "source-1111"
+            },
+            {
+              "quote": "Its warranty lasts five years.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "evidence": "Vulpine Mutual confirms Ada Marlow purchased Zephyr QX-100 under reference ORDER-1111 for 1111 EUR on 11 April 2034.\n…\nIts warranty lasts five years.",
+          "retention_scope": "entity"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 26773,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": [
+              "cand_99466c5a9ef9533716619cf5",
+              "cand_25ff1d043073e5f636fc2503"
+            ],
+            "outcome": "verified",
+            "accepted_count": 2,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 26765,
+              "input_tokens": 14614,
+              "output_tokens": 3209,
+              "total_tokens": 17823,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 2070
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 7846,
+          "input_tokens": 8527,
+          "output_tokens": 740,
+          "total_tokens": 9267,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 8524,
+          "reasoning_output_tokens": 282
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 26765,
+          "input_tokens": 14614,
+          "output_tokens": 3209,
+          "total_tokens": 17823,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 2070
+        }
+      },
+      "calls": [
+        {
+          "phase": "extraction",
+          "wallMs": 7845.846334000002,
+          "sourceIncluded": true,
+          "serializedInputChars": 41337,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 7845.825458000007,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 8527,
+            "outputTokens": 740,
+            "totalTokens": 9267,
+            "cachedInputTokens": 8524,
+            "reasoningOutputTokens": 282
+          }
+        },
+        {
+          "phase": "verification",
+          "wallMs": 26765.081458,
+          "sourceIncluded": true,
+          "serializedInputChars": 63354,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 26765.008458999975,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 14614,
+            "outputTokens": 3209,
+            "totalTokens": 17823,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 2070
+          }
+        }
+      ]
+    },
+    {
+      "id": "travel-rebooking",
+      "mode": "native",
+      "expected": "named reporter and schedule versus occurrence preserved",
+      "repetition": 2,
+      "scripted": 0,
+      "wallMs": 37647.95745799999,
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_6a8a85221b8efeb22fd7496f",
+          "hold_stage": "verification",
+          "reason_code": "discourse_uncertain",
+          "verification": {
+            "outcome": "failed",
+            "failure_code": "time_witness_invalid"
+          }
+        }
+      ],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 27102,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": [
+              "cand_6a8a85221b8efeb22fd7496f"
+            ],
+            "outcome": "failed",
+            "accepted_count": 0,
+            "held_count": 1,
+            "failure_code": "time_witness_invalid",
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 27098,
+              "input_tokens": 12069,
+              "output_tokens": 3130,
+              "total_tokens": 15199,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 2327
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 10500,
+          "input_tokens": 7783,
+          "output_tokens": 947,
+          "total_tokens": 8730,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 7780,
+          "reasoning_output_tokens": 607
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 27098,
+          "input_tokens": 12069,
+          "output_tokens": 3130,
+          "total_tokens": 15199,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 2327
+        }
+      },
+      "calls": [
+        {
+          "phase": "extraction",
+          "wallMs": 10499.695041000028,
+          "sourceIncluded": true,
+          "serializedInputChars": 37674,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 10499.661416999996,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7783,
+            "outputTokens": 947,
+            "totalTokens": 8730,
+            "cachedInputTokens": 7780,
+            "reasoningOutputTokens": 607
+          }
+        },
+        {
+          "phase": "verification",
+          "wallMs": 27097.70749999996,
+          "sourceIncluded": true,
+          "serializedInputChars": 57930,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 27097.64420899999,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12069,
+            "outputTokens": 3130,
+            "totalTokens": 15199,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 2327
+          }
+        }
+      ]
+    },
+    {
+      "id": "pending-debit",
+      "mode": "native",
+      "expected": "pending debit does not become completed payment",
+      "repetition": 2,
+      "scripted": 0,
+      "wallMs": 29880.074124999985,
+      "candidates": [
+        {
+          "candidate_id": "cand_a4eb301b1b8ba2ccd100efee",
+          "kind": "claim",
+          "text": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow, reference PAY-2222, dated 11 April 2034. The debit has not settled, and the listing does not confirm completed payment.",
+          "subject": "PAY-2222 debit for Ada Marlow",
+          "attribution": {
+            "source_role": "external",
+            "source_speaker": "Vulpine Mutual"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow, reference PAY-2222, dated 11 April 2034. The debit has not settled; this listing does not confirm completed payment.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow, reference PAY-2222, dated 11 April 2034. The debit has not settled; this listing does not confirm completed payment.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "evidence": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow, reference PAY-2222, dated 11 April 2034. The debit has not settled; this listing does not confirm completed payment.",
+          "retention_scope": "event"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 18323,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": [
+              "cand_a4eb301b1b8ba2ccd100efee"
+            ],
+            "outcome": "verified",
+            "accepted_count": 1,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 18311,
+              "input_tokens": 11932,
+              "output_tokens": 1827,
+              "total_tokens": 13759,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 1111
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 11554,
+          "input_tokens": 7773,
+          "output_tokens": 1047,
+          "total_tokens": 8820,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 7770,
+          "reasoning_output_tokens": 780
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 18311,
+          "input_tokens": 11932,
+          "output_tokens": 1827,
+          "total_tokens": 13759,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 1111
+        }
+      },
+      "calls": [
+        {
+          "phase": "extraction",
+          "wallMs": 11554.42425000004,
+          "sourceIncluded": true,
+          "serializedInputChars": 37609,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 11554.402125000022,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7773,
+            "outputTokens": 1047,
+            "totalTokens": 8820,
+            "cachedInputTokens": 7770,
+            "reasoningOutputTokens": 780
+          }
+        },
+        {
+          "phase": "verification",
+          "wallMs": 18311.114833,
+          "sourceIncluded": true,
+          "serializedInputChars": 57374,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 18311.045500000007,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 11932,
+            "outputTokens": 1827,
+            "totalTokens": 13759,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 1111
+          }
+        }
+      ]
+    },
+    {
+      "id": "tentative-delivery",
+      "mode": "native",
+      "expected": "estimate range and unconfirmed arrival preserved",
+      "repetition": 2,
+      "scripted": 0,
+      "wallMs": 34661.524042000005,
+      "candidates": [
+        {
+          "candidate_id": "cand_0f364b2a28e02febeee3aad4",
+          "kind": "claim",
+          "text": "Vulpine Mutual told Ada Marlow that delivery for Zephyr QX-100 order ORDER-3333 was estimated for 12–14 May 2034. Vulpine Mutual has not confirmed an arrival or a fixed delivery date.",
+          "subject": "Zephyr QX-100 order ORDER-3333 estimated delivery",
+          "attribution": {
+            "source_role": "external",
+            "source_speaker": "Vulpine Mutual"
+          },
+          "discourse": {
+            "commitment": "tentative",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Vulpine Mutual tells Ada Marlow that estimated delivery for Zephyr QX-100 order ORDER-3333 is 12–14 May 2034. It has not confirmed an arrival or a fixed delivery date.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Vulpine Mutual tells Ada Marlow that estimated delivery for Zephyr QX-100 order ORDER-3333 is 12–14 May 2034. It has not confirmed an arrival or a fixed delivery date.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "time": {
+            "start": "2034-05-12",
+            "until": "2034-05-14",
+            "precision": "day",
+            "relation": "scheduled",
+            "status": "tentative",
+            "timezone": "UTC",
+            "mentioned_at": "2034-04-22T09:00:00Z"
+          },
+          "evidence": "Vulpine Mutual tells Ada Marlow that estimated delivery for Zephyr QX-100 order ORDER-3333 is 12–14 May 2034. It has not confirmed an arrival or a fixed delivery date.",
+          "retention_scope": "event"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 25801,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": [
+              "cand_0f364b2a28e02febeee3aad4"
+            ],
+            "outcome": "verified",
+            "accepted_count": 1,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 25785,
+              "input_tokens": 12159,
+              "output_tokens": 2986,
+              "total_tokens": 15145,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 2196
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 8855,
+          "input_tokens": 7773,
+          "output_tokens": 888,
+          "total_tokens": 8661,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 7770,
+          "reasoning_output_tokens": 571
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 25785,
+          "input_tokens": 12159,
+          "output_tokens": 2986,
+          "total_tokens": 15145,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 2196
+        }
+      },
+      "calls": [
+        {
+          "phase": "extraction",
+          "wallMs": 8855.151249999995,
+          "sourceIncluded": true,
+          "serializedInputChars": 37598,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 8855.11616700003,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7773,
+            "outputTokens": 888,
+            "totalTokens": 8661,
+            "cachedInputTokens": 7770,
+            "reasoningOutputTokens": 571
+          }
+        },
+        {
+          "phase": "verification",
+          "wallMs": 25785.513584,
+          "sourceIncluded": true,
+          "serializedInputChars": 58326,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 25785.41295799997,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12159,
+            "outputTokens": 2986,
+            "totalTokens": 15145,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 2196
+          }
+        }
+      ]
+    },
+    {
+      "id": "forwarded-disputed",
+      "mode": "native",
+      "expected": "original exact quote, reporter and personal nonverification preserved without completion",
+      "repetition": 2,
+      "scripted": 0,
+      "wallMs": 86776.649209,
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_09e7f81e11402e30bcdd23a6",
+          "hold_stage": "verification",
+          "reason_code": "discourse_uncertain",
+          "verification": {
+            "outcome": "failed",
+            "failure_code": "semantic_inconsistent"
+          }
+        },
+        {
+          "candidate_id": "cand_360bd5517ebf32f60eed644c",
+          "hold_stage": "verification",
+          "reason_code": "discourse_uncertain",
+          "verification": {
+            "outcome": "failed",
+            "failure_code": "semantic_inconsistent"
+          }
+        }
+      ],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 52192,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": [
+              "cand_09e7f81e11402e30bcdd23a6",
+              "cand_360bd5517ebf32f60eed644c"
+            ],
+            "outcome": "failed",
+            "accepted_count": 0,
+            "held_count": 2,
+            "failure_code": "semantic_inconsistent",
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 52176,
+              "input_tokens": 16162,
+              "output_tokens": 5610,
+              "total_tokens": 21772,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 3979
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 26251,
+          "input_tokens": 7778,
+          "output_tokens": 2802,
+          "total_tokens": 10580,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 7775,
+          "reasoning_output_tokens": 2161
+        },
+        "repair": {
+          "model": "gpt-6-luna",
+          "latency_ms": 8262,
+          "input_tokens": 8894,
+          "output_tokens": 886,
+          "total_tokens": 9780,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 596
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 52176,
+          "input_tokens": 16162,
+          "output_tokens": 5610,
+          "total_tokens": 21772,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 3979
+        }
+      },
+      "calls": [
+        {
+          "phase": "extraction",
+          "wallMs": 26250.995292000007,
+          "sourceIncluded": true,
+          "serializedInputChars": 37657,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 26250.974749999994,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7778,
+            "outputTokens": 2802,
+            "totalTokens": 10580,
+            "cachedInputTokens": 7775,
+            "reasoningOutputTokens": 2161
+          }
+        },
+        {
+          "phase": "repair",
+          "wallMs": 8261.597707999987,
+          "sourceIncluded": true,
+          "serializedInputChars": 43236,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 8261.504042000044,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 8894,
+            "outputTokens": 886,
+            "totalTokens": 9780,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 596
+          }
+        },
+        {
+          "phase": "verification",
+          "wallMs": 52175.877499999944,
+          "sourceIncluded": true,
+          "serializedInputChars": 67225,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 52175.708334000024,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 16162,
+            "outputTokens": 5610,
+            "totalTokens": 21772,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 3979
+          }
+        }
+      ]
+    },
+    {
+      "id": "one-off-rerun",
+      "mode": "native",
+      "expected": "empty task-only retention",
+      "repetition": 2,
+      "scripted": 0,
+      "wallMs": 1523.9568330000038,
+      "candidates": [],
+      "held": [],
+      "hasError": false,
+      "verification": null,
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 1524,
+          "input_tokens": 7742,
+          "output_tokens": 45,
+          "total_tokens": 7787,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 7739,
+          "reasoning_output_tokens": 26
+        },
+        "verification": null
+      },
+      "calls": [
+        {
+          "phase": "extraction",
+          "wallMs": 1523.875166999991,
+          "sourceIncluded": true,
+          "serializedInputChars": 37496,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 1523.8601250000065,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 7742,
+            "outputTokens": 45,
+            "totalTokens": 7787,
+            "cachedInputTokens": 7739,
+            "reasoningOutputTokens": 26
+          }
+        }
+      ]
+    },
+    {
+      "id": "unsupported-completion",
+      "mode": "injected",
+      "expected": "semantic hold, never delivered fact",
+      "repetition": 2,
+      "scripted": 1,
+      "wallMs": 24711.82808300003,
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_70bb11671e56808028db7912",
+          "hold_stage": "verification",
+          "reason_code": "discourse_uncertain",
+          "verification": {
+            "outcome": "rejected"
+          }
+        }
+      ],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 17004,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": [
+              "cand_70bb11671e56808028db7912"
+            ],
+            "outcome": "verified",
+            "accepted_count": 0,
+            "held_count": 1,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 16980,
+              "input_tokens": 12208,
+              "output_tokens": 2338,
+              "total_tokens": 14546,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 1644
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "repair": {
+          "model": "gpt-6-luna",
+          "latency_ms": 7438,
+          "input_tokens": 8670,
+          "output_tokens": 851,
+          "total_tokens": 9521,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 8667,
+          "reasoning_output_tokens": 563
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 16980,
+          "input_tokens": 12208,
+          "output_tokens": 2338,
+          "total_tokens": 14546,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 1644
+        }
+      },
+      "calls": [
+        {
+          "phase": "repair",
+          "wallMs": 7437.8592499999795,
+          "sourceIncluded": true,
+          "serializedInputChars": 42186,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 7437.806333000015,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 8670,
+            "outputTokens": 851,
+            "totalTokens": 9521,
+            "cachedInputTokens": 8667,
+            "reasoningOutputTokens": 563
+          }
+        },
+        {
+          "phase": "verification",
+          "wallMs": 16980.060666000005,
+          "sourceIncluded": true,
+          "serializedInputChars": 58253,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 16979.956916000054,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12208,
+            "outputTokens": 2338,
+            "totalTokens": 14546,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 1644
+          }
+        }
+      ]
+    },
+    {
+      "id": "unrelated-owner",
+      "mode": "injected",
+      "expected": "semantic hold, no owner inference from author",
+      "repetition": 2,
+      "scripted": 1,
+      "wallMs": 31864.330749999965,
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_48e1dd062bca4ca6684692dd",
+          "hold_stage": "verification",
+          "reason_code": "noncanonical_without_context",
+          "verification": {
+            "outcome": "rejected"
+          }
+        }
+      ],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 31853,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": [
+              "cand_48e1dd062bca4ca6684692dd"
+            ],
+            "outcome": "verified",
+            "accepted_count": 0,
+            "held_count": 1,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 31840,
+              "input_tokens": 11862,
+              "output_tokens": 3745,
+              "total_tokens": 15607,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 11859,
+              "reasoning_output_tokens": 2945
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 31840,
+          "input_tokens": 11862,
+          "output_tokens": 3745,
+          "total_tokens": 15607,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 11859,
+          "reasoning_output_tokens": 2945
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 31840.45620799996,
+          "sourceIncluded": true,
+          "serializedInputChars": 57127,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 31840.384458999964,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 11862,
+            "outputTokens": 3745,
+            "totalTokens": 15607,
+            "cachedInputTokens": 11859,
+            "reasoningOutputTokens": 2945
+          }
+        }
+      ]
+    }
+  ]
+}
