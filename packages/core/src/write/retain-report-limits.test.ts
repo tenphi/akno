@@ -172,6 +172,17 @@ describe('report limits are verified without a forced rewrite', () => {
     expect(result.candidates).toEqual([]);
     expect(result.degradedReason).toBe('retain_verification_failed');
     expect(result.held[0]!.hold_stage).toBe('verification');
+    expect(result.verification?.batches[0]?.failure_code).toBe(
+      {
+        'missing-alignment': 'schema_mismatch',
+        'foreign-source': 'report_limit_inconsistent',
+        'foreign-candidate': 'report_limit_inconsistent',
+        'missing-verdict': 'missing_verdict',
+        'duplicate-verdict': 'duplicate_verdict',
+        malformed: 'invalid_json',
+        unavailable: 'request_failed',
+      }[mode],
+    );
   });
 
   it.each([false, true])(

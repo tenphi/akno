@@ -180,6 +180,11 @@ describe('documentary reporting is verified from source context', () => {
     const result = await run(model);
     expect(result.candidates).toEqual([]);
     expect(result.degradedReason).toBe('retain_verification_failed');
+    expect(result.verification?.batches[0]?.failure_code).toBe(
+      ['missing-audit', 'foreign-reporter', 'foreign-frame'].includes(mode)
+        ? 'schema_mismatch'
+        : 'attribution_inconsistent',
+    );
     expect(invalid).toHaveBeenCalledOnce();
     expect(chat).toHaveBeenCalledTimes(2);
   });

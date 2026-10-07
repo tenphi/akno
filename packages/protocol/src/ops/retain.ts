@@ -285,8 +285,63 @@ export const RetainModelCallReceipt = z.object({
   input_tokens: z.number().int().nonnegative().nullable(),
   output_tokens: z.number().int().nonnegative().nullable(),
   total_tokens: z.number().int().nonnegative().nullable(),
+  endpoint_requests: z.number().int().nonnegative().nullable().optional(),
+  cached_input_tokens: z.number().int().nonnegative().nullable().optional(),
+  reasoning_output_tokens: z.number().int().nonnegative().nullable().optional(),
 });
 export type RetainModelCallReceipt = z.infer<typeof RetainModelCallReceipt>;
+
+/** Fixed codes only: never provider messages, response fragments or schema issue details. */
+export const RetainVerificationFailure = z.enum([
+  'unavailable',
+  'timeout',
+  'request_failed',
+  'bad_response',
+  'language_mismatch',
+  'language_check_failed',
+  'empty_response',
+  'invalid_json',
+  'schema_mismatch',
+  'missing_verdict',
+  'duplicate_verdict',
+  'foreign_verdict',
+  'semantic_inconsistent',
+  'time_witness_invalid',
+  'context_witness_invalid',
+  'negative_evidence_inconsistent',
+  'attribution_inconsistent',
+  'report_limit_inconsistent',
+  'hold_reason_inconsistent',
+]);
+export type RetainVerificationFailure = z.infer<typeof RetainVerificationFailure>;
+
+export const RetainCandidateVerification = z.object({
+  outcome: z.enum(['rejected', 'failed', 'source_aborted', 'not_checked', 'dependency_held']),
+  failure_code: RetainVerificationFailure.optional(),
+});
+export type RetainCandidateVerification = z.infer<typeof RetainCandidateVerification>;
+
+export const RetainVerificationDiagnostics = z.object({
+  version: z.literal(1),
+  failure_scope: z.enum(['source', 'batch']),
+  /** Diagnostic classification does not grant retry authority. */
+  partial_recovery: z.literal('unsupported'),
+  wall_time_ms: z.number().int().nonnegative(),
+  batches: z
+    .array(
+      z.object({
+        batch_index: z.number().int().min(0).max(24),
+        candidate_ids: z.array(z.string()).min(1).max(2),
+        outcome: z.enum(['verified', 'failed']),
+        accepted_count: z.number().int().min(0).max(2),
+        held_count: z.number().int().min(0).max(2),
+        failure_code: RetainVerificationFailure.optional(),
+        model_call: RetainModelCallReceipt,
+      }),
+    )
+    .max(25),
+});
+export type RetainVerificationDiagnostics = z.infer<typeof RetainVerificationDiagnostics>;
 
 export const RetainRoutingReason = z.enum([
   'existing_selected',
@@ -304,6 +359,7 @@ export const RetainCandidateResult = z.object({
   ...TimelineMembership.partial().shape,
   hold_stage: z.enum(['validation', 'verification', 'placement', 'apply']).optional(),
   routing_reason: RetainRoutingReason.optional(),
+  verification: RetainCandidateVerification.optional(),
 
   candidate_id: z.string(),
   outcome: z.enum(['written', 'duplicate', 'support_added', 'retracted', 'held', 'not_found']),
@@ -315,6 +371,8 @@ export const RetainCandidateResult = z.object({
 export type RetainCandidateResult = z.infer<typeof RetainCandidateResult>;
 
 export const RetainSourceResult = z.object({
+  /** Absent on historical receipts; absence never establishes technical retry eligibility. */
+  verification: RetainVerificationDiagnostics.optional(),
   /** Policy at original processing time; replay preserves this receipt. */
   knowledge_language: z.literal('en').nullable().optional(),
   source_id: z.string(),
