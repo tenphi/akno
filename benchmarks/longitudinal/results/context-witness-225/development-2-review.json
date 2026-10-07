@@ -1,0 +1,18 @@
+{
+  "complete": true,
+  "acceptanceCohort": false,
+  "sourceReview": "All 16 returns inspected. Original native 9 records on 6 of 10 target coordinates; one warranty record ambiguously transfers the covered-object reference to the recorder (not fully preserved). Native recipient omissions in travel/delivery correctly held. Original narrowed control repetition 2 changes current nonarrival to unanchored past (temporal concern, not a successful refusal). Separate controls return 4 positive antecedents and 2 narrowed temporal records; pending-debit control has ambiguous whole-record negated polarity. All arbitrary owner/addressee controls withheld, but one is a failed decision, not a well-formed semantic refusal. Two context failures: explicit identity label uses a different name-origin frame, and explicit resolution is attached to a null name. No translated/reconstructed deciding excerpts.",
+  "accounting": {
+    "originalActualCalls": 28,
+    "originalRequests": 28,
+    "originalTokens": 351100,
+    "originalScripted": 4,
+    "controlActualCalls": 20,
+    "controlRequests": 20,
+    "controlTokens": 273560,
+    "controlScripted": 16,
+    "unknownUsage": 0,
+    "unknownRequests": 0
+  },
+  "nextFix": "Separate described entity from reporting wrapper in generation and independent source interpretation; do not use candidate subject as antecedent authority. Clarify exact resolution/name-origin invariants. Add reporter-versus-object scope and explicitly owned provider-policy controls. Keep historical results separate."
+}

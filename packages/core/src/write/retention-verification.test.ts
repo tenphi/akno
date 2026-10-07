@@ -123,7 +123,18 @@ describe('content-safe verifier failure diagnostics', () => {
       if (code === 'foreign_verdict') v.candidate_id = sentinel;
       if (code === 'semantic_inconsistent') v.proposition_supported = false;
       if (code === 'time_witness_invalid') v.predicate_time_audit.comparisons[0].source.timing = sentinel;
-      if (code === 'context_witness_invalid') v.knowledge_context.witness.exact_excerpt = sentinel;
+      if (code === 'context_witness_invalid')
+        v.knowledge_context.references = [
+          {
+            source: { frame_id: 'F1' },
+            source_name: sentinel,
+            name_origin: { frame_id: 'F1' },
+            resolution: 'explicit',
+            source_role: 'subject',
+            candidate_role: 'subject',
+            relation: 'preserved',
+          },
+        ];
       if (code === 'hold_reason_inconsistent') v.reason_code = 'time_unresolved';
       return { verdicts };
     });

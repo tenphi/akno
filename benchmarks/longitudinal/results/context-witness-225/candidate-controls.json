@@ -1,0 +1,2151 @@
+{
+  "corpusHash": "20b9e3fb42ee4eccdf4504e1222b9a167f14c9d45e9cb751ed150f82cee9c750",
+  "runnerHash": "f80d79038b19e4d32eb1ed4866c5a49ab046992b58110b20d7ad9c1f43d9b32b",
+  "role": {
+    "id": "gpt-6-luna",
+    "maxOutputTokens": null,
+    "timeoutMs": 600000,
+    "reasoningEffort": null
+  },
+  "retentionSettings": {
+    "generationMaxOutputTokens": 32768,
+    "verificationConcurrency": 4,
+    "verificationFailureScope": "batch"
+  },
+  "summary": {
+    "coordinates": 20,
+    "logicalCalls": 24,
+    "scripted": 20,
+    "endpointRequests": 24,
+    "unknownRequests": 0,
+    "knownUsage": 24,
+    "unknownUsage": 0,
+    "inputTokens": 274912,
+    "outputTokens": 54626,
+    "totalTokens": 329538,
+    "cachedInputTokens": 121472,
+    "reasoningOutputTokens": 39256,
+    "unknownCacheDetails": 0,
+    "unknownReasoningDetails": 0,
+    "failureBatches": {},
+    "holds": {
+      "verification:noncanonical_without_context:rejected": 10
+    }
+  },
+  "rows": [
+    {
+      "id": "schedule-is-not-occurrence",
+      "mode": "injected",
+      "expected": "no unsupported occurrence; any narrowed report remains qualified",
+      "repetition": 1,
+      "scripted": 1,
+      "wallMs": 29900.210583,
+      "candidates": [
+        {
+          "candidate_id": "cand_f9f3eb23a15bc15096029ec2",
+          "kind": "event",
+          "text": "Vulpine Mutual confirms that the Zephyr QX-100 inspection is scheduled for 12 May 2034; the inspection has not happened.",
+          "subject": "Zephyr QX-100",
+          "attribution": {
+            "source_role": "external",
+            "source_speaker": "Vulpine Mutual"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Vulpine Mutual confirms that the Zephyr QX-100 inspection is scheduled for 12 May 2034. The inspection has not happened.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Vulpine Mutual confirms that the Zephyr QX-100 inspection is scheduled for 12 May 2034. The inspection has not happened.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "time": {
+            "start": "2034-05-12",
+            "precision": "day",
+            "relation": "scheduled",
+            "status": "scheduled",
+            "timezone": "UTC",
+            "mentioned_at": "2034-04-22T09:00:00Z"
+          },
+          "evidence": "Vulpine Mutual confirms that the Zephyr QX-100 inspection is scheduled for 12 May 2034. The inspection has not happened.",
+          "retention_scope": "event"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 21351,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_f9f3eb23a15bc15096029ec2"],
+            "outcome": "verified",
+            "accepted_count": 1,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 21332,
+              "input_tokens": 12178,
+              "output_tokens": 1969,
+              "total_tokens": 14147,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 1422
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "repair": {
+          "model": "gpt-6-luna",
+          "latency_ms": 8440,
+          "input_tokens": 8661,
+          "output_tokens": 750,
+          "total_tokens": 9411,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 479
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 21332,
+          "input_tokens": 12178,
+          "output_tokens": 1969,
+          "total_tokens": 14147,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 1422
+        }
+      },
+      "calls": [
+        {
+          "phase": "repair",
+          "wallMs": 8439.805917,
+          "sourceIncluded": true,
+          "serializedInputChars": 42178,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 8439.565417,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 8661,
+            "outputTokens": 750,
+            "totalTokens": 9411,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 479
+          }
+        },
+        {
+          "phase": "verification",
+          "wallMs": 21331.685083,
+          "sourceIncluded": true,
+          "serializedInputChars": 58182,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 21331.542999999998,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12178,
+            "outputTokens": 1969,
+            "totalTokens": 14147,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 1422
+          }
+        }
+      ]
+    },
+    {
+      "id": "neighboring-date-is-not-completion-date",
+      "mode": "injected",
+      "expected": "no borrowed date or guessed actor; any narrowed completion remains undated",
+      "repetition": 1,
+      "scripted": 1,
+      "wallMs": 27531.020791,
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_3ebfd91be0f875dbdc96c74d",
+          "hold_stage": "verification",
+          "reason_code": "noncanonical_without_context",
+          "verification": {
+            "outcome": "rejected"
+          }
+        }
+      ],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 27520,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_3ebfd91be0f875dbdc96c74d"],
+            "outcome": "verified",
+            "accepted_count": 0,
+            "held_count": 1,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 27512,
+              "input_tokens": 11878,
+              "output_tokens": 2460,
+              "total_tokens": 14338,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 1809
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 27512,
+          "input_tokens": 11878,
+          "output_tokens": 2460,
+          "total_tokens": 14338,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 1809
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 27511.631208,
+          "sourceIncluded": true,
+          "serializedInputChars": 57089,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 27511.584540999997,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 11878,
+            "outputTokens": 2460,
+            "totalTokens": 14338,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 1809
+          }
+        }
+      ]
+    },
+    {
+      "id": "pending-is-not-settled",
+      "mode": "injected",
+      "expected": "no settled payment; any narrowed pending report stays pending",
+      "repetition": 1,
+      "scripted": 1,
+      "wallMs": 31670.013624999992,
+      "candidates": [
+        {
+          "candidate_id": "cand_673a78c18d7367b830bbd6ac",
+          "kind": "claim",
+          "text": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow, dated 11 April 2034; the debit has not settled.",
+          "subject": "1111 EUR debit",
+          "attribution": {
+            "source_role": "external",
+            "source_speaker": "Vulpine Mutual"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow dated 11 April 2034. The debit has not settled.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow dated 11 April 2034. The debit has not settled.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "evidence": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow dated 11 April 2034. The debit has not settled.",
+          "retention_scope": "event"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 20272,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_673a78c18d7367b830bbd6ac"],
+            "outcome": "verified",
+            "accepted_count": 1,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 20262,
+              "input_tokens": 12084,
+              "output_tokens": 1943,
+              "total_tokens": 14027,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 1316
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "repair": {
+          "model": "gpt-6-luna",
+          "latency_ms": 11394,
+          "input_tokens": 8664,
+          "output_tokens": 879,
+          "total_tokens": 9543,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 8313,
+          "reasoning_output_tokens": 658
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 20262,
+          "input_tokens": 12084,
+          "output_tokens": 1943,
+          "total_tokens": 14027,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 1316
+        }
+      },
+      "calls": [
+        {
+          "phase": "repair",
+          "wallMs": 11394.445542000001,
+          "sourceIncluded": true,
+          "serializedInputChars": 42157,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 11394.420167000004,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 8664,
+            "outputTokens": 879,
+            "totalTokens": 9543,
+            "cachedInputTokens": 8313,
+            "reasoningOutputTokens": 658
+          }
+        },
+        {
+          "phase": "verification",
+          "wallMs": 20262.197749999992,
+          "sourceIncluded": true,
+          "serializedInputChars": 57810,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 20262.109708000004,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12084,
+            "outputTokens": 1943,
+            "totalTokens": 14027,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 1316
+          }
+        }
+      ]
+    },
+    {
+      "id": "owned-warranty-antecedent",
+      "mode": "injected",
+      "expected": "useful cross-frame product reference; no added owner",
+      "repetition": 1,
+      "scripted": 1,
+      "wallMs": 10388.639333,
+      "candidates": [
+        {
+          "candidate_id": "cand_8ff3fc6d544da71683b51c4d",
+          "kind": "claim",
+          "text": "The Zephyr QX-100 warranty lasts five years.",
+          "subject": "Zephyr QX-100",
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "self_attested"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Its warranty lasts five years.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Ada Marlow purchased a Zephyr QX-100.",
+              "item_id": "source-1111"
+            },
+            {
+              "quote": "Its warranty lasts five years.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "origin": "user",
+          "evidence": "Ada Marlow purchased a Zephyr QX-100.\n…\nIts warranty lasts five years.",
+          "retention_scope": "entity"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 10340,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_8ff3fc6d544da71683b51c4d"],
+            "outcome": "verified",
+            "accepted_count": 1,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 10337,
+              "input_tokens": 11998,
+              "output_tokens": 1169,
+              "total_tokens": 13167,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 681
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 10337,
+          "input_tokens": 11998,
+          "output_tokens": 1169,
+          "total_tokens": 13167,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 681
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 10337.301833999998,
+          "sourceIncluded": true,
+          "serializedInputChars": 57170,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 10337.267791999999,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 11998,
+            "outputTokens": 1169,
+            "totalTokens": 13167,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 681
+          }
+        }
+      ]
+    },
+    {
+      "id": "owned-multilingual-short-name",
+      "mode": "injected",
+      "expected": "useful original-language short-name and object antecedents",
+      "repetition": 1,
+      "scripted": 1,
+      "wallMs": 14602.875,
+      "candidates": [
+        {
+          "candidate_id": "cand_c5f92c36e4317167516728ae",
+          "kind": "claim",
+          "text": "Ada Marlow keeps the Zephyr QX-100 register in an archive.",
+          "subject": "Zephyr QX-100",
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "self_attested"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Ada хранит его в архиве.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Ada Marlow manages the Zephyr QX-100 register.",
+              "item_id": "source-1111"
+            },
+            {
+              "quote": "Ada хранит его в архиве.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "origin": "user",
+          "evidence": "Ada Marlow manages the Zephyr QX-100 register.\n…\nAda хранит его в архиве.",
+          "retention_scope": "entity"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 14600,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_c5f92c36e4317167516728ae"],
+            "outcome": "verified",
+            "accepted_count": 1,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 14592,
+              "input_tokens": 12004,
+              "output_tokens": 1286,
+              "total_tokens": 13290,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 763
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 14592,
+          "input_tokens": 12004,
+          "output_tokens": 1286,
+          "total_tokens": 13290,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 763
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 14591.790416999997,
+          "sourceIncluded": true,
+          "serializedInputChars": 57187,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 14591.727209000004,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12004,
+            "outputTokens": 1286,
+            "totalTokens": 13290,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 763
+          }
+        }
+      ]
+    },
+    {
+      "id": "competing-owner-antecedents",
+      "mode": "injected",
+      "expected": "no arbitrary owner selected from competing antecedents",
+      "repetition": 1,
+      "scripted": 1,
+      "wallMs": 43276.34137499999,
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_6cd2178b737bf9e54df8669d",
+          "hold_stage": "verification",
+          "reason_code": "noncanonical_without_context",
+          "verification": {
+            "outcome": "rejected"
+          }
+        }
+      ],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 43275,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_6cd2178b737bf9e54df8669d"],
+            "outcome": "verified",
+            "accepted_count": 0,
+            "held_count": 1,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 43270,
+              "input_tokens": 12036,
+              "output_tokens": 4284,
+              "total_tokens": 16320,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 3165
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 43270,
+          "input_tokens": 12036,
+          "output_tokens": 4284,
+          "total_tokens": 16320,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 3165
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 43269.921208,
+          "sourceIncluded": true,
+          "serializedInputChars": 57438,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 43269.877292000005,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12036,
+            "outputTokens": 4284,
+            "totalTokens": 16320,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 3165
+          }
+        }
+      ]
+    },
+    {
+      "id": "recipient-is-not-booking-owner",
+      "mode": "injected",
+      "expected": "no recipient promoted to booking possessor",
+      "repetition": 1,
+      "scripted": 1,
+      "wallMs": 34710.00658300001,
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_c6daaaae78b58e2d372a3c2d",
+          "hold_stage": "verification",
+          "reason_code": "noncanonical_without_context",
+          "verification": {
+            "outcome": "rejected"
+          }
+        }
+      ],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 34709,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_c6daaaae78b58e2d372a3c2d"],
+            "outcome": "verified",
+            "accepted_count": 0,
+            "held_count": 1,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 34701,
+              "input_tokens": 12004,
+              "output_tokens": 3523,
+              "total_tokens": 15527,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 2576
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 34701,
+          "input_tokens": 12004,
+          "output_tokens": 3523,
+          "total_tokens": 15527,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 2576
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 34701.43400000001,
+          "sourceIncluded": true,
+          "serializedInputChars": 57273,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 34700.991416000004,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12004,
+            "outputTokens": 3523,
+            "totalTokens": 15527,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 2576
+          }
+        }
+      ]
+    },
+    {
+      "id": "speaker-is-not-unknown-addressee",
+      "mode": "injected",
+      "expected": "no structured recorder promoted to unidentified addressee",
+      "repetition": 1,
+      "scripted": 1,
+      "wallMs": 33156.97908300001,
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_b32fc150cfdc19900d1591dc",
+          "hold_stage": "verification",
+          "reason_code": "noncanonical_without_context",
+          "verification": {
+            "outcome": "rejected"
+          }
+        }
+      ],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 33154,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_b32fc150cfdc19900d1591dc"],
+            "outcome": "verified",
+            "accepted_count": 0,
+            "held_count": 1,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 33146,
+              "input_tokens": 11999,
+              "output_tokens": 3185,
+              "total_tokens": 15184,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 2316
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 33146,
+          "input_tokens": 11999,
+          "output_tokens": 3185,
+          "total_tokens": 15184,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 2316
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 33145.978458,
+          "sourceIncluded": true,
+          "serializedInputChars": 57331,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 33145.891416,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 11999,
+            "outputTokens": 3185,
+            "totalTokens": 15184,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 2316
+          }
+        }
+      ]
+    },
+    {
+      "id": "reporter-is-not-property-object",
+      "mode": "injected",
+      "expected": "no property generalized from one device to reporting organization; a narrowed specific-device claim must name its object",
+      "repetition": 1,
+      "scripted": 1,
+      "wallMs": 50990.065208000015,
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_a9fde7290dbec06011aa67da",
+          "hold_stage": "verification",
+          "reason_code": "noncanonical_without_context",
+          "verification": {
+            "outcome": "rejected"
+          }
+        }
+      ],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 50937,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_a9fde7290dbec06011aa67da"],
+            "outcome": "verified",
+            "accepted_count": 0,
+            "held_count": 1,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 50925,
+              "input_tokens": 12140,
+              "output_tokens": 4425,
+              "total_tokens": 16565,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 3508
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 50925,
+          "input_tokens": 12140,
+          "output_tokens": 4425,
+          "total_tokens": 16565,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 3508
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 50925.01562500003,
+          "sourceIncluded": true,
+          "serializedInputChars": 57802,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 50924.87616600003,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12140,
+            "outputTokens": 4425,
+            "totalTokens": 16565,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 3508
+          }
+        }
+      ]
+    },
+    {
+      "id": "explicit-provider-policy",
+      "mode": "injected",
+      "expected": "useful explicitly stated company policy; no forced product entity or blanket refusal",
+      "repetition": 1,
+      "scripted": 1,
+      "wallMs": 17925.80929200002,
+      "candidates": [
+        {
+          "candidate_id": "cand_9a64442df6190f583ee09ad6",
+          "kind": "claim",
+          "text": "Vulpine Mutual states that its general warranty policy covers devices for five years.",
+          "subject": "Vulpine Mutual",
+          "attribution": {
+            "source_role": "external",
+            "source_speaker": "Vulpine Mutual"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Vulpine Mutual states that its general warranty policy covers devices for five years.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Vulpine Mutual states that its general warranty policy covers devices for five years.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "evidence": "Vulpine Mutual states that its general warranty policy covers devices for five years.",
+          "retention_scope": "entity"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 17919,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_9a64442df6190f583ee09ad6"],
+            "outcome": "verified",
+            "accepted_count": 1,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 17903,
+              "input_tokens": 11805,
+              "output_tokens": 1742,
+              "total_tokens": 13547,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 1189
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 17903,
+          "input_tokens": 11805,
+          "output_tokens": 1742,
+          "total_tokens": 13547,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 1189
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 17903.463958000008,
+          "sourceIncluded": true,
+          "serializedInputChars": 56969,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 17903.352500000037,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 11805,
+            "outputTokens": 1742,
+            "totalTokens": 13547,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 1189
+          }
+        }
+      ]
+    },
+    {
+      "id": "schedule-is-not-occurrence",
+      "mode": "injected",
+      "expected": "no unsupported occurrence; any narrowed report remains qualified",
+      "repetition": 2,
+      "scripted": 1,
+      "wallMs": 21987.11241599999,
+      "candidates": [
+        {
+          "candidate_id": "cand_85385a1024688ec2496f5c81",
+          "kind": "claim",
+          "text": "Vulpine Mutual confirms that the Zephyr QX-100 inspection is scheduled for 12 May 2034; the inspection has not happened.",
+          "subject": "Zephyr QX-100",
+          "attribution": {
+            "source_role": "external",
+            "source_speaker": "Vulpine Mutual"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Vulpine Mutual confirms that the Zephyr QX-100 inspection is scheduled for 12 May 2034. The inspection has not happened.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Vulpine Mutual confirms that the Zephyr QX-100 inspection is scheduled for 12 May 2034. The inspection has not happened.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "time": {
+            "start": "2034-05-12",
+            "precision": "day",
+            "relation": "scheduled",
+            "status": "scheduled",
+            "timezone": "UTC",
+            "mentioned_at": "2034-04-22T09:00:00Z"
+          },
+          "evidence": "Vulpine Mutual confirms that the Zephyr QX-100 inspection is scheduled for 12 May 2034. The inspection has not happened.",
+          "retention_scope": "event"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 16227,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_85385a1024688ec2496f5c81"],
+            "outcome": "verified",
+            "accepted_count": 1,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 16218,
+              "input_tokens": 12178,
+              "output_tokens": 1292,
+              "total_tokens": 13470,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 756
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "repair": {
+          "model": "gpt-6-luna",
+          "latency_ms": 5754,
+          "input_tokens": 8661,
+          "output_tokens": 549,
+          "total_tokens": 9210,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 8658,
+          "reasoning_output_tokens": 278
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 16218,
+          "input_tokens": 12178,
+          "output_tokens": 1292,
+          "total_tokens": 13470,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 756
+        }
+      },
+      "calls": [
+        {
+          "phase": "repair",
+          "wallMs": 5753.791417,
+          "sourceIncluded": true,
+          "serializedInputChars": 42178,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 5753.749291999964,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 8661,
+            "outputTokens": 549,
+            "totalTokens": 9210,
+            "cachedInputTokens": 8658,
+            "reasoningOutputTokens": 278
+          }
+        },
+        {
+          "phase": "verification",
+          "wallMs": 16218.24770899996,
+          "sourceIncluded": true,
+          "serializedInputChars": 58182,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 16218.064500000037,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12178,
+            "outputTokens": 1292,
+            "totalTokens": 13470,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 756
+          }
+        }
+      ]
+    },
+    {
+      "id": "neighboring-date-is-not-completion-date",
+      "mode": "injected",
+      "expected": "no borrowed date or guessed actor; any narrowed completion remains undated",
+      "repetition": 2,
+      "scripted": 1,
+      "wallMs": 33375.26983299997,
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_3ebfd91be0f875dbdc96c74d",
+          "hold_stage": "verification",
+          "reason_code": "noncanonical_without_context",
+          "verification": {
+            "outcome": "rejected"
+          }
+        }
+      ],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 33374,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_3ebfd91be0f875dbdc96c74d"],
+            "outcome": "verified",
+            "accepted_count": 0,
+            "held_count": 1,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 33368,
+              "input_tokens": 11878,
+              "output_tokens": 2804,
+              "total_tokens": 14682,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 11875,
+              "reasoning_output_tokens": 2177
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 33368,
+          "input_tokens": 11878,
+          "output_tokens": 2804,
+          "total_tokens": 14682,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 11875,
+          "reasoning_output_tokens": 2177
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 33367.59379199997,
+          "sourceIncluded": true,
+          "serializedInputChars": 57089,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 33367.535250000015,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 11878,
+            "outputTokens": 2804,
+            "totalTokens": 14682,
+            "cachedInputTokens": 11875,
+            "reasoningOutputTokens": 2177
+          }
+        }
+      ]
+    },
+    {
+      "id": "pending-is-not-settled",
+      "mode": "injected",
+      "expected": "no settled payment; any narrowed pending report stays pending",
+      "repetition": 2,
+      "scripted": 1,
+      "wallMs": 41740.83429099998,
+      "candidates": [
+        {
+          "candidate_id": "cand_974d833279c9a46fac9f77e5",
+          "kind": "claim",
+          "text": "Vulpine Mutual reports that Ada Marlow's 1111 EUR debit, dated 11 April 2034, has not settled and remains pending.",
+          "subject": "Ada Marlow's 1111 EUR debit",
+          "attribution": {
+            "source_role": "external",
+            "source_speaker": "Vulpine Mutual"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "negated",
+          "support": [
+            {
+              "quote": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow dated 11 April 2034. The debit has not settled.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow dated 11 April 2034. The debit has not settled.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "evidence": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow dated 11 April 2034. The debit has not settled.",
+          "retention_scope": "event"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 31462,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_974d833279c9a46fac9f77e5"],
+            "outcome": "verified",
+            "accepted_count": 1,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 31452,
+              "input_tokens": 12094,
+              "output_tokens": 2509,
+              "total_tokens": 14603,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 0,
+              "reasoning_output_tokens": 1835
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "repair": {
+          "model": "gpt-6-luna",
+          "latency_ms": 10274,
+          "input_tokens": 8664,
+          "output_tokens": 924,
+          "total_tokens": 9588,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 8661,
+          "reasoning_output_tokens": 698
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 31452,
+          "input_tokens": 12094,
+          "output_tokens": 2509,
+          "total_tokens": 14603,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 0,
+          "reasoning_output_tokens": 1835
+        }
+      },
+      "calls": [
+        {
+          "phase": "repair",
+          "wallMs": 10274.16070899996,
+          "sourceIncluded": true,
+          "serializedInputChars": 42157,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 10274.100750000041,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 8664,
+            "outputTokens": 924,
+            "totalTokens": 9588,
+            "cachedInputTokens": 8661,
+            "reasoningOutputTokens": 698
+          }
+        },
+        {
+          "phase": "verification",
+          "wallMs": 31451.910083000024,
+          "sourceIncluded": true,
+          "serializedInputChars": 57839,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 31451.811708000023,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12094,
+            "outputTokens": 2509,
+            "totalTokens": 14603,
+            "cachedInputTokens": 0,
+            "reasoningOutputTokens": 1835
+          }
+        }
+      ]
+    },
+    {
+      "id": "owned-warranty-antecedent",
+      "mode": "injected",
+      "expected": "useful cross-frame product reference; no added owner",
+      "repetition": 2,
+      "scripted": 1,
+      "wallMs": 17825.496166999976,
+      "candidates": [
+        {
+          "candidate_id": "cand_8ff3fc6d544da71683b51c4d",
+          "kind": "claim",
+          "text": "The Zephyr QX-100 warranty lasts five years.",
+          "subject": "Zephyr QX-100",
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "self_attested"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Its warranty lasts five years.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Ada Marlow purchased a Zephyr QX-100.",
+              "item_id": "source-1111"
+            },
+            {
+              "quote": "Its warranty lasts five years.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "origin": "user",
+          "evidence": "Ada Marlow purchased a Zephyr QX-100.\n…\nIts warranty lasts five years.",
+          "retention_scope": "entity"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 17825,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_8ff3fc6d544da71683b51c4d"],
+            "outcome": "verified",
+            "accepted_count": 1,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 17822,
+              "input_tokens": 11998,
+              "output_tokens": 1715,
+              "total_tokens": 13713,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 11995,
+              "reasoning_output_tokens": 1239
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 17822,
+          "input_tokens": 11998,
+          "output_tokens": 1715,
+          "total_tokens": 13713,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 11995,
+          "reasoning_output_tokens": 1239
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 17821.587625000044,
+          "sourceIncluded": true,
+          "serializedInputChars": 57170,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 17821.50874999998,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 11998,
+            "outputTokens": 1715,
+            "totalTokens": 13713,
+            "cachedInputTokens": 11995,
+            "reasoningOutputTokens": 1239
+          }
+        }
+      ]
+    },
+    {
+      "id": "owned-multilingual-short-name",
+      "mode": "injected",
+      "expected": "useful original-language short-name and object antecedents",
+      "repetition": 2,
+      "scripted": 1,
+      "wallMs": 16957.692708000017,
+      "candidates": [
+        {
+          "candidate_id": "cand_c5f92c36e4317167516728ae",
+          "kind": "claim",
+          "text": "Ada Marlow keeps the Zephyr QX-100 register in an archive.",
+          "subject": "Zephyr QX-100",
+          "attribution": {
+            "source_role": "user",
+            "source_speaker": "Ada Marlow"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "self_attested"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Ada хранит его в архиве.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Ada Marlow manages the Zephyr QX-100 register.",
+              "item_id": "source-1111"
+            },
+            {
+              "quote": "Ada хранит его в архиве.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "origin": "user",
+          "evidence": "Ada Marlow manages the Zephyr QX-100 register.\n…\nAda хранит его в архиве.",
+          "retention_scope": "entity"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 16956,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_c5f92c36e4317167516728ae"],
+            "outcome": "verified",
+            "accepted_count": 1,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 16945,
+              "input_tokens": 12004,
+              "output_tokens": 1546,
+              "total_tokens": 13550,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 12001,
+              "reasoning_output_tokens": 987
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 16945,
+          "input_tokens": 12004,
+          "output_tokens": 1546,
+          "total_tokens": 13550,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 12001,
+          "reasoning_output_tokens": 987
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 16944.736875000002,
+          "sourceIncluded": true,
+          "serializedInputChars": 57187,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 16944.665874999948,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12004,
+            "outputTokens": 1546,
+            "totalTokens": 13550,
+            "cachedInputTokens": 12001,
+            "reasoningOutputTokens": 987
+          }
+        }
+      ]
+    },
+    {
+      "id": "competing-owner-antecedents",
+      "mode": "injected",
+      "expected": "no arbitrary owner selected from competing antecedents",
+      "repetition": 2,
+      "scripted": 1,
+      "wallMs": 35431.685,
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_6cd2178b737bf9e54df8669d",
+          "hold_stage": "verification",
+          "reason_code": "noncanonical_without_context",
+          "verification": {
+            "outcome": "rejected"
+          }
+        }
+      ],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 35431,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_6cd2178b737bf9e54df8669d"],
+            "outcome": "verified",
+            "accepted_count": 0,
+            "held_count": 1,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 35424,
+              "input_tokens": 12036,
+              "output_tokens": 3369,
+              "total_tokens": 15405,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 12033,
+              "reasoning_output_tokens": 2505
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 35424,
+          "input_tokens": 12036,
+          "output_tokens": 3369,
+          "total_tokens": 15405,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 12033,
+          "reasoning_output_tokens": 2505
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 35424.122291999985,
+          "sourceIncluded": true,
+          "serializedInputChars": 57438,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 35424.063167000015,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12036,
+            "outputTokens": 3369,
+            "totalTokens": 15405,
+            "cachedInputTokens": 12033,
+            "reasoningOutputTokens": 2505
+          }
+        }
+      ]
+    },
+    {
+      "id": "recipient-is-not-booking-owner",
+      "mode": "injected",
+      "expected": "no recipient promoted to booking possessor",
+      "repetition": 2,
+      "scripted": 1,
+      "wallMs": 35711.191374999995,
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_c6daaaae78b58e2d372a3c2d",
+          "hold_stage": "verification",
+          "reason_code": "noncanonical_without_context",
+          "verification": {
+            "outcome": "rejected"
+          }
+        }
+      ],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 35711,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_c6daaaae78b58e2d372a3c2d"],
+            "outcome": "verified",
+            "accepted_count": 0,
+            "held_count": 1,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 35702,
+              "input_tokens": 12004,
+              "output_tokens": 3287,
+              "total_tokens": 15291,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 12001,
+              "reasoning_output_tokens": 2417
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 35702,
+          "input_tokens": 12004,
+          "output_tokens": 3287,
+          "total_tokens": 15291,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 12001,
+          "reasoning_output_tokens": 2417
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 35702.487250000006,
+          "sourceIncluded": true,
+          "serializedInputChars": 57273,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 35702.30812499998,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12004,
+            "outputTokens": 3287,
+            "totalTokens": 15291,
+            "cachedInputTokens": 12001,
+            "reasoningOutputTokens": 2417
+          }
+        }
+      ]
+    },
+    {
+      "id": "speaker-is-not-unknown-addressee",
+      "mode": "injected",
+      "expected": "no structured recorder promoted to unidentified addressee",
+      "repetition": 2,
+      "scripted": 1,
+      "wallMs": 31894.10695799999,
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_b32fc150cfdc19900d1591dc",
+          "hold_stage": "verification",
+          "reason_code": "noncanonical_without_context",
+          "verification": {
+            "outcome": "rejected"
+          }
+        }
+      ],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 31893,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_b32fc150cfdc19900d1591dc"],
+            "outcome": "verified",
+            "accepted_count": 0,
+            "held_count": 1,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 31883,
+              "input_tokens": 11999,
+              "output_tokens": 3169,
+              "total_tokens": 15168,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 11996,
+              "reasoning_output_tokens": 2290
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 31883,
+          "input_tokens": 11999,
+          "output_tokens": 3169,
+          "total_tokens": 15168,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 11996,
+          "reasoning_output_tokens": 2290
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 31883.64300000004,
+          "sourceIncluded": true,
+          "serializedInputChars": 57331,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 31883.49645799998,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 11999,
+            "outputTokens": 3169,
+            "totalTokens": 15168,
+            "cachedInputTokens": 11996,
+            "reasoningOutputTokens": 2290
+          }
+        }
+      ]
+    },
+    {
+      "id": "reporter-is-not-property-object",
+      "mode": "injected",
+      "expected": "no property generalized from one device to reporting organization; a narrowed specific-device claim must name its object",
+      "repetition": 2,
+      "scripted": 1,
+      "wallMs": 43825.839832999976,
+      "candidates": [],
+      "held": [
+        {
+          "candidate_id": "cand_a9fde7290dbec06011aa67da",
+          "hold_stage": "verification",
+          "reason_code": "noncanonical_without_context",
+          "verification": {
+            "outcome": "rejected"
+          }
+        }
+      ],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 43703,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_a9fde7290dbec06011aa67da"],
+            "outcome": "verified",
+            "accepted_count": 0,
+            "held_count": 1,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 43694,
+              "input_tokens": 12140,
+              "output_tokens": 4087,
+              "total_tokens": 16227,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 12137,
+              "reasoning_output_tokens": 2960
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 43694,
+          "input_tokens": 12140,
+          "output_tokens": 4087,
+          "total_tokens": 16227,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 12137,
+          "reasoning_output_tokens": 2960
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 43694.216625,
+          "sourceIncluded": true,
+          "serializedInputChars": 57802,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 43694.17070799996,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 12140,
+            "outputTokens": 4087,
+            "totalTokens": 16227,
+            "cachedInputTokens": 12137,
+            "reasoningOutputTokens": 2960
+          }
+        }
+      ]
+    },
+    {
+      "id": "explicit-provider-policy",
+      "mode": "injected",
+      "expected": "useful explicitly stated company policy; no forced product entity or blanket refusal",
+      "repetition": 2,
+      "scripted": 1,
+      "wallMs": 19872.918042000034,
+      "candidates": [
+        {
+          "candidate_id": "cand_9a64442df6190f583ee09ad6",
+          "kind": "claim",
+          "text": "Vulpine Mutual states that its general warranty policy covers devices for five years.",
+          "subject": "Vulpine Mutual",
+          "attribution": {
+            "source_role": "external",
+            "source_speaker": "Vulpine Mutual"
+          },
+          "discourse": {
+            "commitment": "asserted",
+            "disposition": "active"
+          },
+          "epistemic": {
+            "basis": "source_report"
+          },
+          "polarity": "affirmed",
+          "support": [
+            {
+              "quote": "Vulpine Mutual states that its general warranty policy covers devices for five years.",
+              "item_id": "source-1111"
+            }
+          ],
+          "discourse_frame": [
+            {
+              "quote": "Vulpine Mutual states that its general warranty policy covers devices for five years.",
+              "item_id": "source-1111"
+            }
+          ],
+          "relations": [],
+          "evidence": "Vulpine Mutual states that its general warranty policy covers devices for five years.",
+          "retention_scope": "global"
+        }
+      ],
+      "held": [],
+      "hasError": false,
+      "verification": {
+        "version": 1,
+        "failure_scope": "batch",
+        "partial_recovery": "unsupported",
+        "wall_time_ms": 19846,
+        "batches": [
+          {
+            "batch_index": 0,
+            "candidate_ids": ["cand_9a64442df6190f583ee09ad6"],
+            "outcome": "verified",
+            "accepted_count": 1,
+            "held_count": 0,
+            "model_call": {
+              "model": "gpt-6-luna",
+              "latency_ms": 19840,
+              "input_tokens": 11805,
+              "output_tokens": 1760,
+              "total_tokens": 13565,
+              "endpoint_requests": 1,
+              "cached_input_tokens": 11802,
+              "reasoning_output_tokens": 1232
+            }
+          }
+        ]
+      },
+      "modelUsage": {
+        "extraction": {
+          "model": "gpt-6-luna",
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "endpoint_requests": null,
+          "cached_input_tokens": null,
+          "reasoning_output_tokens": null
+        },
+        "verification": {
+          "model": "gpt-6-luna",
+          "latency_ms": 19840,
+          "input_tokens": 11805,
+          "output_tokens": 1760,
+          "total_tokens": 13565,
+          "endpoint_requests": 1,
+          "cached_input_tokens": 11802,
+          "reasoning_output_tokens": 1232
+        }
+      },
+      "calls": [
+        {
+          "phase": "verification",
+          "wallMs": 19840.32850000006,
+          "sourceIncluded": true,
+          "serializedInputChars": 56969,
+          "ok": true,
+          "failure": null,
+          "latencyMs": 19840.295000000042,
+          "endpointRequests": 1,
+          "usage": {
+            "inputTokens": 11805,
+            "outputTokens": 1760,
+            "totalTokens": 13565,
+            "cachedInputTokens": 11802,
+            "reasoningOutputTokens": 1232
+          }
+        }
+      ]
+    }
+  ]
+}
