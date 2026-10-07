@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.18.13
+
+### Patch Changes
+
+- [#223](https://github.com/tenphi/akno/pull/223) [`dd6efd6`](https://github.com/tenphi/akno/commit/dd6efd6a02335732d9f82a29ba7cf4a362b451de) Thanks [@tenphi](https://github.com/tenphi)! - Bind automatic retention temporal audits to immutable owned source frames and the original readable candidate, preventing deciding excerpt paraphrases while preserving independent temporal, semantic and admission checks.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.18.13
+
 ## 0.18.12
 
 ### Patch Changes
