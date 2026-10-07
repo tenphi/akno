@@ -1,5 +1,11 @@
 # @tenphi/akno-protocol
 
+## 0.18.12
+
+### Patch Changes
+
+- [#220](https://github.com/tenphi/akno/pull/220) [`fe56012`](https://github.com/tenphi/akno/commit/fe56012f0f3f886c463176123edceca49954fb22) Thanks [@tenphi](https://github.com/tenphi)! - Expose bounded, content-safe automatic retention verifier diagnostics with distinct transport, JSON, verdict-set and grounded audit failure codes. Preserve per-batch usage and request counts, distinguish elapsed verification time from summed call latency, and keep semantic refusal, source atomicity and replay behavior unchanged. Historical receipts remain readable; targeted partial-receipt recovery remains explicitly unsupported.
+
 ## 0.18.11
 
 ## 0.18.10
