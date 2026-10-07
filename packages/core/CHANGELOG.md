@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.18.11
+
+### Patch Changes
+
+- [#215](https://github.com/tenphi/akno/pull/215) [`407c47e`](https://github.com/tenphi/akno/commit/407c47eba5694a1a8e9796beca4d85249db83de7) Thanks [@tenphi](https://github.com/tenphi)! - Automatic retention now separately checks whether a source supplies lasting knowledge and whether the retained wording makes sense outside its conversation. One-off task complaints and rerun requests cannot become durable preferences or plans solely because their wording is supported; unresolved conversational references are held without guessing their addressee.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.18.11
+
 ## 0.18.10
 
 ### Patch Changes
