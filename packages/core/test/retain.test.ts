@@ -3142,6 +3142,21 @@ it.each([undefined, 'batch'] as const)(
     try {
       const result = await mem.retain({ sources: [source] });
       expect(result.sources[0]?.degraded).toContain('retain_verification_failed');
+      expect(result.sources[0]?.verification).toMatchObject({
+        version: 1,
+        failure_scope: scope ?? 'source',
+        partial_recovery: 'unsupported',
+        batches: [
+          { batch_index: 0, outcome: 'verified', accepted_count: 2 },
+          { batch_index: 1, outcome: 'failed', failure_code: 'missing_verdict' },
+        ],
+      });
+      expect(
+        result.sources[0]?.candidates.find((candidate) => candidate.verification?.failure_code),
+      ).toMatchObject({
+        outcome: 'held',
+        verification: { outcome: 'failed', failure_code: 'missing_verdict' },
+      });
       const written =
         result.sources[0]?.candidates.filter((candidate) => candidate.outcome === 'written') ?? [];
       expect(written).toHaveLength(scope === 'batch' ? 2 : 0);
@@ -3169,6 +3184,18 @@ it.each([undefined, 'batch'] as const)(
         expect(replacement.sources[0]?.change_id).toBeUndefined();
         const preserved = fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8');
         expect(preserved).toContain(old.retention.candidates[0]!.text);
+      }
+      await mem.close();
+      const reopened = await openAutomaticMem(stub.url, undefined, scope);
+      try {
+        const finalCalls = stub.calls();
+        const replay = await reopened.retain({ sources: [source], retry_failed: true });
+        expect(replay.sources[0]?.verification).toEqual(result.sources[0]?.verification);
+        expect(replay.sources[0]?.candidates).toEqual(result.sources[0]?.candidates);
+        expect(replay.sources[0]?.outcome).toBe('replayed');
+        expect(stub.calls()).toEqual(finalCalls);
+      } finally {
+        await reopened.close();
       }
     } finally {
       await mem.close();

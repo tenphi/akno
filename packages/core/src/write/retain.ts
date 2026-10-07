@@ -1,3 +1,4 @@
+import { verificationModelFailure, verificationVerdictSetFailure } from './retention-verification.ts';
 import {
   hasExplicitReporter,
   hasReporterName,
@@ -20,6 +21,9 @@ import {
   RetainedTime as RetainedTimeSchema,
   type ProvidedRetainCandidate,
   type RetainHoldReason,
+  type RetainCandidateVerification,
+  type RetainVerificationDiagnostics,
+  type RetainVerificationFailure,
   type RetainModelCallReceipt,
   type RetainSourceItem,
   type RetainSourceRole,
@@ -632,6 +636,7 @@ export type RetainCandidate = ProvidedRetainCandidate & {
 type RetentionScope = 'global' | 'entity' | 'document' | 'event' | 'task' | 'unknown';
 
 export interface RetainHeldCandidate {
+  verification?: RetainCandidateVerification;
   hold_stage?: 'validation' | 'verification';
   candidate_id: string;
   reason_code: RetainHoldReason;
@@ -639,6 +644,7 @@ export interface RetainHeldCandidate {
 }
 
 export interface RetainResult {
+  verification?: RetainVerificationDiagnostics;
   candidates: RetainCandidate[];
   held: RetainHeldCandidate[];
   events: { date: string; summary: string }[];
@@ -1048,10 +1054,12 @@ export async function runRetain(
           reason_code: 'discourse_uncertain' as const,
           reason: 'independent semantic verification was unavailable or invalid',
           hold_stage: 'verification' as const,
+          verification: verified.decisions.get(candidate.candidate_id),
         })),
       ],
       events: [],
       error: verified.error,
+      verification: verified.diagnostics,
       degradedReason: 'retain_verification_failed',
       modelUsage: { extraction: extractionReceipt, ...repairUsage, verification: verified.receipt },
     };
@@ -1072,11 +1080,13 @@ export async function runRetain(
         ? 'independent semantic verification was unavailable or invalid'
         : 'the independent semantic verifier did not confirm the complete retained representation',
       hold_stage: 'verification' as const,
+      verification: verified.decisions.get(candidate.candidate_id),
     }));
 
   return {
     candidates: accepted,
     held: [...cleaned.held, ...heldByVerification],
+    verification: verified.diagnostics,
     events: cleanEvents(parsed.events),
     error: null,
     sourceHold: null,
@@ -1180,8 +1190,20 @@ async function verifyCandidates(
   reasons: Map<string, RetainHoldReason>;
   scopes: Map<string, RetentionScope>;
   receipt: RetainModelCallReceipt;
+  diagnostics: RetainVerificationDiagnostics;
+  decisions: Map<string, RetainCandidateVerification>;
   error: string | null;
 }> {
+  const started = performance.now();
+  const batches: RetainVerificationDiagnostics['batches'] = [];
+  const decisions = new Map<string, RetainCandidateVerification>();
+  const diagnostics = (): RetainVerificationDiagnostics => ({
+    version: 1,
+    failure_scope: failureScope,
+    partial_recovery: 'unsupported',
+    wall_time_ms: Math.round(performance.now() - started),
+    batches,
+  });
   const outcomes: ModelOutcome<string>[] = [];
   const accepted = new Set<string>();
   const unavailable = new Set<string>();
@@ -1210,16 +1232,44 @@ async function verifyCandidates(
     // candidate order, and account for every call already launched even when one fails closed.
     const checkedBatches = await Promise.all(work);
     outcomes.push(...checkedBatches.map((checked) => checked.outcome));
+    for (const [index, checked] of checkedBatches.entries()) {
+      const selected = candidates.slice(start + index * 2, start + index * 2 + 2);
+      batches.push({
+        batch_index: start / 2 + index,
+        candidate_ids: selected.map((candidate) => candidate.candidate_id),
+        outcome: checked.failure ? 'failed' : 'verified',
+        accepted_count: checked.accepted.size,
+        held_count: selected.length - checked.accepted.size,
+        ...(checked.failure ? { failure_code: checked.failure } : {}),
+        model_call: modelCallReceipt(model, checked.outcome),
+      });
+      for (const candidate of selected) {
+        if (checked.failure)
+          decisions.set(candidate.candidate_id, { outcome: 'failed', failure_code: checked.failure });
+        else if (!checked.accepted.has(candidate.candidate_id))
+          decisions.set(candidate.candidate_id, { outcome: 'rejected' });
+      }
+    }
     const failed = checkedBatches.find((checked) => checked.error);
-    if (failed && failureScope === 'source')
+    if (failed && failureScope === 'source') {
+      const checkedIds = new Set(batches.flatMap((batch) => batch.candidate_ids));
+      for (const candidate of candidates) {
+        if (!decisions.has(candidate.candidate_id))
+          decisions.set(candidate.candidate_id, {
+            outcome: checkedIds.has(candidate.candidate_id) ? 'source_aborted' : 'not_checked',
+          });
+      }
       return {
         accepted: new Set(),
         unavailable: new Set(),
         reasons: new Map(),
         scopes: new Map(),
         error: failed.error,
+        diagnostics: diagnostics(),
+        decisions,
         receipt: modelCallReceipt(model, aggregateSemanticOutcomes(outcomes)),
       };
+    }
     for (const [index, checked] of checkedBatches.entries()) {
       if (checked.error) {
         // Only opt-in partial retention reaches here. No decision from this atomic batch
@@ -1248,6 +1298,7 @@ async function verifyCandidates(
         )
       ) {
         accepted.delete(candidate.candidate_id);
+        decisions.set(candidate.candidate_id, { outcome: 'dependency_held' });
         reasons.set(candidate.candidate_id, 'discourse_uncertain');
         changed = true;
       }
@@ -1259,6 +1310,8 @@ async function verifyCandidates(
     reasons,
     scopes,
     error: null,
+    diagnostics: diagnostics(),
+    decisions,
     receipt: modelCallReceipt(model, aggregateSemanticOutcomes(outcomes)),
   };
 }
@@ -1278,6 +1331,7 @@ async function verifyCandidateBatch(
   scopes: Map<string, RetentionScope>;
   outcome: ModelOutcome<string>;
   error: string | null;
+  failure: RetainVerificationFailure | null;
 }> {
   const ids = candidates.map((candidate) => candidate.candidate_id) as [string, ...string[]];
   const reportLimits = new Map(
@@ -1416,92 +1470,77 @@ async function verifyCandidateBatch(
           [...frameAudits.values()].reduce((sum, audit) => sum + (audit?.spans.length ?? 0) * 160, 0),
     },
   );
-  if (!outcome.ok || !outcome.value) {
+  const fail = (failure: RetainVerificationFailure, invalid = true) => {
+    if (invalid) model.reportInvalidResponse();
     return {
-      accepted: new Set(),
-      reasons: new Map(),
-      scopes: new Map(),
+      accepted: new Set<string>(),
+      reasons: new Map<string, RetainHoldReason>(),
+      scopes: new Map<string, RetentionScope>(),
       outcome,
-      error: outcome.error ?? 'verification failed',
+      failure,
+      error: `independent verification failed: ${failure}`,
     };
-  }
-  // A verifier response is an atomic decision. The extraction parser can salvage truncated JSON,
-  // but completing missing delimiters here would turn an incomplete decision into permission to write.
-  let completeVerdict: unknown = null;
+  };
+  if (!outcome.ok || !outcome.value) return fail(verificationModelFailure(outcome), false);
+  // Unlike extraction, a verifier must supply complete JSON. Never repair a deciding response.
+  let completeVerdict: unknown;
   try {
     completeVerdict = JSON.parse(outcome.value);
   } catch {
-    // Preserve the existing malformed-verifier failure path below, without repair or another call.
+    return fail('invalid_json');
   }
+  const setFailure = verificationVerdictSetFailure(completeVerdict, ids);
+  if (setFailure) return fail(setFailure);
   const parsed = schema.safeParse(completeVerdict);
-  if (
-    !parsed.success ||
-    !parsed.data.verdicts.every(
-      (verdict) =>
-        semanticVerdictConsistent(verdict) &&
-        predicateTimeAuditGrounded(
-          verdict.predicate_time_audit,
-          candidates
-            .find((candidate) => candidate.candidate_id === verdict.candidate_id)!
-            .discourse_frame.map((span) => span.quote),
-          candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.text,
-        ) &&
-        retentionContextGrounded(
-          verdict.knowledge_context,
-          candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.discourse_frame,
-          candidates.find((candidate) => candidate.candidate_id === verdict.candidate_id)!.text,
-          candidates
-            .find((candidate) => candidate.candidate_id === verdict.candidate_id)!
-            .discourse_frame.flatMap((span, index) => {
-              const speaker = source.items?.find((item) => item.item_id === span.item_id)?.speaker;
-              return speaker ? [{ frame_id: `F${index + 1}`, speaker }] : [];
-            }),
-        ) &&
-        negativeEvidence.get(verdict.candidate_id)!.consistent(verdict) &&
-        (!attributionAudits.get(verdict.candidate_id) ||
-          attributionAudits
-            .get(verdict.candidate_id)!
-            .consistent('attribution_audit' in verdict ? verdict.attribution_audit : undefined)) &&
-        (!reportLimits.has(verdict.candidate_id) ||
-          reportLimits
-            .get(verdict.candidate_id)!
-            .consistent(
-              'report_limit_alignment' in verdict ? verdict.report_limit_alignment : undefined,
-              verdict,
-            )) &&
-        (!(
-          verdict.proposition_supported &&
-          verdict.action_arguments_preserved &&
-          verdict.qualification_scope_preserved
-        ) ||
-          verdict.reason_code === null ||
-          verdict.reason_code ===
-            (retentionContextHold(verdict.knowledge_context) ?? admissionReason(verdict.retention))),
+  if (!parsed.success) return fail('schema_mismatch');
+  for (const verdict of parsed.data.verdicts) {
+    const candidate = candidates.find((item) => item.candidate_id === verdict.candidate_id)!;
+    if (!semanticVerdictConsistent(verdict)) return fail('semantic_inconsistent');
+    if (
+      !predicateTimeAuditGrounded(
+        verdict.predicate_time_audit,
+        candidate.discourse_frame.map((span) => span.quote),
+        candidate.text,
+      )
     )
-  ) {
-    model.reportInvalidResponse();
-    return {
-      accepted: new Set(),
-      reasons: new Map(),
-      scopes: new Map(),
-      outcome,
-      error: 'verification returned invalid JSON',
-    };
-  }
-  const byId = new Map(parsed.data.verdicts.map((verdict) => [verdict.candidate_id, verdict]));
-  if (
-    parsed.data.verdicts.length !== candidates.length ||
-    byId.size !== candidates.length ||
-    candidates.some((candidate) => !byId.has(candidate.candidate_id))
-  ) {
-    model.reportInvalidResponse();
-    return {
-      accepted: new Set(),
-      reasons: new Map(),
-      scopes: new Map(),
-      outcome,
-      error: 'verification omitted or duplicated candidate verdicts',
-    };
+      return fail('time_witness_invalid');
+    if (
+      !retentionContextGrounded(
+        verdict.knowledge_context,
+        candidate.discourse_frame,
+        candidate.text,
+        candidate.discourse_frame.flatMap((span, index) => {
+          const speaker = source.items?.find((item) => item.item_id === span.item_id)?.speaker;
+          return speaker ? [{ frame_id: `F${index + 1}`, speaker }] : [];
+        }),
+      )
+    )
+      return fail('context_witness_invalid');
+    if (!negativeEvidence.get(verdict.candidate_id)!.consistent(verdict))
+      return fail('negative_evidence_inconsistent');
+    if (
+      attributionAudits.get(verdict.candidate_id) &&
+      !attributionAudits
+        .get(verdict.candidate_id)!
+        .consistent('attribution_audit' in verdict ? verdict.attribution_audit : undefined)
+    )
+      return fail('attribution_inconsistent');
+    if (
+      reportLimits.has(verdict.candidate_id) &&
+      !reportLimits
+        .get(verdict.candidate_id)!
+        .consistent('report_limit_alignment' in verdict ? verdict.report_limit_alignment : undefined, verdict)
+    )
+      return fail('report_limit_inconsistent');
+    if (
+      verdict.proposition_supported &&
+      verdict.action_arguments_preserved &&
+      verdict.qualification_scope_preserved &&
+      verdict.reason_code !== null &&
+      verdict.reason_code !==
+        (retentionContextHold(verdict.knowledge_context) ?? admissionReason(verdict.retention))
+    )
+      return fail('hold_reason_inconsistent');
   }
   const accepted = new Set(
     parsed.data.verdicts
@@ -1561,7 +1600,7 @@ async function verifyCandidateBatch(
       );
     }
   }
-  return { accepted, reasons, scopes, outcome, error: null };
+  return { accepted, reasons, scopes, outcome, error: null, failure: null };
 }
 
 function admissionReason(retention: {
@@ -2897,5 +2936,8 @@ export function modelCallReceipt(model: ModelClient, outcome: ModelOutcome<unkno
     input_tokens: outcome.usage?.inputTokens ?? null,
     output_tokens: outcome.usage?.outputTokens ?? null,
     total_tokens: outcome.usage?.totalTokens ?? null,
+    endpoint_requests: outcome.endpointRequests ?? null,
+    cached_input_tokens: outcome.usage?.cachedInputTokens ?? null,
+    reasoning_output_tokens: outcome.usage?.reasoningOutputTokens ?? null,
   };
 }

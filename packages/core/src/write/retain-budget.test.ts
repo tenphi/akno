@@ -442,13 +442,21 @@ describe('independent verifier concurrency', () => {
       expect(parallel.maxActive).toBe(4);
       expect(parallel.prompts.slice(0, serial.prompts.length)).toEqual(serial.prompts);
       expect(parallel.result.candidates).toEqual(serial.result.candidates);
-      expect(parallel.result.held).toEqual(serial.result.held);
+      expect(parallel.result.held.map(({ verification: _verification, ...hold }) => hold)).toEqual(
+        serial.result.held.map(({ verification: _verification, ...hold }) => hold),
+      );
       expect(parallel.result.error).toEqual(serial.result.error);
       expect(parallel.completed).toBe(parallel.prompts.length);
       expect(parallel.result.modelUsage.verification?.input_tokens).toBe(parallel.completed * 10);
       if (failure && scope === 'source') {
         expect(serial.completed).toBe(2);
         expect(parallel.completed).toBe(4);
+        expect(
+          serial.result.held.filter((hold) => hold.verification?.outcome === 'not_checked'),
+        ).toHaveLength(8);
+        expect(
+          parallel.result.held.filter((hold) => hold.verification?.outcome === 'not_checked'),
+        ).toHaveLength(4);
         expect(parallel.result.candidates).toEqual([]);
         expect(parallel.result.held).toHaveLength(candidates.length);
       } else {

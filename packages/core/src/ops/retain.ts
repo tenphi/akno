@@ -19,6 +19,7 @@ import {
   type ProvidedRetainCandidate,
   type RetainCandidateResult,
   type RetainHoldReason,
+  type RetainVerificationDiagnostics,
   type RetainModelCallReceipt,
   type RetainOutput,
   type RetainRetraction,
@@ -502,6 +503,7 @@ async function retainExtractedOnce(
       placement: 'automatic',
       initialResults: [],
       modelUsage: { ...extracted.modelUsage, placement: [] },
+      verification: extracted.verification,
       sourceHold: extracted.sourceHold,
     });
   }
@@ -513,6 +515,7 @@ async function retainExtractedOnce(
       placement: 'automatic',
       initialResults,
       modelUsage: { ...extracted.modelUsage, placement: [] },
+      verification: extracted.verification,
       retryable: extracted.retryable && !source.retracts && initialResults.length === 0 ? true : undefined,
       additionalDegraded: [extracted.degradedReason ?? 'derive_failed'],
       sourceHold: {
@@ -528,6 +531,7 @@ async function retainExtractedOnce(
     placement: 'automatic',
     initialResults,
     modelUsage: { ...extracted.modelUsage, placement: [] },
+    verification: extracted.verification,
     additionalDegraded: extracted.degradedReason ? [extracted.degradedReason] : [],
   });
 }
@@ -541,6 +545,7 @@ async function retainCandidates(
     selection: 'provided' | 'extracted';
     placement: 'exact' | 'automatic';
     initialResults: RetainCandidateResult[];
+    verification?: RetainVerificationDiagnostics;
     modelUsage: {
       extraction: RetainModelCallReceipt | null;
       repair?: RetainModelCallReceipt;
@@ -643,6 +648,9 @@ async function retainCandidates(
         status: 'ok',
         reason_code: 'validation_failed',
         candidates: [],
+        ...(options.verification
+          ? { verification: options.verification, model_usage: options.modelUsage }
+          : {}),
         source: sourceResultBinding({
           kind: effectiveBinding.kind,
           availability: effectiveBinding.availability,
@@ -666,6 +674,9 @@ async function retainCandidates(
         status: 'ok',
         reason_code: preserved.reasonCode,
         candidates: [],
+        ...(options.verification
+          ? { verification: options.verification, model_usage: options.modelUsage }
+          : {}),
         source: sourceResultBinding({
           kind: resolvedSource.binding.kind,
           availability: resolvedSource.binding.availability,
@@ -693,6 +704,9 @@ async function retainCandidates(
       status: 'ok',
       reason_code: 'conflict',
       candidates: correction.results,
+      ...(options.verification
+        ? { verification: options.verification, model_usage: options.modelUsage }
+        : {}),
       source: sourceResultBinding(effectiveBinding),
       note: 'correction targets no longer match their owned memory blocks; nothing was changed',
     };
@@ -1155,6 +1169,7 @@ async function retainCandidates(
     pendingSupports.length === 0
       ? { retryable: true as const }
       : {}),
+    ...(options.verification ? { verification: options.verification } : {}),
     source: sourceResultBinding(effectiveBinding),
     ...(options.sourceHold ? { reason_code: options.sourceHold.reason_code } : {}),
     status:
@@ -1716,6 +1731,7 @@ function heldCandidateResult(candidate: RetainHeldCandidate): RetainCandidateRes
     reason_code: candidate.reason_code,
     ...(candidate.hold_stage ? { hold_stage: candidate.hold_stage } : {}),
     reason: candidate.reason,
+    ...(candidate.verification ? { verification: candidate.verification } : {}),
   };
 }
 

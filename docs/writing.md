@@ -316,6 +316,33 @@ rather than a successful empty result.
 `--dry-run` computes the same interpretation and routing but writes no page, journal change, or replay
 receipt.
 
+Automatic `retain` source receipts optionally include `verification` diagnostics version 1.
+Historical receipts lack this field; absence does not establish a technical failure. Each bounded
+batch lists its candidate IDs, first-pass accepted/held counts, fixed failure code and original model-call
+receipt. Counts describe the independent batch decision, not final writes: source-wide atomicity,
+relation dependencies or placement may subsequently withhold it. Held candidate `verification.outcome`
+distinguishes a valid semantic rejection, a failed decision, a verified sibling blocked by source
+atomicity, an unlaunched candidate and a held dependency. No raw response, prompt, quote, schema error
+detail or provider exception is included.
+
+Failure codes distinguish typed model/transport/language outcomes; empty response; incomplete/unparseable
+JSON; schema mismatch; missing, duplicate or foreign verdicts; and inconsistent or ungrounded semantic,
+time, context, negative-evidence, attribution and report-limit audits. When more than one defect exists,
+the first fixed boundary reports it; this is not an exhaustive response inspection or proof that a hold
+is retryable. A supported, well-formed semantic refusal has no failure code. Verification decisions remain
+atomic, with no semantic response repair or extra model call.
+
+`verification.wall_time_ms` measures elapsed time across the verifier stage. The existing aggregate
+`model_usage.verification.latency_ms` sums logical call latency and is not wall time under concurrency.
+Per-call receipts add nullable endpoint request, cached-input and reasoning-output counts. Missing
+telemetry stays unknown; cached/reasoning counts are subsets of input/output, not extra billable totals.
+All launched parallel calls settle and contribute accounting even when a batch fails closed.
+
+This diagnostic release advertises `partial_recovery: "unsupported"`. `retry_failed` still only retries
+eligible zero-candidate, zero-write extraction transport failures against identical source/revision/bytes.
+It does not rerun completed partial verifier receipts or genuine semantic holds. Clients must not invent
+new source identities to bypass replay; targeted technical recovery is a separate contract.
+
 A later revision never implies deletion. Retraction names the earlier `target_revision` and, optionally, exact
 candidate ids. When another source still supports the same memory, Akno removes only the addressed support and
 keeps the readable item. An explicit user `forget` also retires keyed support, so replaying an old source
