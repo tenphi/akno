@@ -1,0 +1,31 @@
+{
+  "complete": true,
+  "acceptanceCohort": false,
+  "sourceReview": "All 19 returned records inspected: 9 native original, 2 repaired original controls, 8 separate scripted controls. Native tentative-delivery repetition 2 loses its named recipient. Original unsupported-completion repetition 1 narrows before verification but shifts source-current nonarrival into unanchored past; this is a temporal qualification-loss concern, not a successful refusal. Four split-frame positive controls preserve identities/roles; all six separate identity-confusion controls and both original guessed-owner controls hold. Two forwarded-report batches fail unchanged inner-reporter attribution; pending-debit repetition 2 correctly refuses shifted status tense. No context witness failures.",
+  "fix": "Explicitly require all material named source roles in knowledge_context, not only pronouns. No added stage or semantic retry; temporal aspect concerns remain #217, reporter attribution remains #169.",
+  "accounting": {
+    "originalActualCalls": 28,
+    "originalEndpointRequests": 28,
+    "originalTokens": 337994,
+    "originalScripted": 4,
+    "controlsActualCalls": 20,
+    "controlsEndpointRequests": 20,
+    "controlsTokens": 262403,
+    "controlsScripted": 16,
+    "unknownUsage": 0,
+    "unknownRequests": 0
+  },
+  "utility": {
+    "nativeReturnedRecords": 9,
+    "nativeReturnedCoordinates": 7,
+    "nativeFullyPreservedRecords": 8,
+    "nativeFullyPreservedCoordinates": 6,
+    "nativeTargetCoordinates": 10,
+    "nativeRecipientLossRecords": 1,
+    "repairedOriginalControlReturns": 2,
+    "repairedOriginalControlTemporalConcern": 1,
+    "separateScriptedPositiveReturns": 4,
+    "separateScriptedNarrowedTemporalReturns": 4,
+    "separateIdentityConfusionHolds": 6
+  }
+}

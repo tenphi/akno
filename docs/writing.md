@@ -286,7 +286,7 @@ options stay searchable with visible status and typed line qualification but are
 facts and factual `answer` evidence. Automatic retention verifies durability and source scope before routing:
 a one-task instruction is not promoted to a standing preference, while a useful open question can remain.
 It separately checks the selected source's purpose and the retained wording's standalone context, with
-an exact witness in the deciding frame. A complaint about the assistant's missed check or a request to
+an immutable owned source frame as its witness. A complaint about the assistant's missed check or a request to
 rerun the current task is interaction management, even when a faithful paraphrase is possible. Such
 material is omitted or held as `not_durable`; it is not automatically converted into a preference or
 ongoing plan. Independently useful facts stated alongside the request remain eligible. A genuine
@@ -295,8 +295,19 @@ Readable knowledge must preserve material subjects, addressees and reference con
 on a page title or speaker metadata. Unresolved conversational references are held as
 `noncanonical_without_context`; explicit uncertainty about an unidentified recipient can instead remain
 in a useful self-contained report. A separate reference comparison binds source-established participants
-to their actual roles and exact excerpts in the retained text: a report recipient cannot silently replace
+to their actual roles in the original retained text, including material named participants as well as
+pronouns: a report recipient cannot silently replace
 a booking holder or an item's owner. Structured speaker labels bind only their own source frames.
+Context audits select the unchanged source frames and read the entire original candidate instead of
+reconstructing excerpts. A separate name anchor can establish an unambiguous pronoun or short-name
+antecedent from another owned frame in the same original source item. Exact name presence grounds
+the anchor but does not prove a binding, ownership or reporting. Ambiguous or unsupported identity,
+missing readable names, changed roles and incomplete reference coverage remain holds or typed failures.
+Generation and verification distinguish the entity whose property is stated from its reporting wrapper;
+a scoped object property cannot become a general property of the reporter. Nominated subject metadata
+is not antecedent evidence. A past reporting wrapper also cannot move a source-current status to an
+unanchored earlier state. Independent source items cannot donate identities to each other's pronouns. The separate inner-reporter
+attribution audit retains its existing exact witness contract.
 Source bytes, caller-trusted provided-exact retention, support
 lineage and the existing managed-item format are unchanged by these admission checks.
 Routing can write only to an existing admitted knowledge page, a new managed page under an exactly admitted

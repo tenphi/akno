@@ -79,6 +79,8 @@ A modifier inside a noun phrase qualifies that entity, not a neighboring action.
 itself a selected predicate but does not date its associated action. An undated asserted completion
 remains completed with timing=null; null does not mean nonoccurrence. Compare status even when both
 timings are null. Pending, estimated, proposed, negated, disputed and reported scope must survive.
+A source-current status must not become an unanchored earlier state merely because a reporting wrapper
+uses past tense. Compare the status's own reference time, not just reporting-clause grammar.
 A schedule or booking never proves performance, a pending debit never proves settlement, and a report
 does not establish independent verification. Copying an assertion supplies no second event or evidence.
 A shared subject, document, sentence or transaction cannot transfer a date between operations. Only

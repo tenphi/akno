@@ -49,8 +49,7 @@ import {
 } from './retain-clock-repair.ts';
 import { retentionFrameAudit, RETENTION_FRAME_AUDIT_CONTRACT } from './retention-frame-audit.ts';
 import {
-  retentionContextSchema,
-  retentionContextGrounded,
+  retentionContextWitness,
   retentionContextHold,
   RETENTION_CONTEXT_CONTRACT,
 } from './retention-context.ts';
@@ -74,8 +73,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v64';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v49';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v65';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v52';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
 const RETRIEVAL_UNIT_CONTRACT = `A retained record is one independently retrievable semantic unit:
@@ -305,7 +304,15 @@ Do not transform them into standing preferences, ongoing plans or historical fac
 An explicit recurring preference or ongoing undertaking is different. Preserve independently useful
 knowledge supplied alongside a task request. Readable retained text must make sense outside this exchange:
 resolve material speaker/addressee/actor/object references only from supplied source context, or preserve
-their explicit unresolved scope. Speaker metadata and the destination page cannot supply an addressee.
+their explicit unresolved scope. Preserve the described entity whose property is stated separately from
+who reports it. A reporting wrapper's subject does not replace an embedded object's referent or turn a
+property of one described object into a general property of the reporter. Name the source-established
+object explicitly in standalone prose; the nominated subject and source speaker metadata cannot supply
+its identity. Keep a source-current status tied to the source's reporting time: a past reporting wrapper
+does not authorize changing it to an unanchored earlier state. Preserve that qualification across
+languages rather than backshifting it merely to match reported-speech grammar. If the complete original
+source leaves competing antecedents, keep that uncertainty rather
+than choose a nearby name. Speaker metadata and the destination page cannot supply an addressee.
 When quoted you/your has an established addressee, preserve that person's substantive role too: being
 the recipient of a report is different from holding its booking or owning its object. Naming who was
 told about an inspection does not by itself preserve whose inspection the source describes.
@@ -1355,6 +1362,19 @@ async function verifyCandidateBatch(
       retentionTimeWitness(candidate.discourse_frame, candidate.text),
     ]),
   );
+  const contextWitnesses = new Map(
+    candidates.map((candidate) => [
+      candidate.candidate_id,
+      retentionContextWitness(
+        candidate.discourse_frame,
+        candidate.text,
+        candidate.discourse_frame.flatMap((span, index) => {
+          const speaker = source.items?.find((item) => item.item_id === span.item_id)?.speaker;
+          return speaker ? [{ frame_id: `F${index + 1}`, speaker }] : [];
+        }),
+      ),
+    ]),
+  );
   const reason = z.enum([
     'source_unavailable',
     'discourse_uncertain',
@@ -1399,7 +1419,7 @@ async function verifyCandidateBatch(
         source_scope: z.enum(['global', 'entity', 'document', 'event', 'task', 'unknown']),
         candidate_scope: z.enum(['global', 'entity', 'document', 'event', 'task', 'unknown']),
       }),
-      knowledge_context: retentionContextSchema,
+      knowledge_context: contextWitnesses.get(candidate.candidate_id)!.schema,
       reason_code: reason.nullable(),
     });
   });
@@ -1442,6 +1462,7 @@ async function verifyCandidateBatch(
               ...candidate,
               negative_evidence_coordinates: negativeEvidence.get(candidate.candidate_id)!.coordinates,
               temporal_coordinates: timeWitnesses.get(candidate.candidate_id)!.coordinates,
+              context_coordinates: contextWitnesses.get(candidate.candidate_id)!.coordinates,
               ...(attributionAudits.get(candidate.candidate_id)
                 ? { attribution_concern: attributionAudits.get(candidate.candidate_id)!.coordinates }
                 : {}),
@@ -1496,21 +1517,10 @@ async function verifyCandidateBatch(
   const parsed = schema.safeParse(completeVerdict);
   if (!parsed.success) return fail('schema_mismatch');
   for (const verdict of parsed.data.verdicts) {
-    const candidate = candidates.find((item) => item.candidate_id === verdict.candidate_id)!;
     if (!semanticVerdictConsistent(verdict)) return fail('semantic_inconsistent');
     if (!timeWitnesses.get(verdict.candidate_id)!.grounded(verdict.predicate_time_audit))
       return fail('time_witness_invalid');
-    if (
-      !retentionContextGrounded(
-        verdict.knowledge_context,
-        candidate.discourse_frame,
-        candidate.text,
-        candidate.discourse_frame.flatMap((span, index) => {
-          const speaker = source.items?.find((item) => item.item_id === span.item_id)?.speaker;
-          return speaker ? [{ frame_id: `F${index + 1}`, speaker }] : [];
-        }),
-      )
-    )
+    if (!contextWitnesses.get(verdict.candidate_id)!.grounded(verdict.knowledge_context))
       return fail('context_witness_invalid');
     if (!negativeEvidence.get(verdict.candidate_id)!.consistent(verdict))
       return fail('negative_evidence_inconsistent');

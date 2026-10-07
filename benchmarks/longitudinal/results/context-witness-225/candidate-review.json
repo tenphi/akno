@@ -1,0 +1,51 @@
+{
+  "reviewer": "source-author review, not independent review",
+  "frozen": true,
+  "repetitionsPerCase": 2,
+  "sourceVersions": {
+    "generation": "v65",
+    "verification": "v52"
+  },
+  "original": {
+    "nativeReturnedRecords": 7,
+    "nativeUsefulCoordinates": 5,
+    "nativeTargetCoordinates": 10,
+    "qualifiedNarrowedControlReturns": 1,
+    "originalUnsupportedCompletionReturns": 0,
+    "guessedOwnerReturns": 0,
+    "oneOffTaskReturns": 0,
+    "contextFailures": 0,
+    "sourceContextLossReturns": 0,
+    "failedAttributionBatches": 2,
+    "failedAttributionHeldRecords": 4,
+    "wellFormedRefusedRecords": 6,
+    "notes": [
+      "Both native receipt repetitions retain purchase and product-specific warranty with source names and scopes intact.",
+      "Travel/delivery repetitions that omit Ada as the selected report recipient hold; their complete counterparts retain schedule/estimate without completion.",
+      "Pending repetition1 keeps faithful prose but proposes scheduled time metadata for a merely dated pending debit. The verifier correctly holds that unsupported temporal label; it is not a scalar-polarity disagreement.",
+      "Both forwarded-report batches pass context grounding but fail unchanged exact full-name inner-reporter attribution.",
+      "Original completion control repetition1 is structurally narrowed before verification to a source-supported delivery estimate; independent nonarrival is absent (limited coverage), and the original delivered claim is never verified. Repetition2 holds on omitted recipient."
+    ]
+  },
+  "controls": {
+    "coordinates": 20,
+    "scriptedGenerationOutcomes": 20,
+    "usefulAntecedentAndProviderPolicyReturns": 6,
+    "qualifiedNarrowedTemporalReturns": 4,
+    "wellFormedRefusals": 10,
+    "failedDecisions": 0,
+    "contextFailures": 0,
+    "sourceContextLossReturns": 0,
+    "metadataAmbiguousReturns": 1,
+    "notes": [
+      "Both split-frame warranty and multilingual short-name controls retain the exact originally named entities and roles.",
+      "Both company-policy positive controls survive; both generalized object-to-reporter property controls hold.",
+      "All competing-owner, owner/addressee, recorder/addressee and borrowed-date/actor controls hold.",
+      "All actual narrowed schedule and pending-debit text remains source-qualified, not completed or settled. Pending-debit repetition2 carries a negated whole-record label despite an affirmed pending qualification; do not count it as fully validated metadata."
+    ]
+  },
+  "allReturnsSourceReviewed": 18,
+  "fullyPreservedUnambiguousReturns": 17,
+  "remainingMetadataConcerns": 1,
+  "noPopulationAccuracyOrAggregateUtilityClaim": true
+}
