@@ -54,13 +54,8 @@ import {
   retentionContextHold,
   RETENTION_CONTEXT_CONTRACT,
 } from './retention-context.ts';
-import {
-  predicateTimeAuditSchema,
-  predicateTimeAuditGrounded,
-  predicateTimeAuditSupported,
-  PREDICATE_TIME_AUDIT_CONTRACT,
-  PREDICATE_TIME_COMPOSITION_CONTRACT,
-} from '../models/predicate-time-audit.ts';
+import { PREDICATE_TIME_COMPOSITION_CONTRACT } from '../models/predicate-time-audit.ts';
+import { retentionTimeWitness, RETENTION_TIME_WITNESS_CONTRACT } from './retention-time-witness.ts';
 import {
   retentionNegativeEvidence,
   RETENTION_NEGATIVE_EVIDENCE_CONTRACT,
@@ -80,7 +75,7 @@ import {
  * the two public operations from gradually learning different meanings for the same source.
  */
 export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v64';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v48';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v49';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
 const RETRIEVAL_UNIT_CONTRACT = `A retained record is one independently retrievable semantic unit:
@@ -419,7 +414,7 @@ Rules:
 
 const VERIFY_SYSTEM = `${RETENTION_FRAME_AUDIT_CONTRACT}
 ${RETENTION_CONTEXT_CONTRACT}
-${PREDICATE_TIME_AUDIT_CONTRACT}
+${RETENTION_TIME_WITNESS_CONTRACT}
 ${RETRIEVAL_UNIT_CONTRACT}
 ${QUALIFICATION_CONTRACT}
 ${TEMPORAL_REPRESENTATION_CONTRACT}
@@ -1354,6 +1349,12 @@ async function verifyCandidateBatch(
       ),
     ]),
   );
+  const timeWitnesses = new Map(
+    candidates.map((candidate) => [
+      candidate.candidate_id,
+      retentionTimeWitness(candidate.discourse_frame, candidate.text),
+    ]),
+  );
   const reason = z.enum([
     'source_unavailable',
     'discourse_uncertain',
@@ -1389,7 +1390,7 @@ async function verifyCandidateBatch(
           }
         : {}),
       ...negativeEvidence.get(candidate.candidate_id)!.fields,
-      predicate_time_audit: predicateTimeAuditSchema,
+      predicate_time_audit: timeWitnesses.get(candidate.candidate_id)!.schema,
       proposition_supported: semanticVerdictFields.proposition_supported,
       action_arguments_preserved: semanticVerdictFields.action_arguments_preserved,
       qualification_scope_preserved: semanticVerdictFields.qualification_scope_preserved,
@@ -1440,6 +1441,7 @@ async function verifyCandidateBatch(
             ({ page: _page, origin: _origin, evidence: _evidence, ...candidate }) => ({
               ...candidate,
               negative_evidence_coordinates: negativeEvidence.get(candidate.candidate_id)!.coordinates,
+              temporal_coordinates: timeWitnesses.get(candidate.candidate_id)!.coordinates,
               ...(attributionAudits.get(candidate.candidate_id)
                 ? { attribution_concern: attributionAudits.get(candidate.candidate_id)!.coordinates }
                 : {}),
@@ -1496,13 +1498,7 @@ async function verifyCandidateBatch(
   for (const verdict of parsed.data.verdicts) {
     const candidate = candidates.find((item) => item.candidate_id === verdict.candidate_id)!;
     if (!semanticVerdictConsistent(verdict)) return fail('semantic_inconsistent');
-    if (
-      !predicateTimeAuditGrounded(
-        verdict.predicate_time_audit,
-        candidate.discourse_frame.map((span) => span.quote),
-        candidate.text,
-      )
-    )
+    if (!timeWitnesses.get(verdict.candidate_id)!.grounded(verdict.predicate_time_audit))
       return fail('time_witness_invalid');
     if (
       !retentionContextGrounded(
@@ -1549,7 +1545,7 @@ async function verifyCandidateBatch(
           verdict.proposition_supported &&
           verdict.action_arguments_preserved &&
           verdict.qualification_scope_preserved &&
-          predicateTimeAuditSupported(verdict.predicate_time_audit) &&
+          timeWitnesses.get(verdict.candidate_id)!.supported(verdict.predicate_time_audit) &&
           (!attributionAudits.get(verdict.candidate_id) ||
             attributionAudits
               .get(verdict.candidate_id)!
@@ -1580,7 +1576,7 @@ async function verifyCandidateBatch(
         !verdict.proposition_supported ||
         !verdict.action_arguments_preserved ||
         !verdict.qualification_scope_preserved ||
-        !predicateTimeAuditSupported(verdict.predicate_time_audit) ||
+        !timeWitnesses.get(verdict.candidate_id)!.supported(verdict.predicate_time_audit) ||
         (Boolean(attributionAudits.get(verdict.candidate_id)) &&
           !attributionAudits
             .get(verdict.candidate_id)!

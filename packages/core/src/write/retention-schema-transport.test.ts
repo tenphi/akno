@@ -87,6 +87,12 @@ describe.each(['chat', 'responses'] as const)('retention wire-schema compatibili
               expect(comparisonIndex).toBe(sizes[index]! > 1 ? 2 : 1);
               expect(branch.required[comparisonIndex + 1]).toBe('source_selected_polarity');
               expect(branch.required).toContain('predicate_time_audit');
+              const time = branch.properties.predicate_time_audit.properties.comparisons.items;
+              expect(time.properties.source.properties.frame_id.enum).toEqual(
+                Array.from({ length: sizes[index]! }, (_, i) => `F${i + 1}`),
+              );
+              expect(time.properties.source.properties).not.toHaveProperty('excerpt');
+              expect(time.properties.candidate.properties).not.toHaveProperty('excerpt');
               expect(payload.typed_label_contracts[index].candidate_id).toBe(
                 payload.candidates[index].candidate_id,
               );

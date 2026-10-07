@@ -332,6 +332,14 @@ the first fixed boundary reports it; this is not an exhaustive response inspecti
 is retryable. A supported, well-formed semantic refusal has no failure code. Verification decisions remain
 atomic, with no semantic response repair or extra model call.
 
+Automatic retention temporal audits select candidate-local IDs for the exact validated source frames,
+then compare each predicate's timing, status and qualifications with the original readable candidate.
+The verifier does not rewrite either side's deciding excerpt. A frame ID is an evidence coordinate,
+not proof of support: full-source semantic comparison, exact non-null timing grounding, complete
+predicate coverage and all context/attribution/admission checks still apply. Changed or incomplete
+audits remain holds. This adds no model stage, response repair or retry authority; the answer/source-reading
+contracts and previously completed receipts are unchanged.
+
 `verification.wall_time_ms` measures elapsed time across the verifier stage. The existing aggregate
 `model_usage.verification.latency_ms` sums logical call latency and is not wall time under concurrency.
 Per-call receipts add nullable endpoint request, cached-input and reasoning-output counts. Missing

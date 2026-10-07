@@ -50,14 +50,13 @@ describe('retained predicate and time attachment', () => {
         comparisons: [
           {
             source: {
-              excerpt: mode === 'unbound' ? 'An absent source statement.' : source,
+              frame_id: mode === 'unbound' ? 'F99' : 'F1',
               predicate: journey ? 'Booked journey' : 'Completed single payment',
               timing: journey ? '2037-04-11' : null,
               status: journey ? 'scheduled' : 'completed',
               time_relation: journey ? 'scheduled' : 'occurred',
             },
             candidate: {
-              excerpt: text,
               predicate: journey ? 'Journey' : 'Completed single payment',
               timing: journey || dated ? '2037-04-11' : null,
               status: mode === 'occurred' ? 'occurred' : journey ? 'scheduled' : 'completed',

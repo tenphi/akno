@@ -98,10 +98,27 @@ export function retentionAudit(
       explanation: 'This invented mechanical fixture represents lasting, independently readable knowledge.',
     },
     comparison: audit.comparison,
-    predicate_time_audit: predicateTimeFixture(
-      candidate.discourse_frame?.[0]?.quote ?? candidate.text ?? 'Invented source predicate.',
-      candidate.text ?? 'Invented selected predicate.',
-    ),
+    predicate_time_audit: {
+      comparisons: [
+        {
+          source: {
+            frame_id: 'F1',
+            predicate: 'The invented selected predicate.',
+            timing: null,
+            status: 'The invented recorded status.',
+            time_relation: 'unspecified',
+          },
+          candidate: {
+            predicate: 'The invented selected predicate.',
+            timing: null,
+            status: 'The invented recorded status.',
+            time_relation: 'unspecified',
+          },
+          relation: 'preserved',
+        },
+      ],
+      complete: true,
+    },
     mismatches: audit.mismatches.map((mismatch) => ({
       ...mismatch,
       detail: 'The invented test changes this selected source constraint.',
