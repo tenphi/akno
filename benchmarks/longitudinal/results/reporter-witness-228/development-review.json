@@ -1,0 +1,661 @@
+{
+  "method": "source-author review of all actual returned text/metadata and all held outcomes; not independent review or runtime-verdict ground truth",
+  "completeCoordinates": 52,
+  "returnedRecords": 22,
+  "classifications": {
+    "source_supported": 18,
+    "metadata_scope_question": 3,
+    "limited_qualified_report": 1
+  },
+  "rows": [
+    {
+      "cohort": "original",
+      "case_id": "long-receipt",
+      "repetition": 1,
+      "mode": "native",
+      "returns": [
+        {
+          "candidate_id": "cand_3ea7dcac9d935fb3ae29ff2f",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        },
+        {
+          "candidate_id": "cand_31ea71f66ff2ac2c217a040c",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "original",
+      "case_id": "travel-rebooking",
+      "repetition": 1,
+      "mode": "native",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "original",
+      "case_id": "pending-debit",
+      "repetition": 1,
+      "mode": "native",
+      "returns": [
+        {
+          "candidate_id": "cand_e1bc6b5f65ff271c4d655f85",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "original",
+      "case_id": "tentative-delivery",
+      "repetition": 1,
+      "mode": "native",
+      "returns": [
+        {
+          "candidate_id": "cand_ad1e85c532cd046226ea5f9d",
+          "classification": "metadata_scope_question",
+          "note": "Recipient, estimate range and unconfirmed-arrival/fixed-date limits remain readable. Whole-record tentative commitment may conflate an asserted telling act with its tentative embedded estimate; broader principal-predicate metadata remains #217."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "original",
+      "case_id": "forwarded-disputed",
+      "repetition": 1,
+      "mode": "native",
+      "returns": [
+        {
+          "candidate_id": "cand_315310cfece37cc5f728a11e",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        },
+        {
+          "candidate_id": "cand_a66156493e8124b61ec237c3",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "original",
+      "case_id": "one-off-rerun",
+      "repetition": 1,
+      "mode": "native",
+      "returns": [],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "original",
+      "case_id": "unsupported-completion",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [
+        {
+          "candidate_id": "cand_b603f183fb9b49de59091435",
+          "classification": "limited_qualified_report",
+          "note": "Structural repair returned an attributed estimate, not a delivered assertion. It omits the explicit nonarrival sentence and uses whole-record tentative commitment; do not claim complete selected-source or principal-predicate coverage."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "original",
+      "case_id": "unrelated-owner",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "original",
+      "case_id": "long-receipt",
+      "repetition": 2,
+      "mode": "native",
+      "returns": [
+        {
+          "candidate_id": "cand_99466c5a9ef9533716619cf5",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        },
+        {
+          "candidate_id": "cand_25ff1d043073e5f636fc2503",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "original",
+      "case_id": "travel-rebooking",
+      "repetition": 2,
+      "mode": "native",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 1,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "original",
+      "case_id": "pending-debit",
+      "repetition": 2,
+      "mode": "native",
+      "returns": [
+        {
+          "candidate_id": "cand_a4eb301b1b8ba2ccd100efee",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "original",
+      "case_id": "tentative-delivery",
+      "repetition": 2,
+      "mode": "native",
+      "returns": [
+        {
+          "candidate_id": "cand_0f364b2a28e02febeee3aad4",
+          "classification": "metadata_scope_question",
+          "note": "Recipient, estimate range and unconfirmed-arrival/fixed-date limits remain readable. Whole-record tentative commitment may conflate an asserted telling act with its tentative embedded estimate; broader principal-predicate metadata remains #217."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "original",
+      "case_id": "forwarded-disputed",
+      "repetition": 2,
+      "mode": "native",
+      "returns": [],
+      "holds_reviewed": 2,
+      "technical_holds": 2,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "original",
+      "case_id": "one-off-rerun",
+      "repetition": 2,
+      "mode": "native",
+      "returns": [],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "original",
+      "case_id": "unsupported-completion",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "original",
+      "case_id": "unrelated-owner",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "schedule-is-not-occurrence",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [
+        {
+          "candidate_id": "cand_3a3b40131f5e9cdd07a4b24d",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "neighboring-date-is-not-completion-date",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "pending-is-not-settled",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "owned-warranty-antecedent",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [
+        {
+          "candidate_id": "cand_8ff3fc6d544da71683b51c4d",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "owned-multilingual-short-name",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [
+        {
+          "candidate_id": "cand_c5f92c36e4317167516728ae",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "competing-owner-antecedents",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "recipient-is-not-booking-owner",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "speaker-is-not-unknown-addressee",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-is-not-property-object",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "explicit-provider-policy",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [
+        {
+          "candidate_id": "cand_9a64442df6190f583ee09ad6",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-short-name",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 1,
+      "note": "Initial intended positive input omitted Ada as disputant and added recordkeeping. Invalid positive target, preserved rather than pooled into acceptance."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-multilingual-short-name",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 1,
+      "note": "Initial intended positive input omitted Ada as disputant and added recordkeeping. Invalid positive target, preserved rather than pooled into acceptance."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-documentary",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [
+        {
+          "candidate_id": "cand_b86894bda3e823d8b435c6b3",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-different-proposition",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-ambiguous-identity",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-negated-report",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-changed-to-actor",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 1,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-owner-recipient",
+      "repetition": 1,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "schedule-is-not-occurrence",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [
+        {
+          "candidate_id": "cand_f9f3eb23a15bc15096029ec2",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "neighboring-date-is-not-completion-date",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "pending-is-not-settled",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [
+        {
+          "candidate_id": "cand_5b85fbd02b7d8d1f13ebba1d",
+          "classification": "metadata_scope_question",
+          "note": "Readable debit remains pending and unsettled, never a completed payment. The whole-record negated scalar is ambiguous between the positive listing predicate and its negative settlement qualification; #217 remains open."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "owned-warranty-antecedent",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [
+        {
+          "candidate_id": "cand_8ff3fc6d544da71683b51c4d",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "owned-multilingual-short-name",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [
+        {
+          "candidate_id": "cand_c5f92c36e4317167516728ae",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "competing-owner-antecedents",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "recipient-is-not-booking-owner",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "speaker-is-not-unknown-addressee",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-is-not-property-object",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "explicit-provider-policy",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [
+        {
+          "candidate_id": "cand_9a64442df6190f583ee09ad6",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-short-name",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 1,
+      "note": "Initial intended positive input omitted Ada as disputant and added recordkeeping. Invalid positive target, preserved rather than pooled into acceptance."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-multilingual-short-name",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 1,
+      "note": "Initial intended positive input omitted Ada as disputant and added recordkeeping. Invalid positive target, preserved rather than pooled into acceptance."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-documentary",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [
+        {
+          "candidate_id": "cand_b86894bda3e823d8b435c6b3",
+          "classification": "source_supported",
+          "note": "Readable selected facts, named roles and qualifications agree with the original invented source; no stronger world-truth assertion."
+        }
+      ],
+      "holds_reviewed": 0,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-different-proposition",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-ambiguous-identity",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-negated-report",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-changed-to-actor",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    },
+    {
+      "cohort": "controls",
+      "case_id": "reporter-owner-recipient",
+      "repetition": 2,
+      "mode": "injected",
+      "returns": [],
+      "holds_reviewed": 1,
+      "technical_holds": 0,
+      "note": "All actual returns and holds reviewed against this complete original source. Technical failure is not counted as correct semantic refusal."
+    }
+  ]
+}

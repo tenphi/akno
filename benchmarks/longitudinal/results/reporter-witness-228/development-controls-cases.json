@@ -1,0 +1,432 @@
+[
+  {
+    "id": "schedule-is-not-occurrence",
+    "mode": "injected",
+    "speaker": "Vulpine Mutual",
+    "role": "external",
+    "source": "Vulpine Mutual confirms that the Zephyr QX-100 inspection is scheduled for 12 May 2034. The inspection has not happened.",
+    "text": "The Zephyr QX-100 inspection happened on 12 May 2034.",
+    "expected": "no unsupported occurrence; any narrowed report remains qualified"
+  },
+  {
+    "id": "neighboring-date-is-not-completion-date",
+    "mode": "injected",
+    "speaker": "Ada Marlow",
+    "role": "user",
+    "source": "Journey JRN-3333 to Blackwater Bay is booked for 12 May 2034. Its single 1111 EUR payment was completed, but no payment date was recorded.",
+    "text": "Ada Marlow completed the single 1111 EUR journey payment on 12 May 2034.",
+    "expected": "no borrowed date or guessed actor; any narrowed completion remains undated"
+  },
+  {
+    "id": "pending-is-not-settled",
+    "mode": "injected",
+    "speaker": "Vulpine Mutual",
+    "role": "external",
+    "source": "Vulpine Mutual lists a pending 1111 EUR debit for Ada Marlow dated 11 April 2034. The debit has not settled.",
+    "text": "Ada Marlow completed payment of the 1111 EUR debit on 11 April 2034.",
+    "expected": "no settled payment; any narrowed pending report stays pending"
+  },
+  {
+    "id": "owned-warranty-antecedent",
+    "mode": "injected",
+    "speaker": "Ada Marlow",
+    "role": "user",
+    "source": "Ada Marlow purchased a Zephyr QX-100. Its warranty lasts five years.",
+    "text": "The Zephyr QX-100 warranty lasts five years.",
+    "candidate": {
+      "support": [
+        {
+          "item_id": "source-1111",
+          "quote": "Its warranty lasts five years."
+        }
+      ],
+      "discourse_frame": [
+        {
+          "item_id": "source-1111",
+          "quote": "Ada Marlow purchased a Zephyr QX-100."
+        },
+        {
+          "item_id": "source-1111",
+          "quote": "Its warranty lasts five years."
+        }
+      ]
+    },
+    "expected": "useful cross-frame product reference; no added owner"
+  },
+  {
+    "id": "owned-multilingual-short-name",
+    "mode": "injected",
+    "speaker": "Ada Marlow",
+    "role": "user",
+    "source": "Ada Marlow manages the Zephyr QX-100 register. Ada хранит его в архиве.",
+    "text": "Ada Marlow keeps the Zephyr QX-100 register in an archive.",
+    "candidate": {
+      "support": [
+        {
+          "item_id": "source-1111",
+          "quote": "Ada хранит его в архиве."
+        }
+      ],
+      "discourse_frame": [
+        {
+          "item_id": "source-1111",
+          "quote": "Ada Marlow manages the Zephyr QX-100 register."
+        },
+        {
+          "item_id": "source-1111",
+          "quote": "Ada хранит его в архиве."
+        }
+      ]
+    },
+    "expected": "useful original-language short-name and object antecedents"
+  },
+  {
+    "id": "competing-owner-antecedents",
+    "mode": "injected",
+    "speaker": "Ada Marlow",
+    "role": "user",
+    "source": "Ada Marlow and Bo Winters own separate Zephyr QX-100 devices. Their notice says one device needs inspection, without identifying which owner.",
+    "text": "Ada Marlow's Zephyr QX-100 needs inspection.",
+    "candidate": {
+      "support": [
+        {
+          "item_id": "source-1111",
+          "quote": "Their notice says one device needs inspection, without identifying which owner."
+        }
+      ],
+      "discourse_frame": [
+        {
+          "item_id": "source-1111",
+          "quote": "Ada Marlow and Bo Winters own separate Zephyr QX-100 devices."
+        },
+        {
+          "item_id": "source-1111",
+          "quote": "Their notice says one device needs inspection, without identifying which owner."
+        }
+      ]
+    },
+    "expected": "no arbitrary owner selected from competing antecedents"
+  },
+  {
+    "id": "recipient-is-not-booking-owner",
+    "mode": "injected",
+    "speaker": "Ada Marlow",
+    "role": "user",
+    "source": "Bo Winters told Ada Marlow about an inspection booking. The booking owner was not identified.",
+    "text": "Bo Winters told Ada Marlow about Ada Marlow's inspection booking.",
+    "candidate": {
+      "support": [
+        {
+          "item_id": "source-1111",
+          "quote": "The booking owner was not identified."
+        }
+      ],
+      "discourse_frame": [
+        {
+          "item_id": "source-1111",
+          "quote": "Bo Winters told Ada Marlow about an inspection booking."
+        },
+        {
+          "item_id": "source-1111",
+          "quote": "The booking owner was not identified."
+        }
+      ]
+    },
+    "expected": "no recipient promoted to booking possessor"
+  },
+  {
+    "id": "speaker-is-not-unknown-addressee",
+    "mode": "injected",
+    "speaker": "Ada Marlow",
+    "role": "user",
+    "source": "Ada Marlow recorded Bo Winters’s statement about an inspection. The statement does not identify who was addressed.",
+    "text": "Bo Winters told Ada Marlow about an inspection.",
+    "candidate": {
+      "support": [
+        {
+          "item_id": "source-1111",
+          "quote": "The statement does not identify who was addressed."
+        }
+      ],
+      "discourse_frame": [
+        {
+          "item_id": "source-1111",
+          "quote": "Ada Marlow recorded Bo Winters’s statement about an inspection."
+        },
+        {
+          "item_id": "source-1111",
+          "quote": "The statement does not identify who was addressed."
+        }
+      ]
+    },
+    "expected": "no structured recorder promoted to unidentified addressee"
+  },
+  {
+    "id": "reporter-is-not-property-object",
+    "mode": "injected",
+    "role": "external",
+    "speaker": "Vulpine Mutual",
+    "source": "Vulpine Mutual confirms Ada Marlow purchased a Zephyr QX-100. Its warranty lasts five years. This warranty applies only to that specific device; no general company warranty policy is stated.",
+    "text": "Vulpine Mutual states that its warranty policy lasts five years.",
+    "candidate": {
+      "subject": "Vulpine Mutual",
+      "support": [
+        {
+          "item_id": "source-1111",
+          "quote": "Its warranty lasts five years."
+        }
+      ],
+      "discourse_frame": [
+        {
+          "item_id": "source-1111",
+          "quote": "Vulpine Mutual confirms Ada Marlow purchased a Zephyr QX-100."
+        },
+        {
+          "item_id": "source-1111",
+          "quote": "Its warranty lasts five years."
+        },
+        {
+          "item_id": "source-1111",
+          "quote": "This warranty applies only to that specific device; no general company warranty policy is stated."
+        }
+      ]
+    },
+    "expected": "no property generalized from one device to reporting organization; a narrowed specific-device claim must name its object"
+  },
+  {
+    "id": "explicit-provider-policy",
+    "mode": "injected",
+    "role": "external",
+    "speaker": "Vulpine Mutual",
+    "source": "Vulpine Mutual states that its general warranty policy covers devices for five years.",
+    "text": "Vulpine Mutual states that its general warranty policy covers devices for five years.",
+    "candidate": {
+      "subject": "Vulpine Mutual"
+    },
+    "expected": "useful explicitly stated company policy; no forced product entity or blanket refusal"
+  },
+  {
+    "id": "reporter-short-name",
+    "mode": "injected",
+    "role": "user",
+    "speaker": "Ada Marlow",
+    "source": "Ada Marlow received the Zephyr QX-100 warranty account from Bo Winters. Bo’s separate claim is that this device has a five-year warranty; Ada disputes that claim.",
+    "text": "Ada Marlow records Bo Winters’s disputed claim that the Zephyr QX-100 has a five-year warranty.",
+    "expected": "useful qualified same-source alias reporting",
+    "candidate": {
+      "attribution": {
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "chain": [
+          {
+            "speaker": "Bo Winters",
+            "role": "external"
+          }
+        ]
+      },
+      "epistemic": {
+        "basis": "source_report"
+      },
+      "support": [
+        {
+          "item_id": "source-1111",
+          "quote": "Bo’s separate claim is that this device has a five-year warranty; Ada disputes that claim."
+        }
+      ],
+      "discourse_frame": [
+        {
+          "item_id": "source-1111",
+          "quote": "Ada Marlow received the Zephyr QX-100 warranty account from Bo Winters."
+        },
+        {
+          "item_id": "source-1111",
+          "quote": "Bo’s separate claim is that this device has a five-year warranty; Ada disputes that claim."
+        }
+      ]
+    }
+  },
+  {
+    "id": "reporter-multilingual-short-name",
+    "mode": "injected",
+    "role": "user",
+    "speaker": "Ada Marlow",
+    "source": "Ada Marlow received the Zephyr QX-100 warranty account from Bo Winters. Bo утверждает, что гарантия Zephyr QX-100 действует пять лет; Ada оспаривает это утверждение.",
+    "text": "Ada Marlow records Bo Winters’s disputed claim that the Zephyr QX-100 has a five-year warranty.",
+    "expected": "useful multilingual qualified same-source reporting",
+    "candidate": {
+      "attribution": {
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "chain": [
+          {
+            "speaker": "Bo Winters",
+            "role": "external"
+          }
+        ]
+      },
+      "epistemic": {
+        "basis": "source_report"
+      },
+      "support": [
+        {
+          "item_id": "source-1111",
+          "quote": "Bo утверждает, что гарантия Zephyr QX-100 действует пять лет; Ada оспаривает это утверждение."
+        }
+      ],
+      "discourse_frame": [
+        {
+          "item_id": "source-1111",
+          "quote": "Ada Marlow received the Zephyr QX-100 warranty account from Bo Winters."
+        },
+        {
+          "item_id": "source-1111",
+          "quote": "Bo утверждает, что гарантия Zephyr QX-100 действует пять лет; Ada оспаривает это утверждение."
+        }
+      ]
+    }
+  },
+  {
+    "id": "reporter-documentary",
+    "mode": "injected",
+    "role": "user",
+    "speaker": "Ada Marlow",
+    "source": "The inspection notice specifies a Zephyr QX-100 warranty of five years. Ada Marlow records this notice without independently verifying its claim.",
+    "text": "Ada Marlow records that the inspection notice specifies a five-year Zephyr QX-100 warranty, without independently verifying the claim.",
+    "expected": "useful documentary reporter without lexical predicate",
+    "candidate": {
+      "attribution": {
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "chain": [
+          {
+            "speaker": "the inspection notice",
+            "role": "external"
+          }
+        ]
+      },
+      "epistemic": {
+        "basis": "source_report"
+      }
+    }
+  },
+  {
+    "id": "reporter-different-proposition",
+    "mode": "injected",
+    "role": "user",
+    "speaker": "Ada Marlow",
+    "source": "Bo Winters reported a Zephyr QX-100 warranty of five years. Ada Marlow separately stated that the device needs inspection. Bo made no statement about inspection.",
+    "text": "Ada Marlow records that Bo Winters reported the Zephyr QX-100 needs inspection.",
+    "expected": "unrelated familiar reporting predicate cannot certify this proposition",
+    "candidate": {
+      "attribution": {
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "chain": [
+          {
+            "speaker": "Bo Winters",
+            "role": "external"
+          }
+        ]
+      },
+      "epistemic": {
+        "basis": "source_report"
+      }
+    }
+  },
+  {
+    "id": "reporter-ambiguous-identity",
+    "mode": "injected",
+    "role": "user",
+    "speaker": "Ada Marlow",
+    "source": "Ada Marlow and Bo Winters are named in the Zephyr QX-100 file. An unidentified person reported a five-year warranty. The file does not establish which named person, if either, made that report.",
+    "text": "Ada Marlow records that Bo Winters reported a five-year Zephyr QX-100 warranty.",
+    "expected": "no named reporter guessed from competing or unrelated names",
+    "candidate": {
+      "attribution": {
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "chain": [
+          {
+            "speaker": "Bo Winters",
+            "role": "external"
+          }
+        ]
+      },
+      "epistemic": {
+        "basis": "source_report"
+      }
+    }
+  },
+  {
+    "id": "reporter-negated-report",
+    "mode": "injected",
+    "role": "user",
+    "speaker": "Ada Marlow",
+    "source": "Bo Winters did not report a five-year warranty for the Zephyr QX-100. Ada Marlow records that the device warranty is unknown.",
+    "text": "Ada Marlow records that Bo Winters reported a five-year Zephyr QX-100 warranty.",
+    "expected": "negated reporting cannot certify asserted report",
+    "candidate": {
+      "attribution": {
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "chain": [
+          {
+            "speaker": "Bo Winters",
+            "role": "external"
+          }
+        ]
+      },
+      "epistemic": {
+        "basis": "source_report"
+      }
+    }
+  },
+  {
+    "id": "reporter-changed-to-actor",
+    "mode": "injected",
+    "role": "user",
+    "speaker": "Ada Marlow",
+    "source": "Bo Winters told Ada Marlow that the Zephyr QX-100 needs inspection. The inspector has not been identified.",
+    "text": "Ada Marlow records that Bo Winters will inspect the Zephyr QX-100.",
+    "expected": "reporter name cannot preserve reporter changed into inspector",
+    "candidate": {
+      "attribution": {
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "chain": [
+          {
+            "speaker": "Bo Winters",
+            "role": "external"
+          }
+        ]
+      },
+      "epistemic": {
+        "basis": "source_report"
+      }
+    }
+  },
+  {
+    "id": "reporter-owner-recipient",
+    "mode": "injected",
+    "role": "user",
+    "speaker": "Ada Marlow",
+    "source": "Bo Winters owns the Zephyr QX-100 and received its inspection notice. Ada Marlow reported that the device needs inspection; Bo has not reported anything about inspection.",
+    "text": "Ada Marlow records that Bo Winters reported the Zephyr QX-100 needs inspection.",
+    "expected": "owner or recipient cannot stand in for its actual reporter",
+    "candidate": {
+      "attribution": {
+        "source_role": "user",
+        "source_speaker": "Ada Marlow",
+        "chain": [
+          {
+            "speaker": "Bo Winters",
+            "role": "external"
+          }
+        ]
+      },
+      "epistemic": {
+        "basis": "source_report"
+      }
+    }
+  }
+]

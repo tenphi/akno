@@ -20,6 +20,9 @@ function checkEndpointObjects(value: any): void {
 
 const cases = [
   ...[[1], [2], [1, 1], [1, 2], [2, 3]].map((sizes) => ({ sizes, malformed: null })),
+  { sizes: [2], malformed: null, inner: true },
+  { sizes: [2], malformed: null, inner: true, nested: true },
+  { sizes: [2], malformed: 'foreign-reporter-anchor', inner: true },
   { sizes: [2, 3], malformed: 'swapped-audits' },
   { sizes: [1, 2], malformed: 'unexpected-single-audit' },
   { sizes: [2, 3], malformed: 'foreign-candidate' },
@@ -29,20 +32,31 @@ const cases = [
 describe.each(['chat', 'responses'] as const)('retention wire-schema compatibility: %s', (api) => {
   it.each(cases)(
     'keeps candidate-specific audits representable: $sizes / $malformed',
-    async ({ sizes, malformed }) => {
+    async ({ sizes, malformed, inner = false, nested = false }) => {
       const sourceItems: RetainSourceItem[] = [];
       const records = sizes.map((size, group) => {
         const frame = Array.from({ length: size }, (_, index) => {
           const item_id = `invented-${group}-${index}`;
-          const text = `The Zephyr QX-100 inspection label is ${group % 2 ? 'not ' : ''}marker-${group}-${index}.`;
+          const text = `${inner ? `Bo Winters reports that ${nested ? 'the inspection notice lists ' : ''}` : ''}The Zephyr QX-100 inspection label is ${group % 2 ? 'not ' : ''}marker-${group}-${index}.`;
           sourceItems.push({ item_id, text, role: 'user', speaker: 'Ada Marlow' });
           return { item_id, quote: text };
         });
         return {
           subject: 'Zephyr QX-100',
           kind: 'claim',
-          text: frame[0]!.quote,
-          attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+          text: inner ? `Ada Marlow records: ${frame[0]!.quote}` : frame[0]!.quote,
+          attribution: {
+            source_role: 'user',
+            source_speaker: 'Ada Marlow',
+            ...(inner
+              ? {
+                  chain: [
+                    { speaker: 'Bo Winters', role: 'external' },
+                    ...(nested ? [{ speaker: 'the inspection notice', role: 'external' }] : []),
+                  ],
+                }
+              : {}),
+          },
           discourse: { commitment: 'asserted', disposition: 'active' },
           epistemic: { basis: 'self_attested' },
           polarity: group % 2 ? 'negated' : 'affirmed',
@@ -84,7 +98,24 @@ describe.each(['chat', 'responses'] as const)('retention wire-schema compatibili
               expect(branch.properties.candidate_id.enum).toEqual([payload.candidates[index].candidate_id]);
               expect(branch.required[0]).toBe('candidate_id');
               const comparisonIndex = branch.required.indexOf('comparison');
-              expect(comparisonIndex).toBe(sizes[index]! > 1 ? 2 : 1);
+              expect(comparisonIndex).toBe((sizes[index]! > 1 ? 2 : 1) + (inner ? 1 : 0));
+              if (inner) {
+                const reporterItems = branch.properties.attribution_audit.items;
+                const entries = nested ? reporterItems.anyOf : [reporterItems];
+                expect(entries).toHaveLength(nested ? 2 : 1);
+                for (const [reporterIndex, entry] of entries.entries()) {
+                  const attribution = entry.properties;
+                  expect(attribution.reporter_id.enum).toEqual([`A${reporterIndex + 1}`]);
+                  for (const field of ['source', 'name_origin']) {
+                    const anchor = attribution[field].anyOf.find((shape: any) => shape.type === 'object');
+                    expect(anchor.properties.frame_id.enum).toEqual(['F1', 'F2']);
+                    expect(Object.keys(anchor.properties)).toEqual(['frame_id']);
+                  }
+                }
+                expect(payload.candidates[index].attribution_concern.candidate).toBe(
+                  'original_readable_text',
+                );
+              }
               expect(branch.required[comparisonIndex + 1]).toBe('source_selected_polarity');
               expect(branch.required).toContain('predicate_time_audit');
               const time = branch.properties.predicate_time_audit.properties.comparisons.items;
@@ -137,6 +168,8 @@ describe.each(['chat', 'responses'] as const)('retention wire-schema compatibili
             if (malformed === 'foreign-candidate') verdicts[0].candidate_id = 'invented-foreign-candidate';
             if (malformed === 'missing-polarity') delete verdicts[1].source_selected_polarity;
             if (malformed === 'invalid-polarity') verdicts[1].source_selected_polarity = 'unknown';
+            if (malformed === 'foreign-reporter-anchor')
+              verdicts[0].attribution_audit[0].name_origin.frame_id = 'F3';
           }
           const content = JSON.stringify(output);
           return new Response(

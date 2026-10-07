@@ -306,8 +306,12 @@ missing readable names, changed roles and incomplete reference coverage remain h
 Generation and verification distinguish the entity whose property is stated from its reporting wrapper;
 a scoped object property cannot become a general property of the reporter. Nominated subject metadata
 is not antecedent evidence. A past reporting wrapper also cannot move a source-current status to an
-unanchored earlier state. Independent source items cannot donate identities to each other's pronouns. The separate inner-reporter
-attribution audit retains its existing exact witness contract.
+unanchored earlier state. Independent source items cannot donate identities to each other's pronouns. Every inner reporter also
+receives a proposition-specific attribution audit in the same independent verification call. It selects
+immutable reporting and name-origin frames, allowing an unambiguous short name from the same original
+source item. It separately compares the reporter's role, chain order and qualifications in the original
+readable candidate. Familiar reporting words elsewhere, an owner or recipient's name, and generated
+excerpts cannot certify that reporting relationship; ambiguous identities and changed roles remain held.
 Source bytes, caller-trusted provided-exact retention, support
 lineage and the existing managed-item format are unchanged by these admission checks.
 Routing can write only to an existing admitted knowledge page, a new managed page under an exactly admitted

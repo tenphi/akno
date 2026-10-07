@@ -45,13 +45,6 @@ function stub(records = [record()], edit?: (verdict: any, candidate: any) => voi
         qualification_scope_preserved: true,
         reason_code: null,
       };
-      if (candidate.attribution_concern)
-        verdict.attribution_audit = candidate.attribution_concern.reporters.map((reporter: any) => ({
-          reporter_id: reporter.reporter_id,
-          relation: 'reports_selected_proposition',
-          source: { frame_id: 'F1', exact_excerpt: candidate.discourse_frame[0].quote },
-          explanation: 'The notice supplies the inspection schedule in the recorded reporting chain.',
-        }));
       edit?.(verdict, candidate);
       return verdict;
     });
@@ -86,11 +79,82 @@ describe('documentary reporting is verified from source context', () => {
     expect(result.candidates[0]!.time?.start).toBe('2027-02-08');
     expect(chat).toHaveBeenCalledTimes(2);
     expect(requests[1].candidates[0].attribution_concern.reporters).toEqual([
-      { reporter_id: 'A1', speaker: 'the inspection notice', role: 'external' },
+      { reporter_id: 'A1', speaker: 'the inspection notice', role: 'external', name_frames: ['F1'] },
     ]);
     expect(result.modelUsage.repair).toBeUndefined();
     expect(JSON.stringify(result)).not.toContain('attribution_audit');
   });
+
+  it('retains an unambiguous same-source short-name reporter with an immutable name anchor', async () => {
+    const origin = 'Ada Marlow received the inspection account from Bo Winters.';
+    const reporting = 'Bo’s separate account schedules the Zephyr QX-100 inspection for 8 February 2027.';
+    const candidate = record(origin + '\n' + reporting);
+    candidate.text =
+      'Ada Marlow records that Bo Winters schedules the Zephyr QX-100 inspection for 8 February 2027.';
+    candidate.attribution.chain = [{ speaker: 'Bo Winters', role: 'external' }];
+    candidate.discourse_frame = [origin, reporting].map((quote) => ({ quote, item_id: 'note-1111' }));
+    const { model, requests, chat } = stub([candidate], (verdict) => {
+      Object.assign(verdict.attribution_audit[0], {
+        source: { frame_id: 'F2' },
+        name_origin: { frame_id: 'F1' },
+        resolution: 'unambiguous_antecedent',
+      });
+    });
+    const result = await run(model, origin + '\n' + reporting);
+    expect(result.candidates).toHaveLength(1);
+    expect(result.candidates[0]!.text).toBe(candidate.text);
+    expect(requests[1].candidates[0].attribution_concern.source_frames).toHaveLength(2);
+    expect(chat).toHaveBeenCalledTimes(2);
+  });
+
+  it('audits a familiar reporting verb for this proposition instead of accepting an unrelated report', async () => {
+    const quote =
+      'Bo Winters reported a five-year Zephyr QX-100 warranty. Ada Marlow scheduled its inspection for 8 February 2027.';
+    const candidate = record(quote);
+    candidate.attribution.chain = [{ speaker: 'Bo Winters', role: 'external' }];
+    candidate.text =
+      'Ada Marlow records that Bo Winters reported a Zephyr QX-100 inspection scheduled for 8 February 2027.';
+    const { model, requests } = stub([candidate], (verdict) => {
+      verdict.attribution_audit[0].relation = 'not_a_reporter';
+    });
+    const result = await run(model, quote);
+    expect(result.error).toBeNull();
+    expect(result.candidates).toEqual([]);
+    expect(result.held[0]!.reason_code).toBe('discourse_uncertain');
+    expect(requests[1].candidates[0].attribution_concern.reporters).toHaveLength(1);
+  });
+
+  it.each([
+    {
+      quote:
+        'Bo Winters might have reported a Zephyr QX-100 inspection scheduled for 8 February 2027; Ada Marlow does not know whether any report was made.',
+      stage: 'validation',
+    },
+    {
+      quote:
+        'Bo Winters did not report a Zephyr QX-100 inspection scheduled for 8 February 2027; Ada Marlow records that no such report was made.',
+      stage: 'verification',
+    },
+  ])(
+    'withholds an asserted chain when reporting is hypothetical or negated: $stage',
+    async ({ quote, stage }) => {
+      const candidate = record(quote);
+      candidate.text =
+        'Ada Marlow records that Bo Winters reported a Zephyr QX-100 inspection scheduled for 8 February 2027.';
+      candidate.attribution.chain = [{ speaker: 'Bo Winters', role: 'external' }];
+      const { model, requests } = stub([candidate], (verdict) => {
+        verdict.attribution_audit[0].relation = 'not_a_reporter';
+        verdict.attribution_audit[0].candidate_relation = 'changed';
+      });
+      const result = await run(model, quote);
+      expect(result.error).toBeNull();
+      expect(result.held[0]).toMatchObject({ hold_stage: stage, reason_code: 'discourse_uncertain' });
+      expect(result.candidates).toEqual([]);
+      if (stage === 'verification')
+        expect(requests[1].candidates[0].attribution_concern.reporters).toHaveLength(1);
+      else expect(requests[1].repair_targets).toHaveLength(1);
+    },
+  );
 
   it('keeps the public cleaner conservative without a mandatory verifier', () => {
     const result = cleanCandidateBatch([record()], {
@@ -129,6 +193,7 @@ describe('documentary reporting is verified from source context', () => {
       const { model, chat } = stub([record(quote)], (verdict) => {
         verdict.attribution_audit[0].relation = relation;
         verdict.attribution_audit[0].source = null;
+        verdict.attribution_audit[0].resolution = 'unresolved';
       });
       const result = await run(model, quote);
       expect(result.candidates).toEqual([]);
@@ -148,6 +213,7 @@ describe('documentary reporting is verified from source context', () => {
     const { model, requests } = stub([candidate], (verdict) => {
       verdict.attribution_audit[0].relation = 'not_a_reporter';
       verdict.attribution_audit[0].source = null;
+      verdict.attribution_audit[0].resolution = 'unresolved';
     });
     const result = await run(model, quote);
     expect(result.candidates).toEqual([]);
@@ -159,8 +225,8 @@ describe('documentary reporting is verified from source context', () => {
     'missing-audit',
     'missing-witness',
     'foreign-frame',
-    'nonexact-witness',
-    'missing-name',
+    'legacy-excerpt',
+    'missing-name-anchor',
     'foreign-reporter',
     'duplicate-reporter',
     'empty-audit',
@@ -169,10 +235,8 @@ describe('documentary reporting is verified from source context', () => {
       if (mode === 'missing-audit') delete verdict.attribution_audit;
       else if (mode === 'missing-witness') verdict.attribution_audit[0].source = null;
       else if (mode === 'foreign-frame') verdict.attribution_audit[0].source.frame_id = 'F2';
-      else if (mode === 'nonexact-witness')
-        verdict.attribution_audit[0].source.exact_excerpt = 'The inspection notice requires a changed date.';
-      else if (mode === 'missing-name')
-        verdict.attribution_audit[0].source.exact_excerpt = 'a Zephyr QX-100 inspection on 8 February 2027';
+      else if (mode === 'legacy-excerpt') verdict.attribution_audit[0].source.exact_excerpt = source;
+      else if (mode === 'missing-name-anchor') verdict.attribution_audit[0].name_origin = null;
       else if (mode === 'foreign-reporter') verdict.attribution_audit[0].reporter_id = 'A2';
       else if (mode === 'duplicate-reporter') verdict.attribution_audit.push(verdict.attribution_audit[0]);
       else verdict.attribution_audit = [];
@@ -181,7 +245,7 @@ describe('documentary reporting is verified from source context', () => {
     expect(result.candidates).toEqual([]);
     expect(result.degradedReason).toBe('retain_verification_failed');
     expect(result.verification?.batches[0]?.failure_code).toBe(
-      ['missing-audit', 'foreign-reporter', 'foreign-frame'].includes(mode)
+      ['missing-audit', 'foreign-reporter', 'foreign-frame', 'legacy-excerpt'].includes(mode)
         ? 'schema_mismatch'
         : 'attribution_inconsistent',
     );
@@ -233,7 +297,7 @@ describe('documentary reporting is verified from source context', () => {
     expect(requests[1].repair_targets).toBeDefined();
   });
 
-  it('requires one independent decision per unrecognized nested reporter', async () => {
+  it('requires one independent decision per nested reporter', async () => {
     const quote =
       'Ada Marlow records Bo Winters’s account: the inspection notice specifies a Zephyr QX-100 inspection on 8 February 2027.';
     const candidate = record(quote);
@@ -296,6 +360,7 @@ describe('documentary reporting is verified from source context', () => {
           if (revising && !accepted) {
             verdict.attribution_audit[0].relation = 'uncertain';
             verdict.attribution_audit[0].source = null;
+            verdict.attribution_audit[0].resolution = 'unresolved';
           }
         },
       );
