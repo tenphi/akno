@@ -4,6 +4,7 @@ import { AknoError } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { timelineCatalog, owningTimeline, selectTimelines } from '../timeline/boundaries.ts';
 import { sha256 } from '../store/ids.ts';
+import { timelineSourceDisplay } from './timeline-source-display.ts';
 import {
   managedMemoryPayloadBody,
   managedMemoryPayloadIssue,
@@ -172,10 +173,10 @@ function managedEntries(content: string | null, slug: string): { slug: string; e
 function renderEntry(marker: ManagedMemoryMarker, body: string, slug: string, date: string): Entry {
   const time = marker.time!;
   const sourceLabel = managedMemoryStatusLabels(marker).find((label) => label.startsWith('Reported by '));
-  const reporter = sourceLabel?.slice('Reported by '.length);
+  const reporter = sourceLabel ? (marker.speaker ?? sourceLabel.slice('Reported by '.length)) : undefined;
   // The candidate text keeps its outer source for standalone safety. In this derived
   // ledger the qualifier carries that source, so remove only an exact opening relay.
-  const readableBody = reporter ? stripOpeningReport(body, reporter) : body;
+  const display = timelineSourceDisplay(body, reporter, marker.reporters);
   const qualifications = [
     ...(time.relation === 'due'
       ? [`${time.status === 'actual' ? '' : `${time.status} `}deadline`]
@@ -194,12 +195,12 @@ function renderEntry(marker: ManagedMemoryMarker, body: string, slug: string, da
       : marker.disposition !== 'active'
         ? [marker.disposition]
         : []),
-    ...(reporter ? [`reported by ${reporter}`] : []),
+    ...(display.reporter ? [`reported by ${display.reporter}`] : []),
   ];
   const label = time.start
     ? `${readableBoundary(date)}${time.until && time.until !== date ? ` – ${readableBoundary(time.until)}` : ''}`
     : `Until ${readableBoundary(date)}`;
-  const clean = readableBody.replace(/\s+/g, ' ').replaceAll('<!--', '&lt;!--');
+  const clean = display.body.replace(/\s+/g, ' ').replaceAll('<!--', '&lt;!--');
   const qualifier = [...new Set(qualifications)].join(' · ');
   const annotation = qualifier ? `*${qualifier[0]!.toUpperCase()}${qualifier.slice(1)}* — ` : '';
   const references = marker.links.flatMap((link) => {
@@ -222,16 +223,6 @@ function renderEntry(marker: ManagedMemoryMarker, body: string, slug: string, da
     date,
     line: `${base} <!-- akno:timeline-item id=${marker.id} date=${date} hash=${sha256(`${base}\0${date}`).slice(0, 12)} -->`,
   };
-}
-
-function stripOpeningReport(body: string, reporter: string): string {
-  const escaped = reporter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const opening = new RegExp(
-    `^(?:${escaped}(?:[’']s (?:digest|report))? (?:reports|reported|says|said|states|stated)(?: that)? |According to ${escaped}, |Reported by ${escaped}: )`,
-    'iu',
-  );
-  const stripped = body.replace(opening, '');
-  return stripped.trim() ? stripped : body;
 }
 
 function readableBoundary(value: string): string {

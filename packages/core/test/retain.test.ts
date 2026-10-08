@@ -2737,6 +2737,83 @@ describe('folder-owned timeline retention', () => {
     }
   });
 
+  it('compacts a named mailbox in its ledger while retaining source identity, replay and migration undo', async () => {
+    const speaker = 'Vulpine Mutual <no_reply@notices.example.invalid>';
+    const text = `${speaker} lists Ada Marlow's Zephyr QX-100 plan at €33/month as renewing on 8 April 2031.`;
+    const base = upsert('invented:sender-display', 'rev-1111', text);
+    const source = {
+      ...base,
+      input: { items: [{ item_id: 'notice-1111', role: 'external' as const, speaker, text }] },
+      retention: {
+        ...base.retention,
+        candidates: [
+          {
+            ...base.retention.candidates[0]!,
+            candidate_id: 'reported-renewal',
+            kind: 'claim' as const,
+            text,
+            subject: 'Zephyr QX-100 plan',
+            attribution: { source_role: 'external' as const, source_speaker: speaker },
+            epistemic: { basis: 'source_report' as const },
+            discourse: { commitment: 'asserted' as const, disposition: 'active' as const },
+            support: [{ item_id: 'notice-1111', quote: text }],
+            discourse_frame: [{ item_id: 'notice-1111', quote: text }],
+            destination: { slug: 'memory/zephyr-plan' },
+            time: {
+              start: '2031-04-08',
+              precision: 'day' as const,
+              relation: 'scheduled' as const,
+              status: 'scheduled' as const,
+            },
+          },
+        ],
+      },
+    };
+    const mem = await openMem();
+    try {
+      const written = await mem.retain({ sources: [source] });
+      expect(written.sources[0]?.candidates[0]?.outcome).toBe('written');
+      expect(written.sources[0]?.model_usage).toBeUndefined();
+      const canonicalPath = path.join(root, 'memory/zephyr-plan.md');
+      const canonical = fs.readFileSync(canonicalPath, 'utf8');
+      const marker = canonical.split('\n').map(parseManagedMemoryMarker).find(Boolean)!;
+      expect(marker.speaker).toBe(speaker);
+      expect(canonical).toContain(text);
+      const ledgerPath = path.join(root, 'timeline.md');
+      const ledger = fs.readFileSync(ledgerPath, 'utf8');
+      expect(ledger).toContain(
+        "*Scheduled · claim · reported by Vulpine Mutual* — Lists Ada Marlow's Zephyr QX-100 plan at €33/month as renewing on 8 April 2031.",
+      );
+      expect(ledger).not.toContain('no_reply');
+      expect(ledger).not.toContain('no reply');
+      expect((await mem.retain({ sources: [source] })).sources[0]?.outcome).toBe('replayed');
+      expect(fs.readFileSync(ledgerPath, 'utf8')).toBe(ledger);
+
+      const date = '2031-04-08';
+      const oldBase = `- **${date}** | *Scheduled · claim · reported by Vulpine Mutual no reply@notices.example.invalid* — ${text} [[memory/zephyr-plan]]`;
+      const oldLine = `${oldBase} <!-- akno:timeline-item id=${marker.id} date=${date} hash=${createHash('sha256').update(`${oldBase}\0${date}`).digest('hex').slice(0, 12)} -->`;
+      const oldLedger = ledger.replace(/^.*<!-- akno:timeline-item .*$/m, oldLine);
+      fs.writeFileSync(ledgerPath, oldLedger);
+      await mem.index({ structuralOnly: true });
+      expect(fs.readFileSync(ledgerPath, 'utf8')).toBe(oldLedger);
+      expect((await mem.migrateRetainedTimelines({ timeline: 'timeline' })).changedPaths).toEqual([
+        'timeline.md',
+      ]);
+      expect(fs.readFileSync(ledgerPath, 'utf8')).toBe(oldLedger);
+      const migrated = await mem.migrateRetainedTimelines({ timeline: 'timeline', apply: true });
+      expect(migrated).toMatchObject({ applied: true, changedPaths: ['timeline.md'] });
+      expect(fs.readFileSync(ledgerPath, 'utf8')).toBe(ledger);
+      expect(fs.readFileSync(canonicalPath, 'utf8')).toBe(canonical);
+      expect((await mem.migrateRetainedTimelines({ timeline: 'timeline' })).changedPaths).toEqual([]);
+      expect((await mem.timeline({})).results.filter((item) => item.type === 'memory')).toHaveLength(1);
+      await mem.undo({ change_id: migrated.changeId! });
+      expect(fs.readFileSync(ledgerPath, 'utf8')).toBe(oldLedger);
+      expect(fs.readFileSync(canonicalPath, 'utf8')).toBe(canonical);
+    } finally {
+      await mem.close();
+    }
+  });
+
   it('keeps a due date beside a reported proposal without a dangling Due label', async () => {
     const text = "Luna's digest reports Vulpine Mutual proposed a Zephyr QX-100 inspection by 8 April 2031.";
     const base = upsert('invented:reported-deadline', '1', text);

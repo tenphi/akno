@@ -111,6 +111,12 @@ the query's updated folder membership.
 After a presentation change, preview and apply reconciliation to refresh older Akno-owned references.
 This leaves canonical pages and authored event rows alone, and the journal supports undo.
 
+For a reported item, the timeline qualifier displays a supplied sender name without its mailbox;
+a bare mailbox remains explicit, with Markdown characters escaped. The original full source identity
+and canonical text stay intact. An exact, unambiguous outer relay is omitted when the qualifier already
+supplies it; a listing keeps its verb, and inner reporters, negation and verification limits remain.
+Addresses that are substantive content are preserved, including existing links, autolinks and code.
+
 ```sh
 akno migrate --retained-timelines
 akno migrate --retained-timelines --apply
