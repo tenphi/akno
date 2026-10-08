@@ -52,6 +52,14 @@ describe('timeline source presentation', () => {
     );
   });
 
+  it('preserves email characters in wikilink targets, fragments and labels', () => {
+    const body =
+      'See [[sources/no_reply@example.invalid]] and [[sources/notice#no_reply@example.invalid|no_reply@example.invalid]]. Contact no_reply@example.invalid.';
+    expect(timelineSourceDisplay(body, sender).body).toBe(
+      'See [[sources/no_reply@example.invalid]] and [[sources/notice#no_reply@example.invalid|no_reply@example.invalid]]. Contact no\\_reply@example.invalid.',
+    );
+  });
+
   it('leaves already escaped addresses stable', () => {
     const body = 'Contact no\\_reply@example.invalid.';
     expect(timelineSourceDisplay(body, sender).body).toBe(body);

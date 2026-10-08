@@ -80,6 +80,9 @@ function readableEmails(body: string): string {
     for (const child of node.children ?? []) visit(child);
   };
   visit(fromMarkdown(body));
+  // Wikilinks are Akno's own Markdown extension; their targets must remain exact.
+  for (const match of body.matchAll(/\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]/gu))
+    protectedRanges.push({ start: match.index, end: match.index + match[0].length });
   return body.replace(/[a-z0-9.!#$%&'*+/=?^_{}|~-]+@[a-z0-9.-]+\.[a-z]{2,}/giu, (token, offset: number) =>
     body[offset - 1] === '\\' ||
     protectedRanges.some(({ start, end }) => offset < end && offset + token.length > start)
