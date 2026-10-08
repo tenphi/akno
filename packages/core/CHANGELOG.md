@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.18.16
+
+### Patch Changes
+
+- [#232](https://github.com/tenphi/akno/pull/232) [`7af9d70`](https://github.com/tenphi/akno/commit/7af9d70d42d5c29fc56e0a9a7ccfa45db4ba860a) Thanks [@tenphi](https://github.com/tenphi)! - Display named timeline senders without repeating their mailbox, match opening attribution against the original source identity, and preserve listing verbs and Markdown-safe email addresses. Existing timeline references can be refreshed through the explicit journalled reconciliation without changing canonical facts or provenance.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.18.16
+
 ## 0.18.15
 
 ### Patch Changes
