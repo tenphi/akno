@@ -54,7 +54,9 @@ const EmbeddingRoleDoc = z.object({
 const RerankerRoleDoc = z.object({
   ...modelRoleBase,
   /** A native `/rerank` endpoint, or a generative model using Akno's ranking prompt. */
-  mode: z.enum(['endpoint', 'llm']).optional(),
+  mode: z.enum(['endpoint', 'llm', 'decisions']).optional(),
+  /** Decisions removes an excerpt only when P(irrelevant) reaches this boundary. */
+  irrelevant_probability_threshold: z.number().min(0).max(1).optional(),
   /** Remove candidates the configured reranker confidently judges irrelevant. */
   exclude_irrelevant: z.boolean().optional(),
   top_k: z.number().int().positive().optional(),
@@ -567,7 +569,8 @@ export interface ResolvedModelRole {
   batch?: number;
   topK?: number;
   /** How the reranker role is called. Absent outside that role. */
-  rerankerMode?: 'endpoint' | 'llm';
+  rerankerMode?: 'endpoint' | 'llm' | 'decisions';
+  irrelevantProbabilityThreshold?: number;
   /** Whether a successful reranker may qualify candidates out of the response. */
   excludeIrrelevant?: boolean;
   /** Characters of each candidate sent to the reranker. Cost scales with tokens. */

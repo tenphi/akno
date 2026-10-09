@@ -426,7 +426,10 @@ function resolveRole(
   if (typeof doc?.dimensions === 'number') resolved.dimensions = doc.dimensions;
   if (typeof doc?.batch === 'number') resolved.batch = doc.batch;
   if (typeof doc?.top_k === 'number') resolved.topK = doc.top_k;
-  if (doc?.mode === 'endpoint' || doc?.mode === 'llm') resolved.rerankerMode = doc.mode;
+  if (doc?.mode === 'endpoint' || doc?.mode === 'llm' || doc?.mode === 'decisions')
+    resolved.rerankerMode = doc.mode;
+  if (typeof doc?.irrelevant_probability_threshold === 'number')
+    resolved.irrelevantProbabilityThreshold = doc.irrelevant_probability_threshold;
   if (typeof doc?.exclude_irrelevant === 'boolean') resolved.excludeIrrelevant = doc.exclude_irrelevant;
   if (typeof doc?.max_chars === 'number') resolved.maxChars = doc.max_chars;
   if (typeof doc?.score_offset === 'number' || doc?.score_offset === 'auto') {

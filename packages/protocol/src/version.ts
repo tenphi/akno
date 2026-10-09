@@ -12,7 +12,8 @@
 // An older client cannot safely exhaustively consume those existing exchanges.
 // Graph nodes and relations gained retained-memory variants. Older clients cannot safely
 // exhaustively consume those existing exchanges.
-export const PROTOCOL_VERSION = 4;
+// Recall qualification gained a Decisions variant and probability basis. Older schemas reject it.
+export const PROTOCOL_VERSION = 5;
 
 /** Advertised MCP server name. The spec calls for `memory`, not `akno`. */
 export const MCP_SERVER_NAME = 'memory';

@@ -211,7 +211,22 @@ specialist setup.
 
 ## Reranking and qualification
 
-`models.reranker.mode` selects either a native `/rerank` endpoint or Akno's bounded listwise LLM prompt.
+`models.reranker.mode` accepts `decisions`, `llm`, or `endpoint`. The guided OpenAI Luna setup defaults to
+`decisions` with `gpt-6-luna` at `/decisions`. Set `mode: "llm"` to use the base model's bounded listwise
+JSON prompt, or `mode: "endpoint"` for a native `/rerank` endpoint. Provider `api` still selects generation
+transport only; Decisions reuses the configured endpoint, credential, headers and retry policy.
+
+Decisions batches one four-level relevance question per excerpt, ranks by expected grade, and uses
+`irrelevant_probability_threshold` (default 0.8) to remove only confidently irrelevant excerpts when
+`exclude_irrelevant` is enabled. Uncertain and marginal evidence remains available. Its returned `relevance`
+is P(strong support or direct answer); automatic context admission requires at least 0.5 plus the ordinary
+subject and temporal checks. Qualification reports `model: "decisions"` and its probability cutoff explicitly.
+The complete named distribution must validate before any filtering. The role timeout bounds the whole
+request including retries. Decisions failures report degradation without silently invoking generation.
+
+This changes cloud exposure for a setup that previously used a local reranker: only enable the OpenAI role
+when sending its bounded memory excerpts to that configured provider is intended. The guided OpenAI setup
+already sends those excerpts to OpenAI in base-model mode.
 Successful reranking can remove candidates confidently judged irrelevant. A failed or invalid reranker response
 preserves fusion order and reports typed degradation; Akno never filters using an unvalidated result.
 

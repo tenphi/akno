@@ -5,6 +5,7 @@ import { performance } from 'node:perf_hooks';
 import type { DegradedReason, RecallOutput, RecallResult } from '@tenphi/akno-protocol';
 import type { ConfigDoc, AknoConfig, ReasoningEffort, ResolvedModelRole } from '../config/schema.ts';
 import { open, type Akno } from '../open.ts';
+import { DECISIONS_RERANK_PROMPT_VERSION } from '../recall/decisions-rerank.ts';
 import { LLM_RERANK_PROMPT_VERSION, LLM_RERANK_SCHEMA_VERSION } from '../recall/llm-rerank.ts';
 import {
   RERANK_CANDIDATE_POOL_MULTIPLIER,
@@ -22,7 +23,7 @@ import type {
 
 export const RANKING_END_TO_END_SCHEMA_VERSION = 'ranking-end-to-end-v4';
 
-export type RankingEndToEndSystem = 'fusion' | 'llm';
+export type RankingEndToEndSystem = 'fusion' | 'llm' | 'decisions';
 
 export interface RankingEndToEndOptions {
   split?: RankingBenchSplit;
@@ -265,11 +266,11 @@ export async function runRankingEndToEnd(
           mode: 'lookup',
           depth: 'summary',
           expand: false,
-          limit: system === 'llm' ? retrievalPoolCount : candidateCount,
+          limit: system !== 'fusion' ? retrievalPoolCount : candidateCount,
           budget: 100_000,
         });
         const selected =
-          system === 'llm'
+          system !== 'fusion'
             ? selectRerankCandidates(output.results, candidateCount)
             : output.results.slice(0, candidateCount);
         return {
@@ -286,7 +287,7 @@ export async function runRankingEndToEnd(
 
     let rerankerReceipt: RankingEndToEndReport['reranker'];
     let rankedRuns: QueryRun[];
-    if (system === 'llm') {
+    if (system !== 'fusion') {
       ranked = await open({
         aknoPath: root,
         stateDir,
@@ -298,7 +299,7 @@ export async function runRankingEndToEnd(
             model: embeddingModel,
             dimensions: embeddingDimensions,
           },
-          reranker: { provider, model, reasoningEffort },
+          reranker: { provider, model, reasoningEffort, mode: system === 'decisions' ? 'decisions' : 'llm' },
           candidateCount,
           excerptChars,
         }),
@@ -306,8 +307,8 @@ export async function runRankingEndToEnd(
       rerankerReceipt = {
         ...roleReceipt(ranked.config.models.reranker),
         reasoningEffort,
-        promptVersion: LLM_RERANK_PROMPT_VERSION,
-        schemaVersion: LLM_RERANK_SCHEMA_VERSION,
+        promptVersion: system === 'decisions' ? DECISIONS_RERANK_PROMPT_VERSION : LLM_RERANK_PROMPT_VERSION,
+        schemaVersion: system === 'decisions' ? 'decisions-score-distribution-v1' : LLM_RERANK_SCHEMA_VERSION,
       };
       options.onProgress?.({ phase: 'ranked_recall', done: 0, total: cases.length });
       rankedRuns = await mapModelCases(
@@ -430,7 +431,7 @@ function buildReport(options: {
     },
     system: options.system,
     retrievalPoolCount:
-      options.system === 'llm'
+      options.system !== 'fusion'
         ? options.candidateCount * RERANK_CANDIDATE_POOL_MULTIPLIER
         : options.candidateCount,
     candidateSelectionVersion: RERANK_CANDIDATE_SELECTION_VERSION,
@@ -467,8 +468,8 @@ function unavailableRerankerReceipt(
     provider,
     model,
     reasoningEffort,
-    promptVersion: LLM_RERANK_PROMPT_VERSION,
-    schemaVersion: LLM_RERANK_SCHEMA_VERSION,
+    promptVersion: system === 'decisions' ? DECISIONS_RERANK_PROMPT_VERSION : LLM_RERANK_PROMPT_VERSION,
+    schemaVersion: system === 'decisions' ? 'decisions-score-distribution-v1' : LLM_RERANK_SCHEMA_VERSION,
     available: false,
   };
 }
@@ -477,7 +478,12 @@ function benchmarkOverrides(
   config: AknoConfig,
   options: {
     embedding: { provider: string; model: string | null; dimensions: number };
-    reranker: { provider: string; model: string; reasoningEffort: ReasoningEffort } | null;
+    reranker: {
+      provider: string;
+      model: string;
+      reasoningEffort: ReasoningEffort;
+      mode?: 'llm' | 'decisions';
+    } | null;
     candidateCount: RankingCandidateCount;
     excerptChars: RankingExcerptChars;
   },
@@ -511,7 +517,7 @@ function benchmarkOverrides(
             provider: options.reranker.provider,
             id: options.reranker.model,
             enabled: true,
-            mode: 'llm',
+            mode: options.reranker.mode ?? 'llm',
             exclude_irrelevant: true,
             top_k: options.candidateCount,
             max_chars: options.excerptChars,

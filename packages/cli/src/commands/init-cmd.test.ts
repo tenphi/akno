@@ -116,7 +116,7 @@ describe('guided init', () => {
     expect(written).toMatchObject({
       invented_extension: { keep: true },
       providers: { openai: { base_url: 'https://api.openai.com/v1' } },
-      models: { reranker: { id: 'gpt-6-luna', mode: 'llm' } },
+      models: { reranker: { id: 'gpt-6-luna', mode: 'decisions' } },
       maintenance: { profile: 'review', policies: { merge: 'audit' } },
     });
     expect(Object.keys(written.providers as Record<string, unknown>)).toEqual(['openai']);

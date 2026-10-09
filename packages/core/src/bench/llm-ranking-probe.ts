@@ -1,4 +1,5 @@
 import type { AknoConfig, ReasoningEffort, ResolvedModelRole } from '../config/schema.ts';
+import { rerankWithDecisions, DECISIONS_RERANK_PROMPT_VERSION } from '../recall/decisions-rerank.ts';
 import { ModelClient } from '../models/client.ts';
 import {
   allocateLlmRerankIds,
@@ -9,6 +10,7 @@ import {
 } from '../recall/llm-rerank.ts';
 
 export interface LlmRankingProbeOptions {
+  mode?: 'llm' | 'decisions';
   provider?: string;
   model?: string;
   reasoningEffort?: ReasoningEffort;
@@ -67,8 +69,9 @@ export async function runLlmRankingProbe(
     provider: providerName,
     model: modelId,
     reasoningEffort,
-    promptVersion: LLM_RERANK_PROMPT_VERSION,
-    schemaVersion: LLM_RERANK_SCHEMA_VERSION,
+    promptVersion: options.mode === 'decisions' ? DECISIONS_RERANK_PROMPT_VERSION : LLM_RERANK_PROMPT_VERSION,
+    schemaVersion:
+      options.mode === 'decisions' ? 'decisions-score-distribution-v1' : LLM_RERANK_SCHEMA_VERSION,
   };
   if (!provider) {
     return {
@@ -88,7 +91,7 @@ export async function runLlmRankingProbe(
     enabled: true,
     requested: true,
     timeoutMs: 60_000,
-    rerankerMode: 'llm',
+    rerankerMode: options.mode ?? 'llm',
     maxOutputTokens: 500,
     reasoningEffort,
     unavailableReason: null,
@@ -104,7 +107,10 @@ export async function runLlmRankingProbe(
     sourceKind: fixture.sourceKind,
     matchedBy: fixture.matchedBy,
   }));
-  const result = await rerankWithLlm(new ModelClient(role), query, candidates);
+  const result =
+    options.mode === 'decisions'
+      ? await rerankWithDecisions(new ModelClient(role), query, candidates)
+      : await rerankWithLlm(new ModelClient(role), query, candidates);
   if (!result.ok || !result.value) {
     return {
       ...base,
@@ -117,7 +123,15 @@ export async function runLlmRankingProbe(
   }
 
   const order = result.value.map((entry) => PROBE_FIXTURES[entry.index]!.key);
-  const relevance = result.value.map((entry) => entry.relevance);
+  const relevance = result.value.map((entry) =>
+    'irrelevantProbability' in entry
+      ? entry.irrelevantProbability >= 0.8
+        ? 0
+        : entry.relevance >= 0.5
+          ? 3
+          : 1
+      : entry.relevance,
+  );
   const error = rankingProbeFailure(order, relevance);
   return {
     ...base,

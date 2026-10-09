@@ -686,7 +686,7 @@ export type ResultEnvelope = z.infer<typeof ResultEnvelope>;
 
 /** What the reranker was allowed to remove, kept visible so fewer results never looks accidental. */
 export const RecallQualification = z.object({
-  model: z.enum(['llm', 'native']),
+  model: z.enum(['llm', 'native', 'decisions']),
   /** Content-free runtime identity and cost receipt for the qualification request. */
   model_id: z.string().optional(),
   latency_ms: z.number().nonnegative().optional(),
@@ -698,8 +698,15 @@ export const RecallQualification = z.object({
   rejected: z.number().int().nonnegative(),
   /** Candidates outside the bounded rerank window. Omitted when qualification is applied. */
   unjudged: z.number().int().nonnegative(),
-  basis: z.enum(['llm_grade', 'native_auto', 'native_manual', 'disabled', 'calibration_failed']),
-  /** Native raw-score boundary; null for LLM grades or when calibration failed. */
+  basis: z.enum([
+    'llm_grade',
+    'native_auto',
+    'native_manual',
+    'decisions_irrelevance_probability',
+    'disabled',
+    'calibration_failed',
+  ]),
+  /** Native raw-score boundary or Decisions P(irrelevant) cutoff; null for LLM grades. */
   threshold: z.number().nullable(),
 });
 export type RecallQualification = z.infer<typeof RecallQualification>;

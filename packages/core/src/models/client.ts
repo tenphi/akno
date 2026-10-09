@@ -11,6 +11,7 @@ import { z } from 'zod';
 import type { DegradedReason } from '@tenphi/akno-protocol';
 import type { ReasoningEffort, ResolvedModelRole } from '../config/schema.ts';
 import { ProviderRequestError, requestConfiguredProvider } from './provider-request.ts';
+import { parseScoreDecisions, type ScoreQuestion, type ScoreDecision } from './decisions.ts';
 
 /**
  * Any OpenAI-compatible endpoint, per role. One local server can host all
@@ -255,8 +256,12 @@ export class ModelClient {
   }
 
   /** Native cross-encoder endpoint unless the role explicitly opts into prompted ranking. */
-  get rerankerMode(): 'endpoint' | 'llm' {
+  get rerankerMode(): 'endpoint' | 'llm' | 'decisions' {
     return this.#role.rerankerMode ?? 'endpoint';
+  }
+
+  get irrelevantProbabilityThreshold(): number {
+    return this.#role.irrelevantProbabilityThreshold ?? 0.8;
   }
 
   get reasoningEffort(): ReasoningEffort | undefined {
@@ -283,7 +288,7 @@ export class ModelClient {
   private generativeTransportUnresolved(): boolean {
     if (this.#role.provider?.api !== 'auto') return false;
     return (
-      this.#role.role !== 'embedding' && !(this.#role.role === 'reranker' && this.rerankerMode === 'endpoint')
+      this.#role.role !== 'embedding' && !(this.#role.role === 'reranker' && this.rerankerMode !== 'llm')
     );
   }
 
@@ -509,6 +514,36 @@ export class ModelClient {
     };
   }
 
+  /** Dedicated Decisions endpoint; provider.api continues to select generation only. */
+  async scoreDecisions(input: string, questions: ScoreQuestion[]): Promise<ModelOutcome<ScoreDecision[]>> {
+    if (questions.length === 0) return { ok: true, value: [], latencyMs: 0, endpointRequests: 0 };
+    const result = await this.post<{ answers?: unknown; usage?: ProviderUsage }>(
+      '/decisions',
+      {
+        model: this.#role.id,
+        input,
+        questions: questions.map((question) => ({ type: 'score', ...question })),
+      },
+      this.#role.timeoutMs,
+    );
+    if (!result.ok || !result.value) return this.observeChat<ScoreDecision[]>({ ...result, value: null });
+    const value = parseScoreDecisions(result.value.answers, questions);
+    const reported = reportedModelUsage(result.value.usage);
+    const usage = reported ? { ...reported, outputTokens: 0, totalTokens: reported.inputTokens } : undefined;
+    return this.observeChat<ScoreDecision[]>({
+      ...result,
+      ok: value !== null,
+      value,
+      ...(value === null
+        ? {
+            reason: 'bad_response' as const,
+            error: 'Decisions returned an invalid or incomplete score distribution',
+          }
+        : {}),
+      ...(usage ? { usage } : {}),
+    });
+  }
+
   async chat(messages: ChatMessage[], options: ChatOptions = {}): Promise<ModelOutcome<string>> {
     const language = options.outputLanguage === undefined ? this.knowledgeLanguage : options.outputLanguage;
     if (!language) return this.chatTransport(messages, options);
@@ -679,7 +714,7 @@ export class ModelClient {
     }
 
     if (!result.ok || !result.value) {
-      return this.observeChat({
+      return this.observeChat<string>({
         ...result,
         value: null,
         latencyMs: performance.now() - chatStarted,
@@ -689,7 +724,7 @@ export class ModelClient {
     const usage = reportedModelUsage(result.value.usage);
     const content = result.value.choices?.[0]?.message?.content;
     if (typeof content !== 'string') {
-      return this.observeChat({
+      return this.observeChat<string>({
         ok: false,
         value: null,
         reason: 'bad_response',
@@ -699,7 +734,7 @@ export class ModelClient {
         ...(usage ? { usage } : {}),
       });
     }
-    return this.observeChat({
+    return this.observeChat<string>({
       ok: true,
       value: content,
       latencyMs: performance.now() - chatStarted,
@@ -760,7 +795,7 @@ export class ModelClient {
       usage = sumModelUsage(usage, result.value ? reportedModelUsage(result.value.usage) : null);
     }
     if (!result.ok || !result.value) {
-      return this.observeChat({
+      return this.observeChat<string>({
         ...result,
         value: null,
         latencyMs: performance.now() - started,
@@ -771,7 +806,7 @@ export class ModelClient {
     // Partial structured text can still parse. A stopped response is not a completed verdict.
     if (result.value.status && result.value.status !== 'completed') {
       const detail = result.value.incomplete_details?.reason;
-      return this.observeChat({
+      return this.observeChat<string>({
         ok: false,
         value: null,
         reason: 'bad_response',
@@ -787,7 +822,7 @@ export class ModelClient {
 
     const content = responseOutputText(result.value);
     if (content === null) {
-      return this.observeChat({
+      return this.observeChat<string>({
         ok: false,
         value: null,
         reason: 'bad_response',
@@ -797,7 +832,7 @@ export class ModelClient {
         ...(usage ? { usage } : {}),
       });
     }
-    return this.observeChat({
+    return this.observeChat<string>({
       ok: true,
       value: content,
       latencyMs: performance.now() - started,
@@ -806,7 +841,7 @@ export class ModelClient {
     });
   }
 
-  private observeChat(outcome: ModelOutcome<string>): ModelOutcome<string> {
+  private observeChat<T>(outcome: ModelOutcome<T>): ModelOutcome<T> {
     this.emitObservation({
       event: 'call',
       role: this.#role.role,
@@ -856,6 +891,16 @@ export class ModelClient {
       };
     }
     if (this.#role.role === 'reranker') {
+      if (this.rerankerMode === 'decisions') {
+        const result = await this.scoreDecisions('The invented Zephyr warranty lasts five years.', [
+          {
+            name: 'probe',
+            instructions: 'Is a warranty duration provided?',
+            levels: [{ label: 'No' }, { label: 'Yes' }],
+          },
+        ]);
+        return { ...result, value: result.ok ? result.latencyMs : null };
+      }
       if (this.rerankerMode === 'llm') {
         const result = await this.chat(
           [{ role: 'user', content: 'Return JSON with exactly one field: {"ok":true}' }],

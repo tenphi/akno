@@ -158,7 +158,7 @@ export interface AutoRecallAnswerBenchReport {
     totalChunks: number;
     embeddedChunks: number;
   };
-  qualifier: ModelIdentity & { mode: 'endpoint' | 'llm' | null; available: boolean };
+  qualifier: ModelIdentity & { mode: 'endpoint' | 'llm' | 'decisions' | null; available: boolean };
   hostModel: ModelIdentity & {
     reasoningEffort: ReasoningEffort | null;
     available: boolean;
