@@ -7,6 +7,7 @@ import type {
 import type { Store } from '../store/db.ts';
 import type { ModelClient } from '../models/client.ts';
 import { allocateLlmRerankIds, rerankWithLlm, type LlmRerankCandidate } from './llm-rerank.ts';
+import { rerankWithDecisions } from './decisions-rerank.ts';
 import { nativeRerankerCalibration } from './reranker-calibration.ts';
 
 export interface ChunkHit {
@@ -350,7 +351,9 @@ export async function rerankHits(
   }
 
   const candidates =
-    reranker.rerankerMode === 'llm' ? selectRerankCandidates(hits, topK) : hits.slice(0, topK);
+    reranker.rerankerMode === 'llm' || reranker.rerankerMode === 'decisions'
+      ? selectRerankCandidates(hits, topK)
+      : hits.slice(0, topK);
   // One prepared statement for the whole batch rather than one per candidate.
   const select = store.db.prepare('SELECT heading_path, text FROM chunks WHERE id = ?');
   const graphEvidence = graphEvidenceReader(store);
@@ -373,6 +376,56 @@ export async function rerankHits(
     // signal is front-loaded, and an unbounded payload is worth not having.
     return candidateText.slice(0, maxChars);
   });
+
+  if (reranker.rerankerMode === 'decisions') {
+    const ids = allocateLlmRerankIds(
+      query,
+      candidates.map((hit) => `${hit.pageId ?? 'document'}:${hit.chunkId}`),
+    );
+    const result = await rerankWithDecisions(
+      reranker,
+      query,
+      candidates.map((hit, index) => ({
+        id: ids[index]!,
+        text: texts[index] ?? '',
+        sourceKind: hit.pageId ? 'page' : 'document',
+        matchedBy: hit.from,
+      })),
+    );
+    if (!result.ok || !result.value)
+      return {
+        hits,
+        degraded: reranker.degradedReason(result),
+        note: result.error ?? null,
+        qualification: null,
+      };
+    const threshold = reranker.irrelevantProbabilityThreshold;
+    const rejected = result.value.filter(
+      (entry) => excludeIrrelevant && entry.irrelevantProbability >= threshold,
+    ).length;
+    const reordered = result.value
+      .map((entry, rank) => ({ entry, rank }))
+      .filter(({ entry }) => !excludeIrrelevant || entry.irrelevantProbability < threshold)
+      .map(({ entry, rank }) => ({
+        ...candidates[entry.index]!,
+        score: (candidates.length - rank) / candidates.length,
+        relevance: entry.relevance,
+      }));
+    return finishRerank(hits, candidates, reordered, {
+      model: 'decisions',
+      model_id: reranker.modelId ?? undefined,
+      latency_ms: result.latencyMs,
+      input_tokens: result.usage?.inputTokens ?? null,
+      output_tokens: result.usage?.outputTokens ?? null,
+      total_tokens: result.usage?.totalTokens ?? null,
+      applied: excludeIrrelevant,
+      judged: candidates.length,
+      rejected,
+      unjudged: hits.length - candidates.length,
+      basis: excludeIrrelevant ? 'decisions_irrelevance_probability' : 'disabled',
+      threshold: excludeIrrelevant ? threshold : null,
+    });
+  }
 
   if (reranker.rerankerMode === 'llm') {
     const ids = allocateLlmRerankIds(

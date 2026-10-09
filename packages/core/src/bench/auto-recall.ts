@@ -145,7 +145,7 @@ export interface AutoRecallBenchReport {
   qualifier: {
     provider: string | null;
     model: string | null;
-    mode: 'endpoint' | 'llm' | null;
+    mode: 'endpoint' | 'llm' | 'decisions' | null;
     reasoningEffort: ReasoningEffort | null;
     available: boolean;
   };

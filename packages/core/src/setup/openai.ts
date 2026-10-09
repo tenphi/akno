@@ -61,7 +61,9 @@ export function openAiLunaPreset(options: OpenAiLunaPresetOptions): ConfigDoc {
         provider: 'openai',
         id: OPENAI_LUNA_GENERATIVE_MODEL,
         enabled: true,
-        mode: 'llm',
+        mode: 'decisions',
+        timeout_ms: 4000,
+        irrelevant_probability_threshold: 0.8,
         exclude_irrelevant: true,
         top_k: 10,
         max_chars: 800,
@@ -131,12 +133,18 @@ export async function preflightOpenAiLuna(config: AknoConfig): Promise<OpenAiLun
     };
   }
 
-  const [embeddingResult, ranking] = await Promise.all([
+  const [embeddingResult, ranking, generation] = await Promise.all([
     new ModelClient(config.models.embedding).embed(['The current Zephyr QX-100 warranty lasts five years.']),
     runLlmRankingProbe(config, {
       provider: 'openai',
       model: OPENAI_LUNA_GENERATIVE_MODEL,
       reasoningEffort: 'none',
+      mode: 'decisions',
+    }),
+    new ModelClient(config.models.derive).chat([{ role: 'user', content: 'Reply with: ok' }], {
+      maxTokens: 64,
+      timeoutMs: 30_000,
+      outputLanguage: null,
     }),
   ]);
   const dimensions = embeddingResult.value?.[0]?.length ?? null;
@@ -149,12 +157,16 @@ export async function preflightOpenAiLuna(config: AknoConfig): Promise<OpenAiLun
         ? 'embedding response contained no vector'
         : `embedding response had ${dimensions} dimensions; expected ${OPENAI_LUNA_EMBEDDING_DIMENSIONS}`;
   const generative = generativePreflight(ranking);
+  if (!generation.ok) {
+    generative.status = 'failed';
+    generative.error = setupPreflightError(generation.error ?? 'generation endpoint unavailable');
+  }
 
   return {
     kind: 'openai_luna_preflight',
     preset: OPENAI_LUNA_PRESET,
     presetStatus: OPENAI_LUNA_PRESET_STATUS,
-    passed: embeddingPassed && ranking.passed,
+    passed: embeddingPassed && ranking.passed && generation.ok,
     credentialPresent: true,
     embedding: {
       status: embeddingPassed ? 'ok' : 'failed',

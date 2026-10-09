@@ -231,6 +231,41 @@ describe('rerankHits', () => {
     expect(withZero.hits.map((hit) => hit.relevance)).toEqual(without.hits.map((hit) => hit.relevance));
   });
 
+  it('keeps uncertain Decisions evidence, removes confident irrelevance and exposes its scale', async () => {
+    const model = stubReranker({
+      rerankerMode: 'decisions',
+      irrelevantProbabilityThreshold: 0.8,
+      scoreDecisions: async (_input, questions) => ({
+        ok: true,
+        latencyMs: 111,
+        value: questions.map((question, index) => ({
+          name: question.name,
+          score: [0.1, 2.8, 0.7][index]!,
+          probabilities: [0, 1, 2, 3].map((value) => ({
+            value,
+            probability: [
+              [0.95, 0.02, 0.01, 0.02],
+              [0.01, 0.02, 0.16, 0.81],
+              [0.6, 0.3, 0.1, 0],
+            ][index]![value]!,
+          })),
+        })),
+      }),
+    });
+    const result = await rerankHits(store, model, 'Zephyr warranty', hits, 3, 800, 0, true);
+    expect(result.hits.map((hit) => hit.chunkId)).toEqual([2, 3]);
+    expect(result.hits[0]!.relevance).toBeCloseTo(0.97);
+    expect(result.qualification).toMatchObject({
+      model: 'decisions',
+      judged: 3,
+      rejected: 1,
+      unjudged: 2,
+      applied: true,
+      basis: 'decisions_irrelevance_probability',
+      threshold: 0.8,
+    });
+  });
+
   it('uses the LLM total order while keeping relevance labels as the absolute signal', async () => {
     const model = fakeLlmReranker(([first, second]) => [
       { candidate_id: second!, relevance: 3 },

@@ -358,7 +358,9 @@ async function autoRecallContext(
 
   const qualificationApplied = qualified.qualification?.applied === true;
   const minimumRelevance =
-    qualified.qualification?.model === 'llm' ? 2 / 3 : AUTO_RECALL_NATIVE_QUALIFICATION_THRESHOLD;
+    qualified.qualification?.model === 'decisions'
+      ? 0.5 // P(strong support or direct answer), not a native logit or integer grade.
+      : qualified.qualification?.model === 'llm' ? 2 / 3 : AUTO_RECALL_NATIVE_QUALIFICATION_THRESHOLD;
   const qualifiedSelection = qualificationApplied
     ? qualified.results
         .flatMap((result) => {

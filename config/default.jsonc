@@ -133,12 +133,16 @@
       "provider": "local",
       "id": null,
       "enabled": false,
+      // "decisions" uses OpenAI /decisions (gpt-6-luna).
       // "endpoint" calls a native cross-encoder at /rerank. "llm" uses the
       // versioned Akno listwise prompt over the provider's generative transport.
       "mode": "endpoint",
       // A successful reranker may remove confidently irrelevant candidates.
       // Unjudged candidates outside top_k are omitted rather than used to fill
       // the holes, because the model made no qualification claim about them.
+      // Decisions only: remove a candidate when P(irrelevant) reaches this value.
+      // Raising it retains uncertain evidence; lowering it risks dropping useful excerpts.
+      "irrelevant_probability_threshold": 0.8,
       "exclude_irrelevant": true,
       // Candidates re-scored. This is the reranker's whole latency dial: cost is
       // per candidate, not per character. Measured on 223 pages against a local
@@ -152,7 +156,7 @@
       // back*, and 400 ms is not worth a different answer. Lower it if you would
       // rather have the latency, now that you know what it costs.
       //
-      // LLM mode still sends exactly top_k candidates. It preserves the first
+      // LLM and Decisions modes still send exactly top_k candidates. It preserves the first
       // top_k - 1 fused hits and uses the final slot for the strongest vector-ranked
       // candidate from a bounded 2 × top_k pool. This recovers a strong paraphrase
       // just beyond the fusion boundary without increasing model tokens.

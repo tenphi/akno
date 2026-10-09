@@ -36,7 +36,7 @@ describe('recommended OpenAI minimum setup', () => {
       reranker: {
         provider: 'openai',
         id: 'gpt-6-luna',
-        mode: 'llm',
+        mode: 'decisions',
         max_output_tokens: 256,
         reasoning_effort: 'none',
       },
@@ -119,31 +119,23 @@ describe('recommended OpenAI minimum setup', () => {
           );
           return;
         }
-        const user =
-          body.input?.at(-1) && typeof body.input.at(-1) === 'object'
-            ? (body.input.at(-1) as { content: string }).content
-            : '{}';
-        const requestBody = JSON.parse(user) as { candidates: { candidate_id: string }[] };
+        if (request.url?.endsWith('/responses')) {
+          response.end(JSON.stringify({ output_text: 'ok' }));
+          return;
+        }
+        const candidates = JSON.parse(body.input as unknown as string).candidates as { id: string }[];
         response.end(
           JSON.stringify({
-            output: [
-              {
-                type: 'message',
-                content: [
-                  {
-                    type: 'output_text',
-                    text: JSON.stringify({
-                      j: Object.fromEntries(
-                        requestBody.candidates.map((candidate, index) => [
-                          candidate.candidate_id,
-                          [[3, 1, 0][index], index + 1],
-                        ]),
-                      ),
-                    }),
-                  },
-                ],
-              },
-            ],
+            answers: candidates.map((candidate, index) => ({
+              type: 'score',
+              name: candidate.id,
+              score: [3, 1, 0][index],
+              confidence: 1,
+              probabilities: [0, 1, 2, 3].map((value) => ({
+                value,
+                probability: value === [3, 1, 0][index] ? 1 : 0,
+              })),
+            })),
           }),
         );
       });
@@ -169,8 +161,8 @@ describe('recommended OpenAI minimum setup', () => {
         embedding: { status: 'ok', dimensions: OPENAI_LUNA_EMBEDDING_DIMENSIONS },
         generative: {
           status: 'ok',
-          promptVersion: 'akno-judgment-map-v9',
-          schemaVersion: 'tuple-judgment-map-v6',
+          promptVersion: 'akno-decisions-relevance-v2',
+          schemaVersion: 'decisions-score-distribution-v1',
         },
       });
       expect(JSON.stringify(report)).not.toContain('sk-invented-fixture-key');
