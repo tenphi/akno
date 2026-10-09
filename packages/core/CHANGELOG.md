@@ -1,5 +1,18 @@
 # @tenphi/akno-core
 
+## 0.19.0
+
+### Minor Changes
+
+- [#235](https://github.com/tenphi/akno/pull/235) [`3d6e2e2`](https://github.com/tenphi/akno/commit/3d6e2e2c1b0b8f4e53804c3e90d43ea20ae3c6b6) Thanks [@tenphi](https://github.com/tenphi)! - Use OpenAI Decisions API by default in the OpenAI Luna setup for faster reranking without output generation. Add explicit Decisions probability qualification and complete-batch validation; preserve native endpoint and base-model LLM modes. Failed or invalid requests retain candidates with visible degradation.
+
+  Recall qualification now has a Decisions variant, so the wire protocol advances to 5. Upgrade the client and server together and restart long-running hosts.
+
+### Patch Changes
+
+- Updated dependencies [[`3d6e2e2`](https://github.com/tenphi/akno/commit/3d6e2e2c1b0b8f4e53804c3e90d43ea20ae3c6b6)]:
+  - @tenphi/akno-protocol@0.19.0
+
 ## 0.18.16
 
 ### Patch Changes
