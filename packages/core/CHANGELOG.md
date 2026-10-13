@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.19.1
+
+### Patch Changes
+
+- [#237](https://github.com/tenphi/akno/pull/237) [`aeac4d6`](https://github.com/tenphi/akno/commit/aeac4d6d647a4845005a1cf656d21be0249e85d2) Thanks [@tenphi](https://github.com/tenphi)! - Keep source-grounding refusals as cached maintenance holds without discarding valid sibling verdicts. Reject curator requests to revise sealed managed-item repairs for replanning, preserving exact edit authority and reporting semantic refusals separately from execution failures.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.19.1
+
 ## 0.19.0
 
 ### Minor Changes
