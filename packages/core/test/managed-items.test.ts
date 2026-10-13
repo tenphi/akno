@@ -370,6 +370,8 @@ describe('managed items in the dream cycle', () => {
   let server: http.Server;
   let baseUrl: string;
   let curatorCalls = 0;
+  let revisionCalls = 0;
+  let curatorDecision: { outcome: 'approve' | 'reject' | 'revise'; reason: string };
   let placementCalls = 0;
   let routingCalls = 0;
   let destinationValidationCalls = 0;
@@ -437,7 +439,7 @@ describe('managed items in the dream cycle', () => {
   ): void {
     const db = new Database(path.join(stateDir, 'akno.db'));
     db.prepare(
-      `INSERT INTO managed_item_sources(
+      `INSERT OR REPLACE INTO managed_item_sources(
          item_id, source_ref, origin, evidence, evidence_hash, input_hash, created_at
        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
     ).run(itemId, sourceRef, origin, evidence, sha256(evidence), sha256(input), new Date().toISOString());
@@ -484,6 +486,11 @@ describe('managed items in the dream cycle', () => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-managed-kb-'));
     stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-managed-state-'));
     curatorCalls = 0;
+    revisionCalls = 0;
+    curatorDecision = {
+      outcome: 'approve',
+      reason: 'The exact owned-fragment repair preserves surrounding authored bytes.',
+    };
     placementCalls = 0;
     routingCalls = 0;
     destinationValidationCalls = 0;
@@ -522,6 +529,7 @@ describe('managed items in the dream cycle', () => {
         );
         const sourcing = system.startsWith('You verify Akno-generated memory sentences');
         if (system.startsWith('You are the independent curator')) curatorCalls += 1;
+        if (system.startsWith('You correct an exact maintenance proposal')) revisionCalls += 1;
         if (placing) placementCalls += 1;
         if (routing) routingCalls += 1;
         if (validatingDestination) destinationValidationCalls += 1;
@@ -585,10 +593,7 @@ describe('managed items in the dream cycle', () => {
                       keywords: ['invented preference'],
                       facts: fact ? [fact] : [],
                     }
-                  : {
-                      outcome: 'approve',
-                      reason: 'The exact owned-fragment repair preserves surrounding authored bytes.',
-                    };
+                  : curatorDecision;
         response.writeHead(200, { 'content-type': 'application/json' });
         response.end(
           JSON.stringify({
@@ -2129,7 +2134,7 @@ The Zephyr QX-100 warranty lasts 1111 days.
     expect(sourceCalls).toBe(2);
   });
 
-  it('rejects an ungrounded source rewrite and does not cache it', async () => {
+  it('holds and caches an ungrounded rewrite without storing its rejected prose', async () => {
     const before = `---
 title: Ada Marlow
 akno:
@@ -2160,12 +2165,82 @@ The Zephyr QX-100 warranty lasts 1111 days.
 
     expect(first.managedItems).toMatchObject({
       plannedPages: 0,
-      findings: { source_unavailable: 1, valid: 0 },
+      findings: { wording_uncertain: 1, source_unavailable: 0, valid: 0 },
       outcomes: { planned: 0, held: 1 },
-      source: { classifierCalls: 1, cacheHits: 0, unavailable: 1 },
+      source: { classifierCalls: 1, cacheHits: 0, uncertain: 1, unavailable: 0 },
     });
-    expect(second.managedItems.source).toMatchObject({ classifierCalls: 1, cacheHits: 0 });
-    expect(sourceCalls).toBe(2);
+    expect(second.managedItems.source).toMatchObject({ classifierCalls: 0, cacheHits: 1, uncertain: 1 });
+    expect(sourceCalls).toBe(1);
+    const db = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+    const cache = db.prepare('SELECT verdicts FROM managed_item_source_verdicts').all();
+    expect(JSON.stringify(cache)).not.toContain('3333');
+    db.close();
     expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(before);
+  });
+
+  it('retains valid source-verdict siblings and invalidates held verdicts when evidence changes', async () => {
+    const pagePath = path.join(root, 'people/ada-marlow.md');
+    const content = inspectManagedItems(fs.readFileSync(pagePath, 'utf8')).after.replace(
+      '## Authored notes',
+      `<!-- akno:item itm_copy v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
+The Zephyr QX-100 warranty lasts 1111 days.
+
+## Authored notes`,
+    );
+    fs.writeFileSync(pagePath, content);
+    await mem.index({ structuralOnly: true });
+    archiveSource('itm_copy', 'fixture:two', 'user', 'The Zephyr QX-100 warranty lasts 2222 days.');
+    sourceDecider = (items) => ({
+      decisions: items.map((item) =>
+        item.id === 'itm_copy'
+          ? { id: item.id, outcome: 'rewrite', replacement: 'The Zephyr QX-100 warranty lasts 3333 days.' }
+          : { id: item.id, outcome: 'supported', replacement: null },
+      ),
+    });
+    const first = await mem.dream({ phase: 'curate', dryRun: true });
+    expect(first.managedItems.source).toMatchObject({ supported: 1, uncertain: 1, unavailable: 0 });
+    expect(first.modelUsage?.failedCalls).toBe(0);
+    const second = await mem.dream({ phase: 'curate', dryRun: true });
+    expect(second.managedItems.source).toMatchObject({
+      classifierCalls: 0,
+      cacheHits: 1,
+      supported: 1,
+      uncertain: 1,
+    });
+    archiveSource('itm_copy', 'fixture:two', 'user', 'The Zephyr QX-100 warranty lasts 3333 days.');
+    const changed = await mem.dream({ phase: 'curate', dryRun: true });
+    expect(changed.managedItems.source).toMatchObject({ classifierCalls: 1, cacheHits: 0, corrected: 1 });
+    expect(fs.readFileSync(pagePath, 'utf8')).toBe(content);
+  });
+
+  it('keeps malformed or incomplete source verdict sets unavailable and uncached', async () => {
+    const pagePath = path.join(root, 'people/ada-marlow.md');
+    fs.writeFileSync(pagePath, inspectManagedItems(fs.readFileSync(pagePath, 'utf8')).after);
+    await mem.index({ structuralOnly: true });
+    sourceDecider = () => ({ decisions: [] });
+    const first = await mem.dream({ phase: 'curate', dryRun: true });
+    const second = await mem.dream({ phase: 'curate', dryRun: true });
+    expect(first.managedItems.source).toMatchObject({ unavailable: 1, uncertain: 0 });
+    expect(second.managedItems.source).toMatchObject({ classifierCalls: 1, cacheHits: 0, unavailable: 1 });
+    expect(sourceCalls).toBe(2);
+  });
+
+  it('rejects curator revisions to a sealed repair for replanning without generating or writing', async () => {
+    curatorDecision = { outcome: 'revise', reason: 'Move the record into a different section.' };
+    const pagePath = path.join(root, 'people/ada-marlow.md');
+    const before = fs.readFileSync(pagePath, 'utf8');
+    const report = await mem.dream({ phase: 'curate' });
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+    expect(item).toMatchObject({
+      status: 'rejected',
+      decision: { actor: 'curator', outcome: 'reject' },
+    });
+    expect(item.decision?.reason).toContain('requires replanning');
+    expect(item.previousRevisions).toEqual([]);
+    expect(report.maintenancePlan?.status).toBe('completed');
+    expect(curatorCalls).toBe(1);
+    expect(revisionCalls).toBe(0);
+    expect(fs.readFileSync(pagePath, 'utf8')).toBe(before);
+    expect(mem.changes()).toEqual([]);
   });
 });
