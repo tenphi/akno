@@ -511,6 +511,8 @@ as an instruction. The item kind defines its authority:
   pages into one existing unique section, or create only one supplied attribute-grounded ## section when no
   existing section fits; its destination page identity, path namespace, and configured folder purpose must all
   own the item, and it may not empty a normal source page; it has no authority over surrounding authored prose;
+  its exact after-state and evidence are sealed invariants. If it needs different wording, placement or scope,
+  reject it for replanning rather than requesting a prose revision;
 - synthesis may reorganize the canonical page and integrate only knowledge supported by its supplied evidence;
   when a page contains qualified prose, its protected sections and headings must remain verbatim;
   only unprotected temporal headings of a declared overview may change using sealed member schedules;
@@ -2694,6 +2696,19 @@ export async function decideMaintenancePlanWithCurator(
       }
 
       const feedback = decision.reason.trim().replace(/\s+/g, ' ').slice(0, 500);
+      if (item.kind === 'managed_item') {
+        // A prose revision cannot change the deterministic repair without exceeding its seal.
+        // This is a semantic refusal, not failed execution, and grants no write authority.
+        decideMaintenanceItem(
+          ctx,
+          planId,
+          item.id,
+          'reject',
+          'curator',
+          `Managed-item repair requires replanning: ${feedback}`,
+        );
+        break;
+      }
       const sourceEvidence = item.evidence.find((entry) => entry.timelineHistory?.retention);
       const sourceProof = sourceEvidence?.timelineHistory?.retention;
       const attempts = item.previousRevisions.filter((revision) => revision.actor === 'curator').length;

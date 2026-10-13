@@ -44,7 +44,7 @@ interface SourceRow {
 }
 
 const PROMPT_VERSION = 'managed-source-v1';
-const SIGNATURE_VERSION = 'exact-quote-grounding-v1';
+const SIGNATURE_VERSION = 'exact-quote-grounding-holds-v2';
 
 const SOURCE_SCHEMA = z.object({
   decisions: z.array(
@@ -313,7 +313,11 @@ function cleanDecisions(
     if (raw.replacement === null) return null;
     const replacement = groundedManagedReplacement(raw.replacement, entry.source.evidence);
     if (!replacement || normalizedSentence(replacement) === normalizedSentence(entry.candidate.payload)) {
-      return null;
+      // A complete verdict can nominate prose outside the exact quote's authority. Hold that
+      // item without discarding valid siblings or retrying the same sealed evidence every cycle.
+      // Store only the uncertain verdict; rejected replacement text never enters the cache.
+      decisions.set(raw.id, { outcome: 'uncertain' });
+      continue;
     }
     decisions.set(raw.id, { outcome: 'rewrite', replacement });
   }
