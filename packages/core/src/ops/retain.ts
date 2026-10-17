@@ -2669,35 +2669,31 @@ async function assessEarlierSupport(
       supports.push(row);
       groups.set(row.memory_id, supports);
     }
-  // Compare the complete bounded set, never a clipped prefix which could hide another authority.
-  if (groups.size > 16 || JSON.stringify(rows).length > 24000)
-    return {
-      superseded: [],
-      receipts: [] as RetainModelCallReceipt[],
-      degraded: 'deciding_relation_unavailable' as const,
-      pending: [...groups.keys()].flatMap((earlierMemory) =>
-        decidingCandidates.map((candidate) => ({ earlierMemory, decidingCandidate: candidate.candidate_id })),
-      ),
-    };
+  // The complete set is compared; decidingSupport bounds each model call, not the group.
   const earlier: EarlierSupport[] = [];
+  const unreadable: string[] = [];
   const pages = new Map<string, Awaited<ReturnType<typeof read>>>();
+  const located = ctx.store.db.prepare(
+    'SELECT DISTINCT source_slug FROM managed_memory_entries WHERE memory_id = ?',
+  );
   for (const [memoryId, supports] of groups) {
-    const slug = supports[0]!.slug;
-    if (!pages.has(slug)) pages.set(slug, await read(ctx, { slug }));
-    const line = pages.get(slug)?.page?.lines.find((item) => item.memory?.id === memoryId);
+    // Maintenance may move or merge a retained line after admission; its projection says where it lives now.
+    const current = (located.all(memoryId) as { source_slug: string }[]).map((row) => row.source_slug);
+    const slugs = [...new Set([...current, ...supports.map((support) => support.slug)])];
+    const lines = [];
+    for (const slug of slugs) {
+      if (!pages.has(slug)) pages.set(slug, await read(ctx, { slug }));
+      lines.push(...(pages.get(slug)?.page?.lines.filter((item) => item.memory?.id === memoryId) ?? []));
+    }
+    // An earlier record that no page carries any more has no current meaning left to withdraw.
+    if (!current.length && !lines.length) continue;
+    const line = lines.find((item) => item.memory?.status === 'qualified') ?? lines[0];
     if (line?.memory?.current_hold === 'superseded_revision') continue;
-    if (line?.memory?.status !== 'qualified')
-      return {
-        superseded: [],
-        receipts: [] as RetainModelCallReceipt[],
-        degraded: 'deciding_relation_unavailable' as const,
-        pending: [...groups.keys()].flatMap((earlierMemory) =>
-          decidingCandidates.map((candidate) => ({
-            earlierMemory,
-            decidingCandidate: candidate.candidate_id,
-          })),
-        ),
-      };
+    if (line?.memory?.status !== 'qualified') {
+      // It cannot be compared, so only it stays held; it must not stop the rest of the group being read.
+      unreadable.push(memoryId);
+      continue;
+    }
     earlier.push({
       memoryId,
       text: line.text,
@@ -2708,29 +2704,84 @@ async function assessEarlierSupport(
       evidence: [...new Set(supports.map((support) => support.evidence))].join('\n'),
     });
   }
-  return decidingSupport(retentionModel(ctx), earlier, admitted, sourceIntents);
+  const compared = await decidingSupport(
+    retentionModel(ctx),
+    earlier,
+    admitted,
+    sourceIntents,
+    ctx.config.maintenance.retain.verificationConcurrency,
+  );
+  if (!unreadable.length) return compared;
+  return {
+    ...compared,
+    pending: [
+      ...(compared.pending ?? []),
+      ...unreadable.flatMap((earlierMemory) =>
+        decidingCandidates.map((candidate) => ({ earlierMemory, decidingCandidate: candidate.candidate_id })),
+      ),
+    ],
+    degraded: compared.degraded ?? ('deciding_relation_unavailable' as const),
+  };
 }
 
+/** A source intent stays well inside one deciding comparison, with room for earlier records beside it. */
+const MAX_SOURCE_INTENT_CHARS = 6000;
+
+/**
+ * Items keep their speaker grouping, but a speaker's text is split at item and then line boundaries
+ * once it outgrows one comparison: an oversized intent used to make every comparison fail closed.
+ */
 function decidingSourceIntents(source: ResolvedRetainUpsertSource): SourceIntent[] {
-  if ('text' in source.input)
-    return [
-      { candidate_id: 'source-intent', text: source.input.text, attribution: { source_role: 'unknown' } },
-    ];
-  const groups = new Map<string, SourceIntent>();
-  for (const item of source.input.items) {
-    const role =
-      item.role === 'user' || item.role === 'assistant' || item.role === 'external' ? item.role : 'unknown';
-    const key = JSON.stringify([role, item.speaker ?? null]);
-    const prior = groups.get(key);
-    if (prior) prior.text += '\n' + item.text;
-    else
-      groups.set(key, {
-        candidate_id: `source-intent-${groups.size}`,
-        text: item.text,
-        attribution: { source_role: role, ...(item.speaker ? { source_speaker: item.speaker } : {}) },
-      });
+  const items =
+    'text' in source.input
+      ? [{ role: 'unknown' as const, speaker: undefined, text: source.input.text }]
+      : source.input.items.map((item) => ({
+          role:
+            item.role === 'user' || item.role === 'assistant' || item.role === 'external'
+              ? item.role
+              : ('unknown' as const),
+          speaker: item.speaker,
+          text: item.text,
+        }));
+  const intents: SourceIntent[] = [];
+  const open = new Map<string, SourceIntent>();
+  for (const item of items) {
+    const key = JSON.stringify([item.role, item.speaker ?? null]);
+    for (const text of boundedSourceText(item.text, MAX_SOURCE_INTENT_CHARS)) {
+      const prior = open.get(key);
+      if (prior && prior.text.length + 1 + text.length <= MAX_SOURCE_INTENT_CHARS) {
+        prior.text += '\n' + text;
+        continue;
+      }
+      const intent: SourceIntent = {
+        candidate_id:
+          'text' in source.input && !intents.length ? 'source-intent' : `source-intent-${intents.length}`,
+        text,
+        attribution: { source_role: item.role, ...(item.speaker ? { source_speaker: item.speaker } : {}) },
+      };
+      intents.push(intent);
+      open.set(key, intent);
+    }
   }
-  return [...groups.values()];
+  return intents;
+}
+
+function boundedSourceText(text: string, limit: number): string[] {
+  if (text.length <= limit) return [text];
+  const pieces: string[] = [];
+  let current: string | null = null;
+  for (const line of text.split('\n')) {
+    const parts: string[] = [];
+    for (let start = 0; start < line.length; start += limit) parts.push(line.slice(start, start + limit));
+    for (const part of parts.length ? parts : ['']) {
+      if (current !== null && current.length + 1 + part.length > limit) {
+        pieces.push(current);
+        current = part;
+      } else current = current === null ? part : `${current}\n${part}`;
+    }
+  }
+  if (current) pieces.push(current);
+  return pieces;
 }
 
 function sourceEvidence(candidate: ProvidedRetainCandidate): string {

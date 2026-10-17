@@ -119,4 +119,93 @@ describe('deciding support authority', () => {
     });
     expect(chat).toHaveBeenCalledTimes(1);
   });
+
+  describe('a long correlated source', () => {
+    const many = (count: number) =>
+      Array.from({ length: count }, (_, i) => {
+        const text = `Ada Marlow chose locker ${1000 + i} at Blackwater Bay.`;
+        return { memoryId: `mem_${i}`, text, evidence: text, attribution };
+      });
+    type Payload = { earlier: { id: string; text: string }[]; admitted: { id: string }[] };
+    const payloadOf = (call: unknown) =>
+      JSON.parse((call as [{ content: string }[]])[0][1]!.content) as Payload;
+
+    it('compares every earlier record in bounded batches instead of holding the whole group', async () => {
+      const chat = vi.fn(async () => ({
+        ok: true,
+        value: JSON.stringify({ withdrawals: [] }),
+        latencyMs: 1,
+      }));
+      const model = { available: true, modelId: 'invented-decision-model', chat } as unknown as ModelClient;
+      const result = await decidingSupport(model, many(40), [candidate], undefined, 2);
+      expect(result).toEqual({ superseded: [], pending: [], receipts: expect.any(Array) });
+      const batches = chat.mock.calls.map(payloadOf);
+      expect(batches.map((batch) => batch.earlier.length)).toEqual([16, 16, 8]);
+      expect(batches.flatMap((batch) => batch.earlier.map((item) => item.text))).toEqual(
+        many(40).map((item) => item.text),
+      );
+      expect(result.receipts).toHaveLength(3);
+    });
+
+    it('maps a withdrawal nominated in a later batch to its own earlier record', async () => {
+      const earlierRecords = [...many(20), { ...earlier[0]!, memoryId: 'mem_journey' }];
+      const chat = vi.fn(async (messages: { role: string; content: string }[]) => {
+        const payload = JSON.parse(messages[1]!.content) as Payload;
+        const old = payload.earlier.find((item) => item.text === oldText);
+        const verifying = messages[0]!.content.includes('Independently verify');
+        const value = !old
+          ? { withdrawals: [] }
+          : verifying
+            ? { verdicts: [{ ...valid, earlier_id: old.id }] }
+            : { withdrawals: [{ ...selection.withdrawals[0], earlier_id: old.id }] };
+        return { ok: true, value: JSON.stringify(value), latencyMs: 1 };
+      });
+      const model = { available: true, modelId: 'invented-decision-model', chat } as unknown as ModelClient;
+      expect(await decidingSupport(model, earlierRecords, [candidate])).toMatchObject({
+        superseded: ['mem_journey'],
+        pending: [],
+      });
+      expect(chat).toHaveBeenCalledTimes(3);
+    });
+
+    it('holds only the record that cannot fit any comparison', async () => {
+      const oversized = { ...many(1)[0]!, memoryId: 'mem_oversized', evidence: 'Locker note. '.repeat(3000) };
+      const chat = vi.fn(async () => ({
+        ok: true,
+        value: JSON.stringify({ withdrawals: [] }),
+        latencyMs: 1,
+      }));
+      const model = { available: true, modelId: 'invented-decision-model', chat } as unknown as ModelClient;
+      expect(await decidingSupport(model, [...many(3), oversized, ...many(5).slice(3)], [candidate])).toEqual(
+        {
+          superseded: [],
+          receipts: expect.any(Array),
+          pending: [{ earlierMemory: 'mem_oversized', decidingCandidate: 'correction-2222' }],
+          degraded: 'deciding_relation_unavailable',
+        },
+      );
+      expect(chat.mock.calls.map(payloadOf).map((batch) => batch.earlier.length)).toEqual([3, 2]);
+    });
+
+    it('splits incoming records that would crowd earlier records out of a comparison', async () => {
+      const chat = vi.fn(async () => ({
+        ok: true,
+        value: JSON.stringify({ withdrawals: [] }),
+        latencyMs: 1,
+      }));
+      const model = { available: true, modelId: 'invented-decision-model', chat } as unknown as ModelClient;
+      const intents = Array.from({ length: 3 }, (_, i) => ({
+        candidate_id: `source-intent-${i}`,
+        text: `Bo Winters wrote about locker ${2000 + i}. `.repeat(250),
+        attribution,
+      }));
+      expect(await decidingSupport(model, many(4), [], intents)).toMatchObject({
+        superseded: [],
+        pending: [],
+      });
+      const batches = chat.mock.calls.map(payloadOf);
+      expect(batches.map((batch) => batch.admitted.length)).toEqual([1, 1, 1]);
+      expect(batches.every((batch) => JSON.stringify(batch).length <= 32000)).toBe(true);
+    });
+  });
 });

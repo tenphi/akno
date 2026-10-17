@@ -434,6 +434,87 @@ it('withdraws an earlier correlated copy through admitted deciding evidence with
   }
 });
 
+it('compares a long conversation in bounded batches without restricting its earlier memories', async () => {
+  const stub = await startAutomaticRetainStub();
+  const mem = await openAutomaticMem(stub.url);
+  const group = 'conversation:2222';
+  const lockers = Array.from(
+    { length: 20 },
+    (_, i) => `Ada Marlow chose locker ${1000 + i} at Blackwater Bay.`,
+  );
+  const compared: string[][] = [];
+  const turn = (revision: string, text: string) => ({
+    source_id: group,
+    revision,
+    source_group: group,
+    input: { items: [{ item_id: revision, role: 'user' as const, speaker: 'Ada Marlow', text }] },
+    retention: { mode: 'extract' as const },
+  });
+  const restricted = async () =>
+    (await mem.read({ slug: 'memory/equipment' })).page!.lines.filter(
+      (line) => lockers.some((text) => line.text.includes(text)) && line.memory?.current_hold,
+    );
+  try {
+    for (const [i, text] of lockers.entries()) {
+      const source = upsert(group, `turn-${i + 1}`, text);
+      source.retention.candidates[0] = {
+        ...source.retention.candidates[0]!,
+        candidate_id: `locker-${i}`,
+        text,
+        subject: `locker ${1000 + i}`,
+        support: [{ quote: text }],
+        discourse_frame: [{ quote: text }],
+      };
+      await mem.retain({ sources: [source] });
+    }
+    const aside = 'Ada Marlow said the Blackwater Bay ferry looked crowded.';
+    stub.setCandidate({
+      text: aside,
+      subject: 'Blackwater Bay ferry',
+      page: 'memory/equipment',
+      kind: 'claim',
+      support: [{ item_id: 'turn-21', quote: aside }],
+      discourse_frame: [{ item_id: 'turn-21', quote: aside }],
+    });
+    stub.setVerification(false);
+    stub.setDeciding((payload, verifying) => {
+      if (!verifying) compared.push((payload.earlier as { text: string }[]).map((item) => item.text));
+      return verifying ? { verdicts: [] } : { withdrawals: [] };
+    });
+    const held = (await mem.retain({ sources: [turn('turn-21', aside)] })).sources[0]!;
+    expect(held).toMatchObject({ outcome: 'held', status: 'ok' });
+    expect(held).not.toHaveProperty('current_hold');
+    expect(compared.map((batch) => batch.length)).toEqual([16, 4]);
+    expect(
+      compared
+        .flat()
+        .map((text) => lockers.findIndex((locker) => text.includes(locker)))
+        .sort((a, b) => a - b),
+    ).toEqual(lockers.map((_, i) => i));
+    expect(await restricted()).toEqual([]);
+
+    // Maintenance can merge or remove a retained line later. Its record has nothing left to
+    // withdraw and must not stop the rest of the conversation from being compared.
+    const file = path.join(root, 'memory/equipment.md');
+    const lines = fs.readFileSync(file, 'utf8').split('\n');
+    const payload = lines.findIndex((line) => line.includes(lockers[0]!));
+    expect(lines[payload - 1]).toMatch(/^<!-- akno:item /);
+    lines.splice(payload - 1, 2);
+    fs.writeFileSync(file, lines.join('\n'), 'utf8');
+    await mem.index({ structuralOnly: true });
+    compared.length = 0;
+    const again = (await mem.retain({ sources: [turn('turn-22', aside)] })).sources[0]!;
+    // Editing the page re-derives its facts through the stub, which has no answer for that call.
+    expect(again).toMatchObject({ outcome: 'held', degraded: ['derive_failed'] });
+    expect(again).not.toHaveProperty('current_hold');
+    expect(compared.flat()).toHaveLength(19);
+    expect(await restricted()).toEqual([]);
+  } finally {
+    await mem.close();
+    await stub.close();
+  }
+});
+
 it('holds an older copy from unadmitted deciding intent without accepting replacement facts', async () => {
   const stub = await startAutomaticRetainStub();
   let mem = await openAutomaticMem(stub.url);

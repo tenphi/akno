@@ -10,6 +10,7 @@ import {
   SCHEMA_VERSION,
   RETAIN_PENDING_CORRECTIONS_MIGRATION_INDEX,
   RETAIN_DECIDING_HOLDS_MIGRATION_INDEX,
+  RETAIN_SIZE_GUARD_HOLDS_MIGRATION_INDEX,
 } from './migrations.ts';
 
 it('preserves released correction state when adding deciding holds to schema forty-seven', () => {
@@ -40,6 +41,55 @@ it('preserves released correction state when adding deciding holds to schema for
     ]);
     expect(store.db.pragma('foreign_key_check')).toEqual([]);
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+  } finally {
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+it('releases holds the schema-48 size guard recorded without comparing anything, once', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-size-guard-migration-'));
+  const dbPath = path.join(dir, 'index.db');
+  const legacy = new Database(dbPath);
+  for (const migration of MIGRATIONS.slice(0, RETAIN_SIZE_GUARD_HOLDS_MIGRATION_INDEX))
+    legacy.exec(migration);
+  legacy.pragma('user_version = 48');
+  const receipt = legacy.prepare(`INSERT INTO retain_receipts(source_id, revision, request_hash, source_hash,
+    source_group, receipt_fingerprint, mode, result, created_at)
+    VALUES ('conversation:1111', ?, 'request-' || ?, 'source-' || ?, 'conversation:1111', ?, 'extract_automatic', '{}', '2035-04-01')`);
+  const hold = legacy.prepare(
+    "INSERT INTO retain_deciding_holds(deciding_receipt, earlier_memory, deciding_memory) VALUES (?, ?, '')",
+  );
+  for (const name of ['guarded', 'compared']) receipt.run(name, name, name, `receipt-${name}`);
+  for (let i = 0; i < 17; i++) hold.run('receipt-guarded', `mem_${i}`);
+  hold.run('receipt-compared', 'mem_1');
+  legacy.close();
+  let store = openStore({ dbPath, embeddingDimensions: 8 });
+  try {
+    expect(
+      store.db
+        .prepare(
+          'SELECT deciding_receipt, count(*) AS count, max(resolved_by) AS resolved FROM retain_deciding_holds GROUP BY 1 ORDER BY 1',
+        )
+        .all(),
+    ).toEqual([
+      { deciding_receipt: 'receipt-compared', count: 1, resolved: null },
+      { deciding_receipt: 'receipt-guarded', count: 17, resolved: 'receipt-guarded' },
+    ]);
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+    // A large hold recorded after the upgrade (an unavailable model, say) is evidence-free uncertainty
+    // the current code chose; reopening must not release it.
+    store.db.prepare('UPDATE retain_deciding_holds SET resolved_by = NULL').run();
+  } finally {
+    store.close();
+  }
+  store = openStore({ dbPath, embeddingDimensions: 8 });
+  try {
+    expect(
+      store.db.prepare('SELECT count(*) AS count FROM retain_deciding_holds WHERE resolved_by IS NULL').get(),
+    ).toEqual({
+      count: 18,
+    });
   } finally {
     store.close();
     fs.rmSync(dir, { recursive: true, force: true });
