@@ -668,6 +668,7 @@ function resolve(
           : {}),
         verificationConcurrency: doc.maintenance?.retain?.verification_concurrency ?? 1,
         verificationFailureScope: doc.maintenance?.retain?.verification_failure_scope ?? 'source',
+        verificationRevision: doc.maintenance?.retain?.verification_revision ?? true,
         evidenceGraceDays: doc.maintenance?.retain?.evidence_grace_days ?? 30,
       },
       observe: {

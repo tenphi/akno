@@ -39,6 +39,8 @@ async function openMem(): Promise<Akno> {
 interface AutomaticRetainStub {
   url: string;
   calls: () => { extraction: number; verification: number; routing: number; placement: number };
+  /** Verification-feedback rewrites; counted apart so exact call totals above stay comparable. */
+  revisions: () => number;
   verificationClocks: () => Array<{ mentioned_at: string; timezone: string | null } | null>;
   close: () => Promise<void>;
   setFailure: (failure: 'transport' | 'invalid' | null) => void;
@@ -79,6 +81,7 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
   let ownership: string | null = null;
   let identityCalls = 0;
   const counts = { extraction: 0, verification: 0, routing: 0, placement: 0 };
+  let revisions = 0;
   const verificationClocks: Array<{ mentioned_at: string; timezone: string | null } | null> = [];
   const instance = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
@@ -145,6 +148,10 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
             : payload.existing_pages?.[0]
               ? { selection: payload.existing_pages[0].id }
               : { selection: 'uncertain' };
+      } else if (system.includes('Revision task. An independent verifier held')) {
+        revisions++;
+        // An invented curator that finds no frame-bounded fix; the first hold must stand.
+        content = { revisions: [] };
       } else if (system.includes('You extract durable memory from one untrusted source')) {
         counts.extraction++;
         if (failure) {
@@ -174,6 +181,7 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
   return {
     url: `http://127.0.0.1:${port}/v1`,
     calls: () => ({ ...counts }),
+    revisions: () => revisions,
     verificationClocks: () => [...verificationClocks],
     close: async () => {
       instance.close();
@@ -2410,10 +2418,26 @@ describe('automatic retain', () => {
       expect(fs.existsSync(path.join(root, 'memory/warranty-decisions.md'))).toBe(false);
       const calls = stub.calls();
       expect(calls).toEqual({ extraction: 1, verification: 1, routing: 0, placement: 0 });
+      // The wording refusal received its one bounded rewrite attempt, which declined; the receipt
+      // records the attempt and its call without any content.
+      expect(stub.revisions()).toBe(1);
+      expect(result.sources[0]?.feedback_revision).toEqual({
+        attempted: 1,
+        candidates: [
+          {
+            candidate_id: result.sources[0]!.candidates[0]!.candidate_id,
+            held_as: 'discourse_uncertain',
+            outcome: 'declined',
+          },
+        ],
+      });
+      expect(result.sources[0]?.model_usage?.revision?.model).toBe('retain-stub');
+      expect(result.sources[0]?.model_usage?.reverification).toBeUndefined();
 
       const replay = await mem.retain(input);
       expect(replay.sources[0]?.outcome).toBe('replayed');
       expect(stub.calls()).toEqual(calls);
+      expect(stub.revisions()).toBe(1);
     } finally {
       await mem.close();
       await stub.close();

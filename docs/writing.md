@@ -345,7 +345,10 @@ JSON; schema mismatch; missing, duplicate or foreign verdicts; and inconsistent 
 time, context, negative-evidence, attribution and report-limit audits. When more than one defect exists,
 the first fixed boundary reports it; this is not an exhaustive response inspection or proof that a hold
 is retryable. A supported, well-formed semantic refusal has no failure code. Verification decisions remain
-atomic, with no semantic response repair or extra model call.
+atomic, with no semantic response repair or extra model call. The optional verification-feedback revision
+(`maintenance.retain.verification_revision`) does not change a decision either: it rewrites a wording-held
+candidate's text and submits that new text to a fresh, complete verification, reported under
+`feedback_revision`.
 
 Automatic retention temporal audits select candidate-local IDs for the exact validated source frames,
 then compare each predicate's timing, status and qualifications with the original readable candidate.

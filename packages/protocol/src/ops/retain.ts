@@ -343,6 +343,26 @@ export const RetainVerificationDiagnostics = z.object({
 });
 export type RetainVerificationDiagnostics = z.infer<typeof RetainVerificationDiagnostics>;
 
+/** One frame-bounded rewrite of a candidate refused for its wording, and its single re-verification. */
+export const RetainRevisionDiagnostics = z.object({
+  attempted: z.number().int().min(1).max(50),
+  candidates: z
+    .array(
+      z.object({
+        candidate_id: z.string(),
+        /** First-pass verification hold that made the candidate eligible. */
+        held_as: RetainHoldReason,
+        outcome: z.enum(['accepted', 'rejected', 'declined', 'unchanged', 'invalid', 'failed']),
+        /** Re-verification hold when the revised text was still refused. */
+        reason_code: RetainHoldReason.optional(),
+        /** Why the re-verification produced no decision. */
+        failure_code: RetainVerificationFailure.optional(),
+      }),
+    )
+    .max(50),
+});
+export type RetainRevisionDiagnostics = z.infer<typeof RetainRevisionDiagnostics>;
+
 export const RetainRoutingReason = z.enum([
   'existing_selected',
   'new_selected',
@@ -373,6 +393,8 @@ export type RetainCandidateResult = z.infer<typeof RetainCandidateResult>;
 export const RetainSourceResult = z.object({
   /** Absent on historical receipts; absence never establishes technical retry eligibility. */
   verification: RetainVerificationDiagnostics.optional(),
+  /** Present only when a wording hold received its one verification-feedback revision. */
+  feedback_revision: RetainRevisionDiagnostics.optional(),
   /** Policy at original processing time; replay preserves this receipt. */
   knowledge_language: z.literal('en').nullable().optional(),
   source_id: z.string(),
@@ -402,6 +424,8 @@ export const RetainSourceResult = z.object({
       extraction: RetainModelCallReceipt.nullable(),
       repair: RetainModelCallReceipt.optional(),
       verification: RetainModelCallReceipt.nullable(),
+      revision: RetainModelCallReceipt.optional(),
+      reverification: RetainModelCallReceipt.optional(),
       placement: z.array(RetainModelCallReceipt),
     })
     .optional(),
