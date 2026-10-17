@@ -13,7 +13,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 48;
+export const SCHEMA_VERSION = 49;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -55,6 +55,7 @@ export const EVENT_IDENTITY_RELATION_MIGRATION_INDEX = 38;
 export const RETAIN_PENDING_CORRECTIONS_MIGRATION_INDEX = 39;
 export const JOURNAL_EVENTS_MIGRATION_INDEX = 40;
 export const RETAIN_DECIDING_HOLDS_MIGRATION_INDEX = 41;
+export const RETAIN_SIZE_GUARD_HOLDS_MIGRATION_INDEX = 42;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -1340,6 +1341,16 @@ export const MIGRATIONS: string[] = [
     resolved_by TEXT REFERENCES retain_receipts(receipt_fingerprint) ON DELETE SET NULL,
     PRIMARY KEY(deciding_receipt, earlier_memory, deciding_memory)
   );`,
+  // Schema 48 failed closed on the size of a whole source group: once a correlated source held
+  // more than sixteen earlier records, every later revision held all of them without comparing
+  // anything. One comparison never nominates more than sixteen, so a receipt holding more earlier
+  // records came from that guard, not from evidence. Release those holds once, on upgrade only:
+  // a later outage can still legitimately hold a large group, and those holds must persist.
+  `UPDATE retain_deciding_holds SET resolved_by = deciding_receipt
+    WHERE resolved_by IS NULL AND deciding_receipt IN (
+      SELECT deciding_receipt FROM retain_deciding_holds
+       GROUP BY deciding_receipt HAVING count(DISTINCT earlier_memory) > 16
+    );`,
 ];
 
 /**

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { ProvidedRetainCandidate, RetainModelCallReceipt, DegradedReason } from '@tenphi/akno-protocol';
+import { mapWithConcurrency } from '../kb/scan.ts';
 import type { ModelClient } from '../models/client.ts';
 import { modelCallReceipt } from './retain.ts';
 
@@ -18,54 +19,157 @@ export interface SourceIntent {
   text: string;
   attribution: ProvidedRetainCandidate['attribution'];
 }
+interface DecidingResult {
+  superseded: string[];
+  receipts: RetainModelCallReceipt[];
+  pending?: DecidingHold[];
+  degraded?: DegradedReason;
+}
+type Incoming = SourceIntent | ProvidedRetainCandidate;
+interface ComparedRecord {
+  text: string;
+  attribution: ProvidedRetainCandidate['attribution'];
+  admission?: 'admitted' | 'source_intent_only_not_admitted';
+  discourse?: ProvidedRetainCandidate['discourse'] | null;
+  time?: ProvidedRetainCandidate['time'] | null;
+  source_frame: string;
+}
+interface Compared<T> {
+  item: T;
+  record: ComparedRecord;
+}
 
-/** Correlation only bounds the comparison. Two independent readings must establish withdrawal. */
+/** One model comparison never carries more serialized records than this. */
+const MAX_COMPARISON_CHARS = 32000;
+/** Incoming records use at most half of a comparison, so earlier records always have room beside them. */
+const MAX_INCOMING_CHARS = MAX_COMPARISON_CHARS / 2;
+/** The nomination bound: one comparison can withdraw each of its earlier records at most once. */
+const MAX_RECORDS_PER_COMPARISON = 16;
+/** Room for the `{"earlier":[],"admitted":[]}` envelope around the records. */
+const ENVELOPE_CHARS = 64;
+
+/**
+ * Correlation only bounds the comparison. Two independent readings must establish withdrawal.
+ *
+ * A long-lived source group, such as one conversation retained turn by turn, accumulates far
+ * more earlier records than one comparison holds. The complete set is compared in bounded
+ * batches, never a clipped prefix that could hide another authority. Failing closed on the size
+ * of the whole group instead held every earlier record against each later revision, so every
+ * retain of a long conversation reported degradation and restricted all of its memories.
+ * A batch that still cannot be compared holds only its own pairs.
+ */
 export async function decidingSupport(
   model: ModelClient,
   earlier: readonly EarlierSupport[],
   admitted: readonly ProvidedRetainCandidate[],
   sourceIntents?: readonly SourceIntent[],
-): Promise<{
-  superseded: string[];
-  receipts: RetainModelCallReceipt[];
-  pending?: DecidingHold[];
-  degraded?: DegradedReason;
-}> {
+  concurrency = 1,
+): Promise<DecidingResult> {
   const intentOnly = sourceIntents !== undefined;
-  const incoming = sourceIntents ?? admitted;
+  const incoming: readonly Incoming[] = sourceIntents ?? admitted;
   if (!earlier.length || !incoming.length) return { superseded: [], receipts: [] };
-  const holdAll = {
-    pending: earlier.flatMap((item) =>
-      incoming.map((candidate) => ({
-        earlierMemory: item.memoryId,
-        decidingCandidate: candidate.candidate_id,
-      })),
+  if (!model.available)
+    return { superseded: [], receipts: [], pending: holdAll(earlier, incoming), degraded: 'no_derive_model' };
+  const old = earlier.map((item): Compared<EarlierSupport> => ({
+    item,
+    record: { text: item.text, attribution: item.attribution, source_frame: item.evidence },
+  }));
+  const next = incoming.map((item): Compared<Incoming> => ({
+    item,
+    record:
+      'discourse_frame' in item && !intentOnly
+        ? {
+            text: item.text,
+            attribution: item.attribution,
+            admission: 'admitted',
+            discourse: item.discourse,
+            time: item.time ?? null,
+            source_frame: item.discourse_frame.map((span) => span.quote).join('\n'),
+          }
+        : {
+            text: item.text,
+            attribution: item.attribution,
+            admission: 'source_intent_only_not_admitted',
+            discourse: null,
+            time: null,
+            source_frame: item.text,
+          },
+  }));
+  const batches = boundedBatches(next, MAX_INCOMING_CHARS).flatMap((incomingBatch) =>
+    boundedBatches(old, MAX_COMPARISON_CHARS - ENVELOPE_CHARS - recordsSize(incomingBatch)).map(
+      (earlierBatch) => ({ earlierBatch, incomingBatch }),
     ),
+  );
+  const results = await mapWithConcurrency(batches, concurrency, (batch) =>
+    compareBatch(model, batch.earlierBatch, batch.incomingBatch, intentOnly),
+  );
+  const pending = results.flatMap((result) => result.pending ?? []);
+  return {
+    superseded: [...new Set(results.flatMap((result) => result.superseded))],
+    receipts: results.flatMap((result) => result.receipts),
+    pending,
+    ...(results.some((result) => result.degraded)
+      ? { degraded: 'deciding_relation_unavailable' as const }
+      : {}),
   };
-  if (!model.available) return { superseded: [], receipts: [], ...holdAll, degraded: 'no_derive_model' };
+}
+
+function holdAll(
+  earlier: readonly EarlierSupport[],
+  incoming: readonly { candidate_id: string }[],
+): DecidingHold[] {
+  return earlier.flatMap((item) =>
+    incoming.map((candidate) => ({
+      earlierMemory: item.memoryId,
+      decidingCandidate: candidate.candidate_id,
+    })),
+  );
+}
+
+function recordSize(record: ComparedRecord): number {
+  return JSON.stringify({ id: 'old_00', ...record }).length + 1;
+}
+
+function recordsSize(items: readonly Compared<unknown>[]): number {
+  return items.reduce((sum, item) => sum + recordSize(item.record), 0);
+}
+
+/** Order-preserving packing. A record that alone exceeds the budget gets its own batch and fails closed there. */
+function boundedBatches<T>(items: readonly Compared<T>[], budget: number): Compared<T>[][] {
+  const batches: Compared<T>[][] = [];
+  let current: Compared<T>[] = [];
+  let size = 0;
+  for (const item of items) {
+    const next = recordSize(item.record);
+    if (current.length && (current.length >= MAX_RECORDS_PER_COMPARISON || size + next > budget)) {
+      batches.push(current);
+      current = [];
+      size = 0;
+    }
+    current.push(item);
+    size += next;
+  }
+  if (current.length) batches.push(current);
+  return batches;
+}
+
+async function compareBatch(
+  model: ModelClient,
+  earlierBatch: readonly Compared<EarlierSupport>[],
+  incomingBatch: readonly Compared<Incoming>[],
+  intentOnly: boolean,
+): Promise<DecidingResult> {
+  const earlier = earlierBatch.map((entry) => entry.item);
+  const incoming = incomingBatch.map((entry) => entry.item);
+  const holdAllBatch = { pending: holdAll(earlier, incoming) };
   const records = {
-    earlier: earlier.map((item, i) => ({
-      id: `old_${i}`,
-      text: item.text,
-      attribution: item.attribution,
-      source_frame: item.evidence,
-    })),
-    admitted: incoming.map((item, i) => ({
-      id: `new_${i}`,
-      text: item.text,
-      attribution: item.attribution,
-      admission: intentOnly ? 'source_intent_only_not_admitted' : 'admitted',
-      discourse: intentOnly ? null : admitted[i]!.discourse,
-      time: intentOnly ? null : (admitted[i]!.time ?? null),
-      source_frame: intentOnly
-        ? item.text
-        : admitted[i]!.discourse_frame.map((span) => span.quote).join('\n'),
-    })),
+    earlier: earlierBatch.map((entry, i) => ({ id: `old_${i}`, ...entry.record })),
+    admitted: incomingBatch.map((entry, i) => ({ id: `new_${i}`, ...entry.record })),
   };
   const oldIds = records.earlier.map((item) => item.id) as [string, ...string[]];
   const newIds = records.admitted.map((item) => item.id) as [string, ...string[]];
-  if (JSON.stringify(records).length > 32000)
-    return { superseded: [], receipts: [], ...holdAll, degraded: 'deciding_relation_unavailable' };
+  if (JSON.stringify(records).length > MAX_COMPARISON_CHARS)
+    return { superseded: [], receipts: [], ...holdAllBatch, degraded: 'deciding_relation_unavailable' };
   const schema = z.strictObject({
     withdrawals: z
       .array(
@@ -108,7 +212,8 @@ ${intentOnly ? 'The new source has NOT been admitted as replacement facts. Estab
     }
   };
   const selection = selected.ok ? parse(selected.value, schema) : null;
-  if (!selection) return { superseded: [], receipts, ...holdAll, degraded: 'deciding_relation_unavailable' };
+  if (!selection)
+    return { superseded: [], receipts, ...holdAllBatch, degraded: 'deciding_relation_unavailable' };
   const pairs = selection.withdrawals.filter((pair, index, all) => {
     const deciding = records.admitted.find((item) => item.id === pair.deciding_id)!;
     return (
@@ -117,7 +222,7 @@ ${intentOnly ? 'The new source has NOT been admitted as replacement facts. Estab
     );
   });
   if (pairs.length !== selection.withdrawals.length)
-    return { superseded: [], receipts, ...holdAll, degraded: 'deciding_relation_unavailable' };
+    return { superseded: [], receipts, ...holdAllBatch, degraded: 'deciding_relation_unavailable' };
   const ownedPairs = pairs.filter((pair) => {
     const old = records.earlier.find((item) => item.id === pair.earlier_id)!;
     const next = records.admitted.find((item) => item.id === pair.deciding_id)!;

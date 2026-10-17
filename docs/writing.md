@@ -408,8 +408,14 @@ Only confirmed targets become historical; an independent payment remains usable.
 correlation or shared date never establishes withdrawal. Provided candidates do not gain this automatic
 relationship authority.
 
+Akno compares the complete set of earlier records in the source group, however long it has grown, in
+bounded batches of at most sixteen records per model call. A long conversation retained turn by turn
+therefore keeps its earlier memories current while each new turn is compared against all of them. An earlier
+record that no page carries any more is skipped, because it has no current meaning left to withdraw.
+
 If the bounded deciding comparison is unavailable or unresolved, the affected assertion pair receives a
-persisted current hold, with `deciding_relation_unavailable` in the retention response. The records remain
+persisted current hold, with `deciding_relation_unavailable` in the retention response. Only the pairs in
+the batch that could not be compared are held; the rest of the group keeps its result. The records remain
 inspectable; no replacement relation is admitted. A later confirmed deciding revision resolves that pair,
 unchanged replay preserves it, and undo or restart retains the corresponding state. The private workflow
 binding contains opaque record identities rather than a new source body.

@@ -40,6 +40,7 @@ import {
   RETAIN_RECEIPTS_MIGRATION_INDEX,
   RETAIN_PENDING_CORRECTIONS_MIGRATION_INDEX,
   RETAIN_DECIDING_HOLDS_MIGRATION_INDEX,
+  RETAIN_SIZE_GUARD_HOLDS_MIGRATION_INDEX,
   SCHEMA_VERSION,
   SEMANTIC_MERGE_EMBEDDINGS_MIGRATION_INDEX,
   SEMANTIC_MERGE_VERDICTS_MIGRATION_INDEX,
@@ -310,6 +311,7 @@ function migrate(db: Database.Database): void {
     if (!tableExists(db, 'journal_events')) db.exec(MIGRATIONS[JOURNAL_EVENTS_MIGRATION_INDEX]!);
     if (!tableExists(db, 'retain_deciding_holds'))
       db.exec(MIGRATIONS[RETAIN_DECIDING_HOLDS_MIGRATION_INDEX]!);
+    if (current !== 0 && current < 49) db.exec(MIGRATIONS[RETAIN_SIZE_GUARD_HOLDS_MIGRATION_INDEX]!);
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);
   })();
 }
