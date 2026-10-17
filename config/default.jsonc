@@ -401,6 +401,12 @@
       // Default source-wide failure. Batch mode holds failed atomic batches and all dependents,
       // while keeping independent verified records. Replacement corrections always stay source-wide.
       "verification_failure_scope": "source",
+      // A candidate the verifier refused for its wording (discourse_uncertain or
+      // noncanonical_without_context, with agreeing typed labels) gets one rewrite of its readable
+      // text from its own exact frame, guided by the verifier's audit, and one re-verification.
+      // Labels, spans and admission holds are never revised. Costs one rewrite call plus one
+      // verification per affected source; false keeps every first verifier refusal final.
+      "verification_revision": true,
       // Private exact source frames are kept while live memory or maintenance work needs them.
       // Once those dependencies are gone, this grace preserves short-term undo/recovery value.
       "evidence_grace_days": 30
