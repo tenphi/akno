@@ -583,7 +583,10 @@ function report(values) {
       const withoutRetry = variant === 'base' || variant === 'revision';
       for (const held of entry.result.held) {
         if (held.hold_stage === 'validation') row.heldValidation += 1;
-        else if (held.verification?.outcome === 'failed' || (withoutRetry && retryTargets.has(held.candidate_id)))
+        else if (
+          held.verification?.outcome === 'failed' ||
+          (withoutRetry && retryTargets.has(held.candidate_id))
+        )
           row.heldVerificationFailed += 1;
         else if (held.hold_stage === 'verification') row.heldVerificationRejected += 1;
         else row.heldOther += 1;
@@ -714,7 +717,7 @@ else if (command === 'run') {
   if (values.output) write(values.output, result);
   console.log(
     JSON.stringify(
-      result.summary.map(({ unfaithfulRecords, ...row }) => row),
+      result.summary.map(({ unfaithfulRecords: _unfaithful, ...row }) => row),
       null,
       1,
     ),
