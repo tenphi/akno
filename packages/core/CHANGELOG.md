@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.19.2
+
+### Patch Changes
+
+- [#239](https://github.com/tenphi/akno/pull/239) [`c719a72`](https://github.com/tenphi/akno/commit/c719a724dca836c4d70da10414464344ba920b69) Thanks [@tenphi](https://github.com/tenphi)! - Compare earlier correlated records in bounded batches instead of failing closed on the size of the whole source group. Once a long conversation had retained more than sixteen memories, every later revision with a held candidate reported `deciding_relation_unavailable` and restricted all of the conversation's earlier memories as `pending_correction`. Each model call is still bounded; only a batch that cannot be compared is held, oversized held source text is split at item and line boundaries, and an earlier record whose line no longer exists is skipped. Upgrading to schema 49 releases holds recorded by the old size guard once.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.19.2
+
 ## 0.19.1
 
 ### Patch Changes
