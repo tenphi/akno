@@ -83,6 +83,8 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     ...(input.timezone ? { timezone: input.timezone } : {}),
     ...(mission ? { mission } : {}),
     folders: catalog,
+    // Keyed retain and unkeyed remember share one interpretation of the same source.
+    verificationRevision: ctx.config.maintenance.retain.verificationRevision,
   });
 
   if (retained.sourceHold) {

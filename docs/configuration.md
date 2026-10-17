@@ -277,6 +277,19 @@ and withholds all transitive relation dependents. Failure remains typed as `reta
 all launched calls remain in usage accounting. Replacement corrections always retain source-wide failure.
 These settings do not change evidence, admission or semantic acceptance checks.
 
+`verification_revision` defaults to `true`. A candidate the verifier refused for its wording
+(`discourse_uncertain` or `noncanonical_without_context`) gets one rewrite of its readable text and one
+re-verification, provided the verifier's own polarity and plan-disposition readings agree with the candidate's
+labels and it raised no durability or scope refusal. The rewrite sees the verifier's comparison, mismatches and
+context audit plus the candidate's exact frame; it cannot change labels, spans, time, relations or destination,
+and it may name only what that frame names. The revised text passes the same cleaner and the full verifier
+again, bound to the original candidate's proposition. A declined, invalid or refused revision keeps the first
+hold, and a malformed or unavailable verification is never revised. Only sources with an eligible refusal pay
+for it: one rewrite call per six such candidates, then ordinary verification batches for the revised ones.
+`false` keeps every first refusal final.
+Receipts report each attempt under `feedback_revision` and its calls under `model_usage.revision` and
+`model_usage.reverification`.
+
 `evidence_grace_days` defaults to `30`. It applies only after retained support becomes inactive through exact
 retraction or user forget; active support has no age limit. Nonterminal maintenance work that still names the
 managed item also blocks pruning. A value of `0` permits immediate secure pruning once those dependencies are

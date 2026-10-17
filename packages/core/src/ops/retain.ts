@@ -19,6 +19,7 @@ import {
   type ProvidedRetainCandidate,
   type RetainCandidateResult,
   type RetainHoldReason,
+  type RetainRevisionDiagnostics,
   type RetainVerificationDiagnostics,
   type RetainModelCallReceipt,
   type RetainOutput,
@@ -492,6 +493,7 @@ async function retainExtractedOnce(
     verificationFailureScope: source.retracts
       ? 'source'
       : ctx.config.maintenance.retain.verificationFailureScope,
+    verificationRevision: ctx.config.maintenance.retain.verificationRevision,
     folders: folderCatalog(ctx.config, ctx.store),
     sourceId: source.source_id,
     revision: source.revision,
@@ -516,6 +518,7 @@ async function retainExtractedOnce(
       initialResults,
       modelUsage: { ...extracted.modelUsage, placement: [] },
       verification: extracted.verification,
+      ...(extracted.feedbackRevision ? { feedbackRevision: extracted.feedbackRevision } : {}),
       retryable: extracted.retryable && !source.retracts && initialResults.length === 0 ? true : undefined,
       additionalDegraded: [extracted.degradedReason ?? 'derive_failed'],
       sourceHold: {
@@ -532,6 +535,7 @@ async function retainExtractedOnce(
     initialResults,
     modelUsage: { ...extracted.modelUsage, placement: [] },
     verification: extracted.verification,
+    ...(extracted.feedbackRevision ? { feedbackRevision: extracted.feedbackRevision } : {}),
     additionalDegraded: extracted.degradedReason ? [extracted.degradedReason] : [],
   });
 }
@@ -546,10 +550,13 @@ async function retainCandidates(
     placement: 'exact' | 'automatic';
     initialResults: RetainCandidateResult[];
     verification?: RetainVerificationDiagnostics;
+    feedbackRevision?: RetainRevisionDiagnostics;
     modelUsage: {
       extraction: RetainModelCallReceipt | null;
       repair?: RetainModelCallReceipt;
       verification: RetainModelCallReceipt | null;
+      revision?: RetainModelCallReceipt;
+      reverification?: RetainModelCallReceipt;
       placement: RetainModelCallReceipt[];
     };
     sourceHold?: { reason_code: RetainHoldReason; reason: string };
@@ -1170,6 +1177,7 @@ async function retainCandidates(
       ? { retryable: true as const }
       : {}),
     ...(options.verification ? { verification: options.verification } : {}),
+    ...(options.feedbackRevision ? { feedback_revision: options.feedbackRevision } : {}),
     source: sourceResultBinding(effectiveBinding),
     ...(options.sourceHold ? { reason_code: options.sourceHold.reason_code } : {}),
     status:
