@@ -3,7 +3,7 @@ import type { ModelClient } from '../models/client.ts';
 import { strictModeViolations, toEndpointSchema } from '../models/client.ts';
 import { frameAuditFields, retentionAudit } from '../../test/semantic-audit.ts';
 import { runRetain } from './retain.ts';
-import { retentionContextWitness, retentionContextSchema } from './retention-context.ts';
+import { retentionContextWitness, retentionContextSchema, retentionItemAuthor } from './retention-context.ts';
 
 const source = 'You were meant to check the weekly summary.';
 function record(text = source, quote = source) {
@@ -542,5 +542,150 @@ describe('standalone retention context admission', () => {
     expect(result.degradedReason).toBe('retain_verification_failed');
     expect(invalid).toHaveBeenCalledOnce();
     expect(chat).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('structured author grounding', () => {
+  const context = (reference: Record<string, unknown>, witness = 'F1') => ({
+    source_use: 'lasting_knowledge',
+    standalone_context: 'self_contained',
+    witness: { frame_id: witness },
+    references: [reference],
+    references_complete: true,
+    explanation: 'Compare the original author and antecedent with the candidate.',
+  });
+
+  it('labels an unnamed assistant or user item by its role, and never relabels a named speaker', () => {
+    expect(retentionItemAuthor({ role: 'assistant' })).toBe('assistant');
+    expect(retentionItemAuthor({ role: 'user' })).toBe('user');
+    expect(retentionItemAuthor({ role: 'user', speaker: 'Ada Marlow' })).toBe('Ada Marlow');
+    expect(retentionItemAuthor({ role: 'external' })).toBeUndefined();
+    expect(retentionItemAuthor({})).toBeUndefined();
+  });
+
+  const guess = 'I am only guessing that the Zephyr QX-100 warranty could be five years.';
+  const guessText = 'The assistant is only guessing that the Zephyr QX-100 warranty could be five years.';
+  const assistantReference = (sourceName = 'assistant') => ({
+    source: { frame_id: 'F1' },
+    source_name: sourceName,
+    name_origin: { frame_id: 'F1' },
+    resolution: 'explicit',
+    source_role: 'experiencer',
+    candidate_role: 'experiencer',
+    relation: 'preserved',
+  });
+
+  it.each([
+    ['the role of its own speakerless frame', guessText, 'assistant', 'F1', true],
+    ['a name the author label does not carry', guessText, 'Bo Winters', 'F1', false],
+    ['a role label borrowed by another frame', guessText, 'assistant', 'F2', false],
+    [
+      'a preserved role missing from the record',
+      'Someone is guessing about the warranty.',
+      'assistant',
+      'F1',
+      false,
+    ],
+  ])('grounds a first-person author through %s: %s', (_label, text, sourceName, labelledFrame, expected) => {
+    expect(
+      retentionContextWitness([{ quote: guess, item_id: 'turn-1111' }], text, [
+        { frame_id: labelledFrame, speaker: 'assistant' },
+      ]).grounded(context(assistantReference(sourceName))),
+    ).toBe(expected);
+  });
+
+  const declined = 'I, Ada Marlow, declined the optional Zephyr QX-100 cable-protection extension.';
+  const benefit = 'Had I accepted that extension, connector repair would have been free.';
+  const benefitText =
+    'Had Ada Marlow accepted the optional Zephyr QX-100 cable-protection extension, connector repair would have been free.';
+  const extensionReference = () => ({
+    source: { frame_id: 'F2' },
+    source_name: 'Zephyr QX-100 cable-protection extension',
+    name_origin: { frame_id: 'F1' },
+    resolution: 'unambiguous_antecedent',
+    source_role: 'subject',
+    candidate_role: 'subject',
+    relation: 'preserved',
+  });
+  const frames = [
+    { quote: declined, item_id: 'turn-1111' },
+    { quote: benefit, item_id: 'turn-2222' },
+  ];
+
+  it.each([
+    ['continues the same author', 'Ada Marlow', ['turn-1111', 'turn-2222'], 'unambiguous_antecedent', true],
+    ['comes from another author', 'Bo Winters', ['turn-1111', 'turn-2222'], 'unambiguous_antecedent', false],
+    ['comes from a later item', 'Ada Marlow', ['turn-2222', 'turn-1111'], 'unambiguous_antecedent', false],
+    ['has no known source order', 'Ada Marlow', [], 'unambiguous_antecedent', false],
+    ['claims an explicit occurrence', 'Ada Marlow', ['turn-1111', 'turn-2222'], 'explicit', false],
+  ])(
+    'a cross-item antecedent that %s grounds: %s',
+    (_label, firstAuthor, itemOrder, resolution, expected) => {
+      expect(
+        retentionContextWitness(
+          frames,
+          benefitText,
+          [
+            { frame_id: 'F1', speaker: firstAuthor },
+            { frame_id: 'F2', speaker: 'Ada Marlow' },
+          ],
+          itemOrder,
+        ).grounded(context({ ...extensionReference(), resolution }, 'F2')),
+      ).toBe(expected);
+    },
+  );
+
+  it('does not ground a cross-item antecedent for items without an author label', () => {
+    expect(
+      retentionContextWitness(frames, benefitText, [], ['turn-1111', 'turn-2222']).grounded(
+        context(extensionReference(), 'F2'),
+      ),
+    ).toBe(false);
+  });
+
+  it.each([
+    ['admits', 'Ada Marlow'],
+    ['withholds', 'Bo Winters'],
+  ])('%s an antecedent from an earlier turn whose author is %s', async (_label, firstSpeaker) => {
+    const candidate = {
+      ...record(benefitText, benefit),
+      support: [{ quote: benefit, item_id: 'turn-2222' }],
+      discourse_frame: frames,
+    };
+    const { model, invalid } = stub([candidate], (verdict) => {
+      verdict.knowledge_context.witness = { frame_id: 'F2' };
+      verdict.knowledge_context.references = [extensionReference()];
+    });
+    const result = await runRetain(`${declined}\n${benefit}`, model, {
+      sourceItems: [
+        { item_id: 'turn-1111', role: 'user', speaker: firstSpeaker, text: declined },
+        { item_id: 'turn-2222', role: 'user', speaker: 'Ada Marlow', text: benefit },
+      ],
+    });
+    if (firstSpeaker === 'Ada Marlow') {
+      expect(result.candidates.map((entry) => entry.text)).toEqual([benefitText]);
+      expect(invalid).not.toHaveBeenCalled();
+    } else {
+      expect(result.candidates).toEqual([]);
+      expect(result.degradedReason).toBe('retain_verification_failed');
+      expect(invalid).toHaveBeenCalledOnce();
+    }
+  });
+
+  it('admits an unnamed assistant author through its role from the structured source', async () => {
+    const candidate = {
+      ...record(guessText, guess),
+      attribution: { source_role: 'assistant', chain: [] },
+      discourse: { commitment: 'tentative', disposition: 'active' },
+      epistemic: { basis: 'source_report' },
+    };
+    const { model, invalid } = stub([candidate], (verdict) => {
+      verdict.knowledge_context.references = [assistantReference()];
+    });
+    const result = await runRetain(guess, model, {
+      sourceItems: [{ item_id: 'turn-1111', role: 'assistant', text: guess }],
+    });
+    expect(result.candidates.map((entry) => entry.text)).toEqual([guessText]);
+    expect(invalid).not.toHaveBeenCalled();
   });
 });

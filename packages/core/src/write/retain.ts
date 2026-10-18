@@ -52,6 +52,7 @@ import { retentionFrameAudit, RETENTION_FRAME_AUDIT_CONTRACT } from './retention
 import {
   retentionContextWitness,
   retentionContextHold,
+  retentionItemAuthor,
   type retentionContextSchema,
   RETENTION_CONTEXT_CONTRACT,
 } from './retention-context.ts';
@@ -76,7 +77,7 @@ import {
  * the two public operations from gradually learning different meanings for the same source.
  */
 export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v65';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v53';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v54';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
 const RETRIEVAL_UNIT_CONTRACT = `A retained record is one independently retrievable semantic unit:
@@ -1691,6 +1692,7 @@ async function verifyCandidateBatch(
       retentionTimeWitness(candidate.discourse_frame, candidate.text),
     ]),
   );
+  const itemOrder = (source.items ?? []).map((item) => item.item_id);
   const contextWitnesses = new Map(
     candidates.map((candidate) => [
       candidate.candidate_id,
@@ -1698,9 +1700,11 @@ async function verifyCandidateBatch(
         candidate.discourse_frame,
         candidate.text,
         candidate.discourse_frame.flatMap((span, index) => {
-          const speaker = source.items?.find((item) => item.item_id === span.item_id)?.speaker;
+          const item = source.items?.find((entry) => entry.item_id === span.item_id);
+          const speaker = item && retentionItemAuthor(item);
           return speaker ? [{ frame_id: `F${index + 1}`, speaker }] : [];
         }),
+        itemOrder,
       ),
     ]),
   );
