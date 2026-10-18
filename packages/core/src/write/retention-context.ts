@@ -24,11 +24,20 @@ export const retentionContextSchema = z.strictObject({
   explanation: z.string().trim().min(1).max(400),
 });
 
+/** The author label of a structured item: its speaker, or its assistant/user role when unnamed. */
+export function retentionItemAuthor(item: { role?: string; speaker?: string }): string | undefined {
+  const speaker = item.speaker?.trim();
+  if (speaker) return speaker;
+  return item.role === 'assistant' || item.role === 'user' ? item.role : undefined;
+}
+
 /** A separate name anchor can ground an antecedent without inventing a composite source quote. */
 export function retentionContextWitness(
   frames: readonly { quote: string; item_id?: string }[],
   text: string,
   sourceSpeakers: readonly { frame_id: string; speaker: string }[] = [],
+  /** Structured source item IDs in source order; an antecedent can only come from an earlier one. */
+  itemOrder: readonly string[] = [],
 ) {
   const sourceFrames = frames.map((_, index) => ({
     frame_id: `F${index + 1}`,
@@ -43,6 +52,19 @@ export function retentionContextWitness(
   });
   const frame = (id: string) =>
     frames[sourceFrames.find((entry) => entry.frame_id === id)!.discourse_frame_index]!;
+  const author = (id: string) => sourceSpeakers.find((entry) => entry.frame_id === id)?.speaker;
+  // One author's later turn can refer back to a name that author stated earlier in the same source.
+  // Another author's item, a later item or an item without an author label cannot donate an identity.
+  const continuesAuthor = (sourceId: string, originId: string) => {
+    const sourceIndex = itemOrder.indexOf(frame(sourceId).item_id ?? '');
+    const originIndex = itemOrder.indexOf(frame(originId).item_id ?? '');
+    return (
+      author(sourceId) !== undefined &&
+      author(sourceId) === author(originId) &&
+      originIndex >= 0 &&
+      originIndex < sourceIndex
+    );
+  };
   return {
     schema,
     coordinates: { source_frames: sourceFrames, candidate: 'original_readable_text' as const },
@@ -59,9 +81,15 @@ export function retentionContextWitness(
         if (entry.name_origin === null || entry.resolution === 'unresolved') return false;
         const original = frame(entry.source.frame_id);
         const origin = frame(entry.name_origin.frame_id);
-        // Independent source items cannot donate identities to each other's pronouns. Structured
-        // author labels establish first person only in their owning reference frame, not a neighbor.
-        if (original.item_id !== origin.item_id) return false;
+        // Independent source items cannot donate identities to each other's pronouns; only an earlier
+        // item by the same author can. Structured author labels establish first person only in their
+        // owning reference frame, not a neighbor.
+        if (
+          original.item_id !== origin.item_id &&
+          (entry.resolution !== 'unambiguous_antecedent' ||
+            !continuesAuthor(entry.source.frame_id, entry.name_origin.frame_id))
+        )
+          return false;
         if (entry.resolution === 'explicit' && entry.source.frame_id !== entry.name_origin.frame_id)
           return false;
         const named = exactSourceName(origin.quote, entry.source_name);
@@ -135,7 +163,9 @@ original source BEFORE assessing the actual candidate role. source selects the o
 frame; name_origin separately selects the owned frame that literally establishes the exact full name.
 Use explicit when the source frame itself names the referent; unambiguous_antecedent only when the complete
 original source establishes one unambiguous pronoun/short-name binding to that name. A separate name_origin
-may come only from the SAME original source item. Mere proximity, shared short names or a name in a different
+may come from the SAME original source item, or with unambiguous_antecedent from an EARLIER item by the same
+structured author: the identical speaker label, or the identical assistant/user role of items without a speaker.
+Another author's item or a later item never supplies it. Mere proximity, shared short names or a name in a different
 proposition do not prove identity. In a reporting construction, distinguish the reporting actor from
 the entity described by the embedded predicate: inheriting an object's property does not assign that
 property to its recorder or establish a general policy of the reporter. Resolve the ORIGINAL reference
@@ -151,7 +181,8 @@ An explicit grammatical role is not an explicitly named identity. These decision
 generic positive booleans. Name presence is only a grounding prerequisite, not a semantic binding.
 A first-person author can use the
 supplied structured source speaker from that same frame, with name_origin selecting that frame and
-resolution=explicit; second-person references cannot be resolved from that speaker label.
+resolution=explicit; an item without a speaker supplies its role instead, as source_name=assistant or
+source_name=user exactly. Second-person references cannot be resolved from that speaker label.
 Use the exact same source spelling for a preserved candidate name. A name in another role does not
 preserve this reference: someone told about a booking is its addressee, not necessarily its possessor.
 These are semantic roles, not grammatical positions. Use experiencer for the person who prefers,

@@ -297,16 +297,19 @@ on a page title or speaker metadata. Unresolved conversational references are he
 in a useful self-contained report. A separate reference comparison binds source-established participants
 to their actual roles in the original retained text, including material named participants as well as
 pronouns: a report recipient cannot silently replace
-a booking holder or an item's owner. Structured speaker labels bind only their own source frames.
+a booking holder or an item's owner. Structured speaker labels bind only their own source frames; an item
+without a speaker binds its `assistant` or `user` role the same way.
 Context audits select the unchanged source frames and read the entire original candidate instead of
 reconstructing excerpts. A separate name anchor can establish an unambiguous pronoun or short-name
-antecedent from another owned frame in the same original source item. Exact name presence grounds
+antecedent from another owned frame in the same original source item, or in an earlier item by the same
+structured author (an identical speaker label, or an identical role for items without one). Exact name presence grounds
 the anchor but does not prove a binding, ownership or reporting. Ambiguous or unsupported identity,
 missing readable names, changed roles and incomplete reference coverage remain holds or typed failures.
 Generation and verification distinguish the entity whose property is stated from its reporting wrapper;
 a scoped object property cannot become a general property of the reporter. Nominated subject metadata
 is not antecedent evidence. A past reporting wrapper also cannot move a source-current status to an
-unanchored earlier state. Independent source items cannot donate identities to each other's pronouns. Every inner reporter also
+unanchored earlier state. Otherwise source items cannot donate identities to each other's pronouns: another
+author's item, a later item or an item without an author label never supplies one. Every inner reporter also
 receives a proposition-specific attribution audit in the same independent verification call. It selects
 immutable reporting and name-origin frames, allowing an unambiguous short name from the same original
 source item. It separately compares the reporter's role, chain order and qualifications in the original
