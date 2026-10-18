@@ -1,5 +1,15 @@
 # @tenphi/akno-core
 
+## 0.19.3
+
+### Patch Changes
+
+- [#243](https://github.com/tenphi/akno/pull/243) [`683c363`](https://github.com/tenphi/akno/commit/683c36307682cc1cd6a22e5194ce5ad84dc30404) Thanks [@tenphi](https://github.com/tenphi)! - Stop holding automatically retained memories when the verifier grounds a reference through the conversation's own structure. A speakerless assistant or user turn now supplies its role as the first-person author label, and a name stated in an earlier turn by the same author can anchor a later pronoun or short name in that author's turn. Another author's turn, a later turn or a turn without an author label still cannot donate an identity, an explicit name must still occur in its own frame, and every reference keeps its semantic-role and preservation checks. Previously these legitimate references failed as `context_witness_invalid`. Replaying 224 recorded live retention runs with identical model responses, these holds fell from 87 to 34 and written memories rose from 216 to 251, with no previously written memory lost. The verifier contract changes, so `RETAIN_VERIFIER_VERSION` advances to v54.
+
+- [#241](https://github.com/tenphi/akno/pull/241) [`98891f1`](https://github.com/tenphi/akno/commit/98891f13105654d0442033d9105e265ecdde1fd6) Thanks [@tenphi](https://github.com/tenphi)! - Give an automatically retained candidate that the verifier refused only for its wording one chance to be corrected. The rewrite sees the verifier's comparison, mismatches and context audit and the candidate's exact frame; it may change only the readable text, never labels, spans, time, relations or destination, and it may name only what that frame names. The revised text passes the cleaner and a fresh verification bound to the original proposition, and any refusal keeps the first hold. Typed-label disagreements, durability or scope refusals and malformed or unavailable verification are never revised. Receipts report each attempt under `feedback_revision` and its calls under `model_usage.revision` and `model_usage.reverification`. Set `maintenance.retain.verification_revision` to `false` to keep every first refusal final.
+- Updated dependencies [[`98891f1`](https://github.com/tenphi/akno/commit/98891f13105654d0442033d9105e265ecdde1fd6)]:
+  - @tenphi/akno-protocol@0.19.3
+
 ## 0.19.2
 
 ### Patch Changes

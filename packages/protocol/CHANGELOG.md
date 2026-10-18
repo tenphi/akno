@@ -1,5 +1,11 @@
 # @tenphi/akno-protocol
 
+## 0.19.3
+
+### Patch Changes
+
+- [#241](https://github.com/tenphi/akno/pull/241) [`98891f1`](https://github.com/tenphi/akno/commit/98891f13105654d0442033d9105e265ecdde1fd6) Thanks [@tenphi](https://github.com/tenphi)! - Give an automatically retained candidate that the verifier refused only for its wording one chance to be corrected. The rewrite sees the verifier's comparison, mismatches and context audit and the candidate's exact frame; it may change only the readable text, never labels, spans, time, relations or destination, and it may name only what that frame names. The revised text passes the cleaner and a fresh verification bound to the original proposition, and any refusal keeps the first hold. Typed-label disagreements, durability or scope refusals and malformed or unavailable verification are never revised. Receipts report each attempt under `feedback_revision` and its calls under `model_usage.revision` and `model_usage.reverification`. Set `maintenance.retain.verification_revision` to `false` to keep every first refusal final.
+
 ## 0.19.2
 
 ## 0.19.1
