@@ -2680,7 +2680,7 @@ async function assessEarlierSupport(
   // The complete set is compared; decidingSupport bounds each model call, not the group.
   const earlier: EarlierSupport[] = [];
   const unreadable: string[] = [];
-  const pages = new Map<string, Awaited<ReturnType<typeof read>>>();
+  const pages = new Map<string, Awaited<ReturnType<typeof read>> | null>();
   const located = ctx.store.db.prepare(
     'SELECT DISTINCT source_slug FROM managed_memory_entries WHERE memory_id = ?',
   );
@@ -2690,7 +2690,16 @@ async function assessEarlierSupport(
     const slugs = [...new Set([...current, ...supports.map((support) => support.slug)])];
     const lines = [];
     for (const slug of slugs) {
-      if (!pages.has(slug)) pages.set(slug, await read(ctx, { slug }));
+      if (!pages.has(slug))
+        pages.set(
+          slug,
+          // A support slug is where the line was first written, and a later move can leave no page
+          // there. That page carries nothing; it must not fail the whole source revision.
+          await read(ctx, { slug }).catch((error: unknown) => {
+            if (AknoError.from(error).code !== 'not_found') throw error;
+            return null;
+          }),
+        );
       lines.push(...(pages.get(slug)?.page?.lines.filter((item) => item.memory?.id === memoryId) ?? []));
     }
     // An earlier record that no page carries any more has no current meaning left to withdraw.

@@ -523,6 +523,64 @@ it('compares a long conversation in bounded batches without restricting its earl
   }
 });
 
+it('compares an earlier memory where it lives now after the page it was retained on moved', async () => {
+  const stub = await startAutomaticRetainStub();
+  const mem = await openAutomaticMem(stub.url);
+  const group = 'conversation:3333';
+  const locker = 'Ada Marlow chose locker 1111 at Blackwater Bay.';
+  const aside = 'Ada Marlow said the Blackwater Bay ferry looked crowded.';
+  const compared: string[] = [];
+  try {
+    const source = upsert(group, 'turn-1', locker);
+    source.retention.candidates[0] = {
+      ...source.retention.candidates[0]!,
+      candidate_id: 'locker-1111',
+      text: locker,
+      subject: 'locker 1111',
+      support: [{ quote: locker }],
+      discourse_frame: [{ quote: locker }],
+    };
+    await mem.retain({ sources: [source] });
+
+    // Its support still records the page it was first written to; that slug no longer exists.
+    expect((await mem.move({ from: 'memory/equipment', to: 'memory/storage' })).outcome).toBe('ok');
+    await expect(mem.read({ slug: 'memory/equipment' })).rejects.toMatchObject({ code: 'not_found' });
+
+    stub.setCandidate({
+      text: aside,
+      subject: 'Blackwater Bay ferry',
+      page: 'memory/storage',
+      kind: 'claim',
+      support: [{ item_id: 'turn-2', quote: aside }],
+      discourse_frame: [{ item_id: 'turn-2', quote: aside }],
+    });
+    stub.setDeciding((payload, verifying) => {
+      if (!verifying) compared.push(...(payload.earlier as { text: string }[]).map((item) => item.text));
+      return verifying ? { verdicts: [] } : { withdrawals: [] };
+    });
+    const next = (
+      await mem.retain({
+        sources: [
+          {
+            source_id: group,
+            revision: 'turn-2',
+            source_group: group,
+            input: { items: [{ item_id: 'turn-2', role: 'user', speaker: 'Ada Marlow', text: aside }] },
+            retention: { mode: 'extract' },
+          },
+        ],
+      })
+    ).sources[0]!;
+    expect(next).toMatchObject({ outcome: 'ok', status: 'ok' });
+    expect(next).not.toHaveProperty('degraded');
+    expect(compared).toEqual([expect.stringContaining(locker)]);
+    expect(fs.readFileSync(path.join(root, 'memory/storage.md'), 'utf8')).toContain(aside);
+  } finally {
+    await mem.close();
+    await stub.close();
+  }
+});
+
 it('holds an older copy from unadmitted deciding intent without accepting replacement facts', async () => {
   const stub = await startAutomaticRetainStub();
   let mem = await openAutomaticMem(stub.url);
