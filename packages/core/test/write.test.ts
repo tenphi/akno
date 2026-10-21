@@ -274,6 +274,63 @@ describe('conflict detection', () => {
     await mem.close();
   });
 
+  describe('a page that already holds two values under one attribute', () => {
+    // `Blackwater Bay: Origins … 9/10` and `Blackwater Bay: Tides … 8/10` read structurally as
+    // one attribute with two values. The page has always said both; an edit elsewhere on it
+    // is not taking a side.
+    const games = [
+      '# Games',
+      '',
+      '- Blackwater Bay: Origins #PS5 9/10',
+      '- Blackwater Bay: Tides #PS5 8/10',
+      '- Vulpine Mutual #Steam',
+      '',
+    ].join('\n');
+
+    beforeEach(async () => {
+      fs.writeFileSync(path.join(root, 'home/games.md'), games, 'utf8');
+      const mem = await openAs('agent');
+      await mem.index({});
+      await mem.close();
+    });
+
+    it('lets a rewrite remove an unrelated line', async () => {
+      const mem = await openAs('agent');
+      const result = await mem.write({
+        slug: 'home/games',
+        content: games.replace('- Vulpine Mutual #Steam\n', ''),
+      });
+      expect(result.outcome).toBe('ok');
+      expect(read('home/games.md')).not.toContain('Vulpine Mutual');
+      await mem.close();
+    });
+
+    it('lets a replace carry those lines through as context', async () => {
+      const mem = await openAs('agent');
+      const result = await mem.write({
+        slug: 'home/games',
+        replace: {
+          find: '- Blackwater Bay: Tides #PS5 8/10\n- Vulpine Mutual #Steam\n',
+          with: '- Blackwater Bay: Tides #PS5 8/10\n',
+        },
+      });
+      expect(result.outcome).toBe('ok');
+      expect(read('home/games.md')).not.toContain('Vulpine Mutual');
+      await mem.close();
+    });
+  });
+
+  it('still flags a rewrite that changes a value', async () => {
+    const mem = await openAs('agent');
+    const result = await mem.write({
+      slug: 'home/lease',
+      content: read('home/lease.md').replace('- Rent: 1111 EUR', '- Rent: 2222 EUR'),
+    });
+    expect(result.outcome).toBe('conflict');
+    expect(result.conflict?.existing).toBe('- Rent: 1111 EUR');
+    await mem.close();
+  });
+
   it('does not flag free prose — when uncertain, write', async () => {
     const mem = await openAs('agent');
     const result = await mem.write({
