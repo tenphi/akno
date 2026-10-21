@@ -155,7 +155,7 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
       slug,
       body: parsed.body,
       bodyStartLine: parsed.bodyLine,
-      incoming: incomingText(input, edit),
+      incoming: incomingText(input, edit, parsed.body),
       ...(input.resolve_conflict ? { resolveToken: input.resolve_conflict } : {}),
     });
     if (conflict) {
@@ -542,16 +542,20 @@ function actionFor(edit: BodyEdit): WriteTarget['action'] {
 }
 
 /** Only the text being introduced is worth checking for conflicts. */
-function incomingText(input: ReturnType<typeof WriteInput.parse>, edit: BodyEdit): string {
+function incomingText(input: ReturnType<typeof WriteInput.parse>, edit: BodyEdit, body: string): string {
   switch (edit.kind) {
     case 'content':
       // A declaration is not a claim. `role: knowledge` is not the page asserting anything
       // about the world, and scanning it for conflicts finds pairs that mean nothing.
-      return declaredFrontmatter(edit.content)?.body ?? edit.content;
+      // A rewrite resends every line it keeps, and a kept line is not a new claim: checking
+      // it pits the page against itself, so removing one list entry was refused over two
+      // other entries the page already held side by side.
+      return linesNotIn(declaredFrontmatter(edit.content)?.body ?? edit.content, body);
     case 'append':
       return edit.text;
     case 'replace':
-      return edit.with;
+      // The same for context the caller carried through from `find`.
+      return linesNotIn(edit.with, edit.find);
     case 'patch':
       // Only the added lines: a context line is not a new claim.
       return input
@@ -560,6 +564,27 @@ function incomingText(input: ReturnType<typeof WriteInput.parse>, edit: BodyEdit
         .map((line) => line.slice(1))
         .join('\n');
   }
+}
+
+/**
+ * The lines of `next` that `previous` does not already hold, counted so that writing a line
+ * a second time still introduces the second copy.
+ */
+function linesNotIn(next: string, previous: string): string {
+  const held = new Map<string, number>();
+  for (const line of previous.split('\n')) {
+    const key = line.trim();
+    held.set(key, (held.get(key) ?? 0) + 1);
+  }
+  return next
+    .split('\n')
+    .filter((line) => {
+      const remaining = held.get(line.trim()) ?? 0;
+      if (remaining === 0) return true;
+      held.set(line.trim(), remaining - 1);
+      return false;
+    })
+    .join('\n');
 }
 
 /**
