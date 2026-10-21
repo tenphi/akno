@@ -1,5 +1,14 @@
 # @tenphi/akno
 
+## 0.19.4
+
+### Patch Changes
+
+- Updated dependencies [[`3bb2033`](https://github.com/tenphi/akno/commit/3bb20336d9b73e380e16a0f7574f8929d3be7ffa)]:
+  - @tenphi/akno-core@0.19.4
+  - @tenphi/akno-client@0.19.4
+  - @tenphi/akno-protocol@0.19.4
+
 ## 0.19.3
 
 ### Patch Changes
