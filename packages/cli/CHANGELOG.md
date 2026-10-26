@@ -1,5 +1,20 @@
 # @tenphi/akno
 
+## 0.20.0
+
+### Minor Changes
+
+- [`d0b3232`](https://github.com/tenphi/akno/commit/d0b323227662e32289e913d85ad5cfe23317eee5) Thanks [@tenphi](https://github.com/tenphi)! - Add opt-in fact retrieval. `recall.facts` makes derived facts searchable by full text and claim embedding and shows the lines whose facts matched first on each card, without changing which cards return or their order. `recall({ format: "facts" })` returns a ranked fact list with `slug:line` locators, evidence lines for sources without facts, and a compact `text` rendering. The CLI exposes both as `akno recall --format facts` and `--facts` / `--no-facts`. `index.fact_extraction: "complete"` derives one fact per checkable line. `recall.fact_ranking` and `recall.line_targeting` are measured alternatives, off by default.
+
+  Schema 50 adds a fact search index and fact vectors on upgrade. Every new setting is off by default and the wire protocol is unchanged.
+
+### Patch Changes
+
+- Updated dependencies [[`d0b3232`](https://github.com/tenphi/akno/commit/d0b323227662e32289e913d85ad5cfe23317eee5)]:
+  - @tenphi/akno-core@0.20.0
+  - @tenphi/akno-protocol@0.20.0
+  - @tenphi/akno-client@0.20.0
+
 ## 0.19.5
 
 ### Patch Changes
