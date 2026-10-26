@@ -253,6 +253,11 @@
     // one degrades a feature rather than failing the index.
     "summaries": true,
     "facts": true,
+    // "precise" asks the deriver for the page's load-bearing facts only. "complete"
+    // asks for one fact per checkable line, keeping qualifiers like "superseded" in
+    // the claim — what fact-first recall needs. It costs a larger derivation call
+    // per page and changes no fact until the page is next derived (`--rederive`).
+    "fact_extraction": "precise",
     // Files hashed concurrently during a sweep.
     "hash_concurrency": 8,
     // Switch on sqlite-vec's ANN index above this many chunks. Brute force is
@@ -298,6 +303,17 @@
     // Add bounded exact evidence paths as a third candidate arm. Candidates still
     // pass through ordinary rank fusion, reranking, qualification, and budgeting.
     "graph": true,
+    // Search derived facts (full text and claim embeddings) and show the lines whose
+    // facts matched first on each card. `recall({ format: "facts" })` searches facts
+    // either way. Turning it on embeds every live fact on the next index pass.
+    "facts": false,
+    // Whether matching facts may move chunks, not just choose their lines. "best_rank"
+    // ranks a chunk by its text or its best fact, whichever ranks higher. Measured to
+    // push documents and source pages down, which never have facts; keep "none".
+    "fact_ranking": "none",
+    // "lexical" shows the card lines sharing the most query terms first, without a
+    // model. A measured control for fact targeting; it changes which lines a card shows.
+    "line_targeting": "none",
     // Multiplied into the final score at assembly, not at search.
     "rank": {
       "knowledge": 1,

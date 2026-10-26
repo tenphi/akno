@@ -1,6 +1,7 @@
 import { PROSE_PROJECTION_VERSION } from '../kb/prose.ts';
 import { replaceProseEntries } from '../memory/prose-projection.ts';
 import { refreshReflectionProse } from '../observations/reflection.ts';
+import { embedPendingFacts } from '../recall/fact-arm.ts';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
@@ -512,6 +513,14 @@ export class Indexer {
       await this.embedPending(report, progress, scope, rebuild);
       await this.summarizeDocuments(report, progress, options.rederive ?? false);
       await this.derivePending(report, progress, options.rederive ?? false, scope);
+      // After derivation, so the facts this pass produced are searchable in the same pass.
+      if (this.#config.recall.facts) {
+        const facts = await embedPendingFacts(this.#store, this.#models.embedding, {
+          batch: this.#config.models.embedding.batch ?? 32,
+          force: rebuild,
+        });
+        if (facts.warning) report.warnings.push(facts.warning);
+      }
     }
 
     // Graph rows are cheap, private derived state. Build after derivation so facts produced
@@ -2124,6 +2133,7 @@ export class Indexer {
         const derived = await derivePage(page, this.#models.derive, {
           summaries: wantSummaries,
           facts: wantedFacts,
+          extraction: this.#config.index.factExtraction,
         });
 
         if (derived.error) {

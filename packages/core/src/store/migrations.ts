@@ -13,7 +13,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 49;
+export const SCHEMA_VERSION = 50;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -56,6 +56,7 @@ export const RETAIN_PENDING_CORRECTIONS_MIGRATION_INDEX = 39;
 export const JOURNAL_EVENTS_MIGRATION_INDEX = 40;
 export const RETAIN_DECIDING_HOLDS_MIGRATION_INDEX = 41;
 export const RETAIN_SIZE_GUARD_HOLDS_MIGRATION_INDEX = 42;
+export const FACT_SEARCH_MIGRATION_INDEX = 43;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -1351,6 +1352,41 @@ export const MIGRATIONS: string[] = [
       SELECT deciding_receipt FROM retain_deciding_holds
        GROUP BY deciding_receipt HAVING count(DISTINCT earlier_memory) > 16
     );`,
+  // Derived facts become searchable on their own. Both tables are projections of `facts` and
+  // are rebuilt from it. The FTS table keeps its own content keyed by fact id rather than
+  // borrowing `facts.rowid`: that rowid is not an INTEGER PRIMARY KEY, so VACUUM may renumber
+  // it and an external-content index would silently point at the wrong claims. Triggers
+  // keep it in step with every writer, including page-deletion cascades.
+  `CREATE VIRTUAL TABLE facts_fts USING fts5(
+    fact_id UNINDEXED,
+    claim,
+    subject,
+    attribute,
+    value,
+    tokenize='porter unicode61 remove_diacritics 2'
+  );
+  CREATE TRIGGER facts_fts_insert AFTER INSERT ON facts BEGIN
+    INSERT INTO facts_fts(fact_id, claim, subject, attribute, value)
+      VALUES (new.id, new.claim, new.subject, new.attribute, new.value);
+  END;
+  CREATE TRIGGER facts_fts_delete AFTER DELETE ON facts BEGIN
+    DELETE FROM facts_fts WHERE fact_id = old.id;
+  END;
+  CREATE TRIGGER facts_fts_update AFTER UPDATE OF id, claim, subject, attribute, value ON facts BEGIN
+    DELETE FROM facts_fts WHERE fact_id = old.id;
+    INSERT INTO facts_fts(fact_id, claim, subject, attribute, value)
+      VALUES (new.id, new.claim, new.subject, new.attribute, new.value);
+  END;
+  INSERT INTO facts_fts(fact_id, claim, subject, attribute, value)
+    SELECT id, claim, subject, attribute, value FROM facts;
+  -- The claim it embedded travels with the vector, so a re-derived claim on the same id is
+  -- re-embedded instead of keeping the vector of a sentence that no longer exists.
+  CREATE TABLE fact_vectors (
+    fact_id    TEXT PRIMARY KEY REFERENCES facts(id) ON DELETE CASCADE,
+    claim_hash TEXT NOT NULL,
+    embedding  BLOB NOT NULL,
+    norm       REAL NOT NULL
+  );`,
 ];
 
 /**

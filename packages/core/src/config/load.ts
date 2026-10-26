@@ -571,6 +571,7 @@ function resolve(
       chunkOverlapChars: doc.index?.chunk_overlap_chars ?? 120,
       summaries: doc.index?.summaries ?? true,
       facts: doc.index?.facts ?? true,
+      factExtraction: doc.index?.fact_extraction ?? 'precise',
       hashConcurrency: doc.index?.hash_concurrency ?? 8,
       annThresholdChunks: doc.index?.ann_threshold_chunks ?? 20_000,
       conflictPathPatterns: doc.index?.conflict_path_patterns ?? [],
@@ -584,6 +585,9 @@ function resolve(
       expansion: doc.recall?.expansion ?? true,
       expansionTimeoutMs: doc.recall?.expansion_timeout_ms ?? 4000,
       graph: doc.recall?.graph ?? true,
+      facts: doc.recall?.facts ?? false,
+      factRanking: doc.recall?.fact_ranking ?? 'none',
+      lineTargeting: doc.recall?.line_targeting ?? 'none',
       rank: {
         knowledge: doc.recall?.rank?.knowledge ?? 1,
         source: doc.recall?.rank?.source ?? 0.85,

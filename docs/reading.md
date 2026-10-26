@@ -146,6 +146,20 @@ recall returns honest `empty`.
 If reranking fails or returns an invalid structured response, Akno preserves fusion order and reports typed
 degradation. It never applies an irrelevance filter from an unvalidated result.
 
+### Fact list (opt-in)
+
+`recall.facts: true` makes derived facts searchable, by full text and by claim embedding, and puts the lines
+whose facts matched first on each card. It never changes which cards return or their order: a ranking that
+favoured fact-bearing chunks would push documents and source pages down, because they have no facts.
+
+`format: "facts"` replaces cards with a ranked list of live facts, each with its `slug:line`, followed by cited
+lines from returned evidence that produced no fact. `text` renders both for direct prompt injection. A fact is
+the deriver's self-contained restatement; read its locator when exact wording matters. Managed-memory facts
+that are not plain current assertions carry their `memory` status. Superseded facts are left out.
+
+`index.fact_extraction: "complete"` derives one fact per checkable line instead of only load-bearing values.
+See [`benchmarks/fact-retrieval`](../benchmarks/fact-retrieval/README.md) for the prototype measurements.
+
 ## Grounded answers
 
 ```bash

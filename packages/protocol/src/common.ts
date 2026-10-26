@@ -477,6 +477,53 @@ export type GraphEvidenceLocator = z.infer<typeof GraphEvidenceLocator>;
 export const RecallMatchArm = z.enum(['lexical', 'vector', 'graph']);
 export type RecallMatchArm = z.infer<typeof RecallMatchArm>;
 
+/**
+ * Why one fact entered `format: 'facts'` output: its own text matched (`fact`), or the chunk it sits in
+ * did. A separate enum because adding a member to `RecallMatchArm` would change existing card exchanges.
+ */
+export const RecallFactMatch = z.enum(['fact', 'lexical', 'vector', 'graph']);
+export type RecallFactMatch = z.infer<typeof RecallFactMatch>;
+
+/**
+ * One live derived fact, returned on its own by `format: 'facts'`.
+ *
+ * The claim is the deriver's self-contained restatement; `slug:line` is the authoritative
+ * sentence it came from. A caller that needs the exact wording or its neighbours reads that
+ * locator — the claim is a search result, not a replacement for the source.
+ */
+export const RecallFact = z.object({
+  id: z.string(),
+  claim: z.string(),
+  slug: z.string(),
+  line: z.number().int().positive(),
+  subject: z.string().optional(),
+  attribute: z.string().optional(),
+  value: z.string().optional(),
+  /** Present when the line is an Akno-managed memory whose meaning is not a plain current fact. */
+  memory: z
+    .object({
+      kind: z.string(),
+      commitment: z.string(),
+      disposition: z.string(),
+      basis: z.string(),
+      answer_eligible: z.boolean(),
+    })
+    .optional(),
+  matched_by: z.array(RecallFactMatch).optional(),
+});
+export type RecallFact = z.infer<typeof RecallFact>;
+
+/** Cited source lines from a returned result that contributed no fact: documents, source pages, prose. */
+export const RecallEvidence = z.object({
+  /** Page slug, or the document path for orphan document evidence. */
+  ref: z.string(),
+  type: z.enum(['page', 'document']),
+  lines: z.array(z.object({ n: z.number().int().positive(), text: z.string() })).optional(),
+  quote: z.string().optional(),
+  page: z.number().int().positive().optional(),
+});
+export type RecallEvidence = z.infer<typeof RecallEvidence>;
+
 /** Compact, self-contained graph explanation attached only to a returned card. */
 export const RecallGraphPath = z.object({
   seed: GraphNodeRef,

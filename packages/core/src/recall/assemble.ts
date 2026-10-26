@@ -37,6 +37,8 @@ export interface AssembleOptions {
   lineWindow: number;
   /** Concepts the query asked about. Terms are matched against what came back. */
   concepts: string[];
+  /** The issued queries, for `recall.line_targeting: lexical`. */
+  queries?: string[];
   /** `include: ['source'], depth: 'full'` lifts the source quote cap. */
   include: PageRole[] | null;
   memoryView: MemoryView;
@@ -355,7 +357,9 @@ export class Assembler {
             : options.lineWindow;
 
     const rawLines =
-      maxLines === 0 || bodyHits.length === 0 ? [] : this.readLines(page, bodyHits, maxLines, options.depth);
+      maxLines === 0 || bodyHits.length === 0
+        ? []
+        : this.readLines(page, bodyHits, maxLines, options.depth, options.queries ?? []);
     const lines = rawLines.filter((line) => memoryLineMatches(line, options));
     const facts = this.factsFor(page.id);
 
@@ -392,7 +396,13 @@ export class Assembler {
    * line's number is the number it actually has on disk. A citation that points
    * at the wrong line is worse than no citation: cite or stay quiet.
    */
-  private readLines(page: PageRow, hits: ChunkHit[], maxLines: number, depth: Depth): Line[] {
+  private readLines(
+    page: PageRow,
+    hits: ChunkHit[],
+    maxLines: number,
+    depth: Depth,
+    queries: string[] = [],
+  ): Line[] {
     let content: string;
     try {
       content = fs.readFileSync(path.join(this.#config.aknoPath, page.rel_path), 'utf8');
@@ -423,22 +433,45 @@ export class Assembler {
 
     const out: Line[] = [];
     const seen = new Set<number>();
-    for (const range of ranges) {
-      for (let n = range.start; n <= range.end && out.length < maxLines; n++) {
-        if (seen.has(n)) continue;
-        const text = allLines[n - 1];
-        if (text === undefined) continue;
-        const trimmed = text.trim();
-        // Blank lines, bare headings, markers and image embeds cost budget and carry
-        // nothing a reader can cite; the breadcrumb already says where they are.
-        if (trimmed.length === 0) continue;
-        if (/^#{1,6}\s/.test(trimmed) || /^<!--/.test(trimmed)) continue;
-        if (/^!\[\[[^\]]+\]\]$/.test(trimmed) || /^!\[[^\]]*\]\([^)]+\)$/.test(trimmed)) continue;
-        seen.add(n);
-        out.push({ n, text });
+    const take = (n: number): void => {
+      if (seen.has(n)) return;
+      const text = allLines[n - 1];
+      if (text === undefined) return;
+      const trimmed = text.trim();
+      // Blank lines, bare headings, markers and image embeds cost budget and carry
+      // nothing a reader can cite; the breadcrumb already says where they are.
+      if (trimmed.length === 0) return;
+      if (/^#{1,6}\s/.test(trimmed) || /^<!--/.test(trimmed)) return;
+      if (/^!\[\[[^\]]+\]\]$/.test(trimmed) || /^!\[[^\]]*\]\([^)]+\)$/.test(trimmed)) return;
+      seen.add(n);
+      out.push({ n, text });
+    };
+    // Lines a fact matched come first. The window reads forward from the top of each chunk,
+    // and a section longer than the window would otherwise hide the very line that matched.
+    let targeted = hits.slice(0, 4).some((hit) => hit.lines?.length);
+    for (const hit of hits.slice(0, 4)) {
+      for (const n of hit.lines ?? []) if (out.length < maxLines) take(n);
+    }
+    // The model-free control for fact targeting: lines sharing the most query terms come next.
+    if (this.#config.recall.lineTargeting === 'lexical' && out.length < maxLines) {
+      const terms = queryTerms(queries);
+      const scored: { n: number; score: number }[] = [];
+      for (const range of ranges) {
+        for (let n = range.start; n <= range.end; n++) {
+          const score = termOverlap(allLines[n - 1] ?? '', terms);
+          if (score > 0) scored.push({ n, score });
+        }
       }
+      scored.sort((a, b) => b.score - a.score || a.n - b.n);
+      for (const { n } of scored) if (out.length < maxLines) take(n);
+      targeted ||= scored.length > 0;
+    }
+    for (const range of ranges) {
+      for (let n = range.start; n <= range.end && out.length < maxLines; n++) take(n);
       if (out.length >= maxLines) break;
     }
+    // Targeted lines were taken out of order; put the card back in reading order.
+    if (targeted) out.sort((a, b) => a.n - b.n);
     return this.qualifyObservationLines(
       page.id,
       qualifyManagedMemoryLines(out, allLines, { store: this.#store, pageId: page.id }),
@@ -728,6 +761,34 @@ function graphPathTokens(paths: RecallGraphPath[] | undefined): string[] {
 
 function round(value: number): number {
   return Math.round(value * 10000) / 10000;
+}
+
+const STOPWORDS = new Set(
+  'the a an of for is are was were be what when which who whom how does do did in on at to and or with by from this that it its there their'.split(
+    ' ',
+  ),
+);
+
+function queryTerms(queries: string[]): Set<string> {
+  const terms = new Set<string>();
+  for (const query of queries)
+    for (const token of tokenize(query)) if (!STOPWORDS.has(token)) terms.add(stem(token));
+  return terms;
+}
+
+function termOverlap(line: string, terms: Set<string>): number {
+  if (terms.size === 0) return 0;
+  const seen = new Set(tokenize(line).map(stem));
+  let score = 0;
+  for (const term of terms) if (seen.has(term)) score++;
+  return score;
+}
+
+function tokenize(text: string): string[] {
+  return text
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((token) => token.length > 1);
 }
 
 function matchedBy(hits: ChunkHit[]): RecallMatchArm[] {

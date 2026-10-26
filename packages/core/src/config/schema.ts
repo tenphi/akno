@@ -178,6 +178,8 @@ const IndexDoc = z.object({
   chunk_overlap_chars: z.number().int().nonnegative().optional(),
   summaries: z.boolean().optional(),
   facts: z.boolean().optional(),
+  /** `complete` extracts a fact from every checkable line, for fact-first retrieval. */
+  fact_extraction: z.enum(['precise', 'complete']).optional(),
   hash_concurrency: z.number().int().positive().optional(),
   ann_threshold_chunks: z.number().int().positive().optional(),
   /** Owner-declared sync-client conflict-copy paths. File content cannot change this list. */
@@ -210,6 +212,15 @@ const RecallDoc = z.object({
   expansion_timeout_ms: z.number().int().positive().optional(),
   /** Add exact, bounded evidence-graph candidates to recall before qualification. */
   graph: z.boolean().optional(),
+  /**
+   * Search derived facts as a candidate arm, and embed them during indexing. Off by default
+   * until the fact arm has release evidence; `recall({facts})` overrides it per call.
+   */
+  facts: z.boolean().optional(),
+  /** Whether matching facts may move chunks: `none` (default) or `best_rank` within each arm. */
+  fact_ranking: z.enum(['none', 'best_rank']).optional(),
+  /** `lexical` shows the lines sharing the most query terms first. A control for fact targeting. */
+  line_targeting: z.enum(['none', 'lexical']).optional(),
   rank: z
     .object({
       knowledge: z.number().min(0).optional(),
@@ -629,6 +640,7 @@ export interface AknoConfig {
     chunkOverlapChars: number;
     summaries: boolean;
     facts: boolean;
+    factExtraction: 'precise' | 'complete';
     hashConcurrency: number;
     annThresholdChunks: number;
     conflictPathPatterns: string[];
@@ -642,6 +654,9 @@ export interface AknoConfig {
     expansion: boolean;
     expansionTimeoutMs: number;
     graph: boolean;
+    facts: boolean;
+    factRanking: 'none' | 'best_rank';
+    lineTargeting: 'none' | 'lexical';
     rank: { knowledge: number; source: number; inference: number };
   };
   graph: {

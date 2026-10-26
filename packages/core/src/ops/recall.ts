@@ -10,6 +10,15 @@ import { indexDegradation } from '../context.ts';
 import { expandQuery, inferMode, splitMultiPart } from '../recall/expand.ts';
 import { graphRecallCandidates } from '../recall/graph-arm.ts';
 import { fuseHits, hybridSearch, normalizeScores, rerankHits, type ChunkHit } from '../recall/search.ts';
+import {
+  factChunkHits,
+  fuseFactHits,
+  searchFacts,
+  targetFactLines,
+  withFactRepresentation,
+  type FactHit,
+} from '../recall/fact-arm.ts';
+import { buildFactList } from '../recall/fact-list.ts';
 import { inferMemoryView } from '../memory/intent.ts';
 import { managedMemoryProjectionForView } from '../memory/projection.ts';
 
@@ -27,8 +36,12 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
   const mode = input.mode ?? inferMode(input.query);
   const memoryView = input.memory_view ?? inferMemoryView(input.query, mode);
   const depth = input.depth ?? (mode === 'explore' ? 'summary' : 'lines');
-  const limit =
-    input.limit ?? (mode === 'explore' ? ctx.config.recall.defaultLimit * 2 : ctx.config.recall.defaultLimit);
+  const format = input.format ?? 'cards';
+  // In the fact format `limit` counts facts; the cards that supply evidence keep their default.
+  const cardLimit = mode === 'explore' ? ctx.config.recall.defaultLimit * 2 : ctx.config.recall.defaultLimit;
+  const limit = format === 'facts' ? cardLimit : (input.limit ?? cardLimit);
+  const factLimit = input.limit ?? DEFAULT_FACT_LIMIT;
+  const useFacts = input.facts ?? (format === 'facts' || ctx.config.recall.facts);
   const budget = input.budget ?? ctx.config.recall.defaultBudget;
 
   const degraded = new Set<DegradedReason>();
@@ -108,10 +121,12 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     allowedChunkIds: Set<number>,
   ): Promise<{
     hits: ChunkHit[];
+    factHits: FactHit[];
     qualification: RecallQualification | null;
     scores: 'absolute' | 'relative';
   }> => {
-    if (allowedChunkIds.size === 0) return { hits: [], qualification: null, scores: 'relative' };
+    if (allowedChunkIds.size === 0)
+      return { hits: [], factHits: [], qualification: null, scores: 'relative' };
     const search = await hybridSearch(ctx.store, ctx.models.embedding, {
       queries: dedupe(allQueries),
       vectorTexts: dedupe(allVectorTexts),
@@ -123,17 +138,51 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     notes.push(...search.notes);
 
     let hits: ChunkHit[] = search.hits;
+    let arms = [...search.arms];
+    let fuse = false;
+    let factHits: FactHit[] = [];
+    if (useFacts) {
+      try {
+        const facts = searchFacts(ctx.store, {
+          queries: dedupe(allQueries),
+          vectors: search.vectors,
+          limit: ctx.config.recall.candidatesPerArm,
+          chunkIds: allowedChunkIds,
+        });
+        factHits = fuseFactHits([facts.lexical, facts.vector]);
+        // By default facts do not move chunks. Anything that ranks fact-bearing chunks higher
+        // ranks documents and source pages — which never have facts — lower, and on invented
+        // one-sentence sources that cost direct answers. `best_rank` is the measured alternative.
+        if (ctx.config.recall.factRanking === 'best_rank') {
+          const [lexical = [], vector = []] = arms;
+          arms = [
+            withFactRepresentation(lexical, factChunkHits(ctx.store, facts.lexical, 'lexical')),
+            withFactRepresentation(vector, factChunkHits(ctx.store, facts.vector, 'vector')),
+            ...arms.slice(2),
+          ];
+          fuse = factHits.length > 0;
+        }
+      } catch {
+        // A database from before the fact index still answers through the other arms.
+        notes.push('the fact candidate arm was unavailable');
+      }
+    }
     if (input.graph ?? ctx.config.recall.graph) {
       try {
         const graphResult = await graphRecallCandidates(ctx, input.query, search.hits, allowedChunkIds);
         for (const reason of graphResult.degraded) degraded.add(reason);
         notes.push(...graphResult.notes);
-        if (graphResult.hits.length > 0) hits = fuseHits([...search.arms, graphResult.hits]);
+        if (graphResult.hits.length > 0) {
+          arms.push(graphResult.hits);
+          fuse = true;
+        }
       } catch {
         degraded.add('no_graph_index');
         notes.push('the structural graph candidate arm was unavailable');
       }
     }
+    if (fuse) hits = fuseHits(arms);
+    if (factHits.length > 0) hits = targetFactLines(hits, factHits);
 
     let reranked = false;
     let qualification: RecallQualification | null = null;
@@ -161,6 +210,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     if (!reranked) hits = normalizeScores(hits);
     return {
       hits,
+      factHits,
       qualification,
       scores: hits.some((hit) => hit.relevance !== undefined) ? 'absolute' : 'relative',
     };
@@ -181,6 +231,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       limit,
       budget,
       concepts: dedupe(allConcepts),
+      queries: dedupe(allQueries),
       include: (input.include as PageRole[] | undefined) ?? null,
       memoryView,
       memorySelection,
@@ -230,6 +281,22 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     }
   }
   const { qualification, scores } = pipeline;
+  const factList =
+    format === 'facts'
+      ? buildFactList(ctx.store, {
+          factHits: pipeline.factHits,
+          hits: pipeline.hits,
+          qualified: qualification?.applied === true,
+          results: assembled.results,
+          limit: factLimit,
+          budget,
+        })
+      : null;
+  // The fact format replaces cards with facts plus the evidence lines facts did not cover.
+  const shaped = (results: RecallOutput['results']) =>
+    factList
+      ? { results: [], facts: factList.facts, evidence: factList.evidence, text: factList.text }
+      : { results };
 
   const documentStates = assembled.results.flatMap((result) =>
     result.type === 'document'
@@ -261,7 +328,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     return {
       status: reasons.length > 0 ? 'degraded' : 'empty',
       ...(reasons.length > 0 ? { degraded: reasons } : {}),
-      results: [],
+      ...shaped([]),
       searched,
       budget_used: 0,
       mode,
@@ -284,9 +351,9 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
   if (unavailableOnly) {
     return {
       status: 'unavailable',
-      results: assembled.results,
+      ...shaped(assembled.results),
       searched,
-      budget_used: assembled.budgetUsed,
+      budget_used: factList?.budgetUsed ?? assembled.budgetUsed,
       mode,
       memory_view: memoryView,
       scores,
@@ -299,9 +366,9 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
   return {
     status: reasons.length > 0 ? 'degraded' : 'ok',
     ...(reasons.length > 0 ? { degraded: reasons } : {}),
-    results: assembled.results,
+    ...shaped(assembled.results),
     searched,
-    budget_used: assembled.budgetUsed,
+    budget_used: factList?.budgetUsed ?? assembled.budgetUsed,
     mode,
     memory_view: memoryView,
     scores,
@@ -318,6 +385,9 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
         : {}),
   };
 }
+
+/** Enough for an agent's working set at roughly 25–40 tokens a fact. */
+const DEFAULT_FACT_LIMIT = 20;
 
 function hasExactEvidence(results: RecallOutput['results']): boolean {
   return results.some((result) =>

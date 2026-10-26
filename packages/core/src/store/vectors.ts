@@ -204,6 +204,9 @@ export function reconcileDimensions(db: Database, dimensions: number, vecLoaded:
     if (vecLoaded) db.exec('DROP TABLE IF EXISTS vec_chunks');
     db.exec('DROP TABLE IF EXISTS vec_fallback');
     db.exec('UPDATE chunks SET embedded = 0');
+    // Fact vectors from the old model are no more comparable than chunk vectors are.
+    if (db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'fact_vectors'").get())
+      db.exec('DELETE FROM fact_vectors');
   }
   db.prepare(
     "INSERT INTO meta(key, value) VALUES('embedding_dimensions', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",

@@ -53,6 +53,27 @@ Rules for facts:
 - Prefer fewer, better facts. An empty list is a correct answer for a page of prose.`;
 
 /**
+ * The same contract for a knowledge base searched fact-first. The precise rules above leave a
+ * fact out whenever it is not obviously the page's load-bearing value, which is right for a
+ * search signal and wrong when the fact list is what an agent reads: a line with no fact is a
+ * line the fact arm cannot find. Qualifiers stay inside the claim, so a superseded or reported
+ * statement is extracted as exactly that rather than skipped or flattened into a current fact.
+ */
+const COMPLETE_RULES = `Rules for facts:
+- One fact for every line that states something checkable: a value, date, amount, name, identifier, place, rule, status, decision, preference, relationship or event. A line that states several things yields several facts.
+- Keep every qualifier that changes the meaning inside the claim: superseded, obsolete, draft, original, earlier, planned, tentative, reported by someone, negation ("does not"), and whose record it is.
+- Skip headings, questions, to-dos and lines with nothing checkable in them.
+- "line" MUST be a line number from the numbered input. Never invent one.
+- The claim must be understandable with no other context: resolve pronouns, name the subject.
+- subject/attribute/value may be null when the line does not decompose cleanly.`;
+
+const SYSTEM_COMPLETE = SYSTEM.slice(0, SYSTEM.indexOf('Rules for facts:')) + COMPLETE_RULES;
+
+export type FactExtraction = 'precise' | 'complete';
+const FACT_CAP: Record<FactExtraction, number> = { precise: 60, complete: 240 };
+const FACT_MAX_TOKENS: Record<FactExtraction, number> = { precise: 2400, complete: 8000 };
+
+/**
  * The same shape the prompt above describes, in the form an endpoint can enforce.
  *
  * It is a mirror of the prompt and has to stay one — the prompt is what a model reads and this
@@ -92,8 +113,9 @@ export const SUMMARY_ONLY_SCHEMA = z.object({ summary: z.string(), keywords: z.a
 export async function derivePage(
   page: ParsedPage,
   model: ModelClient,
-  options: { summaries: boolean; facts: boolean },
+  options: { summaries: boolean; facts: boolean; extraction?: FactExtraction },
 ): Promise<DerivedPage> {
+  const extraction = options.extraction ?? 'precise';
   const empty: DerivedPage = { summary: null, keywords: [], facts: [], error: null };
   if (!options.summaries && !options.facts) return empty;
   if (!model.available) return { ...empty, error: model.unavailableReason ?? 'derive model unavailable' };
@@ -109,10 +131,10 @@ export async function derivePage(
   const numbered = factual.map(({ line, text }) => `${line}: ${text}`).join('\n');
   const result = await model.chat(
     [
-      { role: 'system', content: SYSTEM },
+      { role: 'system', content: extraction === 'complete' ? SYSTEM_COMPLETE : SYSTEM },
       { role: 'user', content: `Page: ${page.slug}\nTitle: ${page.title}\n\n${numbered}` },
     ],
-    { schema: DERIVED_SCHEMA, maxTokens: 2400 },
+    { schema: DERIVED_SCHEMA, maxTokens: FACT_MAX_TOKENS[extraction] },
   );
 
   const parsed =
@@ -179,7 +201,7 @@ export async function derivePage(
   return {
     summary: options.summaries && !hasNonfactualProse(page.content) ? cleanSummary(parsed.summary) : null,
     keywords: options.summaries ? cleanKeywords(parsed.keywords) : [],
-    facts: options.facts ? cleanFacts(parsed.facts, byLine) : [],
+    facts: options.facts ? cleanFacts(parsed.facts, byLine, FACT_CAP[extraction]) : [],
     error: null,
   };
 }
@@ -297,6 +319,7 @@ function cleanKeywords(value: unknown): string[] {
 function cleanFacts(
   value: unknown,
   byLine: Map<number, { text: string; itemId: string | null; factEligible: boolean }>,
+  cap: number,
 ): DerivedFact[] {
   if (!Array.isArray(value)) return [];
   const out: DerivedFact[] = [];
@@ -327,7 +350,7 @@ function cleanFacts(
       itemId: source.itemId,
       confidence: scoreConfidence(source.text, claim, record),
     });
-    if (out.length >= 60) break;
+    if (out.length >= cap) break;
   }
   return out;
 }

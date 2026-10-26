@@ -26,6 +26,8 @@ export interface ChunkHit {
    * lexical-only search, because bm25 has no absolute interpretation.
    */
   relevance?: number;
+  /** Page lines a fact arm matched inside this chunk, so the card can show them first. */
+  lines?: number[];
 }
 
 export interface SearchOptions {
@@ -44,6 +46,8 @@ export interface SearchResult {
   hits: ChunkHit[];
   /** Native arm rankings, retained so later graph candidates join the same rank fusion. */
   arms: ChunkHit[][];
+  /** The query vectors the vector arm used, for other arms to reuse. Empty without embeddings. */
+  vectors: Float32Array[];
   degraded: DegradedReason[];
   /** Human-readable detail for logs and `doctor`, never for control flow. */
   notes: string[];
@@ -68,9 +72,11 @@ export async function hybridSearch(
   const lexical = lexicalSearch(store, options.queries, options.candidatesPerArm, options.chunkIds);
 
   let vector: ChunkHit[] = [];
+  let vectors: Float32Array[] = [];
   if (embedding.available) {
     const embedded = await embedding.embed(options.vectorTexts);
     if (embedded.ok && embedded.value) {
+      vectors = embedded.value;
       // Candidate pre-filtering. Scoring only the lexical candidate
       // set instead of every vector raises the ceiling several-fold for free —
       // but it cannot help a purely semantic query with no lexical overlap, so it
@@ -95,7 +101,7 @@ export async function hybridSearch(
   }
 
   const arms = [lexical, vector];
-  return { hits: fuseHits(arms), arms, degraded, notes };
+  return { hits: fuseHits(arms), arms, vectors, degraded, notes };
 }
 
 /**
@@ -239,6 +245,7 @@ export function fuseHits(lists: ChunkHit[][]): ChunkHit[] {
         existing.score += contribution;
         for (const arm of hit.from) if (!existing.from.includes(arm)) existing.from.push(arm);
         existing.graphPaths = mergeGraphPaths(existing.graphPaths, hit.graphPaths);
+        if (hit.lines?.length) existing.lines = [...new Set([...(existing.lines ?? []), ...hit.lines])];
         if (hit.relevance !== undefined) {
           existing.relevance = Math.max(existing.relevance ?? 0, hit.relevance);
         }

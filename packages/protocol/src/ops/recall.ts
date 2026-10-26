@@ -4,6 +4,8 @@ import {
   Depth,
   MemoryView,
   PageRole,
+  RecallEvidence,
+  RecallFact,
   RecallMode,
   RecallQualification,
   RecallResult,
@@ -36,6 +38,14 @@ export const RecallInput = z.object({
   graph: z.boolean().optional(),
   /** Run the configured reranker and relevance qualifier. Defaults to true for recall. */
   rerank: z.boolean().optional(),
+  /** Search derived facts as their own candidate arm. Defaults to the `recall.facts` setting. */
+  facts: z.boolean().optional(),
+  /**
+   * `cards` (default) returns page and document cards. `facts` returns a ranked list of live
+   * derived facts with their `slug:line`, plus cited lines for evidence that has no facts, and
+   * leaves `results` empty. `text` renders the same content for direct prompt injection.
+   */
+  format: z.enum(['cards', 'facts']).optional(),
   filter: SlugFilter.optional(),
   since: DatePrefix.optional(),
   until: DatePrefix.optional(),
@@ -71,5 +81,11 @@ export const RecallOutput = ResultEnvelope.extend({
   coverage: z.record(z.string(), z.boolean()).optional(),
   mode: RecallMode,
   memory_view: MemoryView,
+  /** `format: 'facts'` only. Best first. */
+  facts: z.array(RecallFact).optional(),
+  /** `format: 'facts'` only. Returned evidence that produced no fact, best first. */
+  evidence: z.array(RecallEvidence).optional(),
+  /** `format: 'facts'` only. `facts` and `evidence` as compact prompt-ready text. */
+  text: z.string().optional(),
 });
 export type RecallOutput = z.infer<typeof RecallOutput>;
