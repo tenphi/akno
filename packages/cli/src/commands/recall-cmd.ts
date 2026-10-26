@@ -23,6 +23,10 @@ const RECALL_HELP = `akno recall <query> [options]
   --ownership <o>     orphan | owned | any
   --no-expand         Search the exact words given; useful for filenames.
   --no-graph          Disable bounded graph-assisted candidate discovery.
+  --format <f>        cards | facts. facts prints ranked derived facts with
+                      their slug:line, then cited lines that carry no fact.
+  --facts             Let derived facts pick which card lines to show.
+                      --no-facts turns it off; the default is recall.facts.
   --json              Machine-readable response.`;
 
 export async function recallCommand(argv: string[]): Promise<number> {
@@ -40,6 +44,9 @@ export async function recallCommand(argv: string[]): Promise<number> {
     ownership?: string;
     expand: boolean;
     graph: boolean;
+    format?: string;
+    facts?: boolean;
+    'no-facts'?: boolean;
   }>(argv, {
     mode: { type: 'string' },
     'memory-view': { type: 'string' },
@@ -54,6 +61,10 @@ export async function recallCommand(argv: string[]): Promise<number> {
     ownership: { type: 'string' },
     expand: { type: 'boolean', default: true },
     graph: { type: 'boolean', default: true },
+    format: { type: 'string' },
+    // Declared without a default, so leaving both out defers to `recall.facts`.
+    facts: { type: 'boolean' },
+    'no-facts': { type: 'boolean' },
   });
 
   if (values.help || positionals.length === 0) {
@@ -62,6 +73,7 @@ export async function recallCommand(argv: string[]): Promise<number> {
   }
 
   const query = positionals.join(' ');
+  const facts = values['no-facts'] ? false : values.facts;
   const handle = await resolveOps(values, openOptionsFrom(values));
 
   try {
@@ -89,6 +101,8 @@ export async function recallCommand(argv: string[]): Promise<number> {
         : {}),
       expand: values.expand,
       graph: values.graph,
+      ...(values.format ? { format: values.format as 'cards' | 'facts' } : {}),
+      ...(facts !== undefined ? { facts } : {}),
       ...(Object.keys(filter).length > 0 ? { filter } : {}),
     });
 
@@ -119,10 +133,14 @@ function printRecall(result: {
   mode: string;
   memory_view: string;
   note?: string;
+  facts?: unknown[];
+  text?: string;
 }): void {
+  const count = result.facts ? result.facts.length : result.results.length;
+  const noun = result.facts ? 'fact' : 'result';
   line(
     `${statusLabel(result.status)} ${style.grey(`mode=${result.mode} memory=${result.memory_view}`)} ` +
-      `${style.grey(`${result.results.length} result${result.results.length === 1 ? '' : 's'}`)} ` +
+      `${style.grey(`${count} ${noun}${count === 1 ? '' : 's'}`)} ` +
       `${style.grey(`${result.budget_used} tokens`)}`,
   );
   if (result.degraded?.length) line(style.yellow(`  degraded: ${result.degraded.join(', ')}`));
@@ -144,6 +162,9 @@ function printRecall(result: {
       );
     }
   }
+
+  // The fact list is already rendered for an agent to read, so it is printed as it is.
+  if (result.text !== undefined) line(`\n${result.text}`);
 
   for (const resultCard of result.results) {
     if (resultCard.type === 'document') {
@@ -197,7 +218,7 @@ function printRecall(result: {
     if (card.links?.length) line(style.grey(`  links: ${card.links.slice(0, 8).join(', ')}`));
   }
 
-  if (result.searched.length > 1 || result.results.length === 0) {
+  if (result.searched.length > 1 || count === 0) {
     line(`\n${style.grey(`searched: ${result.searched.map((q) => `"${q}"`).join(', ')}`)}`);
   }
 }

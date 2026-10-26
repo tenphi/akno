@@ -153,7 +153,8 @@ whose facts matched first on each card. It never changes which cards return or t
 favoured fact-bearing chunks would push documents and source pages down, because they have no facts.
 
 `format: "facts"` replaces cards with a ranked list of live facts, each with its `slug:line`, followed by cited
-lines from returned evidence that produced no fact. `text` renders both for direct prompt injection. A fact is
+lines from returned evidence that produced no fact. `text` renders both for direct prompt injection, and is what
+`akno recall --format facts` prints; `--facts` / `--no-facts` override `recall.facts` for one call. A fact is
 the deriver's self-contained restatement; read its locator when exact wording matters. Managed-memory facts
 that are not plain current assertions carry their `memory` status. Superseded facts are left out.
 
