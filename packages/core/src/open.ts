@@ -7,8 +7,10 @@ import {
   type OpName,
   type OpInput,
   type OpResult,
+  type ModelFallbackWarning,
 } from '@tenphi/akno-protocol';
 import { loadConfig, type LoadOptions } from './config/load.ts';
+import { collectModelFallbacks } from './models/fallback-notices.ts';
 import type { AknoConfig } from './config/schema.ts';
 import { acquireWriteLock, openStore, type WriteLock } from './store/db.ts';
 import { DeferredDerive } from './index/defer.ts';
@@ -424,7 +426,13 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
       }
       return implementation(forCall, parsed.data);
     };
-    return definition.kind === 'write' ? duringWrite(work) : work();
+    // Every door ends here, so a fallback anywhere under this op reaches the caller of every door.
+    const { value, warnings } = await collectModelFallbacks(() =>
+      definition.kind === 'write' ? duringWrite(work) : work(),
+    );
+    if (warnings.length === 0) return value;
+    const result = value as OpResult<N> & { warnings?: ModelFallbackWarning[] };
+    return { ...result, warnings: [...(result.warnings ?? []), ...warnings] };
   }
 
   const akno: Akno = {

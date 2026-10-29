@@ -31,8 +31,9 @@
     // },
     // Or bill the ChatGPT plan Codex is signed in to on this machine, for the
     // generative roles only. Embeddings and a Decisions or endpoint reranker
-    // still need an API-key provider. See docs/configuration.md.
-    // "chatgpt": { "auth": "chatgpt" }
+    // still need an API-key provider. `fallback` serves a call the subscription
+    // cannot, and the result says so. See docs/configuration.md.
+    // "chatgpt": { "auth": "chatgpt", "fallback": "openai" }
   },
 
   // Model ids as your endpoint reports them — check with `curl $BASE_URL/models`.

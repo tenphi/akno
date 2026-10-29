@@ -632,6 +632,7 @@ function benchConfig(
         {
           base_url: provider.baseUrl,
           ...(provider.auth ? { auth: provider.auth } : {}),
+          ...(provider.fallback ? { fallback: provider.fallback.name } : {}),
           api: provider.api,
           api_key: provider.apiKey ? { env: secret } : null,
           headers: provider.headers,

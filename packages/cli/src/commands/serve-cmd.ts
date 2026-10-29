@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { open } from '@tenphi/akno-core';
+import { onModelFallback, open } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, kv, line, ms, style, warn } from '../output.ts';
 import { serveSocket } from '../serve/socket.ts';
@@ -68,6 +68,18 @@ export async function serveCommand(argv: string[]): Promise<number> {
     const forwarded = await serveMcpThroughService(values, log);
     if (forwarded !== null) return forwarded;
   }
+
+  // A caller hears about a fallback in its result. Background work (a watcher's index pass, the
+  // nightly cycle) has no caller, so every fallback is logged here too: once a minute per role and
+  // reason, because a subscription outage would otherwise log a line for every derived page.
+  const fallbackLogged = new Map<string, number>();
+  onModelFallback((warning) => {
+    const key = `${warning.role}\0${warning.reason}`;
+    const now = Date.now();
+    if ((fallbackLogged.get(key) ?? 0) > now - 60_000) return;
+    fallbackLogged.set(key, now);
+    log(style.yellow(`fallback: ${warning.message}`));
+  });
 
   const mem = await open({
     ...openOptionsFrom(values),

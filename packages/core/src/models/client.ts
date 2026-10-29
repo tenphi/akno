@@ -8,7 +8,8 @@ import {
 import { languageAudit } from './language-audit.ts';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
-import type { DegradedReason } from '@tenphi/akno-protocol';
+import type { DegradedReason, ModelFallbackWarning } from '@tenphi/akno-protocol';
+import { reportModelFallback } from './fallback-notices.ts';
 import type { ReasoningEffort, ResolvedModelRole } from '../config/schema.ts';
 import { ProviderRequestError, requestConfiguredProvider } from './provider-request.ts';
 import { parseScoreDecisions, type ScoreQuestion, type ScoreDecision } from './decisions.ts';
@@ -49,6 +50,8 @@ export interface ModelOutcome<T> {
   reason?: ModelFailure;
   /** Human-readable detail. For `doctor` and logs, never for control flow. */
   error?: string;
+  /** The status of the provider's last refusal, when it answered with one. */
+  httpStatus?: number;
   latencyMs: number;
   /** Physical HTTP requests, including compatibility and provider retries when known. */
   endpointRequests?: number;
@@ -197,10 +200,18 @@ export class ModelClient {
   readonly #outcomeObserver: ModelOutcomeObserver | null;
   /** Learned on first rejection and shared by observed views of this role client. */
   #compatibility: ModelCompatibility = { tokenParam: 'max_tokens', schemaMode: 'schema' };
+  /** The same role on the provider's fallback, when one is configured. */
+  #fallback: ModelClient | null;
+  /** This role with no observer and no fallback: the attempt a fallback may still replace. */
+  #direct: ModelClient | null = null;
 
   constructor(role: ResolvedModelRole, outcomeObserver: ModelOutcomeObserver | null = null) {
     this.#role = role;
     this.#outcomeObserver = outcomeObserver;
+    // The same provider object, not a copy: an `api: auto` fallback resolves in place after load.
+    // Config validation guarantees it has no fallback of its own.
+    const fallback = role.provider?.fallback;
+    this.#fallback = fallback ? new ModelClient({ ...role, provider: fallback }, outcomeObserver) : null;
   }
 
   /**
@@ -210,6 +221,7 @@ export class ModelClient {
   withOutcomeObserver(observer: ModelOutcomeObserver): ModelClient {
     const observed = new ModelClient(this.#role, observer);
     observed.#compatibility = this.#compatibility;
+    observed.#fallback = this.#fallback?.withOutcomeObserver(observer) ?? null;
     return observed;
   }
 
@@ -235,13 +247,13 @@ export class ModelClient {
       this.#role.provider !== null &&
       this.#role.id !== null &&
       !this.generativeTransportUnresolved() &&
-      this.chatGptLoginProblem() === null
+      (this.chatGptLoginProblem() === null || this.#fallback?.available === true)
     );
   }
 
   get unavailableReason(): string | null {
     const loginProblem = this.chatGptLoginProblem();
-    if (loginProblem) return loginProblem;
+    if (loginProblem && !this.#fallback?.available) return `${this.#role.role}: ${loginProblem}`;
     if (this.generativeTransportUnresolved()) {
       const provider = this.#role.provider!;
       return (
@@ -308,7 +320,18 @@ export class ModelClient {
   private chatGptLoginProblem(): string | null {
     if (!this.#role.enabled || this.#role.provider?.auth !== 'chatgpt') return null;
     const state = readChatGptLogin();
-    return state.status === 'ok' ? null : `${this.#role.role}: ${describeChatGptLoginProblem(state.status)}`;
+    return state.status === 'ok' ? null : describeChatGptLoginProblem(state.status);
+  }
+
+  /**
+   * Set while every call of this role is going to the fallback because the login is unusable,
+   * which is known before any call is made. For `doctor`; a call reports its own fallback.
+   */
+  get fallbackNotice(): string | null {
+    const loginProblem = this.chatGptLoginProblem();
+    const fallback = this.#fallback;
+    if (!loginProblem || !fallback?.available) return null;
+    return `${this.#role.role}: ${loginProblem}; calls go to provider "${fallback.#role.provider!.name}"`;
   }
 
   /** True when the user asked for this role, whether or not it resolved. */
@@ -438,6 +461,7 @@ export class ModelClient {
           value: null,
           reason: 'request_failed',
           error: `${this.#role.role} endpoint returned ${status}${detail ? `: ${detail}` : ''}`,
+          httpStatus: status,
           latencyMs: performance.now() - started,
           endpointRequests,
         };
@@ -674,6 +698,7 @@ export class ModelClient {
     messages: ChatMessage[],
     options: ChatOptions = {},
   ): Promise<ModelOutcome<string>> {
+    if (this.#fallback) return this.chatWithFallback(this.#fallback, messages, options);
     const chatStarted = performance.now();
     const wantsJson = options.json || options.schema !== undefined;
     // Built once: `z.toJSONSchema` is cheap but this sits on the recall path, and a
@@ -780,6 +805,61 @@ export class ModelClient {
       endpointRequests,
       ...(usage ? { usage } : {}),
     });
+  }
+
+  /**
+   * Try the provider, and hand the call to its configured fallback when the provider could not
+   * serve it: no usable login, a refusal, a usage limit, an outage or a timeout.
+   *
+   * The attempt runs unobserved, because maintenance telemetry counts a failed call as a degraded
+   * stage, and a call the fallback then answered degraded nothing. Only the attempt whose outcome
+   * is returned is observed. A response the model did produce but that broke its contract
+   * (`bad_response`, a language check) is the model's answer, not an outage, so it stands.
+   */
+  private async chatWithFallback(
+    fallback: ModelClient,
+    messages: ChatMessage[],
+    options: ChatOptions,
+  ): Promise<ModelOutcome<string>> {
+    const started = performance.now();
+    if (!this.#direct) {
+      const provider = this.#role.provider!;
+      this.#direct = new ModelClient({ ...this.#role, provider: { ...provider, fallback: undefined } });
+      this.#direct.#compatibility = this.#compatibility;
+    }
+    const attempt = await this.#direct.chatTransport(messages, options);
+    const reason = fallbackReason(attempt);
+    // A caller's deadline bounds the whole call; a fallback with no time left would only fail later.
+    const remaining =
+      options.timeoutMs === undefined
+        ? undefined
+        : Math.floor(options.timeoutMs - (performance.now() - started));
+    if (!reason || (remaining !== undefined && remaining <= 0) || !fallback.available) {
+      return this.observeChat(attempt);
+    }
+
+    const provider = this.#role.provider!.name;
+    const fallbackProvider = fallback.#role.provider!.name;
+    const loginProblem = reason === 'login_unavailable' ? this.chatGptLoginProblem() : null;
+    reportModelFallback({
+      type: 'model_fallback',
+      role: this.#role.role,
+      provider,
+      fallback_provider: fallbackProvider,
+      reason,
+      message:
+        `${this.#role.role} used provider "${fallbackProvider}" because provider "${provider}" ` +
+        `${FALLBACK_REASONS[reason]}${loginProblem ? `: ${loginProblem}` : ''}`,
+    });
+    const served = await fallback.chatTransport(
+      messages,
+      remaining === undefined ? options : { ...options, timeoutMs: remaining },
+    );
+    return {
+      ...served,
+      latencyMs: performance.now() - started,
+      endpointRequests: (attempt.endpointRequests ?? 0) + (served.endpointRequests ?? 0),
+    };
   }
 
   /**
@@ -982,6 +1062,32 @@ export class ModelClient {
       ...(result.error ? { error: result.error } : {}),
       latencyMs: result.latencyMs,
     };
+  }
+}
+
+const FALLBACK_REASONS: Record<ModelFallbackWarning['reason'], string> = {
+  login_unavailable: 'has no usable login',
+  timeout: 'timed out',
+  rate_limited: 'hit a rate or usage limit',
+  rejected: 'refused the request',
+  server_error: 'failed on its side',
+  request_failed: 'could not complete the request',
+};
+
+/** Transport failures hand over to a fallback; an answer that broke its contract does not. */
+function fallbackReason(outcome: ModelOutcome<unknown>): ModelFallbackWarning['reason'] | null {
+  if (outcome.ok) return null;
+  switch (outcome.reason) {
+    case 'unavailable':
+      return 'login_unavailable';
+    case 'timeout':
+      return 'timeout';
+    case 'request_failed':
+      if (outcome.httpStatus === undefined) return 'request_failed';
+      if (outcome.httpStatus === 429) return 'rate_limited';
+      return outcome.httpStatus >= 500 ? 'server_error' : 'rejected';
+    default:
+      return null;
   }
 }
 

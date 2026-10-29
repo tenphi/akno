@@ -720,10 +720,35 @@ export const DegradedReason = z.enum([
 ]);
 export type DegradedReason = z.infer<typeof DegradedReason>;
 
+/**
+ * A model call this result needed was served by the provider's configured fallback, because the
+ * provider itself could not serve it. The result is complete; the warning is for the person paying,
+ * so it travels beside `status` instead of turning a full answer into a `degraded` one.
+ */
+export const ModelFallbackWarning = z.object({
+  type: z.literal('model_fallback'),
+  role: z.string(),
+  provider: z.string(),
+  fallback_provider: z.string(),
+  reason: z.enum([
+    'login_unavailable',
+    'timeout',
+    'rate_limited',
+    'rejected',
+    'server_error',
+    'request_failed',
+  ]),
+  /** One content-free sentence a caller can show as is. */
+  message: z.string(),
+});
+export type ModelFallbackWarning = z.infer<typeof ModelFallbackWarning>;
+
 /** Every op's response carries these, so a caller can branch uniformly. */
 export const ResultEnvelope = z.object({
   status: ResultStatus,
   degraded: z.array(DegradedReason).optional(),
+  /** Something the caller should hear about that did not degrade the result. */
+  warnings: z.array(ModelFallbackWarning).optional(),
   /** True when a durable mutation receipt supplied this result without applying the request again. */
   replayed: z.boolean().optional(),
   /** Human-readable note attached to a non-`ok` status. */

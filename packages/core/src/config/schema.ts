@@ -25,6 +25,12 @@ export const ProviderDoc = z.object({
    * is always `responses`, and `base_url` defaults to the Codex backend.
    */
   auth: z.enum(['api_key', 'chatgpt']).optional(),
+  /**
+   * Another provider, by name, that serves a generative call when this `chatgpt` provider cannot:
+   * no usable login, a refusal, a usage limit, an outage or a timeout. The role keeps its model
+   * id and settings, and the result carries a `model_fallback` warning. Unset, a failure is final.
+   */
+  fallback: z.string().min(1).nullable().optional(),
   api_key: SecretRef.nullable().optional(),
   /** Generative transport. Embeddings and native reranking retain their dedicated endpoints. */
   api: ProviderApi.optional(),
@@ -553,6 +559,8 @@ export interface ResolvedProvider {
   apiKey: string | null;
   /** Set when the provider bills the local ChatGPT login rather than an API key. */
   auth?: 'chatgpt';
+  /** The provider that serves a generative call this one cannot. Only on `auth: "chatgpt"`. */
+  fallback?: ResolvedProvider;
   headers: Record<string, string>;
   /** Resolved generative transport, or `auto` while a content-safe capability probe is still owed. */
   api: ProviderApi;

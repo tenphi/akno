@@ -151,6 +151,7 @@ export async function doctorCommand(argv: string[]): Promise<number> {
           line(`    ${name.padEnd(12)} ${checkState}${checkLatency}${tokenReceipt}`);
         }
       }
+      if (role.warning) line(`    ${style.yellow('warning:')} ${role.warning}`);
       if (!role.available) {
         if (role.error) line(`    ${style.grey(role.error)}`);
         // The consequence is the part that is actually useful to a reader.

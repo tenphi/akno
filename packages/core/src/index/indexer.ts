@@ -2,6 +2,7 @@ import { PROSE_PROJECTION_VERSION } from '../kb/prose.ts';
 import { replaceProseEntries } from '../memory/prose-projection.ts';
 import { refreshReflectionProse } from '../observations/reflection.ts';
 import { embedPendingFacts } from '../recall/fact-arm.ts';
+import { collectModelFallbacks } from '../models/fallback-notices.ts';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
@@ -199,12 +200,19 @@ export class Indexer {
   }
 
   async run(options: IndexOptions = {}): Promise<IndexReport> {
-    return this.#revision.run(() => this.runPass(options));
+    return this.#revision.run(() => this.runPassReportingFallbacks(options));
   }
 
   /** Finish a caller-visible memory mutation even when a background dream owns a planner revision. */
   async runForeground(options: IndexOptions = {}): Promise<IndexReport> {
-    return this.#revision.runForeground(() => this.runPass(options));
+    return this.#revision.runForeground(() => this.runPassReportingFallbacks(options));
+  }
+
+  /** A derivation served by a fallback provider is listed beside the pass's other warnings. */
+  private async runPassReportingFallbacks(options: IndexOptions): Promise<IndexReport> {
+    const { value: report, warnings } = await collectModelFallbacks(() => this.runPass(options));
+    for (const warning of warnings) report.warnings.push(warning.message);
+    return report;
   }
 
   /** Notify a planner barrier about a foreground policy mutation that has no index pass. */

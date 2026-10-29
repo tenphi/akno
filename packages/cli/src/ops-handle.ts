@@ -56,7 +56,7 @@ export async function resolveOps(
         ...(options.actor ? { actor: options.actor } : {}),
       });
       return {
-        ops: client,
+        ops: reportingWarnings(client, values.json),
         akno: null,
         via: 'socket',
         hello: client.hello,
@@ -82,12 +82,42 @@ export async function resolveOps(
     ...(options.actor ? { actor: options.actor } : {}),
   });
   return {
-    ops: akno,
+    ops: reportingWarnings(akno, values.json),
     akno,
     via: 'in-process',
     hello: null,
     close: () => akno.close(),
   };
+}
+
+/**
+ * A person at a terminal hears about a fallback whatever the command chooses to print of the
+ * result. With `--json` the warnings are already part of the output, so nothing is added.
+ */
+function reportingWarnings<T extends object>(ops: T, json: boolean | undefined): T {
+  if (json) return ops;
+  return new Proxy(ops, {
+    get(target, property, receiver) {
+      const value: unknown = Reflect.get(target, property, receiver);
+      if (typeof value !== 'function') return value;
+      return (...args: unknown[]) => {
+        const result: unknown = value.apply(target, args);
+        return result instanceof Promise ? result.then(printWarnings) : result;
+      };
+    },
+  });
+}
+
+function printWarnings<T>(result: T): T {
+  const warnings = (result as { warnings?: unknown } | null)?.warnings;
+  if (!Array.isArray(warnings)) return result;
+  for (const warning of warnings) {
+    // An index report's warnings are plain strings and are printed by its own command.
+    if (warning && typeof warning === 'object' && typeof warning.message === 'string') {
+      process.stderr.write(`${style.yellow('warning:')} ${warning.message}\n`);
+    }
+  }
+  return result;
 }
 
 interface ServiceTarget {

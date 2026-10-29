@@ -77,7 +77,8 @@ configured scheme, host, and effective port: model calls and `api: auto` probes 
 before any authorization, custom header, or body can reach the target. Bounded same-origin `307`/`308`
 redirects preserve the POST; `301`/`302`/`303`, loops, malformed or credential-bearing destinations, and
 unsupported schemes fail with content-safe diagnostics. Retries and compatibility negotiation stay on the same
-origin, and a failed configured provider never causes another provider block to be tried.
+origin. A failed configured provider never causes another provider block to be tried, unless it is a ChatGPT
+subscription provider that names one in `fallback` (see below).
 
 ## ChatGPT subscription
 
@@ -96,7 +97,7 @@ Sign in to Codex with a ChatGPT account, through the ChatGPT app or `codex login
       "api_key": { "env": "AKNO_OPENAI_API_KEY" },
       "api": "responses",
     },
-    "chatgpt": { "auth": "chatgpt" },
+    "chatgpt": { "auth": "chatgpt", "fallback": "openai" },
   },
   "models": {
     "embedding": { "provider": "openai", "id": "text-embedding-3-small", "dimensions": 1536 },
@@ -141,14 +142,65 @@ How the provider behaves:
   `low` on the subscription usually produced no reasoning, like `none`, and got the arithmetic wrong.
   `medium` matched the API's `low`. Re-check a role's `reasoning_effort` when you move it. A role with no
   level uses the provider default, which reasoned on both routes.
-- **Failures.** A missing or expired login, or a Codex login that uses an API key, makes the subscription roles
-  unavailable. No request is sent. `akno doctor` names the problem, and results list the role as degraded.
-  Derivation then waits, and pages stay pending until a later index pass can derive them. A call the backend
-  refuses, including one over the plan's usage limits, degrades like any other provider failure.
+- **Failures without a fallback.** A missing or expired login, or a Codex login that uses an API key, makes
+  the subscription roles unavailable. No request is sent. `akno doctor` names the problem, and results list
+  the role as degraded. Derivation then waits, and pages stay pending until a later index pass can derive
+  them. A call the backend refuses, including one over the plan's usage limits, degrades like any other
+  provider failure.
 - **Billing and data.** Usage counts against the plan's limits, not API billing. The roles send OpenAI the
   same inputs they would send through the API, so the same authorization applies (see above).
 
 To switch back, point the roles at the API-key provider. Nothing else needs to change.
+
+### Falling back to the API
+
+`fallback` names another provider that serves a subscription call when the subscription cannot. The call
+keeps its role, model id, reasoning level and output budget. Only the provider changes:
+
+| The subscription…                                   | Then                                                 |
+| --------------------------------------------------- | ---------------------------------------------------- |
+| has no usable login                                 | Every call goes to the fallback; none is tried first |
+| refuses the call, or hits a rate or usage limit     | The call is repeated on the fallback                 |
+| fails on its side, cannot be reached, or times out  | The call is repeated on the fallback                 |
+| answers, but the answer breaks its schema or checks | The answer stands: that is the model, not an outage  |
+
+Every fallback produces a warning. The result of the op that needed the call carries it in `warnings`, beside
+`status`, which stays as it would have been:
+
+```json
+{
+  "status": "ok",
+  "warnings": [
+    {
+      "type": "model_fallback",
+      "role": "expansion",
+      "provider": "chatgpt",
+      "fallback_provider": "openai",
+      "reason": "rate_limited",
+      "message": "expansion used provider \"openai\" because provider \"chatgpt\" hit a rate or usage limit"
+    }
+  ]
+}
+```
+
+`reason` is one of `login_unavailable`, `timeout`, `rate_limited`, `rejected`, `server_error` or
+`request_failed`. The CLI prints each warning to stderr unless `--json` is set, and MCP callers receive the
+whole result. Work no caller is waiting on, such as a watcher's index pass or the nightly cycle, has no
+result to carry a warning. The service logs those fallbacks instead, at most once a minute per role and
+reason, and an index pass also lists them among its own warnings. `akno doctor` shows a warning on every
+role whose calls are going to the fallback.
+
+Some limits:
+
+- **Cost and data.** A fallback bills the API and sends that provider the same input. Naming one is the
+  owner's authorization for both.
+- **Deadlines.** A call with a caller's deadline, such as query expansion on the recall path, falls back only
+  if time is left. A background call that timed out on the subscription gets a full role timeout on the
+  fallback, so the worst case doubles.
+- **Reasoning levels.** The fallback receives the level set for the subscription. If you raised a role from
+  `low` to `medium` for the subscription, its fallback calls reason more than they did over the API before.
+- **Constraints.** `fallback` is accepted only on an `auth: "chatgpt"` provider, and it must name a
+  configured provider that is not one. Akno refuses to load a config that breaks either rule.
 
 ## Markdown conflict paths
 

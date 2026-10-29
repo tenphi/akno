@@ -405,6 +405,25 @@ function resolveProviders(
       maxRetries: doc.max_retries ?? 2,
     };
   }
+
+  // Linked once every provider exists, so the order of the blocks does not matter.
+  for (const [name, doc] of Object.entries(docs ?? {})) {
+    if (!doc.fallback) continue;
+    if (doc.auth !== 'chatgpt') {
+      throw new AknoError(
+        'invalid',
+        `providers.${name}.fallback is only for auth "chatgpt"; a provider with an API key fails as configured`,
+      );
+    }
+    const fallback = out[doc.fallback];
+    if (!fallback || fallback.auth === 'chatgpt') {
+      throw new AknoError(
+        'invalid',
+        `providers.${name}.fallback must name a configured provider that does not use auth "chatgpt", not "${doc.fallback}"`,
+      );
+    }
+    out[name]!.fallback = fallback;
+  }
   return out;
 }
 
