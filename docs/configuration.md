@@ -79,6 +79,77 @@ redirects preserve the POST; `301`/`302`/`303`, loops, malformed or credential-b
 unsupported schemes fail with content-safe diagnostics. Retries and compatibility negotiation stay on the same
 origin, and a failed configured provider never causes another provider block to be tried.
 
+## ChatGPT subscription
+
+The generative roles can bill the ChatGPT plan that Codex is signed in to on this machine instead of an API key.
+An API key stays the default, and the guided setup does not offer the subscription; it is a manual choice made
+per role.
+
+Sign in to Codex with a ChatGPT account, through the ChatGPT app or `codex login`. Then add a provider with
+`auth: "chatgpt"` and point the generative roles at it. Embeddings and the Decisions reranker stay on the API key:
+
+```jsonc
+{
+  "providers": {
+    "openai": {
+      "base_url": "https://api.openai.com/v1",
+      "api_key": { "env": "AKNO_OPENAI_API_KEY" },
+      "api": "responses",
+    },
+    "chatgpt": { "auth": "chatgpt" },
+  },
+  "models": {
+    "embedding": { "provider": "openai", "id": "text-embedding-3-small", "dimensions": 1536 },
+    "reranker": { "provider": "openai", "id": "gpt-6-luna", "mode": "decisions" },
+    "derive": { "provider": "chatgpt", "id": "gpt-6-luna" },
+    "expansion": { "provider": "chatgpt", "id": "gpt-6-luna", "reasoning_effort": "none" },
+    "answer": { "provider": "chatgpt", "id": "gpt-6-luna" },
+    "vision": { "provider": "chatgpt", "id": "gpt-6-luna", "enabled": true },
+  },
+}
+```
+
+The subscription serves only the Responses API, so each role either can or cannot use it:
+
+| Role                                                           | On the subscription                     |
+| -------------------------------------------------------------- | --------------------------------------- |
+| `derive`, `expansion`, `answer`, `vision`, `maintenance.model` | Yes                                     |
+| `reranker` with `mode: "llm"`                                  | Yes: the prompted ranking is generation |
+| `reranker` with `mode: "decisions"` or `"endpoint"`            | No: it needs `/decisions` or `/rerank`  |
+| `embedding`                                                    | No: it needs `/embeddings`              |
+
+A role that needs another endpoint resolves as unavailable, and `akno doctor` tells you to point it at an
+API-key provider. The backend also refuses any model the plan does not offer (`model_not_found`). Point that
+role at an API-key provider too. Each role picks its own provider, so a mixed setup like the one above is the
+expected shape.
+
+How the provider behaves:
+
+- **Endpoint.** `base_url` defaults to `https://chatgpt.com/backend-api/codex`, and `api` is always `responses`.
+  Akno refuses to load a config that sets `api_key` or another `api` on the same provider, rather than ignoring
+  it. `headers` and `max_retries` apply as for any provider.
+- **Login.** On every model call, Akno reads Codex's login from `$CODEX_HOME/auth.json`, or
+  `~/.codex/auth.json` when `CODEX_HOME` is unset. It sends the access token and account id. It never writes or
+  refreshes that file: Codex rotates refresh tokens on use, so a second refresher would sign one of the two
+  apps out. Keep Codex signed in. The background service reads the login of the account it runs as. Set
+  `CODEX_HOME` in its environment if Codex keeps its login somewhere else.
+- **Request shape.** The backend accepts only streamed, stateless calls. Akno sends `stream: true` and
+  `store: false`, collects the stream into one response, and never sends `temperature`. Structured outputs,
+  `reasoning.effort`, `max_output_tokens` and image inputs work as they do over the API.
+- **Reasoning levels.** The two routes do not map `reasoning_effort` to the same amount of thinking, and Akno
+  sends the configured level unchanged. On invented arithmetic and date checks with `gpt-6-luna` (2026-10-29),
+  `low` on the subscription usually produced no reasoning, like `none`, and got the arithmetic wrong.
+  `medium` matched the API's `low`. Re-check a role's `reasoning_effort` when you move it. A role with no
+  level uses the provider default, which reasoned on both routes.
+- **Failures.** A missing or expired login, or a Codex login that uses an API key, makes the subscription roles
+  unavailable. No request is sent. `akno doctor` names the problem, and results list the role as degraded.
+  Derivation then waits, and pages stay pending until a later index pass can derive them. A call the backend
+  refuses, including one over the plan's usage limits, degrades like any other provider failure.
+- **Billing and data.** Usage counts against the plan's limits, not API billing. The roles send OpenAI the
+  same inputs they would send through the API, so the same authorization applies (see above).
+
+To switch back, point the roles at the API-key provider. Nothing else needs to change.
+
 ## Markdown conflict paths
 
 Inline merge blocks and duplicate stable page ids need no configuration. If a sync client creates recognizable

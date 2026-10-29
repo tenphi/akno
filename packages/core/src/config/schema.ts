@@ -19,6 +19,12 @@ export type ProviderApi = z.infer<typeof ProviderApi>;
 
 export const ProviderDoc = z.object({
   base_url: z.string().url().nullable().optional(),
+  /**
+   * `chatgpt` bills the ChatGPT plan Codex is signed in to on this machine instead of an API key.
+   * The login is read from Codex's auth file on every request, so `api_key` does not apply, `api`
+   * is always `responses`, and `base_url` defaults to the Codex backend.
+   */
+  auth: z.enum(['api_key', 'chatgpt']).optional(),
   api_key: SecretRef.nullable().optional(),
   /** Generative transport. Embeddings and native reranking retain their dedicated endpoints. */
   api: ProviderApi.optional(),
@@ -545,6 +551,8 @@ export interface ResolvedProvider {
   name: string;
   baseUrl: string;
   apiKey: string | null;
+  /** Set when the provider bills the local ChatGPT login rather than an API key. */
+  auth?: 'chatgpt';
   headers: Record<string, string>;
   /** Resolved generative transport, or `auto` while a content-safe capability probe is still owed. */
   api: ProviderApi;

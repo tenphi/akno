@@ -12,6 +12,12 @@ import type { DegradedReason } from '@tenphi/akno-protocol';
 import type { ReasoningEffort, ResolvedModelRole } from '../config/schema.ts';
 import { ProviderRequestError, requestConfiguredProvider } from './provider-request.ts';
 import { parseScoreDecisions, type ScoreQuestion, type ScoreDecision } from './decisions.ts';
+import {
+  chatGptHeaders,
+  describeChatGptLoginProblem,
+  readChatGptLogin,
+  readResponsesStream,
+} from './chatgpt.ts';
 
 /**
  * Any OpenAI-compatible endpoint, per role. One local server can host all
@@ -228,11 +234,14 @@ export class ModelClient {
       this.#role.enabled &&
       this.#role.provider !== null &&
       this.#role.id !== null &&
-      !this.generativeTransportUnresolved()
+      !this.generativeTransportUnresolved() &&
+      this.chatGptLoginProblem() === null
     );
   }
 
   get unavailableReason(): string | null {
+    const loginProblem = this.chatGptLoginProblem();
+    if (loginProblem) return loginProblem;
     if (this.generativeTransportUnresolved()) {
       const provider = this.#role.provider!;
       return (
@@ -292,6 +301,16 @@ export class ModelClient {
     );
   }
 
+  /**
+   * Read fresh on every check because Codex refreshes the login in place: a long-running service
+   * that cached it would go on sending an expired token, or keep refusing after a new sign-in.
+   */
+  private chatGptLoginProblem(): string | null {
+    if (!this.#role.enabled || this.#role.provider?.auth !== 'chatgpt') return null;
+    const state = readChatGptLogin();
+    return state.status === 'ok' ? null : `${this.#role.role}: ${describeChatGptLoginProblem(state.status)}`;
+  }
+
   /** True when the user asked for this role, whether or not it resolved. */
   get requested(): boolean {
     return this.#role.requested;
@@ -302,7 +321,12 @@ export class ModelClient {
     return degradedReasonFor(this.#role.role, outcome.reason ?? 'unavailable');
   }
 
-  private async post<T>(endpoint: string, body: unknown, timeoutMs?: number): Promise<ModelOutcome<T>> {
+  private async post<T>(
+    endpoint: string,
+    body: unknown,
+    timeoutMs?: number,
+    read: (response: Response) => Promise<unknown> = (response) => response.json(),
+  ): Promise<ModelOutcome<T>> {
     const started = performance.now();
     if (!this.available || !this.#role.provider) {
       return {
@@ -319,7 +343,25 @@ export class ModelClient {
       'content-type': 'application/json',
       ...this.#role.provider.headers,
     };
-    if (this.#role.provider.apiKey) headers.authorization = `Bearer ${this.#role.provider.apiKey}`;
+    const secrets = [this.#role.provider.apiKey ?? '', ...Object.values(this.#role.provider.headers)];
+    if (this.#role.provider.auth === 'chatgpt') {
+      const login = readChatGptLogin();
+      // `available` just checked it, but Codex can rewrite the file in between.
+      if (login.status !== 'ok') {
+        return {
+          ok: false,
+          value: null,
+          reason: 'unavailable',
+          error: `${this.#role.role}: ${describeChatGptLoginProblem(login.status)}`,
+          latencyMs: 0,
+          endpointRequests: 0,
+        };
+      }
+      Object.assign(headers, chatGptHeaders(login.login));
+      secrets.push(login.login.accessToken, login.login.accountId);
+    } else if (this.#role.provider.apiKey) {
+      headers.authorization = `Bearer ${this.#role.provider.apiKey}`;
+    }
     const payload = JSON.stringify(body);
 
     /**
@@ -382,7 +424,7 @@ export class ModelClient {
         if (response.ok) {
           return {
             ok: true,
-            value: (await response.json()) as T,
+            value: (await read(response)) as T,
             latencyMs: performance.now() - started,
             endpointRequests,
           };
@@ -390,10 +432,7 @@ export class ModelClient {
 
         status = response.status;
         retryAfter = response.headers.get('retry-after');
-        const detail = redactProviderError(await response.text().catch(() => ''), [
-          this.#role.provider.apiKey ?? '',
-          ...Object.values(this.#role.provider.headers),
-        ]).slice(0, 300);
+        const detail = redactProviderError(await response.text().catch(() => ''), secrets).slice(0, 300);
         last = {
           ok: false,
           value: null,
@@ -765,10 +804,14 @@ export class ModelClient {
     };
     const reasoningEffort = options.reasoningEffort ?? this.#role.reasoningEffort;
     if (reasoningEffort) body.reasoning = { effort: reasoningEffort };
-    if (options.temperature !== undefined) body.temperature = options.temperature;
+    // The subscription backend refuses non-streaming calls and any `temperature`.
+    const chatgpt = this.#role.provider?.auth === 'chatgpt';
+    if (chatgpt) body.stream = true;
+    else if (options.temperature !== undefined) body.temperature = options.temperature;
     if (wantsJson) body.text = { format: responsesTextFormat(jsonSchema) };
+    const read = chatgpt ? readResponsesStream : undefined;
 
-    let result = await this.post<ResponsesApiResponse>('/responses', body, options.timeoutMs);
+    let result = await this.post<ResponsesApiResponse>('/responses', body, options.timeoutMs, read);
     let endpointRequests = result.endpointRequests ?? 0;
     let usage = result.value ? reportedModelUsage(result.value.usage) : null;
     const initialLimit = body.max_output_tokens as number;
@@ -790,6 +833,7 @@ export class ModelClient {
         '/responses',
         { ...body, max_output_tokens: retryLimit },
         retryTimeoutMs,
+        read,
       );
       endpointRequests += result.endpointRequests ?? 0;
       usage = sumModelUsage(usage, result.value ? reportedModelUsage(result.value.usage) : null);
@@ -806,12 +850,15 @@ export class ModelClient {
     // Partial structured text can still parse. A stopped response is not a completed verdict.
     if (result.value.status && result.value.status !== 'completed') {
       const detail = result.value.incomplete_details?.reason;
+      // A stream reports failure inside a 200; the provider's own message says why.
+      const failure = result.value.status === 'failed' ? result.value.error?.message : undefined;
       return this.observeChat<string>({
         ok: false,
         value: null,
-        reason: 'bad_response',
-        error:
-          detail === 'max_output_tokens'
+        reason: failure ? 'request_failed' : 'bad_response',
+        error: failure
+          ? `${this.#role.role} response failed: ${String(failure).slice(0, 300)}`
+          : detail === 'max_output_tokens'
             ? 'Responses API exhausted its output token budget before completing the response'
             : 'Responses API did not complete the response',
         latencyMs: performance.now() - started,
@@ -946,6 +993,7 @@ interface ChatCompletionResponse {
 interface ResponsesApiResponse {
   status?: string;
   incomplete_details?: { reason?: string } | null;
+  error?: { message?: unknown } | null;
   /** Present in some compatible raw responses and as an SDK convenience. */
   output_text?: unknown;
   output?: {

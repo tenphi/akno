@@ -78,6 +78,9 @@
   // ─── Providers ────────────────────────────────────────────────────────────
   // Any OpenAI-compatible endpoint. `api_key` names an env var; it never holds
   // a key. One local server can host every role.
+  // A provider with `"auth": "chatgpt"` and no key bills the ChatGPT plan Codex
+  // is signed in to on this machine instead. It serves the generative roles
+  // only; see docs/configuration.md.
   // Null endpoint on purpose: committed defaults assume nothing about this
   // machine, not even that something is listening on a well-known port. Set this
   // in config/local.jsonc — `akno doctor` reports every role that has no

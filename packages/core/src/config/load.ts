@@ -4,6 +4,7 @@ import { AknoError, defaultPlatformPaths } from '@tenphi/akno-protocol';
 import { readJsoncFile } from './jsonc.ts';
 import { expandTilde, findRepoRoot, resolveUserPath } from './paths.ts';
 import { compileRules } from '../rules/compile.ts';
+import { CHATGPT_CODEX_BASE_URL } from '../models/chatgpt.ts';
 import { applyCachedProviderApiResolutions } from '../models/provider-api.ts';
 import {
   ConfigDoc,
@@ -368,20 +369,38 @@ function resolveProviders(
 ): Record<string, ResolvedProvider> {
   const out: Record<string, ResolvedProvider> = {};
   for (const [name, doc] of Object.entries(docs ?? {})) {
-    if (!doc.base_url) continue; // A provider with no endpoint is not a provider.
+    const chatgpt = doc.auth === 'chatgpt';
+    if (chatgpt && doc.api_key) {
+      throw new AknoError(
+        'invalid',
+        `providers.${name} uses auth "chatgpt", which signs in with the local Codex login; remove api_key`,
+      );
+    }
+    if (chatgpt && doc.api && doc.api !== 'responses') {
+      throw new AknoError(
+        'invalid',
+        `providers.${name} uses auth "chatgpt", which serves only the Responses API; remove api or set "responses"`,
+      );
+    }
+    const baseUrl = doc.base_url ?? (chatgpt ? CHATGPT_CODEX_BASE_URL : null);
+    if (!baseUrl) continue; // A provider with no endpoint is not a provider.
     const headers: Record<string, string> = {};
     for (const [header, value] of Object.entries(doc.headers ?? {})) {
       const resolved = typeof value === 'string' ? value : resolveSecret(value, env);
       if (resolved) headers[header] = resolved;
     }
+    const api = chatgpt ? 'responses' : (doc.api ?? 'chat_completions');
     out[name] = {
       name,
-      baseUrl: doc.base_url.replace(/\/+$/, ''),
-      apiKey: resolveSecret(doc.api_key, env),
+      baseUrl: baseUrl.replace(/\/+$/, ''),
+      // The login is read per request (models/chatgpt.ts), never resolved here, so no API key can
+      // ride along to the subscription backend.
+      apiKey: chatgpt ? null : resolveSecret(doc.api_key, env),
+      ...(chatgpt ? { auth: 'chatgpt' as const } : {}),
       headers,
-      api: doc.api ?? 'chat_completions',
-      configuredApi: doc.api ?? 'chat_completions',
-      apiResolution: doc.api === 'auto' ? 'unresolved' : 'explicit',
+      api,
+      configuredApi: api,
+      apiResolution: api === 'auto' ? 'unresolved' : 'explicit',
       apiResolutionError: null,
       maxRetries: doc.max_retries ?? 2,
     };
@@ -409,10 +428,19 @@ function resolveRole(
   // states both, so an absent value here means "not overridden".
   const enabled = explicitlyEnabled !== false;
 
+  // Embeddings, native reranking and Decisions have their own endpoints, which a ChatGPT
+  // subscription does not serve. Stated here so `doctor` names the fix instead of a 403.
+  const needsNonGenerativeEndpoint = role === 'embedding' || (role === 'reranker' && doc?.mode !== 'llm');
+
   let unavailableReason: string | null = null;
   if (!enabled) unavailableReason = `${role} is disabled in config`;
   else if (!id) unavailableReason = `no model id configured for ${role}`;
   else if (!provider) unavailableReason = `provider "${providerName}" has no base_url`;
+  else if (provider.auth === 'chatgpt' && needsNonGenerativeEndpoint) {
+    unavailableReason =
+      `provider "${providerName}" uses a ChatGPT subscription, which serves only Responses generation; ` +
+      `point ${role} at an API-key provider`;
+  }
 
   const resolved: ResolvedModelRole = {
     role,
