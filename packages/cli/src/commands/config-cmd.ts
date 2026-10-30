@@ -57,6 +57,7 @@ function providerForOutput(provider: ResolvedProvider): Record<string, unknown> 
     ...provider,
     apiKey: provider.apiKey === null ? null : '<set>',
     headers: Object.keys(provider.headers),
+    ...(provider.fallback ? { fallback: provider.fallback.name } : {}),
   };
 }
 

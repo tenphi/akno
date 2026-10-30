@@ -71,6 +71,7 @@ export {
   type SetupRolePreflight,
 } from './setup/openai.ts';
 export type { ProviderApiResolution } from './models/provider-api.ts';
+export { onModelFallback } from './models/fallback-notices.ts';
 export {
   MODEL_FREE_PRESET,
   MODEL_FREE_PRESET_STATUS,

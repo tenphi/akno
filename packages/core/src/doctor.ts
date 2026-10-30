@@ -5,6 +5,7 @@ import { isReserved, looksLikeLedger } from './reserved.ts';
 import { extractionCapabilities, type ExtractionCapabilities } from './ingest/extract.ts';
 import { readOnlyExplanation } from './open.ts';
 import { ModelClient } from './models/client.ts';
+import { collectModelFallbacks } from './models/fallback-notices.ts';
 import { generativeModelIds, providerApiReport, type ProviderApiResolution } from './models/provider-api.ts';
 import { probeAnswerModel, type AnswerCapabilityCheck, type AnswerCapabilityProbe } from './ops/answer.ts';
 import { effectiveRule } from './rules/compile.ts';
@@ -37,6 +38,8 @@ export interface RoleReport {
   error: string | null;
   /** Plain-language consequence of this role being unavailable. */
   withoutIt: string;
+  /** Set when the role works only through its provider's fallback, at the fallback's cost. */
+  warning?: string;
   /** Production-shaped probes are reported separately from a generic transport ping. */
   checks?: AnswerCapabilityProbe;
 }
@@ -271,25 +274,29 @@ export async function doctor(ctx: AknoContext, options: DoctorOptions = {}): Pro
       latencyMs: null,
       error: client.unavailableReason,
       withoutIt: consequences[role] ?? '',
+      ...(client.fallbackNotice ? { warning: client.fallbackNotice } : {}),
     };
     if (options.probeModels !== false && client.available) {
-      if (role === 'answer') {
-        const checks = await probeAnswerModel(client);
-        report.checks = checks;
-        report.latencyMs = capabilityLatency(checks);
-        const failed = Object.entries(checks).find(([, check]) => check.status !== 'ok');
-        if (failed) {
-          report.available = false;
-          report.error = `${failed[0]} check ${failed[1].status}: ${failed[1].error ?? 'unknown failure'}`;
+      const { warnings: fallbacks } = await collectModelFallbacks(async () => {
+        if (role === 'answer') {
+          const checks = await probeAnswerModel(client);
+          report.checks = checks;
+          report.latencyMs = capabilityLatency(checks);
+          const failed = Object.entries(checks).find(([, check]) => check.status !== 'ok');
+          if (failed) {
+            report.available = false;
+            report.error = `${failed[0]} check ${failed[1].status}: ${failed[1].error ?? 'unknown failure'}`;
+          }
+        } else {
+          const ping = await client.ping();
+          report.latencyMs = Math.round(ping.latencyMs);
+          if (!ping.ok) {
+            report.available = false;
+            report.error = ping.error ?? 'ping failed';
+          }
         }
-      } else {
-        const ping = await client.ping();
-        report.latencyMs = Math.round(ping.latencyMs);
-        if (!ping.ok) {
-          report.available = false;
-          report.error = ping.error ?? 'ping failed';
-        }
-      }
+      });
+      if (fallbacks.length > 0) report.warning = fallbacks.map((fallback) => fallback.message).join('; ');
     }
     models.push(report);
   }
@@ -312,14 +319,16 @@ export async function doctor(ctx: AknoContext, options: DoctorOptions = {}): Pro
       latencyMs: null,
       error: client.unavailableReason,
       withoutIt: 'the maintenance cycle falls back to nothing — observe and reflect cannot run',
+      ...(client.fallbackNotice ? { warning: client.fallbackNotice } : {}),
     };
     if (options.probeModels !== false && client.available) {
-      const ping = await client.ping();
+      const { value: ping, warnings: fallbacks } = await collectModelFallbacks(() => client.ping());
       report.latencyMs = Math.round(ping.latencyMs);
       if (!ping.ok) {
         report.available = false;
         report.error = ping.error ?? 'ping failed';
       }
+      if (fallbacks.length > 0) report.warning = fallbacks.map((fallback) => fallback.message).join('; ');
     }
     models.push(report);
   }

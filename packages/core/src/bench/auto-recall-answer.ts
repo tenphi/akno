@@ -947,6 +947,8 @@ function benchmarkProviders(config: AknoConfig): NonNullable<ConfigDoc['provider
       name,
       {
         base_url: provider.baseUrl,
+        ...(provider.auth ? { auth: provider.auth } : {}),
+        ...(provider.fallback ? { fallback: provider.fallback.name } : {}),
         api_key: provider.apiKey ? { env: benchmarkProviderSecret(index) } : null,
         headers: provider.headers,
         max_retries: provider.maxRetries,

@@ -8,10 +8,17 @@ import {
 import { languageAudit } from './language-audit.ts';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
-import type { DegradedReason } from '@tenphi/akno-protocol';
+import type { DegradedReason, ModelFallbackWarning } from '@tenphi/akno-protocol';
+import { reportModelFallback } from './fallback-notices.ts';
 import type { ReasoningEffort, ResolvedModelRole } from '../config/schema.ts';
 import { ProviderRequestError, requestConfiguredProvider } from './provider-request.ts';
 import { parseScoreDecisions, type ScoreQuestion, type ScoreDecision } from './decisions.ts';
+import {
+  chatGptHeaders,
+  describeChatGptLoginProblem,
+  readChatGptLogin,
+  readResponsesStream,
+} from './chatgpt.ts';
 
 /**
  * Any OpenAI-compatible endpoint, per role. One local server can host all
@@ -43,6 +50,8 @@ export interface ModelOutcome<T> {
   reason?: ModelFailure;
   /** Human-readable detail. For `doctor` and logs, never for control flow. */
   error?: string;
+  /** The status of the provider's last refusal, when it answered with one. */
+  httpStatus?: number;
   latencyMs: number;
   /** Physical HTTP requests, including compatibility and provider retries when known. */
   endpointRequests?: number;
@@ -191,10 +200,18 @@ export class ModelClient {
   readonly #outcomeObserver: ModelOutcomeObserver | null;
   /** Learned on first rejection and shared by observed views of this role client. */
   #compatibility: ModelCompatibility = { tokenParam: 'max_tokens', schemaMode: 'schema' };
+  /** The same role on the provider's fallback, when one is configured. */
+  #fallback: ModelClient | null;
+  /** This role with no observer and no fallback: the attempt a fallback may still replace. */
+  #direct: ModelClient | null = null;
 
   constructor(role: ResolvedModelRole, outcomeObserver: ModelOutcomeObserver | null = null) {
     this.#role = role;
     this.#outcomeObserver = outcomeObserver;
+    // The same provider object, not a copy: an `api: auto` fallback resolves in place after load.
+    // Config validation guarantees it has no fallback of its own.
+    const fallback = role.provider?.fallback;
+    this.#fallback = fallback ? new ModelClient({ ...role, provider: fallback }, outcomeObserver) : null;
   }
 
   /**
@@ -204,6 +221,7 @@ export class ModelClient {
   withOutcomeObserver(observer: ModelOutcomeObserver): ModelClient {
     const observed = new ModelClient(this.#role, observer);
     observed.#compatibility = this.#compatibility;
+    observed.#fallback = this.#fallback?.withOutcomeObserver(observer) ?? null;
     return observed;
   }
 
@@ -228,11 +246,14 @@ export class ModelClient {
       this.#role.enabled &&
       this.#role.provider !== null &&
       this.#role.id !== null &&
-      !this.generativeTransportUnresolved()
+      !this.generativeTransportUnresolved() &&
+      (this.chatGptLoginProblem() === null || this.#fallback?.available === true)
     );
   }
 
   get unavailableReason(): string | null {
+    const loginProblem = this.chatGptLoginProblem();
+    if (loginProblem && !this.#fallback?.available) return `${this.#role.role}: ${loginProblem}`;
     if (this.generativeTransportUnresolved()) {
       const provider = this.#role.provider!;
       return (
@@ -292,6 +313,27 @@ export class ModelClient {
     );
   }
 
+  /**
+   * Read fresh on every check because Codex refreshes the login in place: a long-running service
+   * that cached it would go on sending an expired token, or keep refusing after a new sign-in.
+   */
+  private chatGptLoginProblem(): string | null {
+    if (!this.#role.enabled || this.#role.provider?.auth !== 'chatgpt') return null;
+    const state = readChatGptLogin();
+    return state.status === 'ok' ? null : describeChatGptLoginProblem(state.status);
+  }
+
+  /**
+   * Set while every call of this role is going to the fallback because the login is unusable,
+   * which is known before any call is made. For `doctor`; a call reports its own fallback.
+   */
+  get fallbackNotice(): string | null {
+    const loginProblem = this.chatGptLoginProblem();
+    const fallback = this.#fallback;
+    if (!loginProblem || !fallback?.available) return null;
+    return `${this.#role.role}: ${loginProblem}; calls go to provider "${fallback.#role.provider!.name}"`;
+  }
+
   /** True when the user asked for this role, whether or not it resolved. */
   get requested(): boolean {
     return this.#role.requested;
@@ -302,7 +344,12 @@ export class ModelClient {
     return degradedReasonFor(this.#role.role, outcome.reason ?? 'unavailable');
   }
 
-  private async post<T>(endpoint: string, body: unknown, timeoutMs?: number): Promise<ModelOutcome<T>> {
+  private async post<T>(
+    endpoint: string,
+    body: unknown,
+    timeoutMs?: number,
+    read: (response: Response) => Promise<unknown> = (response) => response.json(),
+  ): Promise<ModelOutcome<T>> {
     const started = performance.now();
     if (!this.available || !this.#role.provider) {
       return {
@@ -319,7 +366,25 @@ export class ModelClient {
       'content-type': 'application/json',
       ...this.#role.provider.headers,
     };
-    if (this.#role.provider.apiKey) headers.authorization = `Bearer ${this.#role.provider.apiKey}`;
+    const secrets = [this.#role.provider.apiKey ?? '', ...Object.values(this.#role.provider.headers)];
+    if (this.#role.provider.auth === 'chatgpt') {
+      const login = readChatGptLogin();
+      // `available` just checked it, but Codex can rewrite the file in between.
+      if (login.status !== 'ok') {
+        return {
+          ok: false,
+          value: null,
+          reason: 'unavailable',
+          error: `${this.#role.role}: ${describeChatGptLoginProblem(login.status)}`,
+          latencyMs: 0,
+          endpointRequests: 0,
+        };
+      }
+      Object.assign(headers, chatGptHeaders(login.login));
+      secrets.push(login.login.accessToken, login.login.accountId);
+    } else if (this.#role.provider.apiKey) {
+      headers.authorization = `Bearer ${this.#role.provider.apiKey}`;
+    }
     const payload = JSON.stringify(body);
 
     /**
@@ -382,7 +447,7 @@ export class ModelClient {
         if (response.ok) {
           return {
             ok: true,
-            value: (await response.json()) as T,
+            value: (await read(response)) as T,
             latencyMs: performance.now() - started,
             endpointRequests,
           };
@@ -390,15 +455,13 @@ export class ModelClient {
 
         status = response.status;
         retryAfter = response.headers.get('retry-after');
-        const detail = redactProviderError(await response.text().catch(() => ''), [
-          this.#role.provider.apiKey ?? '',
-          ...Object.values(this.#role.provider.headers),
-        ]).slice(0, 300);
+        const detail = redactProviderError(await response.text().catch(() => ''), secrets).slice(0, 300);
         last = {
           ok: false,
           value: null,
           reason: 'request_failed',
           error: `${this.#role.role} endpoint returned ${status}${detail ? `: ${detail}` : ''}`,
+          httpStatus: status,
           latencyMs: performance.now() - started,
           endpointRequests,
         };
@@ -635,6 +698,7 @@ export class ModelClient {
     messages: ChatMessage[],
     options: ChatOptions = {},
   ): Promise<ModelOutcome<string>> {
+    if (this.#fallback) return this.chatWithFallback(this.#fallback, messages, options);
     const chatStarted = performance.now();
     const wantsJson = options.json || options.schema !== undefined;
     // Built once: `z.toJSONSchema` is cheap but this sits on the recall path, and a
@@ -744,6 +808,61 @@ export class ModelClient {
   }
 
   /**
+   * Try the provider, and hand the call to its configured fallback when the provider could not
+   * serve it: no usable login, a refusal, a usage limit, an outage or a timeout.
+   *
+   * The attempt runs unobserved, because maintenance telemetry counts a failed call as a degraded
+   * stage, and a call the fallback then answered degraded nothing. Only the attempt whose outcome
+   * is returned is observed. A response the model did produce but that broke its contract
+   * (`bad_response`, a language check) is the model's answer, not an outage, so it stands.
+   */
+  private async chatWithFallback(
+    fallback: ModelClient,
+    messages: ChatMessage[],
+    options: ChatOptions,
+  ): Promise<ModelOutcome<string>> {
+    const started = performance.now();
+    if (!this.#direct) {
+      const provider = this.#role.provider!;
+      this.#direct = new ModelClient({ ...this.#role, provider: { ...provider, fallback: undefined } });
+      this.#direct.#compatibility = this.#compatibility;
+    }
+    const attempt = await this.#direct.chatTransport(messages, options);
+    const reason = fallbackReason(attempt);
+    // A caller's deadline bounds the whole call; a fallback with no time left would only fail later.
+    const remaining =
+      options.timeoutMs === undefined
+        ? undefined
+        : Math.floor(options.timeoutMs - (performance.now() - started));
+    if (!reason || (remaining !== undefined && remaining <= 0) || !fallback.available) {
+      return this.observeChat(attempt);
+    }
+
+    const provider = this.#role.provider!.name;
+    const fallbackProvider = fallback.#role.provider!.name;
+    const loginProblem = reason === 'login_unavailable' ? this.chatGptLoginProblem() : null;
+    reportModelFallback({
+      type: 'model_fallback',
+      role: this.#role.role,
+      provider,
+      fallback_provider: fallbackProvider,
+      reason,
+      message:
+        `${this.#role.role} used provider "${fallbackProvider}" because provider "${provider}" ` +
+        `${FALLBACK_REASONS[reason]}${loginProblem ? `: ${loginProblem}` : ''}`,
+    });
+    const served = await fallback.chatTransport(
+      messages,
+      remaining === undefined ? options : { ...options, timeoutMs: remaining },
+    );
+    return {
+      ...served,
+      latencyMs: performance.now() - started,
+      endpointRequests: (attempt.endpointRequests ?? 0) + (served.endpointRequests ?? 0),
+    };
+  }
+
+  /**
    * OpenAI's Responses API uses different request keys and nests structured output under
    * `text.format`. This is an explicit provider choice: a failed call never falls through to
    * Chat Completions, which could duplicate cost and change validation semantics.
@@ -765,10 +884,14 @@ export class ModelClient {
     };
     const reasoningEffort = options.reasoningEffort ?? this.#role.reasoningEffort;
     if (reasoningEffort) body.reasoning = { effort: reasoningEffort };
-    if (options.temperature !== undefined) body.temperature = options.temperature;
+    // The subscription backend refuses non-streaming calls and any `temperature`.
+    const chatgpt = this.#role.provider?.auth === 'chatgpt';
+    if (chatgpt) body.stream = true;
+    else if (options.temperature !== undefined) body.temperature = options.temperature;
     if (wantsJson) body.text = { format: responsesTextFormat(jsonSchema) };
+    const read = chatgpt ? readResponsesStream : undefined;
 
-    let result = await this.post<ResponsesApiResponse>('/responses', body, options.timeoutMs);
+    let result = await this.post<ResponsesApiResponse>('/responses', body, options.timeoutMs, read);
     let endpointRequests = result.endpointRequests ?? 0;
     let usage = result.value ? reportedModelUsage(result.value.usage) : null;
     const initialLimit = body.max_output_tokens as number;
@@ -790,6 +913,7 @@ export class ModelClient {
         '/responses',
         { ...body, max_output_tokens: retryLimit },
         retryTimeoutMs,
+        read,
       );
       endpointRequests += result.endpointRequests ?? 0;
       usage = sumModelUsage(usage, result.value ? reportedModelUsage(result.value.usage) : null);
@@ -806,12 +930,15 @@ export class ModelClient {
     // Partial structured text can still parse. A stopped response is not a completed verdict.
     if (result.value.status && result.value.status !== 'completed') {
       const detail = result.value.incomplete_details?.reason;
+      // A stream reports failure inside a 200; the provider's own message says why.
+      const failure = result.value.status === 'failed' ? result.value.error?.message : undefined;
       return this.observeChat<string>({
         ok: false,
         value: null,
-        reason: 'bad_response',
-        error:
-          detail === 'max_output_tokens'
+        reason: failure ? 'request_failed' : 'bad_response',
+        error: failure
+          ? `${this.#role.role} response failed: ${String(failure).slice(0, 300)}`
+          : detail === 'max_output_tokens'
             ? 'Responses API exhausted its output token budget before completing the response'
             : 'Responses API did not complete the response',
         latencyMs: performance.now() - started,
@@ -938,6 +1065,32 @@ export class ModelClient {
   }
 }
 
+const FALLBACK_REASONS: Record<ModelFallbackWarning['reason'], string> = {
+  login_unavailable: 'has no usable login',
+  timeout: 'timed out',
+  rate_limited: 'hit a rate or usage limit',
+  rejected: 'refused the request',
+  server_error: 'failed on its side',
+  request_failed: 'could not complete the request',
+};
+
+/** Transport failures hand over to a fallback; an answer that broke its contract does not. */
+function fallbackReason(outcome: ModelOutcome<unknown>): ModelFallbackWarning['reason'] | null {
+  if (outcome.ok) return null;
+  switch (outcome.reason) {
+    case 'unavailable':
+      return 'login_unavailable';
+    case 'timeout':
+      return 'timeout';
+    case 'request_failed':
+      if (outcome.httpStatus === undefined) return 'request_failed';
+      if (outcome.httpStatus === 429) return 'rate_limited';
+      return outcome.httpStatus >= 500 ? 'server_error' : 'rejected';
+    default:
+      return null;
+  }
+}
+
 interface ChatCompletionResponse {
   choices: { message?: { content?: string } }[];
   usage?: ProviderUsage;
@@ -946,6 +1099,7 @@ interface ChatCompletionResponse {
 interface ResponsesApiResponse {
   status?: string;
   incomplete_details?: { reason?: string } | null;
+  error?: { message?: unknown } | null;
   /** Present in some compatible raw responses and as an SDK convenience. */
   output_text?: unknown;
   output?: {
