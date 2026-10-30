@@ -41,7 +41,7 @@
   "devDependencies": {
     "@changesets/changelog-github": "^1.0.0",
     "@changesets/cli": "^3.0.1",
-    "@tenphi/cookbook": "0.31.1",
+    "@tenphi/cookbook": "0.31.2",
     "@types/node": "^22.10.0",
     "astro": "7.3.2",
     "knip": "6.31.0",
