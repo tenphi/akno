@@ -20,8 +20,8 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       '@tenphi/cookbook':
-        specifier: 0.31.2
-        version: 0.31.2(@astrojs/markdown-satteri@0.4.1)(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(astro@7.3.2(@astrojs/markdown-remark@7.3.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.1))(esbuild@0.28.1)(eslint@10.10.0(jiti@2.7.0))(jiti@2.7.0)(tsx@4.23.5)(typescript@5.9.3)(yaml@2.9.1)
+        specifier: 0.31.3
+        version: 0.31.3(@astrojs/markdown-satteri@0.4.1)(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(astro@7.3.2(@astrojs/markdown-remark@7.3.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.1))(esbuild@0.28.1)(eslint@10.10.0(jiti@2.7.0))(jiti@2.7.0)(tsx@4.23.5)(typescript@5.9.3)(yaml@2.9.1)
       '@types/node':
         specifier: ^22.10.0
         version: 22.20.1
@@ -2462,27 +2462,27 @@ packages:
         integrity: sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw==,
       }
 
-  '@tenphi/cookbook@0.31.2':
+  '@tenphi/cookbook@0.31.3':
     resolution:
       {
-        integrity: sha512-GuvoBeZda54VvHXYtPWDw6X6F5/k+df6wE9SzCKOGkbu3LZLn1gzgsI7Ox+f4h25VyRi0hder3zAhKu77XYKWQ==,
+        integrity: sha512-TH+vd3SveudZfsMGL7ThmB05nJjtCpIMwOn7iqByxW6SiRUYPPdFcsv5b8ryyYPPiD1rvZLNlYg293J7O3Uu0Q==,
       }
     engines: { node: '>=22.19' }
     hasBin: true
     peerDependencies:
       astro: ^7.3.2
 
-  '@tenphi/docs@0.31.2':
+  '@tenphi/docs@0.31.3':
     resolution:
       {
-        integrity: sha512-A0oJlS5JuOsoy9xF1Cw+DhLQJDHaOqRu+yU4yeg4SbdvVt9oPAod8bvj4bij16xaXpgybjrbh9j5QrXYHlTk/g==,
+        integrity: sha512-gQNUV2bybUgC+p+RPZ7jf9TwvpbsY42+XvoEbtxCu1SMcL7nIxay3e0hoQ8omRcltYz+VbZapDO794t3EpliUw==,
       }
     engines: { node: '>=22.19' }
 
-  '@tenphi/eslint-plugin-tasty@1.14.0':
+  '@tenphi/eslint-plugin-tasty@1.15.0':
     resolution:
       {
-        integrity: sha512-82pHF1TlHl0+yjkdFkKoo8SEo3Vt9wbsJ4vulDa1g4O+eWDCN63OQRrxNwQOyu7ZxmFKFCZ2ItHrz9B6Y7HVNw==,
+        integrity: sha512-Fzuynv6Y948zNFvONRWFpsLfEbKDqI8pNuFrMe2RT5DtXsHjsMZkoAXoJ6MRbBMeGgljm7e2CLKXgrO57XibWQ==,
       }
     engines: { node: '>=20' }
     peerDependencies:
@@ -2502,19 +2502,19 @@ packages:
       }
     engines: { node: '>=20' }
 
-  '@tenphi/renderer@0.31.2':
+  '@tenphi/renderer@0.31.3':
     resolution:
       {
-        integrity: sha512-Yt8qt7d/ZRus/XwfEcwG9lHzh3kDp2S0qnbJhNSXOGa1Mb5+xlJH6y7GcooSk+LxbtvXoZLv7YUb2WoWt1DbHg==,
+        integrity: sha512-2G0t1RVgQetK2jwUeuXfl4ujAU/5Ddng1YTaKuxH40j4K200ztYeIxkv9UJNsuEMthnYF4XYBZOz40RMRHW+Hw==,
       }
     engines: { node: '>=22.19' }
     peerDependencies:
       astro: ^7.3.2
 
-  '@tenphi/tasty@3.16.0':
+  '@tenphi/tasty@3.17.0':
     resolution:
       {
-        integrity: sha512-+iJa91lwa4fbW+Tc2BRJXDuRFgQzzOJAemoLYkFG3jPRUywAv+wvmvDv9MBs0HBD/JHzwNFj52JctMcrPh8URA==,
+        integrity: sha512-aiZHO4IonmtGAStslFc9KryNdhYTPcLG/3gqZrQiFSEyPrkqfknk/2tvO22+L2tL1JRaSv72Vr0x0qTqEOKBJw==,
       }
     engines: { node: '>=20' }
     peerDependencies:
@@ -8208,10 +8208,10 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@tenphi/cookbook@0.31.2(@astrojs/markdown-satteri@0.4.1)(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(astro@7.3.2(@astrojs/markdown-remark@7.3.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.1))(esbuild@0.28.1)(eslint@10.10.0(jiti@2.7.0))(jiti@2.7.0)(tsx@4.23.5)(typescript@5.9.3)(yaml@2.9.1)':
+  '@tenphi/cookbook@0.31.3(@astrojs/markdown-satteri@0.4.1)(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(astro@7.3.2(@astrojs/markdown-remark@7.3.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.1))(esbuild@0.28.1)(eslint@10.10.0(jiti@2.7.0))(jiti@2.7.0)(tsx@4.23.5)(typescript@5.9.3)(yaml@2.9.1)':
     dependencies:
-      '@tenphi/docs': 0.31.2(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)
-      '@tenphi/renderer': 0.31.2(@astrojs/markdown-satteri@0.4.1)(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(astro@7.3.2(@astrojs/markdown-remark@7.3.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.1))(esbuild@0.28.1)(eslint@10.10.0(jiti@2.7.0))(jiti@2.7.0)(tsx@4.23.5)(typescript@5.9.3)(yaml@2.9.1)
+      '@tenphi/docs': 0.31.3(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)
+      '@tenphi/renderer': 0.31.3(@astrojs/markdown-satteri@0.4.1)(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(astro@7.3.2(@astrojs/markdown-remark@7.3.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.1))(esbuild@0.28.1)(eslint@10.10.0(jiti@2.7.0))(jiti@2.7.0)(tsx@4.23.5)(typescript@5.9.3)(yaml@2.9.1)
       astro: 7.3.2(@astrojs/markdown-remark@7.3.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.1)
     transitivePeerDependencies:
       - '@astrojs/markdown-satteri'
@@ -8237,10 +8237,10 @@ snapshots:
       - typescript
       - yaml
 
-  '@tenphi/docs@0.31.2(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)':
+  '@tenphi/docs@0.31.3(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)':
     dependencies:
       '@tenphi/glaze': 2.0.2
-      '@tenphi/tasty': 3.16.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(jiti@2.7.0)(react@19.3.0)
+      '@tenphi/tasty': 3.17.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(jiti@2.7.0)(react@19.3.0)
       github-slugger: 2.0.0
       hast-util-from-html: 2.0.3
       hast-util-sanitize: 5.0.2
@@ -8265,7 +8265,7 @@ snapshots:
       - next
       - supports-color
 
-  '@tenphi/eslint-plugin-tasty@1.14.0(@tenphi/tasty@3.16.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(jiti@2.7.0)(react@19.3.0))(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)':
+  '@tenphi/eslint-plugin-tasty@1.15.0(@tenphi/tasty@3.17.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(jiti@2.7.0)(react@19.3.0))(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)':
     dependencies:
       '@typescript-eslint/utils': 8.70.1(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)
       eslint: 10.10.0(jiti@2.7.0)
@@ -8273,14 +8273,14 @@ snapshots:
       postcss-selector-parser: 7.1.7
       semver: 7.8.5
     optionalDependencies:
-      '@tenphi/tasty': 3.16.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(jiti@2.7.0)(react@19.3.0)
+      '@tenphi/tasty': 3.17.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(jiti@2.7.0)(react@19.3.0)
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
 
   '@tenphi/glaze@2.0.2': {}
 
-  '@tenphi/renderer@0.31.2(@astrojs/markdown-satteri@0.4.1)(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(astro@7.3.2(@astrojs/markdown-remark@7.3.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.1))(esbuild@0.28.1)(eslint@10.10.0(jiti@2.7.0))(jiti@2.7.0)(tsx@4.23.5)(typescript@5.9.3)(yaml@2.9.1)':
+  '@tenphi/renderer@0.31.3(@astrojs/markdown-satteri@0.4.1)(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(astro@7.3.2(@astrojs/markdown-remark@7.3.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.1))(esbuild@0.28.1)(eslint@10.10.0(jiti@2.7.0))(jiti@2.7.0)(tsx@4.23.5)(typescript@5.9.3)(yaml@2.9.1)':
     dependencies:
       '@astrojs/markdown-remark': 7.3.1
       '@astrojs/mdx': 8.0.1(@astrojs/markdown-remark@7.3.1)(@astrojs/markdown-satteri@0.4.1)(astro@7.3.2(@astrojs/markdown-remark@7.3.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.1))
@@ -8289,10 +8289,10 @@ snapshots:
       '@fontsource-variable/jetbrains-mono': 5.3.0
       '@fontsource-variable/onest': 5.3.1
       '@pagefind/default-ui': 1.5.2
-      '@tenphi/docs': 0.31.2(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)
-      '@tenphi/eslint-plugin-tasty': 1.14.0(@tenphi/tasty@3.16.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(jiti@2.7.0)(react@19.3.0))(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)
+      '@tenphi/docs': 0.31.3(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)
+      '@tenphi/eslint-plugin-tasty': 1.15.0(@tenphi/tasty@3.17.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(jiti@2.7.0)(react@19.3.0))(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)
       '@tenphi/glaze': 2.0.2
-      '@tenphi/tasty': 3.16.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(jiti@2.7.0)(react@19.3.0)
+      '@tenphi/tasty': 3.17.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(jiti@2.7.0)(react@19.3.0)
       '@uniaria/core': 0.3.0
       '@uniaria/elements': 0.3.0
       astro: 7.3.2(@astrojs/markdown-remark@7.3.1)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.1)
@@ -8326,7 +8326,7 @@ snapshots:
       - typescript
       - yaml
 
-  '@tenphi/tasty@3.16.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(jiti@2.7.0)(react@19.3.0)':
+  '@tenphi/tasty@3.17.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(jiti@2.7.0)(react@19.3.0)':
     dependencies:
       csstype: 3.2.3
     optionalDependencies:
