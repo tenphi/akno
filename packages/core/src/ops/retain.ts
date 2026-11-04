@@ -63,6 +63,7 @@ import { appendManagedBlock, managedSourceReference, placeManagedItems } from '.
 import {
   modelCallReceipt,
   runRetain,
+  withoutStopWords,
   type RetainCandidate,
   type RetainHeldCandidate,
 } from '../write/retain.ts';
@@ -169,16 +170,24 @@ export async function retain(ctx: AknoContext, rawInput: unknown): Promise<Retai
         results.push(resolved.result);
         continue;
       }
+      if (source.retention.mode === 'extract') {
+        results.push(
+          await retainExtracted(ctx, resolved, input.dry_run ?? false, input.retry_failed ?? false),
+        );
+        continue;
+      }
+      // Supplied candidates obey the owner's stop words as extracted ones do.
+      const stopped = withoutStopWords(source.retention.candidates, ctx.config.maintenance.retain.stopWords);
       results.push(
-        source.retention.mode === 'extract'
-          ? await retainExtracted(ctx, resolved, input.dry_run ?? false, input.retry_failed ?? false)
-          : await retainCandidates(ctx, resolved, source.retention.candidates, {
-              dryRun: input.dry_run ?? false,
-              selection: 'provided',
-              placement: source.retention.placement,
-              initialResults: [],
-              modelUsage: { extraction: null, verification: null, placement: [] },
-            }),
+        await retainCandidates(ctx, resolved, stopped.kept, {
+          dryRun: input.dry_run ?? false,
+          selection: 'provided',
+          placement: source.retention.placement,
+          initialResults: stopped.held.map((held) =>
+            heldCandidateResult({ ...held, hold_stage: 'validation' }),
+          ),
+          modelUsage: { extraction: null, verification: null, placement: [] },
+        }),
       );
     } catch (error) {
       results.push({
@@ -494,6 +503,7 @@ async function retainExtractedOnce(
       ? 'source'
       : ctx.config.maintenance.retain.verificationFailureScope,
     verificationRevision: ctx.config.maintenance.retain.verificationRevision,
+    stopWords: ctx.config.maintenance.retain.stopWords,
     folders: folderCatalog(ctx.config, ctx.store),
     sourceId: source.source_id,
     revision: source.revision,
@@ -590,12 +600,15 @@ async function retainCandidates(
       status: 'ok',
       knowledge_language: ctx.config.knowledgeLanguage,
       reason_code: reasonCode,
-      candidates: suppliedCandidates.map((candidate) => ({
-        candidate_id: candidate.candidate_id,
-        outcome: 'held',
-        reason_code: reasonCode,
-        hold_stage: 'validation',
-      })),
+      candidates: [
+        ...options.initialResults,
+        ...suppliedCandidates.map((candidate): RetainCandidateResult => ({
+          candidate_id: candidate.candidate_id,
+          outcome: 'held',
+          reason_code: reasonCode,
+          hold_stage: 'validation',
+        })),
+      ],
       note: 'Provided candidates require the caller to attest knowledge_language: en. Text is never translated or semantically verified in exact mode; no replay receipt was created.',
     };
   }

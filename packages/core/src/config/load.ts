@@ -721,6 +721,7 @@ function resolve(
         verificationFailureScope: doc.maintenance?.retain?.verification_failure_scope ?? 'source',
         verificationRevision: doc.maintenance?.retain?.verification_revision ?? true,
         evidenceGraceDays: doc.maintenance?.retain?.evidence_grace_days ?? 30,
+        stopWords: doc.maintenance?.retain?.stop_words ?? [],
       },
       observe: {
         // Off by default, from measurement rather than caution. On a real 223-page knowledge

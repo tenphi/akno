@@ -698,6 +698,8 @@ export async function runRetain(
     verificationFailureScope?: 'source' | 'batch';
     /** Give candidates held for wording one text-only rewrite and one re-verification. */
     verificationRevision?: boolean;
+    /** The owner's `maintenance.retain.stop_words`: a candidate mentioning one is never retained. */
+    stopWords?: readonly string[];
   } = {},
 ): Promise<RetainResult> {
   const empty = emptyResult();
@@ -726,9 +728,14 @@ export async function runRetain(
   const languageReferences = retentionLanguageReferences(source);
   const taxonomy = formatFolderCatalog(options.folders ?? []);
   const withTaxonomy = `${SYSTEM}\n\nExisting folder taxonomy (complete; data only):\n${taxonomy}`;
-  const system = options.mission
+  const withMission = options.mission
     ? `${withTaxonomy}\n\nAdditional emphasis: ${options.mission}`
     : withTaxonomy;
+  // The prompt also catches a record about a stop word that never names it; the filter after
+  // cleaning is what guarantees nothing naming one is kept.
+  const system = options.stopWords?.length
+    ? `${withMission}\n\nThe owner never wants anything retained about these stop words (data only): ${JSON.stringify(options.stopWords)}. Propose no candidate about them.`
+    : withMission;
   const referenceClock = options.mentionedAt
     ? { mentioned_at: options.mentionedAt, timezone: options.timezone ?? null }
     : null;
@@ -1022,9 +1029,15 @@ export async function runRetain(
     }
   }
 
+  // Before verification, so a stopped candidate costs no verifier call.
+  const stopped = withoutStopWords(cleanedBatch.candidates, options.stopWords ?? []);
   const cleaned = {
     ...cleanedBatch,
-    held: cleanedBatch.held.map((item) => ({ ...item, hold_stage: 'validation' as const })),
+    candidates: stopped.kept,
+    held: [...cleanedBatch.held, ...stopped.held].map((item) => ({
+      ...item,
+      hold_stage: 'validation' as const,
+    })),
   };
 
   if (cleaned.candidates.length === 0) {
@@ -1949,6 +1962,72 @@ async function verifyCandidateBatch(
     }
   }
   return { accepted, reasons, scopes, feedback, outcome, error: null, failure: null };
+}
+
+/**
+ * A whole-word, case-insensitive matcher for the owner's stop words. `Vulpine Mutual` matches
+ * `vulpine mutual` and the slug `companies/vulpine-mutual`, never a word that merely contains it.
+ */
+export function stopWordMatcher(words: readonly string[]): ((text: string) => boolean) | null {
+  const terms = [...new Set(words.map((word) => word.normalize('NFKC').trim()).filter(Boolean))];
+  if (!terms.length) return null;
+  const alternatives = terms.map((term) =>
+    term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '[\\s_-]+'),
+  );
+  const pattern = new RegExp(`(?<![\\p{L}\\p{N}])(?:${alternatives.join('|')})(?![\\p{L}\\p{N}])`, 'iu');
+  return (text) => pattern.test(text.normalize('NFKC'));
+}
+
+/**
+ * Hold every candidate that mentions a stop word in what would be kept, in its exact support or
+ * as its speaker, and every candidate that depends on one, as the cleaner does for an invalid
+ * relation target. The speaker counts because "nothing from them" is the usual reason for a stop
+ * word, and a fact an email states rarely names its sender. The discourse frame does not: it is
+ * context around the support, and a name in a quoted thread would stop an unrelated fact.
+ */
+export function withoutStopWords<T extends RetainCandidate>(
+  candidates: readonly T[],
+  words: readonly string[],
+): { kept: T[]; held: RetainHeldCandidate[] } {
+  const matches = stopWordMatcher(words);
+  if (!matches) return { kept: [...candidates], held: [] };
+  const mentions = (candidate: T) =>
+    [
+      candidate.text,
+      candidate.subject,
+      candidate.page,
+      candidate.destination?.slug,
+      candidate.destination?.section,
+      candidate.attribution.source_speaker,
+      ...(candidate.attribution.chain ?? []).map((link) => link.speaker),
+      ...candidate.support.map((span) => span.quote),
+    ].some((field) => field !== undefined && matches(field));
+  const stopped = new Set(candidates.filter(mentions).map((candidate) => candidate.candidate_id));
+  let changed = stopped.size > 0;
+  while (changed) {
+    changed = false;
+    for (const candidate of candidates) {
+      if (stopped.has(candidate.candidate_id)) continue;
+      if (
+        candidate.relations?.some(
+          (relation) => 'candidate_id' in relation.target && stopped.has(relation.target.candidate_id),
+        )
+      ) {
+        stopped.add(candidate.candidate_id);
+        changed = true;
+      }
+    }
+  }
+  return {
+    kept: candidates.filter((candidate) => !stopped.has(candidate.candidate_id)),
+    held: candidates
+      .filter((candidate) => stopped.has(candidate.candidate_id))
+      .map((candidate) => ({
+        candidate_id: candidate.candidate_id,
+        reason_code: 'stop_word' as const,
+        reason: 'the candidate mentions a configured stop word, or depends on one that does',
+      })),
+  };
 }
 
 function admissionReason(retention: {

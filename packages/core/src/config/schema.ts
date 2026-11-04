@@ -460,6 +460,8 @@ const MaintenanceDoc = z.object({
     verification_revision: z.boolean().optional(),
     /** Grace before unneeded private source frames are securely pruned. */
     evidence_grace_days: z.number().int().nonnegative().optional(),
+    /** Words or phrases whose mention keeps a candidate out of automatic retention. */
+    stop_words: z.array(z.string().trim().min(1).max(100)).max(500).optional(),
   }).optional(),
   observe: TierDoc.extend({
     /** Distinct source pages an observation needs. The floor is two. */
@@ -737,6 +739,7 @@ export interface AknoConfig {
       verificationFailureScope?: 'source' | 'batch';
       verificationRevision: boolean;
       evidenceGraceDays: number;
+      stopWords: string[];
     };
     observe: {
       enabled: boolean;

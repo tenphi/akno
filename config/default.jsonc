@@ -427,6 +427,10 @@
       // Labels, spans and admission holds are never revised. Costs one rewrite call plus one
       // verification per affected source; false keeps every first verifier refusal final.
       "verification_revision": true,
+      // Names and terms never to retain. A candidate naming one in its text, subject,
+      // destination, support or speaker is held as `stop_word` before verification, with
+      // anything that depends on it. Whole-word and case-insensitive; existing memory is untouched.
+      "stop_words": [],
       // Private exact source frames are kept while live memory or maintenance work needs them.
       // Once those dependencies are gone, this grace preserves short-term undo/recovery value.
       "evidence_grace_days": 30

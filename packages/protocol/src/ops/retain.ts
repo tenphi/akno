@@ -275,6 +275,8 @@ export const RetainHoldReason = z.enum([
   'validation_failed',
   'language_policy_required',
   'language_mismatch',
+  /** The candidate mentions one of the owner's `maintenance.retain.stop_words`. */
+  'stop_word',
 ]);
 export type RetainHoldReason = z.infer<typeof RetainHoldReason>;
 
