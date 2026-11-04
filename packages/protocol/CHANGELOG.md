@@ -1,5 +1,11 @@
 # @tenphi/akno-protocol
 
+## 0.22.0
+
+### Minor Changes
+
+- [#258](https://github.com/tenphi/akno/pull/258) [`fe9a92c`](https://github.com/tenphi/akno/commit/fe9a92c9fc28bba957a31ff46199b2e85805c917) Thanks [@tenphi](https://github.com/tenphi)! - Add `maintenance.retain.stop_words`: names and terms never to retain. Extraction is told to skip them, and any candidate that still names one in its text, subject, destination, support or speaker, along with anything that depends on it, is held as `stop_word` before verification. Applies to extracted and supplied candidates, `remember`, and folder timeline curation.
+
 ## 0.21.0
 
 ### Minor Changes
