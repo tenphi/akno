@@ -87,14 +87,28 @@ export function chatGptHeaders(login: ChatGptLogin): Record<string, string> {
 }
 
 /**
+ * Give a terminal response the streamed items when its own `output` arrived empty. A terminal
+ * response that carries items, as the public API's does, stays authoritative.
+ */
+function withStreamedOutput(response: unknown, items: unknown[]): unknown {
+  const streamed = items.filter(Boolean);
+  if (!streamed.length || typeof response !== 'object' || response === null) return response;
+  const output = (response as { output?: unknown }).output;
+  return Array.isArray(output) && output.length ? response : { ...response, output: streamed };
+}
+
+/**
  * Collapse a streamed Responses call into the response object a non-streaming call returns.
  *
- * The terminal event carries the whole response, so the deltas before it are skipped. A stream
- * that reports an error, or ends without a terminal event, becomes a `failed` response whose
- * message the caller reports.
+ * Deltas are skipped: every item is repeated whole in its `response.output_item.done` event. The
+ * terminal event is not enough on its own, because the Codex backend ends the stream with
+ * `output: []` and delivers each item only in that per-item event — reading the terminal event
+ * alone turned every answer into "no output text". A stream that reports an error, or ends
+ * without a terminal event, becomes a `failed` response whose message the caller reports.
  */
 export async function readResponsesStream(response: Response): Promise<unknown> {
   const text = await response.text();
+  const items: unknown[] = [];
   for (const block of text.split(/\r?\n\r?\n/)) {
     const data = block
       .split(/\r?\n/)
@@ -102,10 +116,22 @@ export async function readResponsesStream(response: Response): Promise<unknown> 
       .map((line) => line.slice(5).trimStart())
       .join('\n');
     if (!data || data === '[DONE]') continue;
-    let event: { type?: unknown; response?: unknown; message?: unknown; error?: { message?: unknown } };
+    let event: {
+      type?: unknown;
+      response?: unknown;
+      message?: unknown;
+      error?: { message?: unknown };
+      output_index?: unknown;
+      item?: unknown;
+    };
     try {
       event = JSON.parse(data) as typeof event;
     } catch {
+      continue;
+    }
+    if (event.type === 'response.output_item.done' && event.item) {
+      if (typeof event.output_index === 'number') items[event.output_index] = event.item;
+      else items.push(event.item);
       continue;
     }
     if (
@@ -113,7 +139,7 @@ export async function readResponsesStream(response: Response): Promise<unknown> 
       event.type === 'response.incomplete' ||
       event.type === 'response.failed'
     ) {
-      return event.response;
+      return withStreamedOutput(event.response, items);
     }
     if (event.type === 'error') {
       const message = event.message ?? event.error?.message;
