@@ -85,6 +85,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     folders: catalog,
     // Keyed retain and unkeyed remember share one interpretation of the same source.
     verificationRevision: ctx.config.maintenance.retain.verificationRevision,
+    stopWords: ctx.config.maintenance.retain.stopWords,
   });
 
   if (retained.sourceHold) {

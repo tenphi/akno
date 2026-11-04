@@ -225,6 +225,7 @@ async function openAutomaticMem(
   url: string,
   fallbackPage?: string,
   verificationScope?: 'source' | 'batch',
+  stopWords?: string[],
 ): Promise<Akno> {
   return open({
     aknoPath: root,
@@ -242,12 +243,13 @@ async function openAutomaticMem(
         expansion: { id: null },
       },
       folders: { 'memory/**': { role: 'knowledge', remember: 'integrate' } },
-      ...(fallbackPage || verificationScope
+      ...(fallbackPage || verificationScope || stopWords
         ? {
             maintenance: {
               retain: {
                 ...(fallbackPage ? { fallback_page: fallbackPage } : {}),
                 ...(verificationScope ? { verification_failure_scope: verificationScope } : {}),
+                ...(stopWords ? { stop_words: stopWords } : {}),
               },
             },
           }
@@ -3443,3 +3445,94 @@ it.each([undefined, 'batch'] as const)(
     }
   },
 );
+
+describe('retain stop words', () => {
+  const stopped = 'Ada Marlow renewed the Vulpine Mutual cover for the Zephyr QX-100.';
+  const kept = 'Ada Marlow selected the Zephyr QX-100 warranty for five years.';
+  const extracted = (text: string) => ({
+    text,
+    subject: 'Zephyr QX-100 warranty',
+    page: 'memory/warranty-decisions',
+    origin: 'user',
+    evidence: text,
+    frame: text,
+    kind: 'decision',
+  });
+
+  it('holds a supplied candidate that names one, without writing or calling a model', async () => {
+    const stub = await startAutomaticRetainStub();
+    const mem = await openAutomaticMem(stub.url, undefined, undefined, ['vulpine mutual']);
+    const file = path.join(root, 'memory/equipment.md');
+    const before = fs.readFileSync(file, 'utf8');
+    try {
+      const source = upsert('mail:7777', '1', stopped);
+      source.retention.candidates[0] = {
+        ...source.retention.candidates[0]!,
+        text: stopped,
+        support: [{ quote: stopped }],
+        discourse_frame: [{ quote: stopped }],
+      };
+      const result = await mem.retain({ sources: [source] });
+      expect(result.sources[0]).toMatchObject({
+        outcome: 'held',
+        candidates: [{ outcome: 'held', reason_code: 'stop_word', hold_stage: 'validation' }],
+      });
+      expect(fs.readFileSync(file, 'utf8')).toBe(before);
+      expect(stub.calls()).toEqual({ extraction: 0, verification: 0, routing: 0, placement: 0 });
+      expect((await mem.retain({ sources: [source] })).sources[0]?.outcome).toBe('replayed');
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
+  it('holds an extracted candidate that names one before verification and keeps the rest', async () => {
+    const stub = await startAutomaticRetainStub();
+    stub.setCandidates([extracted(stopped), extracted(kept)]);
+    // Were the stopped candidate verified, the stub would answer with no verdicts and hold both.
+    stub.setVerificationFailure(stopped);
+    const mem = await openAutomaticMem(stub.url, undefined, undefined, ['Vulpine Mutual']);
+    try {
+      const result = await mem.retain({
+        sources: [
+          {
+            source_id: 'conversation:7777',
+            revision: 'turn-1',
+            input: { text: `${stopped} ${kept}` },
+            retention: { mode: 'extract' as const },
+          },
+        ],
+      });
+      expect(result.sources[0]?.candidates).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ outcome: 'written', slug: 'memory/warranty-decisions' }),
+          expect.objectContaining({ outcome: 'held', reason_code: 'stop_word', hold_stage: 'validation' }),
+        ]),
+      );
+      const page = fs.readFileSync(path.join(root, 'memory/warranty-decisions.md'), 'utf8');
+      expect(page).toContain(kept);
+      expect(page).not.toMatch(/Vulpine/u);
+      expect(stub.calls().verification).toBe(1);
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
+  it('applies to an unkeyed remember as well', async () => {
+    const stub = await startAutomaticRetainStub();
+    stub.setCandidates([extracted(stopped), extracted(kept)]);
+    stub.setVerificationFailure(stopped);
+    const mem = await openAutomaticMem(stub.url, undefined, undefined, ['Vulpine Mutual']);
+    try {
+      const result = await mem.remember({ text: `${stopped} ${kept}` });
+      expect(result.considered?.map((item) => item.claim)).toEqual([kept]);
+      expect(fs.readFileSync(path.join(root, 'memory/warranty-decisions.md'), 'utf8')).not.toMatch(
+        /Vulpine/u,
+      );
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+});

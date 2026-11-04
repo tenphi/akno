@@ -289,6 +289,7 @@ export async function planTimelineHistory(
     const retained = await runRetain(page.body, ctx.models.derive, {
       mission:
         'Extract only actual dated events explicitly recorded in this authored knowledge note for its folder timeline. Do not invent an event date from a file timestamp or today. Preserve attribution and uncertainty. Existing Akno-managed memory is already projected; never extract it again.',
+      stopWords: ctx.config.maintenance.retain.stopWords,
     });
     if (retained.degradedReason) degraded.add(retained.degradedReason);
     if (retained.sourceHold) {

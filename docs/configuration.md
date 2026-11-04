@@ -419,6 +419,31 @@ managed item also blocks pruning. A value of `0` permits immediate secure prunin
 gone. This removes bounded private quotes from local state, not Markdown, replay hashes, compact receipts, or
 stored page/document bindings.
 
+## Stop words
+
+`maintenance.retain.stop_words` lists names and terms you never want retained:
+
+```jsonc
+{
+  "maintenance": {
+    "retain": {
+      "stop_words": ["Vulpine Mutual"],
+    },
+  },
+}
+```
+
+The extraction prompt asks the model to propose nothing about them, and a deterministic check then holds every
+candidate that still names one in its text, subject, proposed page or destination, exact support, or speaker,
+together with every candidate whose relation depends on a held one. The check runs before verification, so a
+held candidate costs no verifier call, and it applies equally to supplied (`provided`) candidates, `remember`,
+and folder timeline curation. A hold is reported with `reason_code: "stop_word"` and writes nothing.
+
+Matching is whole-word and case-insensitive: `Vulpine Mutual` matches `vulpine mutual` and the slug
+`companies/vulpine-mutual`, but not `VulpineMutual`. The surrounding discourse frame is not checked, so a name in
+a quoted thread does not stop an unrelated fact. Stop words apply to new retention only; memory already written
+stays until you remove it. The default is an empty list.
+
 Interactive `akno init` can configure this boundary without examining page content. It classifies visible
 top-level directories as managed memory, read-only knowledge, or source/reference material and can add a
 dedicated fallback namespace. New setup writes an explicit decision for every directory it presents. An existing
