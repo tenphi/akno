@@ -1,5 +1,17 @@
 # @tenphi/akno-core
 
+## 0.22.0
+
+### Minor Changes
+
+- [#258](https://github.com/tenphi/akno/pull/258) [`fe9a92c`](https://github.com/tenphi/akno/commit/fe9a92c9fc28bba957a31ff46199b2e85805c917) Thanks [@tenphi](https://github.com/tenphi)! - Add `maintenance.retain.stop_words`: names and terms never to retain. Extraction is told to skip them, and any candidate that still names one in its text, subject, destination, support or speaker, along with anything that depends on it, is held as `stop_word` before verification. Applies to extracted and supplied candidates, `remember`, and folder timeline curation.
+
+### Patch Changes
+
+- [#256](https://github.com/tenphi/akno/pull/256) [`67d0642`](https://github.com/tenphi/akno/commit/67d06428403adfedf75d10dde125e55c7dc918aa) Thanks [@tenphi](https://github.com/tenphi)! - Read the answer the ChatGPT subscription backend streams. Its terminal `response.completed` event now carries an empty `output`, and each item arrives only in its own `response.output_item.done` event. Every generative call on the subscription therefore failed with "Responses API response had no output text", and that call never reached the API-key fallback, because the stream itself had completed. The streamed items now stand in for an empty terminal output. A terminal response that carries its own output, as the public API's does, is used unchanged.
+- Updated dependencies [[`fe9a92c`](https://github.com/tenphi/akno/commit/fe9a92c9fc28bba957a31ff46199b2e85805c917)]:
+  - @tenphi/akno-protocol@0.22.0
+
 ## 0.21.0
 
 ### Minor Changes
