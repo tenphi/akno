@@ -103,6 +103,36 @@ describe('a streamed Responses call', () => {
     ).resolves.toEqual(response);
   });
 
+  it('takes the streamed items when the terminal response leaves its output empty', async () => {
+    const reasoning = { type: 'reasoning', id: 'rs_invented', encrypted_content: 'opaque' };
+    const message = { type: 'message', content: [{ type: 'output_text', text: 'Invented answer.' }] };
+
+    await expect(
+      readResponsesStream(
+        stream(
+          { type: 'response.output_item.added', output_index: 0, item: { type: 'reasoning' } },
+          { type: 'response.output_item.done', output_index: 0, item: reasoning },
+          { type: 'response.output_text.delta', delta: 'Invented answer.' },
+          { type: 'response.output_item.done', output_index: 1, item: message },
+          { type: 'response.completed', response: { status: 'completed', output: [] } },
+        ),
+      ),
+    ).resolves.toEqual({ status: 'completed', output: [reasoning, message] });
+  });
+
+  it('keeps a terminal response that carries its own output', async () => {
+    const response = { status: 'completed', output: [{ type: 'message', content: [] }] };
+
+    await expect(
+      readResponsesStream(
+        stream(
+          { type: 'response.output_item.done', output_index: 0, item: { type: 'message', id: 'streamed' } },
+          { type: 'response.completed', response },
+        ),
+      ),
+    ).resolves.toEqual(response);
+  });
+
   it('reports an error event or a stream cut short as a failed response', async () => {
     await expect(
       readResponsesStream(stream({ type: 'error', message: 'Invented backend failure.' })),
@@ -255,6 +285,28 @@ describe('the subscription transport', () => {
     });
     expect(seen[0]!.body).toMatchObject({ stream: true, store: false, max_output_tokens: 64 });
     expect(seen[0]!.body).not.toHaveProperty('temperature');
+  });
+
+  it('answers from an item streamed apart from an empty completed response', async () => {
+    signIn();
+    const { result } = await serve(
+      () => ({
+        events: [
+          {
+            type: 'response.output_item.done',
+            output_index: 0,
+            item: { type: 'message', content: [{ type: 'output_text', text: 'ok' }] },
+          },
+          {
+            type: 'response.completed',
+            response: { status: 'completed', output: [], usage: { input_tokens: 11, output_tokens: 2 } },
+          },
+        ],
+      }),
+      (client) => client.chat([{ role: 'user', content: 'Describe the invented Zephyr QX-100.' }]),
+    );
+
+    expect(result).toMatchObject({ ok: true, value: 'ok', endpointRequests: 1 });
   });
 
   it('retries a reasoning-exhausted response once, as over the API', async () => {
