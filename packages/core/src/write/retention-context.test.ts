@@ -3,7 +3,12 @@ import type { ModelClient } from '../models/client.ts';
 import { strictModeViolations, toEndpointSchema } from '../models/client.ts';
 import { frameAuditFields, retentionAudit } from '../../test/semantic-audit.ts';
 import { runRetain } from './retain.ts';
-import { retentionContextWitness, retentionContextSchema, retentionItemAuthor } from './retention-context.ts';
+import {
+  retentionAuthorNames,
+  retentionContextWitness,
+  retentionContextSchema,
+  retentionItemAuthor,
+} from './retention-context.ts';
 
 const source = 'You were meant to check the weekly summary.';
 function record(text = source, quote = source) {
@@ -686,6 +691,94 @@ describe('structured author grounding', () => {
       sourceItems: [{ item_id: 'turn-1111', role: 'assistant', text: guess }],
     });
     expect(result.candidates.map((entry) => entry.text)).toEqual([guessText]);
+    expect(invalid).not.toHaveBeenCalled();
+  });
+
+  it('reads the display name of a mailbox-style author label and nothing shorter', () => {
+    const label = 'Ada Marlow <ada.marlow@example.com>';
+    expect(retentionAuthorNames(label)).toEqual([label, 'Ada Marlow']);
+    expect(retentionAuthorNames('"Ada Marlow" <ada.marlow@example.com>')).toEqual([
+      '"Ada Marlow" <ada.marlow@example.com>',
+      'Ada Marlow',
+    ]);
+    expect(retentionAuthorNames('<ada.marlow@example.com>')).toEqual(['<ada.marlow@example.com>']);
+    expect(retentionAuthorNames('Ada Marlow')).toEqual(['Ada Marlow']);
+    expect(retentionAuthorNames('assistant')).toEqual(['assistant']);
+  });
+
+  // An email item whose header names its author and whose body speaks in the first person.
+  const mailbox = 'Ada Marlow <ada.marlow@example.com>';
+  const header = `From: ${mailbox}`;
+  const keys = 'I’ll collect the spare keys from the Blackwater Bay office on Friday.';
+  const keysText = `${mailbox} will collect the spare keys from the Blackwater Bay office on Friday.`;
+  const emailFrames = (bodyItem = 'email-1111') => [
+    { quote: header, item_id: 'email-1111' },
+    { quote: keys, item_id: bodyItem },
+  ];
+  const authorReference = (sourceName: string, origin: string) => ({
+    source: { frame_id: 'F2' },
+    source_name: sourceName,
+    name_origin: { frame_id: origin },
+    resolution: 'explicit',
+    source_role: 'actor',
+    candidate_role: 'actor',
+    relation: 'preserved',
+  });
+
+  it.each([
+    ['its full label in its own frame', mailbox, 'F2', mailbox, true],
+    ['its full label with the header frame of the same item as origin', mailbox, 'F1', mailbox, true],
+    ['the display name of its label', 'Ada Marlow', 'F2', mailbox, true],
+    ['the display name with the header frame as origin', 'Ada Marlow', 'F1', mailbox, true],
+    ['part of the display name', 'Ada', 'F2', mailbox, false],
+    ['a name its label does not carry', 'Bo Winters', 'F1', mailbox, false],
+    [
+      'a neighboring frame’s label that is not its own',
+      mailbox,
+      'F1',
+      'Bo Winters <bo.winters@example.com>',
+      false,
+    ],
+  ])('grounds an explicit first-person author by %s', (_label, sourceName, origin, bodyAuthor, expected) => {
+    expect(
+      retentionContextWitness(emailFrames(), keysText, [
+        { frame_id: 'F1', speaker: mailbox },
+        { frame_id: 'F2', speaker: bodyAuthor },
+      ]).grounded(context(authorReference(sourceName, origin), 'F2')),
+    ).toBe(expected);
+  });
+
+  it('still requires an explicit author’s cited origin to be in the same item', () => {
+    expect(
+      retentionContextWitness(
+        emailFrames('email-2222'),
+        keysText,
+        [
+          { frame_id: 'F1', speaker: mailbox },
+          { frame_id: 'F2', speaker: mailbox },
+        ],
+        ['email-1111', 'email-2222'],
+      ).grounded(context(authorReference(mailbox, 'F1'), 'F2')),
+    ).toBe(false);
+  });
+
+  it('admits an email author verdict that cites the header frame instead of failing its batch', async () => {
+    const email = `${header}\n\n${keys}`;
+    const candidate = {
+      ...record(keysText, keys),
+      attribution: { source_role: 'external', source_speaker: mailbox, chain: [] },
+      support: [{ quote: keys, item_id: 'email-1111' }],
+      discourse_frame: emailFrames(),
+    };
+    const { model, invalid } = stub([candidate], (verdict) => {
+      verdict.knowledge_context.witness = { frame_id: 'F2' };
+      verdict.knowledge_context.references = [authorReference(mailbox, 'F1')];
+    });
+    const result = await runRetain(email, model, {
+      sourceItems: [{ item_id: 'email-1111', role: 'external', speaker: mailbox, text: email }],
+    });
+    expect(result.candidates.map((entry) => entry.text)).toEqual([keysText]);
+    expect(result.degradedReason).toBeNull();
     expect(invalid).not.toHaveBeenCalled();
   });
 });

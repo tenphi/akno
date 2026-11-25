@@ -298,7 +298,10 @@ in a useful self-contained report. A separate reference comparison binds source-
 to their actual roles in the original retained text, including material named participants as well as
 pronouns: a report recipient cannot silently replace
 a booking holder or an item's owner. Structured speaker labels bind only their own source frames; an item
-without a speaker binds its `assistant` or `user` role the same way.
+without a speaker binds its `assistant` or `user` role the same way. A mailbox-style label such as
+`Ada Marlow <ada.marlow@example.com>` also binds its display name. Because a frame's own label grounds its
+explicit author by itself, such a reference may cite another frame of the same item (an email's header
+line, say) as its name anchor; any other explicit name must still occur in its own frame.
 Context audits select the unchanged source frames and read the entire original candidate instead of
 reconstructing excerpts. A separate name anchor can establish an unambiguous pronoun or short-name
 antecedent from another owned frame in the same original source item, or in an earlier item by the same
