@@ -1,5 +1,0 @@
----
-'@tenphi/akno-core': patch
----
-
-Stop failing whole verification batches when the verifier grounds an email's first-person author through the item's own structure. A frame's structured author label now grounds its explicit author even when the reference cites another frame of the same item, such as the email's `From:` header line, as its name anchor, and a mailbox-style label such as `Ada Marlow <ada.marlow@example.com>` also grounds its display name. Previously both forms failed as `context_witness_invalid`, holding every candidate in the batch as `discourse_uncertain` and marking the receipt `retain_verification_failed`. An explicit name that is not the frame's own author must still occur in its own frame, a cited anchor in another item is still rejected, and part of a display name is not accepted. Replaying recorded live verifier responses with identical model output, 5 of the 8 rejected verdicts in three runs of an invented scheduled email report are now grounded, and none of the 548 verdicts from the 224 recorded benchmark runs changes. The verifier contract is unchanged.
