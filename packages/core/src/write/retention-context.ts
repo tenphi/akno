@@ -31,6 +31,16 @@ export function retentionItemAuthor(item: { role?: string; speaker?: string }): 
   return item.role === 'assistant' || item.role === 'user' ? item.role : undefined;
 }
 
+/**
+ * The names an author label establishes for its own frames: the label itself and, for a mailbox-style
+ * label such as `Ada Marlow <ada.marlow@example.com>`, its display name. A part of the display name
+ * is not one of them.
+ */
+export function retentionAuthorNames(label: string): string[] {
+  const display = /^"?([^"<>]*?)"?\s*<[^<>\s]+@[^<>\s]+>$/u.exec(label.trim())?.[1]?.trim();
+  return display ? [label, display] : [label];
+}
+
 /** A separate name anchor can ground an antecedent without inventing a composite source quote. */
 export function retentionContextWitness(
   frames: readonly { quote: string; item_id?: string }[],
@@ -90,18 +100,23 @@ export function retentionContextWitness(
             !continuesAuthor(entry.source.frame_id, entry.name_origin.frame_id))
         )
           return false;
-        if (entry.resolution === 'explicit' && entry.source.frame_id !== entry.name_origin.frame_id)
+        // The source frame's own author label grounds its explicit author by itself, so the
+        // name_origin it cites within the same item (an email's header frame, say) adds nothing that
+        // could change the identity. Any other explicit name must occur in its own frame.
+        const sourceAuthor = author(entry.source.frame_id);
+        const ownAuthor =
+          entry.resolution === 'explicit' &&
+          sourceAuthor !== undefined &&
+          retentionAuthorNames(sourceAuthor).includes(entry.source_name);
+        if (
+          entry.resolution === 'explicit' &&
+          entry.source.frame_id !== entry.name_origin.frame_id &&
+          !ownAuthor
+        )
           return false;
         const named = exactSourceName(origin.quote, entry.source_name);
-        const ownSpeaker =
-          entry.resolution === 'explicit' &&
-          entry.source.frame_id === entry.name_origin.frame_id &&
-          sourceSpeakers.some(
-            (speaker) => speaker.frame_id === entry.source.frame_id && speaker.speaker === entry.source_name,
-          );
         return (
-          (named || ownSpeaker) &&
-          (entry.relation !== 'preserved' || exactSourceName(text, entry.source_name))
+          (named || ownAuthor) && (entry.relation !== 'preserved' || exactSourceName(text, entry.source_name))
         );
       });
     },
